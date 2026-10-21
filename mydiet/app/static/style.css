@@ -38,7 +38,7 @@ body {
   margin: 0;
   background: var(--primary-background-color);
   color: var(--primary-text-color);
-  font-family: var(--ha-font-family-body, var(--paper-font-body1_-_font-family, var(--mdc-typography-body1-font-family, Roboto, Noto, system-ui, sans-serif)));
+  font-family: var(--ha-font-family-body, var(--primary-font-family, var(--paper-font-body1_-_font-family, var(--mdc-typography-font-family, var(--mdc-typography-body1-font-family, Roboto, Noto, system-ui, sans-serif)))));
   font-size: 14px;
   line-height: 1.4;
 }
@@ -58,7 +58,7 @@ h2, h3 { margin: 0; font-weight: 500; }
 .appbar .muted { color: inherit; opacity: .75; margin-left: auto; }
 nav { display: flex; gap: 4px; overflow-x: auto; }
 nav button {
-  background: none; border: 0; border-bottom: 3px solid transparent; border-radius: 0;
+  background: none; border: 0; border-bottom: 3px solid transparent; border-radius: 0; box-shadow: none;
   color: inherit; opacity: .75; padding: 16px 12px 13px; font: inherit; font-weight: 500;
   text-transform: uppercase; letter-spacing: .03em; cursor: pointer; white-space: nowrap;
 }
@@ -69,7 +69,7 @@ main { max-width: 860px; margin: 0 auto; padding: 16px; }
 
 /* cards */
 .card {
-  background: var(--card-background-color);
+  background: var(--ha-card-background, var(--card-background-color));
   border-radius: var(--ha-card-border-radius);
   border: var(--ha-card-border-width) solid var(--ha-card-border-color);
   box-shadow: var(--ha-card-box-shadow);
@@ -80,20 +80,31 @@ main { max-width: 860px; margin: 0 auto; padding: 16px; }
 /* form controls */
 input, select, button, textarea { font: inherit; }
 input, select {
-  background: var(--secondary-background-color); color: var(--primary-text-color);
-  border: 0; border-bottom: 2px solid var(--divider-color); border-radius: 6px 6px 0 0;
+  background: var(--input-fill-color, var(--secondary-background-color));
+  color: var(--input-ink-color, var(--primary-text-color));
+  border: 0; border-bottom: 2px solid var(--input-idle-line-color, var(--divider-color));
+  border-radius: var(--ha-control-border-radius, 6px) var(--ha-control-border-radius, 6px) 0 0;
   padding: 8px 10px; min-width: 0; width: 100%;
 }
+input:hover, select:hover { border-bottom-color: var(--input-hover-line-color, var(--input-idle-line-color, var(--divider-color))); }
 input:focus, select:focus { outline: 0; border-bottom-color: var(--primary-color); }
 label { display: block; font-size: 12px; color: var(--secondary-text-color); margin-bottom: 2px; }
+/* buttons follow HA's own button tokens (webawesome brand colours, radius, bevel) */
 button {
-  cursor: pointer; border: 0; border-radius: 18px; padding: 8px 18px;
-  background: var(--primary-color); color: var(--text-primary-color); font-weight: 500;
+  cursor: pointer; border: 0; padding: 8px 18px; font-weight: 500;
+  border-radius: var(--ha-button-border-radius, 18px);
+  background: var(--wa-color-brand-fill-loud, var(--primary-color));
+  color: var(--wa-color-brand-on-loud, var(--text-primary-color));
+  box-shadow: var(--ha-button-box-shadow, none);
 }
-button.flat { background: none; color: var(--primary-color); padding: 8px 10px; }
+button.flat {
+  background: var(--wa-color-brand-fill-quiet, none);
+  color: var(--wa-color-brand-on-quiet, var(--primary-color)); padding: 8px 10px;
+}
 button.danger { background: none; color: var(--error-color); }
 button.icon {
-  background: none; color: var(--secondary-text-color); padding: 2px 8px; font-size: 16px; border-radius: 50%;
+  background: none; color: var(--secondary-text-color); padding: 2px 8px; font-size: 16px;
+  border-radius: var(--ha-button-border-radius, 50%); box-shadow: none;
 }
 button.icon:hover { color: var(--error-color); }
 button:disabled { opacity: .4; cursor: default; }
@@ -105,12 +116,12 @@ button:disabled { opacity: .4; cursor: default; }
 .daynav { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px; }
 .daynav .date {
   flex: 1; max-width: 360px; text-align: center; padding: 10px;
-  background: var(--primary-color); color: var(--text-primary-color);
-  border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer; position: relative;
+  background: var(--wa-color-brand-fill-loud, var(--primary-color)); color: var(--wa-color-brand-on-loud, var(--text-primary-color));
+  border-radius: var(--ha-button-border-radius, 8px); box-shadow: var(--ha-button-box-shadow, none); font-size: 16px; font-weight: 500; cursor: pointer; position: relative;
 }
 .daynav .date input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .daynav .date input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; }
-.daynav button.step { padding: 8px 14px; border-radius: 8px; font-size: 16px; }
+.daynav button.step { padding: 8px 14px; border-radius: var(--ha-button-border-radius, 8px); font-size: 16px; }
 
 /* diary tables (MyFitnessPal style) */
 table { width: 100%; border-collapse: collapse; }
@@ -147,8 +158,8 @@ table.summary tbody th { font-weight: 600; }
 .under { color: var(--success-color); font-weight: 600; }
 
 /* progress */
-.bar { height: 8px; background: var(--secondary-background-color); border-radius: 4px; overflow: hidden; }
-.bar > i { display: block; height: 100%; background: var(--primary-color); border-radius: 4px; }
+.bar { height: 8px; background: var(--secondary-background-color); border-radius: var(--ha-border-radius-pill, 4px); overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--primary-color); border-radius: var(--ha-border-radius-pill, 4px); }
 .bar > i.over { background: var(--error-color); }
 
 /* charts */
@@ -161,17 +172,17 @@ svg.chart .bar-k.over { fill: var(--error-color); }
 svg.chart .line { fill: none; stroke: var(--primary-color); stroke-width: 2; stroke-linejoin: round; }
 svg.chart .dot { fill: var(--primary-color); }
 .stat-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 16px; }
-.tile { background: var(--secondary-background-color); border-radius: 10px; padding: 10px 14px; }
+.tile { background: var(--secondary-background-color); border-radius: var(--ha-card-border-radius, 10px); padding: 10px 14px; }
 .tile b { display: block; font-size: 22px; font-weight: 500; }
-.macro-split { display: flex; height: 14px; border-radius: 7px; overflow: hidden; margin: 8px 0; }
+.macro-split { display: flex; height: 14px; border-radius: var(--ha-border-radius-pill, 7px); overflow: hidden; margin: 8px 0; }
 .macro-split i:nth-child(1) { background: var(--info-color); }
 .macro-split i:nth-child(2) { background: var(--warning-color); }
 .macro-split i:nth-child(3) { background: var(--error-color); }
 .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--secondary-text-color); }
 .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; background: var(--c); }
 .range { display: inline-flex; gap: 4px; margin-bottom: 12px; }
-.range button { background: var(--secondary-background-color); color: var(--primary-text-color); padding: 6px 14px; }
-.range button.active { background: var(--primary-color); color: var(--text-primary-color); }
+.range button { background: var(--secondary-background-color); color: var(--primary-text-color); box-shadow: var(--ha-button-box-shadow, none); padding: 6px 14px; }
+.range button.active { background: var(--wa-color-brand-fill-loud, var(--primary-color)); color: var(--wa-color-brand-on-loud, var(--text-primary-color)); }
 
 /* lists (settings / weight) */
 .list > div { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--divider-color); }
@@ -183,9 +194,9 @@ svg.chart .dot { fill: var(--primary-color); }
 /* dialog */
 dialog {
   width: min(520px, calc(100vw - 24px)); max-height: calc(100vh - 24px);
-  background: var(--card-background-color); color: var(--primary-text-color);
-  border: 0; border-radius: var(--ha-card-border-radius); padding: 20px;
-  box-shadow: 0 8px 32px #0006;
+  background: var(--ha-card-background, var(--card-background-color)); color: var(--primary-text-color);
+  border: 0; border-radius: var(--ha-dialog-border-radius, var(--ha-card-border-radius)); padding: 20px;
+  box-shadow: var(--ha-card-box-shadow, none); filter: drop-shadow(0 8px 24px #0006);
 }
 dialog::backdrop { background: #0008; }
 dialog h2 { margin-bottom: 12px; font-size: 18px; }
