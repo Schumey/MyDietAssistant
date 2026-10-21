@@ -41,7 +41,7 @@ function show(tab) {
   state.tab = tab;
   for (const b of document.querySelectorAll("#tabs button")) b.classList.toggle("active", b.dataset.tab === tab);
   for (const s of document.querySelectorAll("main > section")) s.hidden = s.id !== tab;
-  ({ diary: renderDiary, weight: renderWeight, stats: renderStats, settings: renderSettings })[tab]();
+  ({ diary: renderDiary, foods: renderFoods, weight: renderWeight, stats: renderStats, settings: renderSettings })[tab]();
 }
 
 // ---------------------------------------------------------------- diary
@@ -127,6 +127,52 @@ function editEntry(e) {
   dlg.showModal();
 }
 
+// ---------------------------------------------------------------- food form (shared)
+// Create (food == null) or edit a food; onSave receives the food id.
+function foodForm({ food = null, onSave, onCancel }) {
+  const f = { barcode: h("input", { inputmode: "numeric", placeholder: "Barcode" }) };
+  const field = (key, label, attrs = {}) => {
+    f[key] = h("input", { id: "nf-" + key, ...attrs, value: food ? food[key] : attrs.value });
+    return h("div", {}, h("label", { for: "nf-" + key }, label), f[key]);
+  };
+  const msg = h("div", { class: "err" });
+  const form = h("div", {},
+    h("div", { class: "grid" },
+      h("div", {}, h("label", {}, "Barcode (Open Food Facts)"), f.barcode),
+      h("button", { class: "flat", onclick: async () => {
+        msg.textContent = "";
+        try {
+          const p = await api("off/barcode/" + encodeURIComponent(f.barcode.value.trim()));
+          f.name.value = p.name; f.brand.value = p.brand;
+          for (const k of ["kcal", "protein", "carbs", "fat"]) f[k].value = Math.round(p[k] * 10) / 10;
+        } catch (e) { msg.textContent = "Produkt nicht gefunden (" + e.message + ")"; }
+      } }, "Suchen")),
+    h("div", { style: "margin-top:12px" }, field("name", "Name")),
+    h("div", { class: "grid", style: "margin-top:12px" },
+      field("brand", "Marke"),
+      field("serving_g", "Portion (g)", { type: "number", step: "any", value: 100 })),
+    h("div", { class: "grid", style: "margin-top:12px" },
+      field("kcal", "kcal / 100 g", { type: "number", step: "any" }),
+      field("carbs", "KH / 100 g", { type: "number", step: "any" }),
+      field("fat", "Fett / 100 g", { type: "number", step: "any" }),
+      field("protein", "Eiweiß / 100 g", { type: "number", step: "any" })),
+    msg,
+    h("div", { class: "actions" },
+      h("button", { class: "flat", onclick: onCancel }, food ? "Abbrechen" : "Zurück"),
+      h("button", { onclick: async () => {
+        if (!f.name.value.trim() || num(f.kcal.value) == null) { msg.textContent = "Name und kcal sind Pflicht."; return; }
+        const body = {
+          name: f.name.value, brand: f.brand.value, kcal: num(f.kcal.value),
+          protein: num(f.protein.value) || 0, carbs: num(f.carbs.value) || 0, fat: num(f.fat.value) || 0,
+          serving_g: num(f.serving_g.value) || 100 };
+        const id = food ? food.id : (await send("POST", "foods", body)).id;
+        if (food) await send("PUT", "foods/" + food.id, body);
+        onSave(id);
+      } }, food ? "Speichern" : "Speichern & wählen")));
+  setTimeout(() => f.name.focus());
+  return form;
+}
+
 // ---------------------------------------------------------------- add food dialog
 async function openAdd(meal) {
   let foods = await api("foods");
@@ -170,48 +216,16 @@ async function openAdd(meal) {
   }
 
   function newFood() {
-    const f = { barcode: h("input", { inputmode: "numeric", placeholder: "Barcode" }) };
-    const field = (key, label, attrs = {}) => {
-      f[key] = h("input", { id: "nf-" + key, ...attrs });
-      return h("div", {}, h("label", { for: "nf-" + key }, label), f[key]);
-    };
-    const msg = h("div", { class: "err" });
-    const form = h("div", {},
-      h("div", { class: "grid" },
-        h("div", {}, h("label", {}, "Barcode (Open Food Facts)"), f.barcode),
-        h("button", { class: "flat", onclick: async () => {
-          msg.textContent = "";
-          try {
-            const p = await api("off/barcode/" + encodeURIComponent(f.barcode.value.trim()));
-            f.name.value = p.name; f.brand.value = p.brand;
-            for (const k of ["kcal", "protein", "carbs", "fat"]) f[k].value = Math.round(p[k] * 10) / 10;
-          } catch (e) { msg.textContent = "Produkt nicht gefunden (" + e.message + ")"; }
-        } }, "Suchen")),
-      h("div", { style: "margin-top:12px" }, field("name", "Name")),
-      h("div", { class: "grid", style: "margin-top:12px" },
-        field("brand", "Marke"),
-        field("serving_g", "Portion (g)", { type: "number", step: "any", value: 100 })),
-      h("div", { class: "grid", style: "margin-top:12px" },
-        field("kcal", "kcal / 100 g", { type: "number", step: "any" }),
-        field("carbs", "KH / 100 g", { type: "number", step: "any" }),
-        field("fat", "Fett / 100 g", { type: "number", step: "any" }),
-        field("protein", "Eiweiß / 100 g", { type: "number", step: "any" })),
-      msg,
-      h("div", { class: "actions" },
-        h("button", { class: "flat", onclick: () => { form.remove(); body.hidden = false; } }, "Zurück"),
-        h("button", { onclick: async () => {
-          if (!f.name.value.trim() || num(f.kcal.value) == null) { msg.textContent = "Name und kcal sind Pflicht."; return; }
-          const created = await send("POST", "foods", {
-            name: f.name.value, brand: f.brand.value, kcal: num(f.kcal.value),
-            protein: num(f.protein.value) || 0, carbs: num(f.carbs.value) || 0, fat: num(f.fat.value) || 0,
-            serving_g: num(f.serving_g.value) || 100 });
-          foods = await api("foods");
-          form.remove(); body.hidden = false;
-          select(foods.find(x => x.id === created.id));
-        } }, "Speichern & wählen")));
+    const form = foodForm({
+      onCancel: () => { form.remove(); body.hidden = false; },
+      onSave: async id => {
+        foods = await api("foods");
+        form.remove(); body.hidden = false;
+        select(foods.find(x => x.id === id));
+      },
+    });
     body.hidden = true;
     dlg.append(form);
-    f.name.focus();
   }
 
   body.append(search, results,
@@ -269,6 +283,45 @@ function lineChart(points, target) {
 function rangeButtons(options, current, onpick) {
   return h("div", { class: "range" }, options.map(([v, label]) =>
     h("button", { class: v === current ? "active" : "", onclick: () => onpick(v) }, label)));
+}
+
+// ---------------------------------------------------------------- foods page
+async function renderFoods() {
+  const foods = await api("foods");
+  const root = $("#foods");
+  root.replaceChildren();
+  const list = h("div", { class: "list" });
+
+  const openForm = food => {
+    const form = foodForm({
+      food,
+      onCancel: () => dlg.close(),
+      onSave: () => { dlg.close(); renderFoods(); },
+    });
+    dlg.replaceChildren(h("h2", {}, food ? "Lebensmittel bearbeiten" : "Neues Lebensmittel"), form);
+    dlg.showModal();
+  };
+
+  const draw = () => {
+    const q = search.value.toLowerCase();
+    const shown = foods.filter(f => (f.name + " " + f.brand).toLowerCase().includes(q));
+    list.replaceChildren(...(shown.length ? shown.map(f => h("div", {},
+      h("div", { class: "grow" }, h("div", {}, f.name, f.brand ? ` (${f.brand})` : ""),
+        h("div", { class: "muted" }, `${n0(f.kcal)} kcal · KH ${n1(f.carbs)} g · Fett ${n1(f.fat)} g · Eiweiß ${n1(f.protein)} g (pro 100 g)`)),
+      h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => openForm(f) }, "✎"),
+      h("button", { class: "icon", title: "Löschen", "aria-label": "Löschen", onclick: async () => {
+        if (!confirm(`„${f.name}“ löschen? Bereits eingetragene Mahlzeiten bleiben erhalten.`)) return;
+        await api("foods/" + f.id, { method: "DELETE" }); renderFoods();
+      } }, "✕")))
+      : [h("div", { class: "muted", style: "padding:8px 0" }, foods.length ? "Nichts gefunden." : "Noch keine Lebensmittel angelegt.")]));
+  };
+
+  const search = h("input", { type: "search", placeholder: "Lebensmittel suchen…", oninput: draw });
+  root.append(h("div", { class: "card" },
+    h("div", { class: "grid", style: "grid-template-columns:1fr auto" }, search,
+      h("button", { onclick: () => openForm(null) }, "+ Neues Lebensmittel")),
+    list));
+  draw();
 }
 
 // ---------------------------------------------------------------- weight
@@ -358,7 +411,7 @@ async function renderStats() {
 
 // ---------------------------------------------------------------- settings
 async function renderSettings() {
-  const [goal, day, foods] = await Promise.all([api("goal"), api("day/" + state.day), api("foods")]);
+  const [goal, day] = await Promise.all([api("goal"), api("day/" + state.day)]);
   const root = $("#settings");
   root.replaceChildren();
 
@@ -407,16 +460,6 @@ async function renderSettings() {
       renderSettings();
     } }, "Hinzufügen"))));
 
-  // foods
-  root.append(h("div", { class: "card" }, h("h2", {}, "Meine Lebensmittel"),
-    foods.length ? h("div", { class: "list" }, foods.map(f => h("div", {},
-      h("span", { class: "grow" }, f.name, f.brand ? ` (${f.brand})` : ""),
-      h("span", { class: "muted" }, `${n0(f.kcal)} kcal/100 g`),
-      h("button", { class: "icon", title: "Löschen", onclick: async () => {
-        if (!confirm(`„${f.name}“ löschen? Bereits eingetragene Mahlzeiten bleiben erhalten.`)) return;
-        await api("foods/" + f.id, { method: "DELETE" }); renderSettings();
-      } }, "✕"))))
-      : h("div", { class: "muted" }, "Noch keine Lebensmittel angelegt.")));
 }
 
 api("me").then(m => { $("#who").textContent = m.name; });

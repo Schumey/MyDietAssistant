@@ -177,6 +177,7 @@ svg.chart .dot { fill: var(--primary-color); }
 .list > div { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--divider-color); }
 .list > div:last-child { border-bottom: 0; }
 .list .grow { flex: 1; min-width: 0; }
+.list button.icon.edit:hover { color: var(--primary-color); }
 .list input { width: auto; flex: 1; }
 
 /* dialog */
