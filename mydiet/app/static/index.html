@@ -4,147 +4,29 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MyDietAssistant</title>
-<style>
-  :root { --bg:#fff; --fg:#1d1d1f; --mut:#6b7280; --card:#f3f4f6; --acc:#03a9f4; }
-  @media (prefers-color-scheme: dark) { :root { --bg:#111827; --fg:#f3f4f6; --mut:#9ca3af; --card:#1f2937; } }
-  body { margin:0; font:16px system-ui,sans-serif; background:var(--bg); color:var(--fg); }
-  main { max-width:640px; margin:0 auto; padding:16px; }
-  .card { background:var(--card); border-radius:12px; padding:12px 16px; margin:12px 0; }
-  .row { display:flex; justify-content:space-between; align-items:center; gap:8px; }
-  .bar { height:10px; background:#0002; border-radius:5px; overflow:hidden; margin:8px 0; }
-  .bar > i { display:block; height:100%; background:var(--acc); }
-  h2 { margin:0 0 4px; font-size:1rem; }
-  .mut { color:var(--mut); font-size:.85rem; }
-  input, select, button { font:inherit; padding:8px; border-radius:8px; border:1px solid #8884; background:var(--bg); color:var(--fg); }
-  button { background:var(--acc); color:#fff; border:0; cursor:pointer; }
-  button.x { background:none; color:var(--mut); padding:0 6px; }
-  form { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  form .full { grid-column:1/-1; }
-</style>
+<link rel="stylesheet" href="static/style.css">
 </head>
 <body>
+<header class="appbar">
+  <h1>Ernährung</h1>
+  <nav id="tabs">
+    <button data-tab="diary" class="active">Tagebuch</button>
+    <button data-tab="weight">Gewicht</button>
+    <button data-tab="stats">Statistik</button>
+    <button data-tab="settings">Einstellungen</button>
+  </nav>
+  <span id="who" class="muted"></span>
+</header>
+
 <main>
-  <div class="row">
-    <button id="prev">‹</button>
-    <input type="date" id="day">
-    <button id="next">›</button>
-  </div>
-
-  <div class="card">
-    <div class="row"><b id="kcal"></b><span class="mut" id="who"></span></div>
-    <div class="bar"><i id="kbar"></i></div>
-    <div class="mut" id="macros"></div>
-  </div>
-
-  <div id="meals"></div>
-
-  <div class="card">
-    <h2>Eintrag hinzufügen</h2>
-    <form id="add">
-      <select name="meal">
-        <option value="breakfast">Frühstück</option><option value="lunch">Mittag</option>
-        <option value="dinner">Abend</option><option value="snack">Snack</option>
-      </select>
-      <input name="grams" type="number" step="any" placeholder="Gramm" required>
-      <input class="full" name="food" list="foods" placeholder="Lebensmittel (vorhandenes wählen oder neu benennen)" required autocomplete="off">
-      <datalist id="foods"></datalist>
-      <input name="kcal" type="number" step="any" placeholder="kcal/100g (nur neu)">
-      <input name="protein" type="number" step="any" placeholder="Protein/100g">
-      <input name="carbs" type="number" step="any" placeholder="KH/100g">
-      <input name="fat" type="number" step="any" placeholder="Fett/100g">
-      <input class="full" name="barcode" inputmode="numeric" placeholder="Barcode (Open Food Facts, optional)">
-      <button class="full">Hinzufügen</button>
-    </form>
-  </div>
-
-  <div class="card">
-    <h2>Tagesziel</h2>
-    <form id="goal">
-      <input name="kcal" type="number" placeholder="kcal" required>
-      <input name="protein" type="number" placeholder="Protein g">
-      <input name="carbs" type="number" placeholder="KH g">
-      <input name="fat" type="number" placeholder="Fett g">
-      <button class="full">Speichern</button>
-    </form>
-  </div>
+  <section id="diary"></section>
+  <section id="weight" hidden></section>
+  <section id="stats" hidden></section>
+  <section id="settings" hidden></section>
 </main>
-<script>
-// relative URLs so it works behind HA ingress
-const $ = s => document.querySelector(s);
-const MEALS = {breakfast:'Frühstück', lunch:'Mittag', dinner:'Abend', snack:'Snacks'};
-const api = (p, o) => fetch('api/' + p, o).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
-const send = (m, p, body) => api(p, {method:m, headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
-let foods = [];
 
-$('#day').value = new Date().toLocaleDateString('sv');
-const shift = n => { const d = new Date($('#day').value); d.setDate(d.getDate()+n); $('#day').value = d.toLocaleDateString('sv'); load(); };
-$('#prev').onclick = () => shift(-1);
-$('#next').onclick = () => shift(1);
-$('#day').onchange = load;
-
-async function load() {
-  const d = await api('day/' + $('#day').value);
-  const g = d.goal.kcal || 1;
-  $('#kcal').textContent = `${Math.round(d.totals.kcal)} / ${Math.round(g)} kcal`;
-  $('#kbar').style.width = Math.min(100, d.totals.kcal / g * 100) + '%';
-  $('#macros').textContent = `Protein ${Math.round(d.totals.protein)} g · KH ${Math.round(d.totals.carbs)} g · Fett ${Math.round(d.totals.fat)} g`;
-  $('#meals').innerHTML = '';
-  for (const [k, label] of Object.entries(MEALS)) {
-    const items = d.entries.filter(e => e.meal === k);
-    if (!items.length) continue;
-    const el = document.createElement('div');
-    el.className = 'card';
-    el.innerHTML = `<h2>${label} <span class="mut">${Math.round(items.reduce((a,e)=>a+e.kcal,0))} kcal</span></h2>`;
-    for (const e of items) {
-      const r = document.createElement('div');
-      r.className = 'row';
-      r.innerHTML = `<span></span><span class="mut">${Math.round(e.grams)} g · ${Math.round(e.kcal)} kcal <button class="x">✕</button></span>`;
-      r.firstChild.textContent = e.name;
-      r.querySelector('button').onclick = async () => { await api('entries/' + e.id, {method:'DELETE'}); load(); };
-      el.append(r);
-    }
-    $('#meals').append(el);
-  }
-}
-
-async function loadFoods() {
-  foods = await api('foods');
-  const dl = $('#foods');
-  dl.innerHTML = '';
-  for (const f of foods) { const o = document.createElement('option'); o.value = f.name; dl.append(o); }
-}
-
-$('#add').onsubmit = async ev => {
-  ev.preventDefault();
-  const f = Object.fromEntries(new FormData(ev.target));
-  const body = {day:$('#day').value, meal:f.meal, grams:+f.grams};
-  const known = foods.find(x => x.name === f.food);
-  if (known) body.food_id = known.id;
-  else {
-    let n = {name:f.food, kcal:f.kcal === '' ? null : +f.kcal, protein:+f.protein||0, carbs:+f.carbs||0, fat:+f.fat||0};
-    if (f.barcode) {
-      try { n = {...(await api('off/barcode/' + f.barcode)), name:f.food}; }
-      catch { return alert('Barcode nicht gefunden'); }
-    }
-    if (n.kcal === null) return alert('Bitte kcal/100g angeben');
-    body.food_id = (await send('POST', 'foods', n)).id;
-  }
-  await send('POST', 'entries', body);
-  ev.target.reset();
-  await loadFoods();
-  load();
-};
-
-$('#goal').onsubmit = async ev => {
-  ev.preventDefault();
-  const f = Object.fromEntries(new FormData(ev.target));
-  await send('PUT', 'goal', {kcal:+f.kcal, protein:+f.protein||0, carbs:+f.carbs||0, fat:+f.fat||0});
-  load();
-};
-
-api('me').then(m => $('#who').textContent = m.name);
-loadFoods();
-load();
-</script>
+<dialog id="dlg"></dialog>
+<script src="static/theme.js"></script>
+<script src="static/app.js"></script>
 </body>
 </html>

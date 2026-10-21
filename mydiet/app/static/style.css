@@ -1,0 +1,210 @@
+/* Defaults mirror HA's built-in light/dark look; theme.js overrides them with the live HA theme. */
+:root {
+  --primary-color: #03a9f4;
+  --accent-color: #ff9800;
+  --primary-background-color: #fafafa;
+  --secondary-background-color: #e5e5e5;
+  --card-background-color: #fff;
+  --primary-text-color: #212121;
+  --secondary-text-color: #727272;
+  --disabled-text-color: #bdbdbd;
+  --text-primary-color: #fff;
+  --divider-color: #e0e0e0;
+  --error-color: #db4437;
+  --warning-color: #ffa600;
+  --success-color: #43a047;
+  --info-color: #039be5;
+  --ha-card-border-radius: 12px;
+  --ha-card-box-shadow: none;
+  --ha-card-border-width: 1px;
+  --ha-card-border-color: var(--divider-color);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary-background-color: #111111;
+    --secondary-background-color: #202020;
+    --card-background-color: #1c1c1c;
+    --primary-text-color: #e1e1e1;
+    --secondary-text-color: #9b9b9b;
+    --divider-color: #3a3a3a;
+    --text-primary-color: #fff;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--primary-background-color);
+  color: var(--primary-text-color);
+  font-family: var(--ha-font-family-body, var(--paper-font-body1_-_font-family, var(--mdc-typography-body1-font-family, Roboto, Noto, system-ui, sans-serif)));
+  font-size: 14px;
+  line-height: 1.4;
+}
+[hidden] { display: none !important; }
+.muted { color: var(--secondary-text-color); }
+h2, h3 { margin: 0; font-weight: 500; }
+
+/* app bar + tabs */
+.appbar {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding: 0 16px; min-height: 56px;
+  background: var(--app-header-background-color, var(--primary-color));
+  color: var(--app-header-text-color, var(--text-primary-color));
+  position: sticky; top: 0; z-index: 5;
+}
+.appbar h1 { font-size: 20px; font-weight: 400; margin: 0; }
+.appbar .muted { color: inherit; opacity: .75; margin-left: auto; }
+nav { display: flex; gap: 4px; overflow-x: auto; }
+nav button {
+  background: none; border: 0; border-bottom: 3px solid transparent; border-radius: 0;
+  color: inherit; opacity: .75; padding: 16px 12px 13px; font: inherit; font-weight: 500;
+  text-transform: uppercase; letter-spacing: .03em; cursor: pointer; white-space: nowrap;
+}
+nav button:hover { opacity: 1; }
+nav button.active { opacity: 1; border-bottom-color: currentColor; }
+
+main { max-width: 860px; margin: 0 auto; padding: 16px; }
+
+/* cards */
+.card {
+  background: var(--card-background-color);
+  border-radius: var(--ha-card-border-radius);
+  border: var(--ha-card-border-width) solid var(--ha-card-border-color);
+  box-shadow: var(--ha-card-box-shadow);
+  padding: 16px; margin-bottom: 16px; overflow-x: auto;
+}
+.card > h2 { margin-bottom: 12px; font-size: 16px; }
+
+/* form controls */
+input, select, button, textarea { font: inherit; }
+input, select {
+  background: var(--secondary-background-color); color: var(--primary-text-color);
+  border: 0; border-bottom: 2px solid var(--divider-color); border-radius: 6px 6px 0 0;
+  padding: 8px 10px; min-width: 0; width: 100%;
+}
+input:focus, select:focus { outline: 0; border-bottom-color: var(--primary-color); }
+label { display: block; font-size: 12px; color: var(--secondary-text-color); margin-bottom: 2px; }
+button {
+  cursor: pointer; border: 0; border-radius: 18px; padding: 8px 18px;
+  background: var(--primary-color); color: var(--text-primary-color); font-weight: 500;
+}
+button.flat { background: none; color: var(--primary-color); padding: 8px 10px; }
+button.danger { background: none; color: var(--error-color); }
+button.icon {
+  background: none; color: var(--secondary-text-color); padding: 2px 8px; font-size: 16px; border-radius: 50%;
+}
+button.icon:hover { color: var(--error-color); }
+button:disabled { opacity: .4; cursor: default; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; align-items: end; }
+.actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+.err { color: var(--error-color); }
+
+/* day navigation */
+.daynav { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px; }
+.daynav .date {
+  flex: 1; max-width: 360px; text-align: center; padding: 10px;
+  background: var(--primary-color); color: var(--text-primary-color);
+  border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer; position: relative;
+}
+.daynav .date input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.daynav .date input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; }
+.daynav button.step { padding: 8px 14px; border-radius: 8px; font-size: 16px; }
+
+/* diary tables (MyFitnessPal style) */
+table { width: 100%; border-collapse: collapse; }
+.diary th, .diary td { padding: 6px 10px; text-align: right; white-space: nowrap; }
+.diary th:first-child, .diary td:first-child { text-align: left; white-space: normal; width: 100%; }
+.diary thead th {
+  background: var(--primary-color); color: var(--text-primary-color);
+  font-weight: 500; font-size: 12px; line-height: 1.2; padding: 6px 10px;
+}
+.diary thead th small { display: block; font-weight: 400; opacity: .8; }
+.diary thead th.title {
+  background: none; color: var(--primary-text-color); font-size: 18px; padding-left: 0;
+}
+.diary tbody tr.item td { background: var(--secondary-background-color); border-bottom: 1px solid var(--card-background-color); }
+.diary tbody tr.item td:first-child { cursor: pointer; }
+.diary tbody tr.item td:first-child:hover { color: var(--primary-color); }
+.diary tbody tr.foot td { color: var(--primary-color); font-weight: 600; border-bottom: 1px solid var(--divider-color); }
+.diary tbody tr.foot td:first-child { font-weight: 500; }
+.diary tbody tr.foot td:last-child, .diary tbody tr.item td:last-child { width: 1%; text-align: center; padding: 0 4px; }
+.diary { table-layout: fixed; }
+.diary th:nth-child(n+2), .diary td:nth-child(n+2) { width: 98px; }
+.diary th:last-child, .diary td:last-child { width: 36px !important; }
+.diary thead th:nth-child(3) { font-size: 11px; }
+.diary thead th { overflow: hidden; text-overflow: ellipsis; }
+.card:has(> .diary) { padding-bottom: 8px; }
+
+table.summary { margin-left: auto; width: auto; }
+table.summary th, table.summary td { text-align: right; padding: 6px 14px; }
+table.summary th:first-child { text-align: right; }
+table.summary tbody tr:nth-child(odd) td { background: var(--secondary-background-color); }
+table.summary thead th { background: var(--primary-color); color: var(--text-primary-color); font-size: 12px; font-weight: 500; }
+table.summary tbody th { font-weight: 600; }
+.over { color: var(--error-color); font-weight: 600; }
+.under { color: var(--success-color); font-weight: 600; }
+
+/* progress */
+.bar { height: 8px; background: var(--secondary-background-color); border-radius: 4px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--primary-color); border-radius: 4px; }
+.bar > i.over { background: var(--error-color); }
+
+/* charts */
+svg.chart { width: 100%; height: auto; display: block; }
+svg.chart text { fill: var(--secondary-text-color); font-size: 11px; }
+svg.chart .grid-line { stroke: var(--divider-color); stroke-width: 1; }
+svg.chart .goal-line { stroke: var(--accent-color); stroke-width: 1.5; stroke-dasharray: 5 4; }
+svg.chart .bar-k { fill: var(--primary-color); }
+svg.chart .bar-k.over { fill: var(--error-color); }
+svg.chart .line { fill: none; stroke: var(--primary-color); stroke-width: 2; stroke-linejoin: round; }
+svg.chart .dot { fill: var(--primary-color); }
+.stat-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.tile { background: var(--secondary-background-color); border-radius: 10px; padding: 10px 14px; }
+.tile b { display: block; font-size: 22px; font-weight: 500; }
+.macro-split { display: flex; height: 14px; border-radius: 7px; overflow: hidden; margin: 8px 0; }
+.macro-split i:nth-child(1) { background: var(--info-color); }
+.macro-split i:nth-child(2) { background: var(--warning-color); }
+.macro-split i:nth-child(3) { background: var(--error-color); }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--secondary-text-color); }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; background: var(--c); }
+.range { display: inline-flex; gap: 4px; margin-bottom: 12px; }
+.range button { background: var(--secondary-background-color); color: var(--primary-text-color); padding: 6px 14px; }
+.range button.active { background: var(--primary-color); color: var(--text-primary-color); }
+
+/* lists (settings / weight) */
+.list > div { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--divider-color); }
+.list > div:last-child { border-bottom: 0; }
+.list .grow { flex: 1; min-width: 0; }
+.list input { width: auto; flex: 1; }
+
+/* dialog */
+dialog {
+  width: min(520px, calc(100vw - 24px)); max-height: calc(100vh - 24px);
+  background: var(--card-background-color); color: var(--primary-text-color);
+  border: 0; border-radius: var(--ha-card-border-radius); padding: 20px;
+  box-shadow: 0 8px 32px #0006;
+}
+dialog::backdrop { background: #0008; }
+dialog h2 { margin-bottom: 12px; font-size: 18px; }
+.results { max-height: 240px; overflow-y: auto; margin: 8px 0; }
+.results button.food {
+  display: flex; width: 100%; justify-content: space-between; gap: 8px; text-align: left;
+  background: none; color: var(--primary-text-color); border-radius: 6px; padding: 8px;
+  font-weight: 400; border-bottom: 1px solid var(--divider-color);
+}
+.results button.food:hover { background: var(--secondary-background-color); }
+.preview { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; color: var(--secondary-text-color); }
+.preview b { color: var(--primary-text-color); }
+
+@media (max-width: 560px) {
+  main { padding: 8px; }
+  .card { padding: 12px 8px; }
+  .diary th:nth-child(n+2), .diary td:nth-child(n+2) { width: 58px; }
+  .diary th, .diary td { padding: 5px 3px; }
+  .diary thead th { font-size: 10px; }
+  .diary thead th.title { font-size: 16px; }
+  table.summary th, table.summary td { padding: 6px 8px; }
+  .appbar h1 { display: none; }
+}

@@ -1,7 +1,7 @@
 import json
 import os
 import re
-from datetime import date
+from datetime import date, timedelta
 
 import httpx
 from fastapi import FastAPI, Header, HTTPException
@@ -17,7 +17,6 @@ if os.path.exists("/data/options.json"):
         OPTIONS = json.load(f)
 
 SUPERVISOR_TOKEN = os.environ.get("SUPERVISOR_TOKEN")
-MEALS = ("breakfast", "lunch", "dinner", "snack")
 STATIC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 
 app = FastAPI()
@@ -41,8 +40,12 @@ class FoodIn(BaseModel):
 
 class EntryIn(BaseModel):
     day: str
-    meal: str
+    meal_id: int
     food_id: int
+    grams: float
+
+
+class GramsIn(BaseModel):
     grams: float
 
 
@@ -51,6 +54,19 @@ class GoalIn(BaseModel):
     protein: float = 0
     carbs: float = 0
     fat: float = 0
+    target_weight: float | None = None
+
+
+class MealIn(BaseModel):
+    name: str
+
+
+class OrderIn(BaseModel):
+    ids: list[int]
+
+
+class WeightIn(BaseModel):
+    kg: float
 
 
 def check_day(day: str):
@@ -58,38 +74,45 @@ def check_day(day: str):
         raise HTTPException(400, "day must be YYYY-MM-DD")
 
 
-def totals(owner: str, day: str) -> dict:
-    with db.conn() as c:
-        r = c.execute(
-            "SELECT COALESCE(SUM(kcal),0) kcal, COALESCE(SUM(protein),0) protein,"
-            " COALESCE(SUM(carbs),0) carbs, COALESCE(SUM(fat),0) fat"
-            " FROM entries WHERE owner=? AND day=?", (owner, day)).fetchone()
+def get_goal(c, owner: str) -> dict:
+    r = c.execute("SELECT * FROM goals WHERE owner=?", (owner,)).fetchone()
+    if r:
+        return {k: r[k] for k in ("kcal", "protein", "carbs", "fat", "target_weight")}
+    return {"kcal": OPTIONS.get("default_kcal_goal", 2000), "protein": 0, "carbs": 0,
+            "fat": 0, "target_weight": None}
+
+
+def day_totals(c, owner: str, day: str) -> dict:
+    r = c.execute(
+        "SELECT COALESCE(SUM(kcal),0) kcal, COALESCE(SUM(protein),0) protein,"
+        " COALESCE(SUM(carbs),0) carbs, COALESCE(SUM(fat),0) fat"
+        " FROM entries WHERE owner=? AND day=?", (owner, day)).fetchone()
     return {k: round(r[k], 1) for k in r.keys()}
 
 
-def get_goal(owner: str) -> dict:
-    with db.conn() as c:
-        r = c.execute("SELECT * FROM goals WHERE owner=?", (owner,)).fetchone()
-    if r:
-        return {k: r[k] for k in ("kcal", "protein", "carbs", "fat")}
-    return {"kcal": OPTIONS.get("default_kcal_goal", 2000), "protein": 0, "carbs": 0, "fat": 0}
-
-
 def publish(owner: str, display: str):
-    """Push today's totals into HA as sensor states (needs homeassistant_api)."""
+    """Push today's totals and latest weight into HA as sensor states."""
     if not SUPERVISOR_TOKEN or not OPTIONS.get("publish_sensors", True):
         return
     slug = re.sub(r"[^a-z0-9]+", "_", display.lower()).strip("_") or "default"
-    t = totals(owner, date.today().isoformat())
-    for key, unit in (("kcal", "kcal"), ("protein", "g"), ("carbs", "g"), ("fat", "g")):
+    with db.conn() as c:
+        t = day_totals(c, owner, date.today().isoformat())
+        w = c.execute("SELECT kg FROM weights WHERE owner=? ORDER BY day DESC LIMIT 1",
+                      (owner,)).fetchone()
+    states = [("kcal", t["kcal"], "kcal"), ("protein", t["protein"], "g"),
+              ("carbs", t["carbs"], "g"), ("fat", t["fat"], "g")]
+    if w:
+        states.append(("weight", w["kg"], "kg"))
+    for key, val, unit in states:
+        suffix = "" if key == "weight" else "_today"
         try:
             httpx.post(
-                f"http://supervisor/core/api/states/sensor.mydiet_{slug}_{key}_today",
+                f"http://supervisor/core/api/states/sensor.mydiet_{slug}_{key}{suffix}",
                 headers={"Authorization": f"Bearer {SUPERVISOR_TOKEN}"},
-                json={"state": t[key], "attributes": {
+                json={"state": val, "attributes": {
                     "unit_of_measurement": unit,
-                    "friendly_name": f"{display} {key} heute",
-                    "state_class": "total",
+                    "friendly_name": f"{display} {key}",
+                    "state_class": "measurement" if key == "weight" else "total",
                 }}, timeout=5)
         except httpx.HTTPError:
             pass
@@ -101,33 +124,58 @@ def me(x_remote_user_id: str | None = Header(None),
     return {"id": user_from(x_remote_user_id), "name": x_remote_user_display_name or "Lokal"}
 
 
+# --- diary -----------------------------------------------------------------
+
 @app.get("/api/day/{day}")
 def get_day(day: str, x_remote_user_id: str | None = Header(None)):
     check_day(day)
     owner = user_from(x_remote_user_id)
     with db.conn() as c:
-        rows = [dict(r) for r in c.execute(
+        db.ensure_meals(c, owner)
+        meals = [dict(r) for r in c.execute(
+            "SELECT id, name FROM meals WHERE owner=? ORDER BY position", (owner,))]
+        entries = [dict(r) for r in c.execute(
             "SELECT * FROM entries WHERE owner=? AND day=? ORDER BY id", (owner, day))]
-    return {"entries": rows, "totals": totals(owner, day), "goal": get_goal(owner)}
+        return {"meals": meals, "entries": entries,
+                "totals": day_totals(c, owner, day), "goal": get_goal(c, owner)}
 
 
 @app.post("/api/entries")
 def add_entry(e: EntryIn, x_remote_user_id: str | None = Header(None),
               x_remote_user_display_name: str | None = Header(None)):
     check_day(e.day)
-    if e.meal not in MEALS:
-        raise HTTPException(400, "bad meal")
+    if e.grams <= 0:
+        raise HTTPException(400, "grams must be > 0")
     owner = user_from(x_remote_user_id)
     with db.conn() as c:
         f = c.execute("SELECT * FROM foods WHERE id=? AND owner=?", (e.food_id, owner)).fetchone()
         if not f:
             raise HTTPException(404, "food not found")
+        if not c.execute("SELECT 1 FROM meals WHERE id=? AND owner=?", (e.meal_id, owner)).fetchone():
+            raise HTTPException(404, "meal not found")
         k = e.grams / 100
         c.execute(
-            "INSERT INTO entries(owner,day,meal,name,grams,kcal,protein,carbs,fat)"
+            "INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat)"
             " VALUES(?,?,?,?,?,?,?,?,?)",
-            (owner, e.day, e.meal, f["name"], e.grams, f["kcal"] * k, f["protein"] * k,
+            (owner, e.day, e.meal_id, f["name"], e.grams, f["kcal"] * k, f["protein"] * k,
              f["carbs"] * k, f["fat"] * k))
+    publish(owner, x_remote_user_display_name or owner)
+    return {"ok": True}
+
+
+@app.put("/api/entries/{entry_id}")
+def edit_entry(entry_id: int, g: GramsIn, x_remote_user_id: str | None = Header(None),
+               x_remote_user_display_name: str | None = Header(None)):
+    if g.grams <= 0:
+        raise HTTPException(400, "grams must be > 0")
+    owner = user_from(x_remote_user_id)
+    with db.conn() as c:
+        r = c.execute("SELECT * FROM entries WHERE id=? AND owner=?", (entry_id, owner)).fetchone()
+        if not r:
+            raise HTTPException(404, "entry not found")
+        k = g.grams / r["grams"] if r["grams"] else 1
+        c.execute("UPDATE entries SET grams=?, kcal=?, protein=?, carbs=?, fat=? WHERE id=?",
+                  (g.grams, r["kcal"] * k, r["protein"] * k, r["carbs"] * k, r["fat"] * k, entry_id))
     publish(owner, x_remote_user_display_name or owner)
     return {"ok": True}
 
@@ -142,13 +190,15 @@ def del_entry(entry_id: int, x_remote_user_id: str | None = Header(None),
     return {"ok": True}
 
 
+# --- foods -----------------------------------------------------------------
+
 @app.get("/api/foods")
 def list_foods(q: str = "", x_remote_user_id: str | None = Header(None)):
     owner = user_from(x_remote_user_id)
     with db.conn() as c:
         rows = c.execute(
             "SELECT * FROM foods WHERE owner=? AND (name LIKE ? OR brand LIKE ?)"
-            " ORDER BY name LIMIT 200", (owner, f"%{q}%", f"%{q}%"))
+            " ORDER BY id DESC LIMIT 200", (owner, f"%{q}%", f"%{q}%"))
         return [dict(r) for r in rows]
 
 
@@ -159,16 +209,27 @@ def add_food(f: FoodIn, x_remote_user_id: str | None = Header(None)):
         cur = c.execute(
             "INSERT INTO foods(owner,name,brand,kcal,protein,carbs,fat,serving_g)"
             " VALUES(?,?,?,?,?,?,?,?)",
-            (owner, f.name, f.brand, f.kcal, f.protein, f.carbs, f.fat, f.serving_g))
+            (owner, f.name.strip(), f.brand.strip(), f.kcal, f.protein, f.carbs, f.fat, f.serving_g))
         return {"id": cur.lastrowid}
 
 
-@app.put("/api/goal")
-def set_goal(g: GoalIn, x_remote_user_id: str | None = Header(None)):
+@app.put("/api/foods/{food_id}")
+def edit_food(food_id: int, f: FoodIn, x_remote_user_id: str | None = Header(None)):
     owner = user_from(x_remote_user_id)
     with db.conn() as c:
-        c.execute("INSERT OR REPLACE INTO goals(owner,kcal,protein,carbs,fat) VALUES(?,?,?,?,?)",
-                  (owner, g.kcal, g.protein, g.carbs, g.fat))
+        c.execute(
+            "UPDATE foods SET name=?,brand=?,kcal=?,protein=?,carbs=?,fat=?,serving_g=?"
+            " WHERE id=? AND owner=?",
+            (f.name.strip(), f.brand.strip(), f.kcal, f.protein, f.carbs, f.fat, f.serving_g,
+             food_id, owner))
+    return {"ok": True}
+
+
+@app.delete("/api/foods/{food_id}")
+def del_food(food_id: int, x_remote_user_id: str | None = Header(None)):
+    owner = user_from(x_remote_user_id)
+    with db.conn() as c:
+        c.execute("DELETE FROM foods WHERE id=? AND owner=?", (food_id, owner))
     return {"ok": True}
 
 
@@ -189,6 +250,114 @@ def off_barcode(code: str):
     return {"name": p.get("product_name", ""), "brand": p.get("brands", ""),
             "kcal": n.get("energy-kcal_100g", 0), "protein": n.get("proteins_100g", 0),
             "carbs": n.get("carbohydrates_100g", 0), "fat": n.get("fat_100g", 0)}
+
+
+# --- meals & goals ---------------------------------------------------------
+
+@app.post("/api/meals")
+def add_meal(m: MealIn, x_remote_user_id: str | None = Header(None)):
+    owner = user_from(x_remote_user_id)
+    with db.conn() as c:
+        db.ensure_meals(c, owner)
+        pos = c.execute("SELECT COALESCE(MAX(position),-1)+1 FROM meals WHERE owner=?",
+                        (owner,)).fetchone()[0]
+        cur = c.execute("INSERT INTO meals(owner,name,position) VALUES(?,?,?)",
+                        (owner, m.name.strip(), pos))
+        return {"id": cur.lastrowid}
+
+
+@app.put("/api/meals/order")
+def order_meals(o: OrderIn, x_remote_user_id: str | None = Header(None)):
+    owner = user_from(x_remote_user_id)
+    with db.conn() as c:
+        for i, mid in enumerate(o.ids):
+            c.execute("UPDATE meals SET position=? WHERE id=? AND owner=?", (i, mid, owner))
+    return {"ok": True}
+
+
+@app.put("/api/meals/{meal_id}")
+def rename_meal(meal_id: int, m: MealIn, x_remote_user_id: str | None = Header(None)):
+    owner = user_from(x_remote_user_id)
+    with db.conn() as c:
+        c.execute("UPDATE meals SET name=? WHERE id=? AND owner=?", (m.name.strip(), meal_id, owner))
+    return {"ok": True}
+
+
+@app.delete("/api/meals/{meal_id}")
+def del_meal(meal_id: int, x_remote_user_id: str | None = Header(None)):
+    owner = user_from(x_remote_user_id)
+    with db.conn() as c:
+        if c.execute("SELECT 1 FROM entries WHERE meal_id=? AND owner=?", (meal_id, owner)).fetchone():
+            raise HTTPException(409, "Mahlzeit enthält noch Einträge")
+        c.execute("DELETE FROM meals WHERE id=? AND owner=?", (meal_id, owner))
+    return {"ok": True}
+
+
+@app.get("/api/goal")
+def read_goal(x_remote_user_id: str | None = Header(None)):
+    with db.conn() as c:
+        return get_goal(c, user_from(x_remote_user_id))
+
+
+@app.put("/api/goal")
+def set_goal(g: GoalIn, x_remote_user_id: str | None = Header(None)):
+    owner = user_from(x_remote_user_id)
+    with db.conn() as c:
+        c.execute("INSERT OR REPLACE INTO goals(owner,kcal,protein,carbs,fat,target_weight)"
+                  " VALUES(?,?,?,?,?,?)",
+                  (owner, g.kcal, g.protein, g.carbs, g.fat, g.target_weight))
+    return {"ok": True}
+
+
+# --- weight & stats --------------------------------------------------------
+
+@app.get("/api/weights")
+def list_weights(days: int = 0, x_remote_user_id: str | None = Header(None)):
+    owner = user_from(x_remote_user_id)
+    since = (date.today() - timedelta(days=days)).isoformat() if days else "0000-00-00"
+    with db.conn() as c:
+        rows = c.execute("SELECT day, kg FROM weights WHERE owner=? AND day>=? ORDER BY day",
+                         (owner, since))
+        return [dict(r) for r in rows]
+
+
+@app.put("/api/weights/{day}")
+def set_weight(day: str, w: WeightIn, x_remote_user_id: str | None = Header(None),
+               x_remote_user_display_name: str | None = Header(None)):
+    check_day(day)
+    if not 20 <= w.kg <= 500:
+        raise HTTPException(400, "kg out of range")
+    owner = user_from(x_remote_user_id)
+    with db.conn() as c:
+        c.execute("INSERT OR REPLACE INTO weights(owner,day,kg) VALUES(?,?,?)", (owner, day, w.kg))
+    publish(owner, x_remote_user_display_name or owner)
+    return {"ok": True}
+
+
+@app.delete("/api/weights/{day}")
+def del_weight(day: str, x_remote_user_id: str | None = Header(None)):
+    check_day(day)
+    with db.conn() as c:
+        c.execute("DELETE FROM weights WHERE owner=? AND day=?", (user_from(x_remote_user_id), day))
+    return {"ok": True}
+
+
+@app.get("/api/stats")
+def stats(days: int = 30, x_remote_user_id: str | None = Header(None)):
+    days = max(1, min(days, 365))
+    owner = user_from(x_remote_user_id)
+    start = date.today() - timedelta(days=days - 1)
+    with db.conn() as c:
+        rows = {r["day"]: dict(r) for r in c.execute(
+            "SELECT day, SUM(kcal) kcal, SUM(protein) protein, SUM(carbs) carbs, SUM(fat) fat"
+            " FROM entries WHERE owner=? AND day>=? GROUP BY day", (owner, start.isoformat()))}
+        goal = get_goal(c, owner)
+    out = []
+    for i in range(days):
+        d = (start + timedelta(days=i)).isoformat()
+        r = rows.get(d)
+        out.append({"day": d, "logged": bool(r), **{k: (r[k] if r else 0) for k in ("kcal", "protein", "carbs", "fat")}})
+    return {"days": out, "goal": goal}
 
 
 @app.get("/")
