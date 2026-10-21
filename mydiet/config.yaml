@@ -1,0 +1,19 @@
+name: MyDietAssistant
+version: "0.1.0"
+slug: mydiet
+description: Lokales Ernährungstagebuch (Kalorien & Makros) mit HA-Sensoren
+arch: [amd64, aarch64]
+init: false
+ingress: true
+ingress_port: 8099
+panel_icon: mdi:food-apple
+panel_title: Ernährung
+homeassistant_api: true
+options:
+  default_kcal_goal: 2000
+  publish_sensors: true
+schema:
+  default_kcal_goal: int(500,10000)
+  publish_sensors: bool
+map:
+  - data:rw
