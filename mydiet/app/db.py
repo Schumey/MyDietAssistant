@@ -132,6 +132,8 @@ def init():
     with conn() as c:
         c.executescript(SCHEMA)
         cols = {r["name"] for r in c.execute("PRAGMA table_info(foods)")}
+        if "days_ahead" not in {r["name"] for r in c.execute("PRAGMA table_info(triggers)")}:
+            c.execute("ALTER TABLE triggers ADD COLUMN days_ahead INTEGER NOT NULL DEFAULT 0")
         for t in ("triggers", "meal_triggers"):  # v0.5: "does NOT match" conditions
             if "negate" not in {r["name"] for r in c.execute(f"PRAGMA table_info({t})")}:
                 c.execute(f"ALTER TABLE {t} ADD COLUMN negate INTEGER NOT NULL DEFAULT 0")

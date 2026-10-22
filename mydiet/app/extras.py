@@ -495,6 +495,7 @@ class TriggerIn(BaseModel):
     grams: float | None = None
     enabled: bool = True
     negate: bool = False
+    days_ahead: int = 0             # calendar triggers: also fill the next N days
 
 
 def ha_get(path: str, **params):
@@ -560,10 +561,10 @@ def add_trigger(t: TriggerIn, x_remote_user_id: str | None = Header(None)):
     with db.conn() as c:
         check_trigger_body(c, owner, t)
         cur = c.execute(
-            "INSERT INTO triggers(owner,kind,entity,match,meal_id,saved_meal_id,food_id,grams,enabled,negate)"
-            " VALUES(?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO triggers(owner,kind,entity,match,meal_id,saved_meal_id,food_id,grams,enabled,negate,days_ahead)"
+            " VALUES(?,?,?,?,?,?,?,?,?,?,?)",
             (owner, t.kind, t.entity.strip(), t.match.strip(), t.meal_id, t.saved_meal_id, t.food_id,
-             t.grams, int(t.enabled), int(t.negate)))
+             t.grams, int(t.enabled), int(t.negate), max(0, min(t.days_ahead, 60))))
         return {"id": cur.lastrowid}
 
 
@@ -573,9 +574,9 @@ def edit_trigger(tid: int, t: TriggerIn, x_remote_user_id: str | None = Header(N
     with db.conn() as c:
         check_trigger_body(c, owner, t)
         c.execute("UPDATE triggers SET kind=?,entity=?,match=?,meal_id=?,saved_meal_id=?,food_id=?,"
-                  "grams=?,enabled=?,negate=? WHERE id=? AND owner=?",
+                  "grams=?,enabled=?,negate=?,days_ahead=? WHERE id=? AND owner=?",
                   (t.kind, t.entity.strip(), t.match.strip(), t.meal_id, t.saved_meal_id, t.food_id,
-                   t.grams, int(t.enabled), int(t.negate), tid, owner))
+                   t.grams, int(t.enabled), int(t.negate), max(0, min(t.days_ahead, 60)), tid, owner))
     return {"ok": True}
 
 
@@ -591,9 +592,10 @@ def del_trigger(tid: int, x_remote_user_id: str | None = Header(None)):
 
 def fire(c, t, day: str):
     owner = t["owner"]
+    # planned days ahead get no clock time; today is stamped with the current time
+    stamp = datetime.now().strftime("%H:%M") if day == date.today().isoformat() else None
     if t["saved_meal_id"]:
-        add_saved_to_diary(c, owner, t["saved_meal_id"], day, t["meal_id"],
-                           time=datetime.now().strftime("%H:%M"))
+        add_saved_to_diary(c, owner, t["saved_meal_id"], day, t["meal_id"], time=stamp)
     elif t["food_id"]:
         f = c.execute("SELECT * FROM foods WHERE id=? AND owner=?", (t["food_id"], owner)).fetchone()
         if not f:
@@ -603,7 +605,7 @@ def fire(c, t, day: str):
         c.execute("INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,time)"
                   " VALUES(?,?,?,?,?,?,?,?,?,?)",
                   (owner, day, t["meal_id"], f["name"], g, f["kcal"] * k, f["protein"] * k,
-                   f["carbs"] * k, f["fat"] * k, datetime.now().strftime("%H:%M")))
+                   f["carbs"] * k, f["fat"] * k, stamp))
     c.execute("INSERT OR IGNORE INTO trigger_log(trigger_id, day) VALUES(?,?)", (t["id"], day))
 
 
@@ -621,9 +623,11 @@ def run_trigger(tid: int, x_remote_user_id: str | None = Header(None),
     return {"ok": True}
 
 
-def condition_met(t, now: datetime) -> bool:
-    """Does the rule apply right now? With t['negate'] the condition is inverted."""
+def condition_met(t, now: datetime, day: str | None = None) -> bool:
+    """Does the rule apply (now, or for the given day)? With t['negate'] the condition is inverted."""
     neg = bool(t["negate"])
+    if day and day != now.date().isoformat():  # calendar day in the future: any matching event counts
+        return calendar_has_event(t["entity"], t["match"], day) != neg
     if t["kind"] == "state":
         st = ha_get(f"states/{t['entity']}")["state"]
         want = t["match"].strip().lower()
@@ -654,21 +658,26 @@ def poll_triggers():
     now = datetime.now()
     day = now.date().isoformat()
     with db.conn() as c:
-        pending = c.execute(
-            "SELECT * FROM triggers WHERE enabled=1 AND id NOT IN"
-            " (SELECT trigger_id FROM trigger_log WHERE day=?)", (day,)).fetchall()
+        triggers = c.execute("SELECT * FROM triggers WHERE enabled=1").fetchall()
+        done = {(r["trigger_id"], r["day"]) for r in c.execute("SELECT trigger_id, day FROM trigger_log WHERE day>=?", (day,))}
+    pending = []  # (trigger, day): state triggers act today only, calendar triggers also days ahead
+    for t in triggers:
+        for i in range(0, (t["days_ahead"] if t["kind"] == "calendar" else 0) + 1):
+            d = (now.date() + timedelta(days=i)).isoformat()
+            if (t["id"], d) not in done:
+                pending.append((t, d))
     with db.conn() as c:
         rules = c.execute("SELECT * FROM meal_triggers WHERE enabled=1 AND kind='state'").fetchall()
         for t in rules:
             meal_rule_active(c, t, day)  # logs the day once the state was seen
-    for t in pending:
+    for t, d in pending:
         try:
-            if not condition_met(t, now):
+            if not condition_met(t, now, d):
                 continue
         except (httpx.HTTPError, ValueError, KeyError):
             continue
         with db.conn() as c:
-            fire(c, t, day)
+            fire(c, t, d)
         publish(t["owner"], get_pref(t["owner"], "display", t["owner"]))
 
 

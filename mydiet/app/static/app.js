@@ -743,12 +743,18 @@ async function triggerDialog(preset = {}, onDone = () => {}) {
   if (preset.item) item.value = preset.item;
   const meal = h("select", {}, day.meals.map(m => h("option", { value: m.id }, m.name)));
   const grams = h("input", { type: "number", step: "any", min: "1", placeholder: "Standardportion" });
+  const ahead = h("input", { type: "number", step: "1", min: "0", max: "60", value: "0" });
+  const aheadRow = h("div", {}, h("label", {}, "Tage im Voraus eintragen (nur Kalender)"), ahead,
+    h("div", { class: "muted" }, "0 = erst am Tag selbst. Mit z. B. 7 wird der Eintrag schon für die nächsten 7 Tage geplant, sobald dort ein passender Termin steht."));
   const msg = h("div", { class: "err" });
+  const syncAhead = () => { aheadRow.hidden = kind.value !== "calendar"; };
+  kind.addEventListener("change", syncAhead);
+  syncAhead();
 
   setDlg(h("h2", {}, "Neuer Trigger"),
     tf.nodes,
     h("label", {}, "Hinzufügen"), item,
-    h("div", { class: "muted" }, "Bei Lebensmitteln optional mit Menge:"), grams,
+    h("div", { class: "muted" }, "Bei Lebensmitteln optional mit Menge:"), grams, aheadRow,
     times ? null : [h("label", {}, "Zu Mahlzeit im Tagebuch"), meal],
     msg,
     h("div", { class: "actions" },
@@ -761,7 +767,8 @@ async function triggerDialog(preset = {}, onDone = () => {}) {
           await send("POST", "triggers", { kind: kind.value, entity: entity.value, match: match.value,
             meal_id: Number(meal.value || day.meals[0].id),
             saved_meal_id: t === "s" ? Number(id) : null, food_id: t === "f" ? Number(id) : null,
-            grams: t === "f" ? num(grams.value) : null, negate: tf.negate.value === "1" });
+            grams: t === "f" ? num(grams.value) : null, negate: tf.negate.value === "1",
+            days_ahead: kind.value === "calendar" ? Number(ahead.value) || 0 : 0 });
           dlg.close(); onDone(); if (state.tab === "settings") renderSettings();
         } catch (e) { msg.textContent = e.message; }
       } }, "Speichern")));
@@ -894,12 +901,13 @@ async function renderSettings() {
       const on = h("input", { type: "checkbox", checked: t.enabled, title: "Aktiv", onchange: async () => {
         await send("PUT", "triggers/" + t.id, { kind: t.kind, entity: t.entity, match: t.match, meal_id: t.meal_id,
           saved_meal_id: t.saved_meal_id, food_id: t.food_id, grams: t.grams, enabled: on.checked,
-          negate: !!t.negate });
+          negate: !!t.negate, days_ahead: t.days_ahead || 0 });
       } });
       return h("div", {}, on,
         h("div", { class: "grow" },
           h("div", {}, condText(t)),
           h("div", { class: "muted" }, `→ ${t.item || "(gelöscht)"}${day.mode === "meals" && t.meal ? " zu " + t.meal : ""}`
+            + (t.days_ahead ? ` · ${t.days_ahead} Tage im Voraus` : "")
             + (t.last_run ? ` · zuletzt ${parse(t.last_run).toLocaleDateString("de-DE")}` : ""))),
         h("button", { class: "icon", title: "Jetzt testen (trägt heute ein)", onclick: async () => {
           try { await send("POST", `triggers/${t.id}/run`, {}); trigMsg.textContent = ""; alert("Eingetragen."); }

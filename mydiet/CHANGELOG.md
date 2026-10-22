@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.6.0
+
+### Neu
+- **Tage im Voraus:** Kalender-Trigger tragen ihr Lebensmittel bzw. ihre Mahlzeit auf Wunsch schon für die nächsten N Tage ein (Einstellung pro Trigger, 0–60), sobald dort ein passender Termin steht. Jeder Tag wird nur einmal befüllt; Einträge für künftige Tage haben keine Uhrzeit.
+
 ## 0.5.0
 
 ### Neu
