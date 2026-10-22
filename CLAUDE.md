@@ -8,6 +8,8 @@ Home-Assistant-Add-on: lokales Ernährungstagebuch (Kalorien, Makros, Gewicht) m
 - `mydiet/app/main.py`: FastAPI, Tagebuch, Lebensmittel, Gewicht, Statistik, HA-Sensoren (`publish`). Importiert am Ende `extras` und `extras2` (Sternimport).
 - `mydiet/app/extras.py`: Einstellungen/Zusatzfunktionen, Wochentagsziele, Tracker, gespeicherte Mahlzeiten, Export/Import, Trigger, Bericht, Kopieren.
 - `mydiet/app/extras2.py`: Notizen, automatische Sicherung, Wiederherstellungs-Vorschau, externe API (`/api/ext/*`), Erinnerung, Zeitzone, Hintergrundschleife.
+- `mydiet/app/extras3.py` (Körpermaße, Fotos), `extras4.py` (Rezepte), `extras5.py` (Datenquellen OFF/USDA): je eine Zusatzfunktion, ebenfalls per Sternimport am Ende von `main.py`.
+- `mydiet/app/static/i18n.js`: englische Übersetzung. Die Oberfläche ist deutsch geschrieben; `EN` mappt deutsche Texte (mit `{}` für Eingesetztes) auf englische, ein MutationObserver übersetzt DOM-Texte und Attribute. **Neue sichtbare Texte dort eintragen**; Sätze nicht aus mehreren Textknoten zusammensetzen, sondern als eine Zeichenkette (Template) schreiben. Zahlen/Datum über `I18N.locale`, Gewicht über `wConv`/`wUnit` (intern kg/cm).
 - `mydiet/app/db.py`: SQLite-Schema plus Migrationen per `ALTER TABLE` in `init()` (idempotent, Spaltenprüfung).
 - `mydiet/app/static/`: `app.js` (Vanilla-JS-SPA, Helfer `h()`, `api()`, `send()`, Dialoge über `setDlg`/`dlg.showModal()`), `style.css`, `index.html`.
 - `roadmap.md`: Ideenliste. Erledigtes wird dort **gelöscht** und steht im Changelog.
