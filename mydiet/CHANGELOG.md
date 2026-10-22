@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.8.1
+
+### Behoben
+- Trigger und HA-Sensoren funktionierten nicht (401 Unauthorized): Das Supervisor-Token kam im Add-on nicht an. Es wird jetzt auch aus dem Container-Environment gelesen.
+
 ## 0.8.0
 
 ### Neu

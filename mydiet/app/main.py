@@ -16,7 +16,22 @@ if os.path.exists("/data/options.json"):
     with open("/data/options.json") as f:
         OPTIONS = json.load(f)
 
-SUPERVISOR_TOKEN = os.environ.get("SUPERVISOR_TOKEN")
+def _supervisor_token():
+    # The base image's s6 entrypoint does not pass the add-on environment on to CMD;
+    # it keeps the variables as files instead.
+    token = os.environ.get("SUPERVISOR_TOKEN")
+    if token:
+        return token
+    for path in ("/run/s6/container_environment/SUPERVISOR_TOKEN", "/var/run/s6/container_environment/SUPERVISOR_TOKEN"):
+        try:
+            with open(path) as f:
+                return f.read().strip() or None
+        except OSError:
+            continue
+    return None
+
+
+SUPERVISOR_TOKEN = _supervisor_token()
 STATIC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 
 app = FastAPI()
