@@ -28,7 +28,56 @@ const iso = d => d.toLocaleDateString("sv");
 const parse = s => new Date(s + "T12:00:00");
 const num = v => (v === "" || v == null ? null : Number(String(v).replace(",", ".")));
 
-const state = { skin: "auto", day: iso(new Date()), tab: "diary", range: 30, wrange: 90, whist: 10 };
+const state = { skin: "auto", features: {}, day: iso(new Date()), tab: "diary", range: 30, wrange: 90, whist: 10 };
+const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const longDate = day => parse(day).toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "numeric", year: "numeric" });
+
+// Hover tooltip for charts: elements with a data-tip attribute (SVG hit areas) show their text.
+const tip = h("div", { id: "tip", hidden: true });
+document.body.append(tip);
+function tipHandlers(box) {
+  const move = e => {
+    const t = e.target.closest && e.target.closest("[data-tip]");
+    if (!t) { tip.hidden = true; return; }
+    tip.textContent = t.dataset.tip;
+    tip.hidden = false;
+    const w = tip.offsetWidth, hh = tip.offsetHeight;
+    tip.style.left = Math.max(4, Math.min(e.clientX + 14, innerWidth - w - 4)) + "px";
+    tip.style.top = (e.clientY - hh - 12 < 4 ? e.clientY + 18 : e.clientY - hh - 12) + "px";
+  };
+  box.addEventListener("mousemove", move);
+  box.addEventListener("click", move);
+  box.addEventListener("mouseleave", () => { tip.hidden = true; });
+  return box;
+}
+
+// Axis labels on round dates: every day, 5-day marks, 1st/15th, or month starts depending on the span.
+function niceTicks(first, last) {
+  const n = Math.round((parse(last) - parse(first)) / 864e5) + 1;
+  const all = [];
+  for (let i = 0; i < n; i++) { const d = parse(first); d.setDate(d.getDate() + i); all.push(d); }
+  let pick = () => true;
+  let fmt = d => d.toLocaleDateString("de-DE", { day: "numeric", month: "numeric" });
+  if (n > 100) {
+    const every = n > 200 ? 2 : 1;
+    pick = d => d.getDate() === 1 && d.getMonth() % every === 0;
+    fmt = d => d.toLocaleDateString("de-DE", d.getMonth() === 0 ? { month: "short", year: "2-digit" } : { month: "short" });
+  } else if (n > 31) pick = d => d.getDate() === 1 || d.getDate() === 15;
+  else if (n > 10) pick = d => [1, 5, 10, 15, 20, 25].includes(d.getDate());
+  return all.filter(pick).map(d => ({ day: iso(d), label: fmt(d) }));
+}
+
+// Plausibility of calories against macros (per 100 g): 4 kcal/g carbs and protein, 9 kcal/g fat.
+function plausibility(f, total = false) {
+  const c = f.carbs || 0, p = f.protein || 0, fa = f.fat || 0;
+  if (!total && c + p + fa > 100.5) return `Die Makros ergeben ${n0(c + p + fa)} g auf 100 g – mehr als möglich.`;
+  if (!c && !p && !fa) return null;
+  const calc = 4 * c + 4 * p + 9 * fa;
+  // tolerance for fibre (less energy) and alcohol (more energy)
+  if (Math.abs(f.kcal - calc) > Math.max(25, calc * 0.2))
+    return `Die Makros ergeben rechnerisch ca. ${n0(calc)} kcal, angegeben sind ${n0(f.kcal)} kcal.`;
+  return null;
+}
 const dlg = $("#dlg");
 // A dialog is a title (h2) plus a body; the body wrapper lets the Windows look pad the content.
 const setDlg = (...kids) => {
@@ -84,7 +133,7 @@ const timeNow = () => new Date().toTimeString().slice(0, 5);
 const entryLabel = e => (e.grams > 0 ? `${e.name}, ${n0(e.grams)} g` : e.name);
 
 async function renderDiary() {
-  const [d] = await Promise.all([api("day/" + state.day), loadCats()]);
+  const [d, trackers] = await Promise.all([api("day/" + state.day), state.features.trackers ? api("trackers?day=" + state.day) : [], loadCats()]);
   state.data = d;
   const times = d.mode === "times";
   const root = $("#diary");
@@ -165,6 +214,31 @@ async function renderDiary() {
         h("tr", {}, h("th", {}, "Gesamt"), h("td", {}, n0(t.kcal)), h("td", {}, n0(t.carbs)), h("td", {}, n0(t.fat)), h("td", {}, n0(t.protein))),
         h("tr", {}, h("th", {}, "Dein Tagesziel"), goalCell(g.kcal), goalCell(g.carbs), goalCell(g.fat), goalCell(g.protein)),
         h("tr", {}, h("th", {}, "Verbleibend"), rem(g.kcal, t.kcal), rem(g.carbs, t.carbs), rem(g.fat, t.fat), rem(g.protein, t.protein))))));
+
+  if (state.features.trackers && trackers.length) root.append(trackerCard(trackers));
+}
+
+// Water & supplements (optional feature): +/- buttons with a daily goal.
+function trackerCard(list) {
+  const card = h("div", { class: "card" }, h("h2", {}, "Wasser & Ergänzungen"));
+  const fmt = v => (Math.round(v * 10) / 10).toLocaleString("de-DE");
+  const draw = () => card.replaceChildren(card.firstChild, ...list.map(t => {
+    const set = async amount => {
+      t.amount = Math.max(0, Math.round(amount * 100) / 100);
+      draw();
+      await send("PUT", `trackers/${t.id}/log/${state.day}`, { amount: t.amount });
+    };
+    return h("div", { class: "tracker" },
+      h("div", { class: "tracker-head" }, h("span", {}, t.name),
+        h("span", { class: t.goal && t.amount > t.goal ? "muted over" : "muted" },
+          `${fmt(t.amount)}${t.goal ? " / " + fmt(t.goal) : ""} ${t.unit}`)),
+      t.goal ? h("div", { class: "bar" }, h("i", { class: t.amount > t.goal ? "over" : "", style: `width:${Math.min(100, t.amount / t.goal * 100)}%` })) : null,
+      h("div", { class: "tracker-btns" },
+        h("button", { class: "flat", disabled: t.amount <= 0, onclick: () => set(t.amount - t.step) }, `− ${fmt(t.step)}`),
+        h("button", { onclick: () => set(t.amount + t.step) }, `+ ${fmt(t.step)} ${t.unit}`)));
+  }));
+  draw();
+  return card;
 }
 
 function shiftDay(n) {
@@ -174,24 +248,134 @@ function shiftDay(n) {
   renderDiary();
 }
 
+// Pick a food and an amount (used to swap a component of an entry or a saved meal).
+function foodSwapDialog({ title, grams, confirm, onDone, onCancel }) {
+  const search = h("input", { type: "search", placeholder: "Lebensmittel suchen…", oninput: draw });
+  const results = h("div", { class: "results" });
+  const detail = h("div");
+  const body = h("div", {}, search, results,
+    h("div", { class: "actions" }, h("button", { class: "flat", onclick: onCancel }, "Zurück")));
+  let foods = [];
+  function draw() {
+    const q = search.value.toLowerCase();
+    results.replaceChildren(...foods.filter(isVisible)
+      .filter(f => ((f.name || "") + " " + (f.brand || "")).toLowerCase().includes(q)).slice(0, 50)
+      .map(f => h("button", { class: "food", onclick: () => choose(f) },
+        h("span", {}, f.name, f.brand ? ` (${f.brand})` : ""), h("span", { class: "muted" }, `${n0(f.kcal)} kcal/100 g`))));
+  }
+  function choose(f) {
+    const g = h("input", { type: "number", step: "any", min: "1", value: grams || f.serving_g || 100, oninput: preview });
+    const pv = h("div", { class: "preview" });
+    function preview() {
+      const k = (num(g.value) || 0) / 100;
+      pv.replaceChildren(h("span", {}, h("b", {}, n0(f.kcal * k)), " kcal"), h("span", {}, h("b", {}, n0(f.carbs * k)), " g KH"),
+        h("span", {}, h("b", {}, n0(f.fat * k)), " g Fett"), h("span", {}, h("b", {}, n0(f.protein * k)), " g Eiweiß"));
+    }
+    preview();
+    detail.replaceChildren(h("h3", {}, f.name), h("label", {}, "Menge (g)"), g, pv,
+      h("div", { class: "actions" },
+        h("button", { class: "flat", onclick: () => { detail.replaceChildren(); body.hidden = false; } }, "Zurück"),
+        h("button", { onclick: () => { if (num(g.value) > 0) onDone(f, num(g.value)); } }, confirm)));
+    body.hidden = true;
+    g.select();
+  }
+  Promise.all([api("foods"), loadCats()]).then(([x]) => { foods = x; draw(); });
+  setTimeout(() => search.focus());
+  return [h("h2", {}, title), body, detail];
+}
+
+const foodItem = (f, grams) => {
+  const k = grams / 100;
+  return { name: f.name, grams, kcal: f.kcal * k, protein: f.protein * k, carbs: f.carbs * k, fat: f.fat * k };
+};
+
 function editEntry(e, times) {
+  const quick = !(e.grams > 0);
   const grams = h("input", { type: "number", step: "any", min: "1", value: e.grams || "" });
   const time = h("input", { type: "time", value: e.time || "" });
+  const q = {};
+  const qfield = (key, label) => {
+    q[key] = h("input", { type: key === "name" ? "text" : "number", step: "any", min: "0", value: e[key] ? (key === "name" ? e[key] : Math.round(e[key] * 10) / 10) : (key === "name" ? "" : 0) });
+    return h("div", {}, h("label", {}, label), q[key]);
+  };
+  const msg = h("div", { class: "err" });
   setDlg(
     h("h2", {}, e.name),
-    e.grams > 0 ? [h("label", {}, "Menge (g)"), grams] : null,
+    quick ? [qfield("name", "Bezeichnung"),
+      h("div", { class: "grid", style: "margin-top:12px" }, qfield("kcal", "kcal"), qfield("carbs", "KH (g)"), qfield("fat", "Fett (g)"), qfield("protein", "Eiweiß (g)"))]
+      : [h("label", {}, "Menge (g)"), grams],
     times ? [h("label", {}, "Uhrzeit"), time] : null,
+    msg,
     h("div", { class: "actions" },
+      h("button", { class: "flat", onclick: () => swapEntry(e, times, quick ? null : num(grams.value)) }, "Lebensmittel tauschen"),
       h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
       h("button", { onclick: async () => {
         const body = {};
-        if (e.grams > 0) { if (!(num(grams.value) > 0)) return; body.grams = num(grams.value); }
+        if (quick) {
+          if (!q.name.value.trim() || num(q.kcal.value) == null) { msg.textContent = "Bezeichnung und kcal sind Pflicht."; return; }
+          Object.assign(body, { name: q.name.value, kcal: num(q.kcal.value), carbs: num(q.carbs.value) || 0,
+            fat: num(q.fat.value) || 0, protein: num(q.protein.value) || 0 });
+        } else {
+          if (!(num(grams.value) > 0)) return;
+          body.grams = num(grams.value);
+        }
         if (times) body.time = time.value || null;
         await send("PUT", "entries/" + e.id, body);
         dlg.close(); renderDiary();
       } }, "Speichern")));
   dlg.showModal();
 }
+
+// Replace the food of a diary entry (e.g. rice -> pasta) while keeping its amount by default.
+function swapEntry(e, times, grams) {
+  setDlg(foodSwapDialog({
+    title: `„${e.name}“ tauschen`, grams: grams || e.grams || null, confirm: "Tauschen",
+    onCancel: () => editEntry(e, times),
+    onDone: async (f, g) => {
+      await send("PUT", "entries/" + e.id, { food_id: f.id, grams: g });
+      dlg.close(); renderDiary();
+    },
+  }));
+  dlg.showModal();
+}
+
+// Entry without a food: only a name and calories/macros.
+function quickDialog(meal) {
+  const times = state.data.mode === "times";
+  const f = {};
+  const field = (key, label, attrs = {}) => {
+    f[key] = h("input", { type: key === "name" ? "text" : "number", step: "any", min: "0", oninput: check, ...attrs });
+    return h("div", {}, h("label", {}, label), f[key]);
+  };
+  const time = h("input", { type: "time", value: timeNow() });
+  const warn = h("div", { class: "warn" });
+  const msg = h("div", { class: "err" });
+  function check() {
+    const v = { kcal: num(f.kcal.value) || 0, carbs: num(f.carbs.value) || 0, fat: num(f.fat.value) || 0, protein: num(f.protein.value) || 0 };
+    warn.textContent = (v.kcal || v.carbs || v.fat || v.protein) ? plausibilityTotal(v) || "" : "";
+  }
+  setDlg(h("h2", {}, meal ? `Schnelleingabe in „${meal.name}“` : "Schnelleingabe"),
+    h("div", { class: "muted" }, "Ohne Lebensmittel, nur Kalorien und bei Bedarf Makros (z. B. „Restaurant, ca. 800 kcal“)."),
+    h("div", { style: "margin-top:12px" }, field("name", "Bezeichnung", { placeholder: "z. B. Restaurant" })),
+    h("div", { class: "grid", style: "margin-top:12px" },
+      field("kcal", "kcal"), field("carbs", "KH (g)"), field("fat", "Fett (g)"), field("protein", "Eiweiß (g)")),
+    times ? [h("label", {}, "Uhrzeit"), time] : null, warn, msg,
+    h("div", { class: "actions" },
+      h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
+      h("button", { onclick: async () => {
+        if (!f.name.value.trim() || num(f.kcal.value) == null) { msg.textContent = "Bezeichnung und kcal sind Pflicht."; return; }
+        try {
+          await send("POST", "entries/quick", { day: state.day, meal_id: meal ? meal.id : null, time: times ? time.value || null : null,
+            name: f.name.value, kcal: num(f.kcal.value), carbs: num(f.carbs.value) || 0, fat: num(f.fat.value) || 0, protein: num(f.protein.value) || 0 });
+          dlg.close(); renderDiary();
+        } catch (er) { msg.textContent = er.message; }
+      } }, "Hinzufügen")));
+  dlg.showModal();
+  setTimeout(() => f.name.focus());
+}
+
+// Same check for absolute amounts (not per 100 g): only the kcal/macro relation, no 100 g limit.
+const plausibilityTotal = v => plausibility(v, true);
 
 // Copy entries of a diary meal to another meal and/or day.
 const modeTabs = (active, meal, items, times) => h("div", { class: "range" },
@@ -260,6 +444,11 @@ function foodForm({ food = null, onSave, onCancel }) {
     return h("div", {}, h("label", { for: "nf-" + key }, label), f[key]);
   };
   const msg = h("div", { class: "err" });
+  const warn = h("div", { class: "warn" });
+  const check = () => {
+    const v = { kcal: num(f.kcal.value), carbs: num(f.carbs.value) || 0, fat: num(f.fat.value) || 0, protein: num(f.protein.value) || 0 };
+    warn.textContent = v.kcal == null ? "" : plausibility(v) || "";
+  };
   const form = h("div", {},
     h("div", { class: "grid" },
       h("div", {}, h("label", {}, "Barcode (Open Food Facts)"), f.barcode),
@@ -269,6 +458,7 @@ function foodForm({ food = null, onSave, onCancel }) {
           const p = await api("off/barcode/" + encodeURIComponent(f.barcode.value.trim()));
           f.name.value = p.name; f.brand.value = p.brand;
           for (const k of ["kcal", "protein", "carbs", "fat"]) f[k].value = Math.round(p[k] * 10) / 10;
+          check();
         } catch (e) { msg.textContent = "Produkt nicht gefunden (" + e.message + ")"; }
       } }, "Suchen")),
     h("div", { style: "margin-top:12px" }, field("name", "Name")),
@@ -281,7 +471,7 @@ function foodForm({ food = null, onSave, onCancel }) {
       field("carbs", "KH / 100 g", { type: "number", step: "any" }),
       field("fat", "Fett / 100 g", { type: "number", step: "any" }),
       field("protein", "Eiweiß / 100 g", { type: "number", step: "any" })),
-    msg, catList(),
+    warn, msg, catList(),
     h("div", { class: "actions" },
       h("button", { class: "flat", onclick: onCancel }, food ? "Abbrechen" : "Zurück"),
       h("button", { onclick: async () => {
@@ -294,6 +484,8 @@ function foodForm({ food = null, onSave, onCancel }) {
         if (food) await send("PUT", "foods/" + food.id, body);
         onSave(id);
       } }, food ? "Speichern" : "Speichern & wählen")));
+  for (const k of ["kcal", "carbs", "fat", "protein"]) f[k].addEventListener("input", check);
+  check();
   setTimeout(() => f.name.focus());
   return form;
 }
@@ -429,6 +621,7 @@ async function openAdd(meal) {
   body.append(tabs, search, chips, sug, results,
     h("div", { class: "actions" },
       h("button", { class: "flat", onclick: newFood }, "+ Neues Lebensmittel"),
+      h("button", { class: "flat", onclick: () => quickDialog(meal) }, "Schnelleingabe (nur kcal)"),
       h("button", { class: "flat", onclick: () => dlg.close() }, "Schließen")));
   setDlg(h("h2", {}, meal ? "Zu „" + meal.name + "“ hinzufügen" : "Eintrag hinzufügen"),
     times ? h("div", { style: "margin-bottom:8px" }, h("label", {}, "Uhrzeit"), time) : null, body, detail);
@@ -439,7 +632,8 @@ async function openAdd(meal) {
 // ---------------------------------------------------------------- charts
 function barChart(days, goal) {
   const W = 600, H = 220, L = 40, B = 24, T = 10, R = 8;
-  const max = Math.max(goal || 0, ...days.map(d => d.kcal), 100) * 1.1;
+  const goals = days.map(d => d.goal_kcal ?? goal);
+  const max = Math.max(...goals, ...days.map(d => d.kcal), 100) * 1.1;
   const y = v => T + (H - T - B) * (1 - v / max);
   const bw = (W - L - R) / days.length;
   let s = "";
@@ -447,19 +641,29 @@ function barChart(days, goal) {
     const v = max / 1.1 * i / 4;
     s += `<line class="grid-line" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${n0(v)}</text>`;
   }
-  const every = Math.ceil(days.length / 8);
+  const ticks = new Map(niceTicks(days[0].day, days[days.length - 1].day).map(t => [t.day, t.label]));
+  const stepped = goals.some(g => g !== goals[0]);
   days.forEach((d, i) => {
-    const x = L + i * bw;
-    if (d.logged) s += `<rect class="bar-k${goal && d.kcal > goal ? " over" : ""}" x="${x + bw * 0.15}" y="${y(d.kcal)}" width="${bw * 0.7}" height="${H - B - y(d.kcal)}" rx="2"/>`;
-    if (i % every === 0) s += `<text x="${x + bw / 2}" y="${H - 6}" text-anchor="middle">${parse(d.day).toLocaleDateString("de-DE", { day: "numeric", month: "numeric" })}</text>`;
+    const x = L + i * bw, g = goals[i];
+    if (d.logged) s += `<rect class="bar-k${g && d.kcal > g ? " over" : ""}" x="${x + bw * 0.15}" y="${y(d.kcal)}" width="${bw * 0.7}" height="${H - B - y(d.kcal)}" rx="2"/>`;
+    if (ticks.has(d.day)) s += `<line class="grid-line" x1="${x + bw / 2}" x2="${x + bw / 2}" y1="${H - B}" y2="${H - B + 4}"/><text x="${x + bw / 2}" y="${H - 6}" text-anchor="middle">${ticks.get(d.day)}</text>`;
   });
-  if (goal) s += `<line class="goal-line" x1="${L}" x2="${W - R}" y1="${y(goal)}" y2="${y(goal)}"/>`;
+  if (stepped) s += `<polyline class="goal-line" points="${goals.map((g, i) => `${L + i * bw},${y(g)} ${L + (i + 1) * bw},${y(g)}`).join(" ")}"/>`;
+  else if (goal) s += `<line class="goal-line" x1="${L}" x2="${W - R}" y1="${y(goal)}" y2="${y(goal)}"/>`;
+  // invisible hit areas, one column per day, carry the tooltip text
+  days.forEach((d, i) => {
+    const text = d.logged
+      ? `${longDate(d.day)}\n${n0(d.kcal)} kcal${goals[i] ? ` (Ziel ${n0(goals[i])})` : ""}\nKH ${n0(d.carbs)} g · Fett ${n0(d.fat)} g · Eiweiß ${n0(d.protein)} g`
+      : `${longDate(d.day)}\nnicht erfasst`;
+    s += `<rect class="hit" x="${L + i * bw}" y="${T}" width="${bw}" height="${H - T - B}" data-tip="${esc(text)}"/>`;
+  });
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Kalorien pro Tag">${s}</svg>`;
 }
 
+// Weight curve: raw values (faint) and a smoothed trend line (thick), like Happy Scale.
 function lineChart(points, target) {
   const W = 600, H = 220, L = 44, B = 24, T = 10, R = 16;
-  const vals = points.map(p => p.kg).concat(target ? [target] : []);
+  const vals = points.flatMap(p => [p.kg, p.trend]).concat(target ? [target] : []);
   let lo = Math.min(...vals), hi = Math.max(...vals);
   const pad = Math.max((hi - lo) * 0.1, 0.5);
   lo -= pad; hi += pad;
@@ -468,23 +672,57 @@ function lineChart(points, target) {
   const ticks = [];
   for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) ticks.push(v);
   if (ticks.length < 2) { lo = Math.floor(lo); hi = Math.ceil(hi); }
-  const t0 = parse(points[0].day).getTime(), t1 = parse(points[points.length - 1].day).getTime();
-  const x = t => L + (t1 === t0 ? (W - L - R) / 2 : (t - t0) / (t1 - t0) * (W - L - R));
+  const T0 = parse(points[0].day).getTime(), T1 = parse(points[points.length - 1].day).getTime();
+  const x = t => L + (T1 === T0 ? (W - L - R) / 2 : (t - T0) / (T1 - T0) * (W - L - R));
   const y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+  const px = p => x(parse(p.day).getTime());
   let s = "";
   for (const v of ticks) s += `<line class="grid-line" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${n0(v)}</text>`;
   if (target) s += `<line class="goal-line" x1="${L}" x2="${W - R}" y1="${y(target)}" y2="${y(target)}"/>`;
-  s += `<polyline class="line" points="${points.map(p => `${x(parse(p.day).getTime())},${y(p.kg)}`).join(" ")}"/>`;
-  if (points.length <= 60) s += points.map(p => `<circle class="dot" cx="${x(parse(p.day).getTime())}" cy="${y(p.kg)}" r="3"/>`).join("");
-  // x ticks: evenly spaced dates between first and last point
-  const long = (t1 - t0) > 300 * 864e5;
-  const fmt = t => new Date(t).toLocaleDateString("de-DE", long ? { month: "short", year: "2-digit" } : { day: "numeric", month: "numeric" });
-  const n = t1 === t0 ? 1 : 5;
-  for (let i = 0; i <= n; i++) {
-    const t = t0 + (t1 - t0) * i / n;
-    s += `<line class="grid-line" x1="${x(t)}" x2="${x(t)}" y1="${H - B}" y2="${H - B + 4}"/><text x="${x(t)}" y="${H - 6}" text-anchor="${i === 0 ? "start" : i === n ? "end" : "middle"}">${fmt(t)}</text>`;
+  s += `<polyline class="line raw" points="${points.map(p => `${px(p)},${y(p.kg)}`).join(" ")}"/>`;
+  if (points.length <= 90) s += points.map(p => `<circle class="dot" cx="${px(p)}" cy="${y(p.kg)}" r="2.5"/>`).join("");
+  s += `<polyline class="line" points="${points.map(p => `${px(p)},${y(p.trend)}`).join(" ")}"/>`;
+  // x ticks on round dates (month starts, 1st/15th, 5-day marks …)
+  for (const t of niceTicks(points[0].day, points[points.length - 1].day)) {
+    const tx = x(parse(t.day).getTime());
+    s += `<line class="grid-line" x1="${tx}" x2="${tx}" y1="${H - B}" y2="${H - B + 4}"/><text x="${tx}" y="${H - 6}" text-anchor="middle">${t.label}</text>`;
   }
+  // hit areas: a column around each measurement (up to the midpoint to its neighbours)
+  points.forEach((p, i) => {
+    const cx = px(p);
+    const a = i ? (px(points[i - 1]) + cx) / 2 : L, b = i < points.length - 1 ? (cx + px(points[i + 1])) / 2 : W - R;
+    const text = `${longDate(p.day)}\n${n1(p.kg)} kg\nTrend ${n1(p.trend)} kg`;
+    s += `<rect class="hit" x="${a}" y="${T}" width="${Math.max(b - a, 1)}" height="${H - T - B}" data-tip="${esc(text)}"/>`;
+  });
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Gewichtsverlauf">${s}</svg>`;
+}
+
+// Exponentially smoothed trend (10 % per day, gap-aware) so daily fluctuations fade out.
+function withTrend(all) {
+  let tr = null, prev = null;
+  return all.map(p => {
+    const t = parse(p.day).getTime();
+    tr = tr == null ? p.kg : tr + (1 - Math.pow(0.9, Math.max(1, (t - prev) / 864e5))) * (p.kg - tr);
+    prev = t;
+    return { ...p, trend: tr };
+  });
+}
+
+// Expected date for the target weight from the trend of the last four weeks.
+function forecast(pts, target) {
+  if (!target || pts.length < 2) return null;
+  const last = pts[pts.length - 1], lt = parse(last.day).getTime();
+  const ref = pts.find(p => lt - parse(p.day).getTime() <= 28 * 864e5);
+  const span = (lt - parse(ref.day).getTime()) / 864e5;
+  if (span < 14) return { text: "zu wenig Daten" };
+  const slope = (last.trend - ref.trend) / span;       // kg per day
+  const diff = target - last.trend;
+  if (Math.abs(diff) < 0.2) return { text: "erreicht" };
+  if (slope === 0 || Math.sign(slope) !== Math.sign(diff) || Math.abs(slope) < 0.004) return { text: "nicht absehbar", perWeek: slope * 7 };
+  const d = diff / slope;
+  if (d > 730) return { text: "nicht absehbar", perWeek: slope * 7 };
+  const when = new Date(lt + d * 864e5);
+  return { text: when.toLocaleDateString("de-DE", { day: "numeric", month: "short", year: "numeric" }), perWeek: slope * 7 };
 }
 
 function rangeButtons(options, current, onpick) {
@@ -518,7 +756,8 @@ async function renderFoods() {
     const shown = foods.filter(isVisible).filter(f => (f.name + " " + f.brand).toLowerCase().includes(q));
     const hiddenN = foods.length - foods.filter(isVisible).length;
     list.replaceChildren(...(shown.length ? shown.map(f => h("div", {},
-      h("div", { class: "grow" }, h("div", {}, f.name, f.brand ? ` (${f.brand})` : "", tag(f.category)),
+      h("div", { class: "grow" }, h("div", {}, f.name, f.brand ? ` (${f.brand})` : "", tag(f.category),
+        plausibility(f) ? h("span", { class: "warn-mark", title: plausibility(f) }, "⚠") : null),
         h("div", { class: "muted" }, `${n0(f.kcal)} kcal · KH ${n1(f.carbs)} g · Fett ${n1(f.fat)} g · Eiweiß ${n1(f.protein)} g (pro 100 g)`)),
       h("button", { class: "icon", title: "Trigger anlegen", "aria-label": "Trigger anlegen", onclick: () => triggerDialog({ item: "f:" + f.id }) }, "⚡"),
       h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => openForm(f) }, "✎"),
@@ -546,18 +785,58 @@ async function renderMeals() {
   const list = h("div", { class: "list" });
   const chips = h("div");
 
-  const editSaved = s => {
-    const name = h("input", { value: s.name });
-    const category = h("input", { list: "cat-list", value: s.category });
+  // Edit name/category and the components of a saved meal: change amounts, swap or remove foods, add new ones.
+  const editSaved = (s, draft = { name: s.name, category: s.category, items: s.items.map(i => ({ ...i })) }) => {
+    const name = h("input", { value: draft.name, oninput: () => { draft.name = name.value; } });
+    const category = h("input", { list: "cat-list", value: draft.category, oninput: () => { draft.category = category.value; } });
+    const msg = h("div", { class: "err" });
+    const total = h("div", { class: "preview" });
+    const sum = k => draft.items.reduce((a, i) => a + i[k], 0);
+    const drawTotal = () => total.replaceChildren(h("span", {}, h("b", {}, n0(sum("kcal"))), " kcal"), h("span", {}, h("b", {}, n0(sum("carbs"))), " g KH"),
+      h("span", {}, h("b", {}, n0(sum("fat"))), " g Fett"), h("span", {}, h("b", {}, n0(sum("protein"))), " g Eiweiß"));
+    drawTotal();
+    const swap = (idx, title) => {
+      setDlg(foodSwapDialog({
+        title, grams: idx == null ? null : draft.items[idx].grams, confirm: idx == null ? "Hinzufügen" : "Tauschen",
+        onCancel: () => editSaved(s, draft),
+        onDone: (f, g) => {
+          if (idx == null) draft.items.push(foodItem(f, g)); else draft.items[idx] = foodItem(f, g);
+          editSaved(s, draft);
+        },
+      }));
+    };
+    const rows = draft.items.map((it, idx) => {
+      const g = it.grams > 0 ? h("input", { type: "number", step: "any", min: "1", style: "width:80px;flex:none", value: Math.round(it.grams * 10) / 10, onchange: () => {
+        const ng = num(g.value);
+        if (!(ng > 0)) { g.value = Math.round(it.grams * 10) / 10; return; }
+        const k = ng / it.grams;
+        for (const key of ["kcal", "protein", "carbs", "fat"]) it[key] *= k;
+        it.grams = ng;
+        drawTotal();
+        kc.textContent = `${n0(it.kcal)} kcal`;
+      } }) : null;
+      const kc = h("span", { class: "muted" }, `${n0(it.kcal)} kcal`);
+      return h("div", {}, h("div", { class: "grow" }, it.name, " ", kc), g, g ? "g" : null,
+        h("button", { class: "icon edit", title: "Durch anderes Lebensmittel tauschen", "aria-label": "Tauschen", onclick: () => swap(idx, `„${it.name}“ tauschen`) }, "⇄"),
+        h("button", { class: "icon", title: "Entfernen", "aria-label": "Entfernen", disabled: draft.items.length < 2, onclick: () => {
+          draft.items.splice(idx, 1); editSaved(s, draft);
+        } }, "✕"));
+    });
     setDlg(h("h2", {}, "Mahlzeit bearbeiten"),
       h("label", {}, "Name"), name, h("label", {}, "Kategorie"), category, catList(),
-      h("div", { class: "muted", style: "margin-top:8px" }, s.items.map(entryLabel).join(" · ")),
+      h("label", { style: "margin-top:12px" }, "Komponenten"),
+      h("div", { class: "list" }, rows),
+      h("button", { class: "flat", onclick: () => swap(null, "Komponente hinzufügen") }, "+ Komponente"),
+      total, msg,
       h("div", { class: "actions" },
         h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
         h("button", { onclick: async () => {
-          if (!name.value.trim()) return;
-          await send("PUT", "saved-meals/" + s.id, { name: name.value, category: category.value });
-          dlg.close(); renderMeals();
+          if (!draft.name.trim()) { msg.textContent = "Bitte einen Namen angeben."; return; }
+          try {
+            await send("PUT", "saved-meals/" + s.id, { name: draft.name, category: draft.category, items: draft.items.map(i => ({
+              name: i.name, grams: i.grams, kcal: i.kcal, protein: i.protein, carbs: i.carbs, fat: i.fat })) });
+            dlg.close(); renderMeals();
+          } catch (e) { msg.textContent = e.message; }
         } }, "Speichern")));
     dlg.showModal();
   };
@@ -606,24 +885,31 @@ async function renderWeight() {
     root.append(h("div", { class: "card muted" }, "Noch keine Gewichtswerte."));
     return;
   }
+  const trended = withTrend(all);
   const since = state.wrange ? iso(new Date(Date.now() - state.wrange * 864e5)) : "";
-  const pts = all.filter(p => p.day >= since);
-  const shown = pts.length ? pts : all.slice(-1);
+  const pts = trended.filter(p => p.day >= since);
+  const shown = pts.length ? pts : trended.slice(-1);
   const last = all[all.length - 1];
+  const fc = forecast(trended, goal.target_weight);
   const delta = shown.length > 1 ? last.kg - shown[0].kg : null;
   const tile = (label, value) => h("div", { class: "tile" }, h("span", { class: "muted" }, label), h("b", {}, value));
 
   const chart = h("div");
   chart.innerHTML = lineChart(shown, goal.target_weight);
+  tipHandlers(chart);
   root.append(
     h("div", { class: "stat-tiles" },
       tile("Aktuell", n1(last.kg) + " kg"),
+      tile("Trend", n1(trended[trended.length - 1].trend) + " kg"),
       tile("Veränderung", delta == null ? "–" : (delta > 0 ? "+" : "") + n1(delta) + " kg"),
-      tile("Ziel", goal.target_weight ? n1(goal.target_weight) + " kg" : "–")),
+      tile("Ziel", goal.target_weight ? n1(goal.target_weight) + " kg" : "–"),
+      goal.target_weight ? tile("Prognose Ziel", fc ? fc.text : "–") : null),
     h("div", { class: "card" },
       rangeButtons([[30, "30 Tage"], [90, "90 Tage"], [365, "1 Jahr"], [0, "Alle"]], state.wrange,
         v => { state.wrange = v; renderWeight(); }),
-      chart),
+      chart,
+      h("div", { class: "muted" }, "Dünne Linie und Punkte: Messwerte. Dicke Linie: geglätteter Trend (Tagesschwankungen ausgeblendet)."
+        + (fc && fc.perWeek != null ? ` Trend aktuell ${fc.perWeek > 0 ? "+" : ""}${n1(fc.perWeek)} kg/Woche.` : ""))),
     h("div", { class: "card" }, h("h2", {}, "Verlauf"),
       h("div", { class: "list" }, [...all].reverse().slice(0, state.whist).map(p => h("div", {},
         h("span", { class: "grow" }, parse(p.day).toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "long", year: "numeric" })),
@@ -671,6 +957,7 @@ async function renderStats() {
 
   const chart = h("div");
   chart.innerHTML = barChart(days, goal.kcal);
+  tipHandlers(chart);
   root.append(
     rangeButtons([[7, "7 Tage"], [30, "30 Tage"], [90, "90 Tage"], [180, "180 Tage"], [365, "1 Jahr"]], state.range, v => { state.range = v; renderStats(); }),
     h("div", { class: "stat-tiles" },
@@ -682,7 +969,7 @@ async function renderStats() {
       tile("Gewicht", weights.length > 1
         ? ((d => (d > 0 ? "+" : "") + n1(d) + " kg")(weights[weights.length - 1].kg - weights[0].kg)) : "–")),
     h("div", { class: "card" }, h("h2", {}, "Kalorien pro Tag"), chart,
-      goal.kcal ? h("div", { class: "muted" }, `Gestrichelt: Tagesziel ${n0(goal.kcal)} kcal`) : null),
+      goal.kcal ? h("div", { class: "muted" }, days.some(d => d.goal_kcal !== goal.kcal) ? "Gestrichelt: Tagesziel je Wochentag" : `Gestrichelt: Tagesziel ${n0(goal.kcal)} kcal`) : null),
     balanceCard(balance),
     h("div", { class: "card" }, h("h2", {}, "Nährwertverteilung (Ø)"),
       h("div", { class: "macro-split" },
@@ -882,6 +1169,76 @@ async function renderSettings() {
       saved.textContent = "Gespeichert ✓";
     } }, "Speichern"))));
 
+  // optional features
+  const feat = (key, label, hint) => {
+    const box = h("input", { type: "checkbox", checked: !!state.features[key], onchange: async () => {
+      state.features[key] = box.checked;
+      await send("PUT", "settings", { features: { [key]: box.checked } });
+      renderSettings();
+    } });
+    return h("div", {}, h("label", { class: "pick" }, box, h("span", {}, label, h("div", { class: "muted" }, hint))));
+  };
+  root.append(h("div", { class: "card" }, h("h2", {}, "Zusatzfunktionen"),
+    h("div", { class: "muted" }, "Optionale Funktionen, standardmäßig aus. Eingeschaltet erscheinen sie im Tagebuch und hier in den Einstellungen."),
+    h("div", { class: "list" },
+      feat("weekday_goals", "Tagesziele pro Wochentag", "z. B. Trainingstage mit mehr Kalorien, Ruhetage mit weniger."),
+      feat("trackers", "Wasser und Nahrungsergänzung", "Schnell-Eintrag für Wasser, Koffein, Kreatin usw. mit eigenem Tagesziel."))));
+
+  if (state.features.weekday_goals) {
+    const wd = await api("goal-weekdays");
+    const names = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
+    const wf = names.map((n, i) => {
+      const w = wd[i] || {};
+      const inp = key => h("input", { type: "number", min: "0", step: "1", placeholder: key === "kcal" ? "wie Standard" : "–", value: w[key] || "" });
+      return { i, n, kcal: inp("kcal"), carbs: inp("carbs"), fat: inp("fat"), protein: inp("protein") };
+    });
+    const wsaved = h("span", { class: "muted" });
+    root.append(h("div", { class: "card" }, h("h2", {}, "Tagesziele pro Wochentag"),
+      h("div", { class: "muted" }, "Leere Kalorien = es gilt das Standard-Tagesziel oben. Leere Makros zeigen „–“."),
+      h("div", { class: "wd-grid" },
+        h("span"), h("label", {}, "kcal"), h("label", {}, "KH (g)"), h("label", {}, "Fett (g)"), h("label", {}, "Eiweiß (g)"),
+        wf.flatMap(r => [h("b", {}, r.n), r.kcal, r.carbs, r.fat, r.protein])),
+      h("div", { class: "actions" }, wsaved, h("button", { onclick: async () => {
+        for (const r of wf) {
+          if (num(r.kcal.value) > 0) await send("PUT", "goal-weekdays/" + r.i, { kcal: num(r.kcal.value),
+            carbs: num(r.carbs.value) || 0, fat: num(r.fat.value) || 0, protein: num(r.protein.value) || 0 });
+          else await api("goal-weekdays/" + r.i, { method: "DELETE" });
+        }
+        wsaved.textContent = "Gespeichert ✓";
+      } }, "Speichern"))));
+  }
+
+  if (state.features.trackers) {
+    const trackers = await api("trackers?day=" + state.day);
+    const rowsT = trackers.map(t => {
+      const f = {
+        name: h("input", { value: t.name, placeholder: "Name" }), unit: h("input", { value: t.unit, placeholder: "Einheit", style: "max-width:70px" }),
+        goal: h("input", { type: "number", step: "any", min: "0", value: t.goal ?? "", placeholder: "Ziel", style: "max-width:90px" }),
+        step: h("input", { type: "number", step: "any", min: "0", value: t.step, placeholder: "Schritt", style: "max-width:80px" }) };
+      const save = async () => {
+        if (!f.name.value.trim() || !(num(f.step.value) > 0)) return;
+        await send("PUT", "trackers/" + t.id, { name: f.name.value, unit: f.unit.value, goal: num(f.goal.value) || null, step: num(f.step.value) });
+      };
+      for (const k of Object.keys(f)) f[k].onchange = save;
+      return h("div", {}, f.name, f.unit, f.goal, f.step,
+        h("button", { class: "icon", title: "Löschen", "aria-label": "Löschen", onclick: async () => {
+          if (!confirm(`„${t.name}“ samt Verlauf löschen?`)) return;
+          await api("trackers/" + t.id, { method: "DELETE" }); renderSettings();
+        } }, "✕"));
+    });
+    const nf = { name: h("input", { placeholder: "Neu, z. B. Magnesium" }), unit: h("input", { placeholder: "Einheit", style: "max-width:70px" }),
+      goal: h("input", { type: "number", step: "any", min: "0", placeholder: "Ziel", style: "max-width:90px" }),
+      step: h("input", { type: "number", step: "any", min: "0", placeholder: "Schritt", value: 1, style: "max-width:80px" }) };
+    root.append(h("div", { class: "card" }, h("h2", {}, "Wasser & Ergänzungen"),
+      h("div", { class: "muted" }, "Pro Zeile: Name, Einheit, Tagesziel und Schrittweite der +/− Knöpfe im Tagebuch."),
+      h("div", { class: "list" }, rowsT, h("div", {}, nf.name, nf.unit, nf.goal, nf.step,
+        h("button", { onclick: async () => {
+          if (!nf.name.value.trim() || !(num(nf.step.value) > 0)) return;
+          await send("POST", "trackers", { name: nf.name.value, unit: nf.unit.value, goal: num(nf.goal.value) || null, step: num(nf.step.value) });
+          renderSettings();
+        } }, "+")))));
+  }
+
   // diary layout
   const mode = h("select", { onchange: async () => { await send("PUT", "settings", { diary_mode: mode.value }); renderSettings(); } },
     h("option", { value: "meals" }, "Feste Mahlzeiten (Frühstück, Mittagessen, …)"),
@@ -996,7 +1353,11 @@ async function renderSettings() {
 
 api("me").then(m => { $("#who").textContent = m.name; });
 (async () => {
-  try { state.skin = (await api("settings")).skin; } catch { /* keep auto */ }
+  try {
+    const st = await api("settings");
+    state.skin = st.skin;
+    state.features = st.features || {};
+  } catch { /* keep auto */ }
   applySkin();
   show("diary");
 })();

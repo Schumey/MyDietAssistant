@@ -109,6 +109,30 @@ CREATE TABLE IF NOT EXISTS saved_meal_uses (
   saved_meal_id INTEGER NOT NULL,
   meal_id INTEGER
 );
+CREATE TABLE IF NOT EXISTS goal_weekdays (    -- optional per-weekday goals (0 = Monday)
+  owner TEXT NOT NULL,
+  wd INTEGER NOT NULL,
+  kcal REAL NOT NULL,
+  protein REAL NOT NULL DEFAULT 0,
+  carbs REAL NOT NULL DEFAULT 0,
+  fat REAL NOT NULL DEFAULT 0,
+  PRIMARY KEY (owner, wd)
+);
+CREATE TABLE IF NOT EXISTS trackers (         -- optional: water, caffeine, creatine ...
+  id INTEGER PRIMARY KEY,
+  owner TEXT NOT NULL,
+  name TEXT NOT NULL,
+  unit TEXT NOT NULL DEFAULT '',
+  goal REAL,
+  step REAL NOT NULL DEFAULT 1,
+  position INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS tracker_log (
+  tracker_id INTEGER NOT NULL,
+  day TEXT NOT NULL,
+  amount REAL NOT NULL,
+  PRIMARY KEY (tracker_id, day)
+);
 CREATE TABLE IF NOT EXISTS trigger_log (
   trigger_id INTEGER NOT NULL,
   day TEXT NOT NULL,

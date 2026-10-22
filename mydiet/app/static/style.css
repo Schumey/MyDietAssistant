@@ -363,3 +363,23 @@ html[data-skin="win"] .dlg-body { padding: 12px; }
   html[data-skin="win"] .card { margin: 0 0 10px; padding: 10px 6px; }
 }
 .results.suggest { max-height: none; margin-bottom: 0; }
+
+/* v0.10 */
+svg.chart .hit { fill: transparent; pointer-events: all; }
+svg.chart .hit:hover { fill: var(--primary-color); fill-opacity: .12; }
+svg.chart .line.raw { stroke-width: 1; opacity: .35; }
+#tip {
+  position: fixed; z-index: 100; pointer-events: none; white-space: pre-line; max-width: 280px;
+  padding: 6px 10px; font-size: 12px; line-height: 1.4; border-radius: 6px;
+  background: var(--primary-text-color); color: var(--card-background-color); box-shadow: 0 2px 8px #0005;
+}
+html[data-skin="win"] #tip { border-radius: 0; background: #ffffe1; color: #000; box-shadow: 1px 1px 0 #000; border: 1px solid #000; }
+.warn { color: var(--warning-color); margin-top: 8px; }
+.warn:empty { display: none; }
+.warn-mark { margin-left: 6px; color: var(--warning-color); cursor: help; }
+.tracker { padding: 8px 0; border-bottom: 1px solid var(--divider-color); }
+.tracker:last-child { border-bottom: 0; }
+.tracker-head { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.tracker-btns { display: flex; gap: 8px; margin-top: 8px; }
+.wd-grid { display: grid; grid-template-columns: auto repeat(4, minmax(60px, 1fr)); gap: 6px 8px; align-items: center; margin-top: 8px; }
+html[data-skin="win"] .tracker { border-bottom: 1px solid #808080; }

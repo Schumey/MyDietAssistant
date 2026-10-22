@@ -34,15 +34,29 @@ def set_pref(owner: str, key: str, value):
 
 # --- settings -------------------------------------------------------------
 
+FEATURES = ("weekday_goals", "trackers")   # optional features, off by default
+
+
+def features(owner: str) -> dict:
+    saved = get_pref(owner, "features", {})
+    return {k: bool(saved.get(k, False)) for k in FEATURES}
+
+
+def feature_on(owner: str, name: str) -> bool:
+    return features(owner).get(name, False)
+
+
 class SettingsIn(BaseModel):
     diary_mode: str | None = None   # 'meals' | 'times'
     skin: str | None = None         # 'auto' | 'default' | 'win'
+    features: dict[str, bool] | None = None
 
 
 @app.get("/api/settings")
 def read_settings(x_remote_user_id: str | None = Header(None)):
     owner = user_from(x_remote_user_id)
-    return {"diary_mode": get_pref(owner, "diary_mode", "meals"), "skin": get_pref(owner, "skin", "auto")}
+    return {"diary_mode": get_pref(owner, "diary_mode", "meals"), "skin": get_pref(owner, "skin", "auto"),
+            "features": features(owner)}
 
 
 @app.put("/api/settings")
@@ -56,6 +70,123 @@ def write_settings(s: SettingsIn, x_remote_user_id: str | None = Header(None)):
         if s.skin not in ("auto", "default", "win"):
             raise HTTPException(400, "skin must be auto, default or win")
         set_pref(owner, "skin", s.skin)
+    if s.features is not None:
+        set_pref(owner, "features", {**features(owner), **{k: v for k, v in s.features.items() if k in FEATURES}})
+    return {"ok": True}
+
+
+# --- per-weekday goals (optional feature) -----------------------------------
+
+class WeekdayGoalIn(BaseModel):
+    kcal: float
+    protein: float = 0
+    carbs: float = 0
+    fat: float = 0
+
+
+@app.get("/api/goal-weekdays")
+def list_weekday_goals(x_remote_user_id: str | None = Header(None)):
+    with db.conn() as c:
+        return {str(r["wd"]): {k: r[k] for k in ("kcal", "protein", "carbs", "fat")}
+                for r in c.execute("SELECT * FROM goal_weekdays WHERE owner=?", (user_from(x_remote_user_id),))}
+
+
+@app.put("/api/goal-weekdays/{wd}")
+def set_weekday_goal(wd: int, g: WeekdayGoalIn, x_remote_user_id: str | None = Header(None)):
+    if not 0 <= wd <= 6:
+        raise HTTPException(400, "wd must be 0..6")
+    with db.conn() as c:
+        c.execute("INSERT OR REPLACE INTO goal_weekdays(owner,wd,kcal,protein,carbs,fat) VALUES(?,?,?,?,?,?)",
+                  (user_from(x_remote_user_id), wd, g.kcal, g.protein, g.carbs, g.fat))
+    return {"ok": True}
+
+
+@app.delete("/api/goal-weekdays/{wd}")
+def del_weekday_goal(wd: int, x_remote_user_id: str | None = Header(None)):
+    with db.conn() as c:
+        c.execute("DELETE FROM goal_weekdays WHERE owner=? AND wd=?", (user_from(x_remote_user_id), wd))
+    return {"ok": True}
+
+
+# --- water & supplements (optional feature) ---------------------------------
+
+DEFAULT_TRACKERS = (("Wasser", "ml", 2000, 250), ("Koffein", "mg", 400, 80), ("Kreatin", "g", 5, 5))
+
+
+class TrackerIn(BaseModel):
+    name: str
+    unit: str = ""
+    goal: float | None = None
+    step: float = 1
+
+
+class TrackerLogIn(BaseModel):
+    amount: float
+
+
+def ensure_trackers(c, owner: str):
+    if c.execute("SELECT 1 FROM trackers WHERE owner=?", (owner,)).fetchone():
+        return
+    c.executemany("INSERT INTO trackers(owner,name,unit,goal,step,position) VALUES(?,?,?,?,?,?)",
+                  [(owner, n, u, g, st, i) for i, (n, u, g, st) in enumerate(DEFAULT_TRACKERS)])
+
+
+@app.get("/api/trackers")
+def list_trackers(day: str, x_remote_user_id: str | None = Header(None)):
+    check_day(day)
+    owner = user_from(x_remote_user_id)
+    if not feature_on(owner, "trackers"):
+        return []
+    with db.conn() as c:
+        ensure_trackers(c, owner)
+        return [dict(r) for r in c.execute(
+            "SELECT t.id, t.name, t.unit, t.goal, t.step, COALESCE(l.amount, 0) amount FROM trackers t"
+            " LEFT JOIN tracker_log l ON l.tracker_id=t.id AND l.day=?"
+            " WHERE t.owner=? ORDER BY t.position, t.id", (day, owner))]
+
+
+@app.post("/api/trackers")
+def add_tracker(t: TrackerIn, x_remote_user_id: str | None = Header(None)):
+    if not t.name.strip() or t.step <= 0:
+        raise HTTPException(400, "name and step required")
+    owner = user_from(x_remote_user_id)
+    with db.conn() as c:
+        ensure_trackers(c, owner)
+        pos = c.execute("SELECT COALESCE(MAX(position),-1)+1 FROM trackers WHERE owner=?", (owner,)).fetchone()[0]
+        cur = c.execute("INSERT INTO trackers(owner,name,unit,goal,step,position) VALUES(?,?,?,?,?,?)",
+                        (owner, t.name.strip(), t.unit.strip(), t.goal, t.step, pos))
+        return {"id": cur.lastrowid}
+
+
+@app.put("/api/trackers/{tid}")
+def edit_tracker(tid: int, t: TrackerIn, x_remote_user_id: str | None = Header(None)):
+    if not t.name.strip() or t.step <= 0:
+        raise HTTPException(400, "name and step required")
+    with db.conn() as c:
+        c.execute("UPDATE trackers SET name=?, unit=?, goal=?, step=? WHERE id=? AND owner=?",
+                  (t.name.strip(), t.unit.strip(), t.goal, t.step, tid, user_from(x_remote_user_id)))
+    return {"ok": True}
+
+
+@app.delete("/api/trackers/{tid}")
+def del_tracker(tid: int, x_remote_user_id: str | None = Header(None)):
+    with db.conn() as c:
+        if c.execute("SELECT 1 FROM trackers WHERE id=? AND owner=?", (tid, user_from(x_remote_user_id))).fetchone():
+            c.execute("DELETE FROM tracker_log WHERE tracker_id=?", (tid,))
+            c.execute("DELETE FROM trackers WHERE id=?", (tid,))
+    return {"ok": True}
+
+
+@app.put("/api/trackers/{tid}/log/{day}")
+def set_tracker_log(tid: int, day: str, a: TrackerLogIn, x_remote_user_id: str | None = Header(None)):
+    check_day(day)
+    with db.conn() as c:
+        if not c.execute("SELECT 1 FROM trackers WHERE id=? AND owner=?", (tid, user_from(x_remote_user_id))).fetchone():
+            raise HTTPException(404, "tracker not found")
+        if a.amount <= 0:
+            c.execute("DELETE FROM tracker_log WHERE tracker_id=? AND day=?", (tid, day))
+        else:
+            c.execute("INSERT OR REPLACE INTO tracker_log(tracker_id,day,amount) VALUES(?,?,?)", (tid, day, a.amount))
     return {"ok": True}
 
 
@@ -92,9 +223,19 @@ class SaveMealIn(BaseModel):
     category: str = ""
 
 
+class SavedItemIn(BaseModel):
+    name: str
+    grams: float
+    kcal: float
+    protein: float = 0
+    carbs: float = 0
+    fat: float = 0
+
+
 class SavedMealEdit(BaseModel):
     name: str
     category: str = ""
+    items: list[SavedItemIn] | None = None   # replaces all components when given
 
 
 class UseSavedIn(BaseModel):
@@ -148,9 +289,17 @@ def save_from_diary(s: SaveMealIn, x_remote_user_id: str | None = Header(None)):
 
 @app.put("/api/saved-meals/{sid}")
 def edit_saved(sid: int, s: SavedMealEdit, x_remote_user_id: str | None = Header(None)):
+    owner = user_from(x_remote_user_id)
+    if s.items is not None and not s.items:
+        raise HTTPException(400, "Mahlzeit braucht mindestens eine Komponente")
     with db.conn() as c:
         c.execute("UPDATE saved_meals SET name=?, category=? WHERE id=? AND owner=?",
-                  (s.name.strip(), s.category.strip(), sid, user_from(x_remote_user_id)))
+                  (s.name.strip(), s.category.strip(), sid, owner))
+        if s.items is not None and c.execute("SELECT 1 FROM saved_meals WHERE id=? AND owner=?", (sid, owner)).fetchone():
+            c.execute("DELETE FROM saved_meal_items WHERE saved_meal_id=?", (sid,))
+            c.executemany(
+                "INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat) VALUES(?,?,?,?,?,?,?)",
+                [(sid, i.name, i.grams, i.kcal, i.protein, i.carbs, i.fat) for i in s.items])
     return {"ok": True}
 
 
@@ -248,6 +397,10 @@ def dump(owner: str) -> dict:
             "weights": q("SELECT day,kg FROM weights WHERE owner=? ORDER BY day", owner),
             "saved_meals": saved_meal_rows(c, owner),
             "hidden_categories": get_pref(owner, "hidden_categories", []),
+            "features": features(owner),
+            "goal_weekdays": q("SELECT wd,kcal,protein,carbs,fat FROM goal_weekdays WHERE owner=?", owner),
+            "trackers": [{**t, "log": q("SELECT day,amount FROM tracker_log WHERE tracker_id=?", t["id"])}
+                         for t in q("SELECT id,name,unit,goal,step,position FROM trackers WHERE owner=?", owner)],
         }
 
 
@@ -297,6 +450,18 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
                           " (SELECT id FROM saved_meals WHERE owner=?)", (owner,))
             c.execute(f"DELETE FROM {t} WHERE owner=?", (owner,))
         c.execute("DELETE FROM triggers WHERE owner=?", (owner,))
+        c.execute("DELETE FROM goal_weekdays WHERE owner=?", (owner,))
+        c.execute("DELETE FROM tracker_log WHERE tracker_id IN (SELECT id FROM trackers WHERE owner=?)", (owner,))
+        c.execute("DELETE FROM trackers WHERE owner=?", (owner,))
+        for g in d.get("goal_weekdays", []):
+            c.execute("INSERT INTO goal_weekdays(owner,wd,kcal,protein,carbs,fat) VALUES(?,?,?,?,?,?)",
+                      (owner, g["wd"], g["kcal"], g.get("protein", 0), g.get("carbs", 0), g.get("fat", 0)))
+        for t in d.get("trackers", []):
+            tid = c.execute("INSERT INTO trackers(owner,name,unit,goal,step,position) VALUES(?,?,?,?,?,?)",
+                            (owner, t["name"], t.get("unit", ""), t.get("goal"), t.get("step", 1),
+                             t.get("position", 0))).lastrowid
+            for l in t.get("log", []):
+                c.execute("INSERT INTO tracker_log(tracker_id,day,amount) VALUES(?,?,?)", (tid, l["day"], l["amount"]))
         for f in d.get("foods", []):
             c.execute("INSERT INTO foods(owner,name,brand,kcal,protein,carbs,fat,serving_g,category)"
                       " VALUES(?,?,?,?,?,?,?,?,?)",
@@ -326,6 +491,8 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
                           (sid, i["name"], i["grams"], i["kcal"], i["protein"], i["carbs"], i["fat"]))
     set_pref(owner, "hidden_categories", d.get("hidden_categories", []))
     set_pref(owner, "diary_mode", d.get("settings", {}).get("diary_mode", "meals"))
+    if "features" in d:
+        set_pref(owner, "features", d["features"])
     return {"ok": True}
 
 

@@ -6,10 +6,9 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 ## Als Nächstes (hoher Nutzen im Alltag)
 
-- **Wochen- und Tagesziele pro Wochentag** (M): z. B. Trainingstage mit mehr Kalorien/Kohlenhydraten, Ruhetage weniger. Optional automatisch über einen Kalender-/Zustands-Trigger (Fitnessstudio-Tag).
-- **Wasser und Nahrungsergänzung** (S): Schnell-Eintrag für Wasser, Koffein, Kreatin usw. mit eigenem Tagesziel.
-- **Rezepte mit Portionen** (M): Zutaten zu einem Rezept bündeln, Gesamtmakros durch Portionen teilen, als Lebensmittel nutzen. Ergänzt die bestehenden gespeicherten Mahlzeiten.
-- **Schnelleingabe nur mit Kalorien/Makros** (S): Eintrag ohne Lebensmittel („Restaurant, ca. 800 kcal“), analog zu MyFitnessPal.
+- **Wochentagsziele automatisch per Trigger** (S): Tageszielprofil (Training/Ruhe) zusätzlich über Kalender oder HA-Zustand (Fitnessstudio-Tag) umschalten. Die manuelle Zuordnung je Wochentag gibt es bereits.
+- **Tracker im Verlauf** (S): Wasser und Supplements in der Statistik (Wochenschnitt, Ziel erreicht an X Tagen).
+- **Rezepte mit Portionen** (M): Zutaten zu einem Rezept bündeln, Gesamtmakros durch Portionen teilen, als Lebensmittel nutzen. Baut auf der Komponenten-Bearbeitung der gespeicherten Mahlzeiten auf.
 - **Mikronährstoffe** (M): Ballaststoffe, Zucker, Salz, gesättigte Fette als optionale Spalten (Open Food Facts liefert sie bereits).
 
 ## Trigger und Home Assistant
@@ -24,8 +23,6 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 ## Auswertung
 
-- **Gewichtstrend glätten** (S): Gleitender Durchschnitt über das Gewicht (wie Happy Scale), Tagesschwankungen ausblenden.
-- **Zielprognose** (S): Voraussichtliches Datum für das Zielgewicht aus Trend und Kalorienbilanz.
 - **Wochenbericht** (M): Durchschnitt, Eiweiß-Ziel getroffen an wie vielen Tagen, bester/schlechtester Tag, als Karte und optional als HA-Benachrichtigung.
 - **Körpermaße und Fotos** (M): Umfänge (Taille, Brust, Arm) neben dem Gewicht, optional Fortschrittsfotos nur lokal.
 - **Bilanz je Kategorie** (S): Statistik getrennt nach Diät-/Bulk-Phasen anhand der Kategorien.
@@ -34,7 +31,6 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 ## Lebensmittel und Eingabe
 
 - **Barcode-Scan per Kamera** (M): Im Browser/der HA-App scannen statt Nummer tippen (Open Food Facts ist angebunden).
-- **Plausibilitätsprüfung kcal gegen Makros** (S): Warnhinweis beim Anlegen/Bearbeiten eines Lebensmittels (und ⚠ in der Liste), wenn die kcal nicht zu den Makros passen können (4 kcal/g Kohlenhydrate und Eiweiß, 9 kcal/g Fett, Toleranz für Ballaststoffe/Alkohol). Speichern bleibt trotzdem möglich.
 - **Lebensmittel-Duplikate zusammenführen** (S): Gleiche Namen erkennen und mergen, Einträge umhängen.
 - **Zuletzt verwendet / Favoriten** (S): Pro Lebensmittel Stern, eigener Tab im Hinzufügen-Dialog.
 - **Mehrere Portionsgrößen** (M): „1 Scheibe = 30 g“, „1 Dose = 330 ml“ pro Lebensmittel hinterlegen.
@@ -61,8 +57,7 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 - **Mobile Bedienung** (M): Größere Touch-Flächen, Wischen zwischen Tagen, Eintrag per Langdruck bearbeiten.
 - **Tastaturbedienung** (S): Kürzel für Tag vor/zurück, „Hinzufügen“, Suche fokussieren.
 - **Tagebuch-Notizen** (S): Freitext pro Tag und pro Mahlzeit (Hunger, Training, Stimmung).
-- **Statistik: gerade Zahlen auf der X-Achse** (S): Achsenbeschriftung auf runde Werte/Tage legen (z. B. 5er- oder 10er-Schritte bzw. Monatsanfänge) statt gleichmäßig verteilter, krummer Daten.
-- **Diagramme verbessern** (M): Tooltips, Makro-Verlauf, Ziellinien, auf Wunsch zusätzliche Zeiträume.
+- **Diagramme verbessern** (M): Makro-Verlauf, Ziellinien für Makros, auf Wunsch zusätzliche Zeiträume. (Mouse-over mit genauen Werten gibt es bereits.)
 
 ## Technik und Qualität
 

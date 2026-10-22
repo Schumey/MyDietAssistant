@@ -2,6 +2,22 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.10.0
+
+### Neu
+- **Mouse-over in den Diagrammen:** Beim Überfahren (bzw. Antippen) eines Balkens oder Messpunkts erscheinen Datum und genaue Werte (kcal, Ziel, Makros bzw. Gewicht und Trend).
+- **Zusatzfunktionen** (Einstellungen → Zusatzfunktionen), standardmäßig aus und einzeln aktivierbar:
+  - *Tagesziele pro Wochentag* (kcal und Makros je Wochentag; Tagebuch und Statistik nutzen das Ziel des jeweiligen Tages).
+  - *Wasser und Nahrungsergänzung* (Wasser, Koffein, Kreatin vorbelegt; eigene Einträge mit Einheit, Tagesziel und Schrittweite; +/− Knöpfe im Tagebuch).
+- **Mahlzeiten bearbeiten:** Gespeicherte Mahlzeiten lassen sich komponentenweise ändern (Menge, Lebensmittel tauschen ⇄, Komponente entfernen oder hinzufügen). Im Tagebuch gibt es beim Bearbeiten eines Eintrags „Lebensmittel tauschen“.
+- **Schnelleingabe:** Eintrag nur mit Name, kcal und optional Makros (Hinzufügen-Dialog), nachträglich bearbeitbar.
+- **Plausibilitätsprüfung:** Warnhinweis, wenn kcal nicht zu den Makros passen (Lebensmittel-Formular, ⚠ in der Liste, Schnelleingabe). Speichern bleibt möglich.
+- **Gewichtstrend:** geglättete Trendlinie (Tagesschwankungen ausgeblendet), Trend-Kachel und **Prognose** für das Zielgewicht.
+
+### Geändert
+- Statistik: Achsenbeschriftung auf runden Daten (5er-Schritte, 1./15., Monatsanfänge) statt gleichmäßig verteilter Tage.
+- Sicherung (JSON) enthält Wochentagsziele, Tracker und Zusatzfunktionen.
+
 ## 0.9.2
 
 ### Behoben
