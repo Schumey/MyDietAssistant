@@ -552,7 +552,8 @@ def stats(days: int = 30, x_remote_user_id: str | None = Header(None)):
         d = (start + timedelta(days=i)).isoformat()
         r = rows.get(d)
         out.append({"day": d, "logged": bool(r), "goal_kcal": day_goals.get(d, goal["kcal"]), **{k: (r[k] if r else 0) for k in ("kcal", "protein", "carbs", "fat", *db.MICROS)}})
-    return {"days": out, "goal": goal, "balance": energy_balance(owner, out)}
+    return {"days": out, "goal": goal, "balance": energy_balance(owner, out),
+            "mode": get_pref(owner, "goal_mode", "lose"), "rate": get_pref(owner, "goal_rate", 0.5)}
 
 
 from extras import *  # noqa: E402,F401,F403  (routes for v0.3 features)

@@ -2,6 +2,15 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.18.0
+
+### Neu
+- **Mein Ziel: Abnehmen, Halten oder Zunehmen** (Einstellungen → Tagesziele), dazu die gewünschte Änderung in kg pro Woche. Das Ziel bestimmt:
+  - wann ein Tag „im Ziel“ ist (Abnehmen: höchstens so viele kcal, Zunehmen: mindestens, Halten: ±10 %) in Bericht und Vergleich,
+  - die Färbung in Tagebuch und Diagramm (beim Zunehmen ist „drüber“ nicht mehr rot),
+  - eine Auswertung in der Kalorienbilanz: Trend gegen Ziel und ein passender Kalorienwert (geschätzter Verbrauch ± Ziel, mindestens 1200 kcal) zum Übernehmen als Tagesziel.
+- Das Ziel ist im JSON-Export enthalten.
+
 ## 0.17.0
 
 ### Neu

@@ -22,13 +22,15 @@ const api = async (path, opts) => {
 const send = (method, path, body) =>
   api(path, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
+// Is a calorie total "too much" for the chosen goal (lose: above, maintain: more than 10 % above, gain: never)?
+const goalOver = (kcal, goal) => !goal ? false : state.goalMode === "gain" ? false : state.goalMode === "maintain" ? kcal > goal * 1.1 : kcal > goal;
 const n0 = n => Math.round(n).toLocaleString("de-DE");
 const n1 = n => (Math.round(n * 10) / 10).toLocaleString("de-DE", { minimumFractionDigits: 1 });
 const iso = d => d.toLocaleDateString("sv");
 const parse = s => new Date(s + "T12:00:00");
 const num = v => (v === "" || v == null ? null : Number(String(v).replace(",", ".")));
 
-const state = { skin: "auto", features: {}, day: iso(new Date()), tab: "diary", range: 30, wrange: 90, whist: 10 };
+const state = { skin: "auto", goalMode: "lose", goalRate: 0.5, features: {}, day: iso(new Date()), tab: "diary", range: 30, wrange: 90, whist: 10 };
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const longDate = day => parse(day).toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "numeric", year: "numeric" });
 
@@ -204,12 +206,14 @@ async function renderDiary() {
   const rem = (goal, total) => {
     if (!goal) return h("td", { class: "muted" }, "–");
     const r = goal - total;
+    if (state.goalMode === "gain") return h("td", { class: r <= 0 ? "under" : "" }, n0(r));
+    if (state.goalMode === "maintain") return h("td", { class: Math.abs(r) > goal * 0.1 ? "over" : "under" }, n0(r));
     return h("td", { class: r < 0 ? "over" : "under" }, n0(r));
   };
   const goalCell = v => h("td", {}, v ? n0(v) : "–");
   root.append(h("div", { class: "card" },
     h("div", { class: "bar", style: "margin-bottom:12px" },
-      h("i", { class: t.kcal > g.kcal ? "over" : "", style: `width:${Math.min(100, t.kcal / (g.kcal || 1) * 100)}%` })),
+      h("i", { class: goalOver(t.kcal, g.kcal) ? "over" : "", style: `width:${Math.min(100, t.kcal / (g.kcal || 1) * 100)}%` })),
     h("table", { class: "summary" },
       h("thead", {}, h("tr", {}, h("th"),
         h("th", {}, "Kalorien"), h("th", {}, "Kohlenhydrate"), h("th", {}, "Fette"), h("th", {}, "Eiweiß"), h("th"))),
@@ -727,7 +731,7 @@ function barChart(days, goal) {
   const stepped = goals.some(g => g !== goals[0]);
   days.forEach((d, i) => {
     const x = L + i * bw, g = goals[i];
-    if (d.logged) s += `<rect class="bar-k${g && d.kcal > g ? " over" : ""}" x="${x + bw * 0.15}" y="${y(d.kcal)}" width="${bw * 0.7}" height="${H - B - y(d.kcal)}" rx="2"/>`;
+    if (d.logged) s += `<rect class="bar-k${goalOver(d.kcal, g) ? " over" : ""}" x="${x + bw * 0.15}" y="${y(d.kcal)}" width="${bw * 0.7}" height="${H - B - y(d.kcal)}" rx="2"/>`;
     if (ticks.has(d.day)) s += `<line class="grid-line" x1="${x + bw / 2}" x2="${x + bw / 2}" y1="${H - B}" y2="${H - B + 4}"/><text x="${x + bw / 2}" y="${H - 6}" text-anchor="middle">${ticks.get(d.day)}</text>`;
   });
   if (stepped) s += `<polyline class="goal-line" points="${goals.map((g, i) => `${L + i * bw},${y(g)} ${L + (i + 1) * bw},${y(g)}`).join(" ")}"/>`;
@@ -1158,7 +1162,8 @@ function photoCompare(photos) {
 
 // ---------------------------------------------------------------- stats
 // Energy balance from weight trend (7700 kcal per kg) and logged intake.
-function balanceCard(b) {
+const GOAL_MODES = [["lose", "Abnehmen"], ["maintain", "Halten"], ["gain", "Zunehmen"]];
+function balanceCard(b, goal) {
   const tile = (label, value, cls = "") => h("div", { class: "tile" }, h("span", { class: "muted" }, label), h("b", { class: cls }, value));
   if (!b) return h("div", { class: "card" }, h("h2", {}, "Kalorienbilanz"), h("div", { class: "muted" }, "Noch keine Einträge im Zeitraum."));
   const ok = b.balance != null;
@@ -1170,9 +1175,30 @@ function balanceCard(b) {
       tile(ok ? (b.balance > 0 ? "Überschuss / Tag" : "Defizit / Tag") : "Bilanz / Tag",
         ok ? sign(b.balance) + " kcal" : "–", ok ? (b.balance > 0 ? "over" : "under") : ""),
       tile("Geschätzter Verbrauch", ok ? n0(b.tdee) + " kcal" : "–")),
+    ok ? goalAdvice(b, goal) : null,
     h("div", { class: "muted" }, ok
       ? `Aus ${b.weights} Gewichtswerten und ${b.logged_days} von ${b.range_days} erfassten Tagen (1 kg ≈ 7700 kcal). Je vollständiger Tagebuch und Wiegen, desto genauer.`
       : "Für die Berechnung braucht es mindestens zwei Gewichtswerte im Abstand von einer Woche im gewählten Zeitraum."));
+}
+
+// Compares the weight trend with the chosen aim (lose / maintain / gain) and suggests a calorie goal.
+function goalAdvice(b, goal) {
+  const mode = state.goalMode, rate = mode === "maintain" ? 0 : state.goalRate;
+  const want = mode === "lose" ? -rate : mode === "gain" ? rate : 0;
+  const label = GOAL_MODES.find(m => m[0] === mode)[1];
+  const diff = b.kg_per_week - want;
+  const tol = mode === "maintain" ? 0.15 : 0.15;
+  const verdict = Math.abs(diff) <= tol ? "Du liegst im Plan." : diff > 0 ? "Der Trend liegt über dem Ziel." : "Der Trend liegt unter dem Ziel.";
+  const sugg = Math.max(1200, Math.round((b.tdee + want * 1100) / 10) * 10);   // never suggest crash diets
+  const sign = v => (v > 0 ? "+" : "") + n1(v);
+  return h("div", { class: "advice" },
+    h("div", {}, h("b", {}, `Ziel: ${label}`), mode === "maintain" ? " (Gewicht halten)" : ` (${sign(want)} kg/Woche)`, ` · Trend aktuell ${sign(b.kg_per_week)} kg/Woche. ${verdict}`),
+    Math.abs(sugg - (goal.kcal || 0)) >= 50 ? h("div", { class: "actions", style: "justify-content:flex-start;align-items:center" },
+      h("span", {}, `Für dieses Ziel passen ca. ${n0(sugg)} kcal am Tag (Dein Ziel: ${goal.kcal ? n0(goal.kcal) : "–"}).`),
+      h("button", { class: "flat", onclick: async () => {
+        await send("PUT", "goal", { kcal: sugg, carbs: goal.carbs || 0, fat: goal.fat || 0, protein: goal.protein || 0, target_weight: goal.target_weight });
+        renderStats();
+      } }, "Als Tagesziel übernehmen")) : null);
 }
 
 async function renderStats() {
@@ -1203,7 +1229,7 @@ async function renderStats() {
         ? ((d => (d > 0 ? "+" : "") + n1(d) + " kg")(weights[weights.length - 1].kg - weights[0].kg)) : "–")),
     h("div", { class: "card" }, h("h2", {}, "Kalorien pro Tag"), chart,
       goal.kcal ? h("div", { class: "muted" }, days.some(d => d.goal_kcal !== goal.kcal) ? "Gestrichelt: Tagesziel je Wochentag" : `Gestrichelt: Tagesziel ${n0(goal.kcal)} kcal`) : null),
-    balanceCard(balance),
+    balanceCard(balance, goal),
     h("div", { class: "card" }, h("h2", {}, "Nährwertverteilung (Ø)"),
       h("div", { class: "macro-split" },
         h("i", { style: `width:${pct(kc.p)}%` }), h("i", { style: `width:${pct(kc.c)}%` }), h("i", { style: `width:${pct(kc.f)}%` })),
@@ -1559,7 +1585,15 @@ async function renderSettings() {
   const info = h("div", { class: "muted" });
   const autoBox = h("input", { type: "checkbox", checked: calcAuto.get(), onchange: () => { calcAuto.set(autoBox.checked); refreshers.forEach(r => r()); } });
   setTimeout(() => wireCalc(gf, refreshers, info)(false), 0);
+  const aim = h("select", {}, GOAL_MODES.map(([v, l]) => h("option", { value: v }, l)));
+  aim.value = state.goalMode;
+  const rate = h("input", { type: "number", step: "0.05", min: "0", max: "2", value: state.goalRate });
+  const rateRow = h("div", {}, h("label", {}, "Gewünschte Änderung (kg pro Woche)"), rate);
+  const syncMode = () => { rateRow.hidden = aim.value === "maintain"; };
+  aim.addEventListener("change", syncMode); syncMode();
   root.append(h("div", { class: "card" }, h("h2", {}, "Tagesziele"),
+    h("div", { class: "grid" }, h("div", {}, h("label", {}, "Mein Ziel"), aim), rateRow),
+    h("div", { class: "muted", style: "margin-bottom:8px" }, "Bestimmt, wann ein Tag als „im Ziel“ gilt (Abnehmen: höchstens, Zunehmen: mindestens, Halten: ±10 %), und wie die Statistik Deinen Gewichtstrend bewertet."),
     h("label", { class: "pick" }, autoBox, h("span", {}, "Kalorien aus Makros berechnen", h("div", { class: "muted" }, "Ändern sich Eiweiß, Kohlenhydrate oder Fett, passen sich die Kalorien an (4/4/9 kcal pro g)."))),
     h("div", { class: "grid" },
       gfield("kcal", "Kalorien (kcal)"), gfield("carbs", "Kohlenhydrate (g)"),
@@ -1568,6 +1602,8 @@ async function renderSettings() {
     h("div", { class: "actions" }, saved, h("button", { onclick: async () => {
       await send("PUT", "goal", { kcal: num(gf.kcal.value) || 0, carbs: num(gf.carbs.value) || 0,
         fat: num(gf.fat.value) || 0, protein: num(gf.protein.value) || 0, target_weight: num(gf.target_weight.value) });
+      await send("PUT", "settings", { goal_mode: aim.value, goal_rate: num(rate.value) ?? 0.5 });
+      state.goalMode = aim.value; state.goalRate = num(rate.value) ?? 0.5;
       saved.textContent = "Gespeichert ✓";
     } }, "Speichern"))));
 
@@ -1875,6 +1911,8 @@ api("me").then(m => { $("#who").textContent = m.name; });
     const st = await api("settings");
     state.skin = st.skin;
     state.features = st.features || {};
+    state.goalMode = st.goal_mode || "lose";
+    state.goalRate = st.goal_rate ?? 0.5;
   } catch { /* keep auto */ }
   applySkin();
   show("diary");

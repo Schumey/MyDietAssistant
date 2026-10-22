@@ -46,8 +46,22 @@ def feature_on(owner: str, name: str) -> bool:
     return features(owner).get(name, False)
 
 
+GOAL_MODES = ("lose", "maintain", "gain")
+
+
+def goal_hit(mode: str, kcal: float, goal: float) -> bool:
+    """Did a day meet the calorie goal? lose: at or under, gain: at or over, maintain: within 10 %."""
+    if mode == "gain":
+        return kcal >= goal
+    if mode == "maintain":
+        return abs(kcal - goal) <= goal * 0.1
+    return kcal <= goal
+
+
 class SettingsIn(BaseModel):
     diary_mode: str | None = None   # 'meals' | 'times'
+    goal_mode: str | None = None    # 'lose' | 'maintain' | 'gain'
+    goal_rate: float | None = None  # intended kg per week (positive)
     skin: str | None = None         # 'auto' | 'default' | 'win'
     features: dict[str, bool] | None = None
 
@@ -56,7 +70,8 @@ class SettingsIn(BaseModel):
 def read_settings(x_remote_user_id: str | None = Header(None)):
     owner = user_from(x_remote_user_id)
     return {"diary_mode": get_pref(owner, "diary_mode", "meals"), "skin": get_pref(owner, "skin", "auto"),
-            "features": features(owner)}
+            "features": features(owner), "goal_mode": get_pref(owner, "goal_mode", "lose"),
+            "goal_rate": get_pref(owner, "goal_rate", 0.5)}
 
 
 @app.put("/api/settings")
@@ -66,6 +81,12 @@ def write_settings(s: SettingsIn, x_remote_user_id: str | None = Header(None)):
         if s.diary_mode not in ("meals", "times"):
             raise HTTPException(400, "diary_mode must be meals or times")
         set_pref(owner, "diary_mode", s.diary_mode)
+    if s.goal_mode is not None:
+        if s.goal_mode not in GOAL_MODES:
+            raise HTTPException(400, "goal_mode must be lose, maintain or gain")
+        set_pref(owner, "goal_mode", s.goal_mode)
+    if s.goal_rate is not None:
+        set_pref(owner, "goal_rate", max(0.0, min(float(s.goal_rate), 2.0)))
     if s.skin is not None:
         if s.skin not in ("auto", "default", "win"):
             raise HTTPException(400, "skin must be auto, default or win")
@@ -469,7 +490,8 @@ def dump(owner: str) -> dict:
             "foods": [{**f, "portions": q("SELECT name,grams FROM food_portions WHERE food_id=? ORDER BY id", f["id"])}
                       for f in q("SELECT id,name,brand,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,serving_g,category,favorite FROM foods WHERE owner=?", owner)],
             "meals": q("SELECT id,name,position,archived FROM meals WHERE owner=? ORDER BY position", owner),
-            "settings": {"diary_mode": get_pref(owner, "diary_mode", "meals")},
+            "settings": {"diary_mode": get_pref(owner, "diary_mode", "meals"),
+                         "goal_mode": get_pref(owner, "goal_mode", "lose"), "goal_rate": get_pref(owner, "goal_rate", 0.5)},
             "entries": q("SELECT day,time,meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat FROM entries WHERE owner=? ORDER BY day,id", owner),
             "goal": q("SELECT kcal,protein,carbs,fat,target_weight FROM goals WHERE owner=?", owner),
             "weights": q("SELECT day,kg FROM weights WHERE owner=? ORDER BY day", owner),
@@ -596,6 +618,9 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
                           (owner, n["day"], mid, n["text"]))
     set_pref(owner, "hidden_categories", d.get("hidden_categories", []))
     set_pref(owner, "diary_mode", d.get("settings", {}).get("diary_mode", "meals"))
+    if d.get("settings", {}).get("goal_mode") in GOAL_MODES:
+        set_pref(owner, "goal_mode", d["settings"]["goal_mode"])
+        set_pref(owner, "goal_rate", d["settings"].get("goal_rate", 0.5))
     if "features" in d:
         set_pref(owner, "features", d["features"])
     return {"ok": True}
@@ -1200,6 +1225,7 @@ else:
 def period_report(c, owner: str, start: date, end: date) -> dict:
     """Averages, goal hits, best/worst day and weight change for the days start..end (inclusive)."""
     n = (end - start).days + 1
+    mode = get_pref(owner, "goal_mode", "lose")
     rows = {r["day"]: dict(r) for r in c.execute(
         "SELECT day, SUM(kcal) kcal, SUM(protein) protein, SUM(carbs) carbs, SUM(fat) fat FROM entries"
         " WHERE owner=? AND day BETWEEN ? AND ? GROUP BY day", (owner, start.isoformat(), end.isoformat()))}
@@ -1220,7 +1246,7 @@ def period_report(c, owner: str, start: date, end: date) -> dict:
         "goal_kcal": round(sum(r["goal_kcal"] for r in logged) / len(logged)) if logged else 0,
         "protein_days": sum(1 for r in logged if r["goal_protein"] and r["protein"] >= r["goal_protein"]),
         "protein_goal_days": sum(1 for r in logged if r["goal_protein"]),
-        "kcal_days": sum(1 for r in with_goal if r["kcal"] <= r["goal_kcal"]),
+        "kcal_days": sum(1 for r in with_goal if goal_hit(mode, r["kcal"], r["goal_kcal"])),
         "kcal_goal_days": len(with_goal),
         "best": pick(best), "worst": pick(worst),
         "weight_change": round(w[-1]["kg"] - w[0]["kg"], 1) if len(w) > 1 else None,
