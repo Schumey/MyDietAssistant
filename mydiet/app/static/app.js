@@ -743,23 +743,23 @@ function barChart(days, goal) {
 }
 
 // Weight curve: raw values (faint) and a smoothed trend line (thick), like Happy Scale.
-function lineChart(points, target) {
+function lineChart(points, target, unit = "kg") {
   const W = 600, H = 220, L = 44, B = 24, T = 10, R = 16;
   const vals = points.flatMap(p => [p.kg, p.trend]).concat(target ? [target] : []);
   let lo = Math.min(...vals), hi = Math.max(...vals);
   const pad = Math.max((hi - lo) * 0.1, 0.5);
   lo -= pad; hi += pad;
   // y ticks on even weights: step 1, 2, 5, 10 … kg
-  const step = [1, 2, 5, 10, 20, 50].find(st => (hi - lo) / st <= 6) || 100;
+  const step = [0.5, 1, 2, 5, 10, 20, 50].find(st => (hi - lo) / st <= 6) || 100;
   const ticks = [];
-  for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) ticks.push(v);
+  for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) ticks.push(v);
   if (ticks.length < 2) { lo = Math.floor(lo); hi = Math.ceil(hi); }
   const T0 = parse(points[0].day).getTime(), T1 = parse(points[points.length - 1].day).getTime();
   const x = t => L + (T1 === T0 ? (W - L - R) / 2 : (t - T0) / (T1 - T0) * (W - L - R));
   const y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
   const px = p => x(parse(p.day).getTime());
   let s = "";
-  for (const v of ticks) s += `<line class="grid-line" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${n0(v)}</text>`;
+  for (const v of ticks) s += `<line class="grid-line" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${step < 1 ? n1(v) : n0(v)}</text>`;
   if (target) s += `<line class="goal-line" x1="${L}" x2="${W - R}" y1="${y(target)}" y2="${y(target)}"/>`;
   s += `<polyline class="line raw" points="${points.map(p => `${px(p)},${y(p.kg)}`).join(" ")}"/>`;
   if (points.length <= 90) s += points.map(p => `<circle class="dot" cx="${px(p)}" cy="${y(p.kg)}" r="2.5"/>`).join("");
@@ -773,10 +773,10 @@ function lineChart(points, target) {
   points.forEach((p, i) => {
     const cx = px(p);
     const a = i ? (px(points[i - 1]) + cx) / 2 : L, b = i < points.length - 1 ? (cx + px(points[i + 1])) / 2 : W - R;
-    const text = `${longDate(p.day)}\n${n1(p.kg)} kg\nTrend ${n1(p.trend)} kg`;
+    const text = `${longDate(p.day)}\n${n1(p.kg)} ${unit}` + (unit === "kg" ? `\nTrend ${n1(p.trend)} kg` : "");
     s += `<rect class="hit" x="${a}" y="${T}" width="${Math.max(b - a, 1)}" height="${H - T - B}" data-tip="${esc(text)}"/>`;
   });
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Gewichtsverlauf">${s}</svg>`;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${unit === "kg" ? "Gewichtsverlauf" : "Verlauf"}">${s}</svg>`;
 }
 
 // Exponentially smoothed trend (10 % per day, gap-aware) so daily fluctuations fade out.
@@ -1001,6 +1001,7 @@ async function renderWeight() {
 
   if (!all.length) {
     root.append(h("div", { class: "card muted" }, "Noch keine Gewichtswerte."));
+    if (state.features.body) await bodyCards(root);
     return;
   }
   const trended = withTrend(all);
@@ -1040,6 +1041,119 @@ async function renderWeight() {
           h("button", { class: "flat", onclick: () => { state.whist += 20; renderWeight(); } }, "Mehr anzeigen"),
           h("button", { class: "flat", onclick: () => { state.whist = all.length; renderWeight(); } }, `Alle ${all.length}`)] : null,
         state.whist > 10 ? h("button", { class: "flat", onclick: () => { state.whist = 10; renderWeight(); } }, "Weniger") : null) : null));
+  if (state.features.body) await bodyCards(root);
+}
+
+// ---------------------------------------------------------------- body measurements and photos (optional)
+const BODY_NAMES = ["Taille", "Brust", "Hüfte", "Oberarm", "Oberschenkel", "Körperfett %"];
+const bodyUnit = name => (name.includes("%") ? "%" : "cm");
+
+// Scale a picked image down (long side 1280 px) and return it as a JPEG data URL.
+function resizeImage(file, max = 1280) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height));
+      const cv = document.createElement("canvas");
+      cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
+      cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+      URL.revokeObjectURL(url);
+      resolve(cv.toDataURL("image/jpeg", 0.85));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Bild konnte nicht gelesen werden")); };
+    img.src = url;
+  });
+}
+
+async function bodyCards(root) {
+  const [rows, photos] = await Promise.all([api("body"), api("body/photos")]);
+  const names = [...new Set([...BODY_NAMES, ...rows.map(r => r.name)])];
+  const day = h("input", { type: "date", value: iso(new Date()) });
+  const inputs = names.map(n => [n, h("input", { type: "number", step: "0.1", min: "0", placeholder: bodyUnit(n) })]);
+  const extraName = h("input", { placeholder: "Eigene Messung, z. B. Wade" });
+  const extraVal = h("input", { type: "number", step: "0.1", min: "0", placeholder: "cm" });
+  const msg = h("div", { class: "err" });
+  const pick = state.bodyPick && names.includes(state.bodyPick) ? state.bodyPick : (rows[0] ? rows[rows.length - 1].name : names[0]);
+  const sel = h("select", { onchange: () => { state.bodyPick = sel.value; renderWeight(); } }, names.map(n => h("option", { value: n }, n)));
+  sel.value = pick;
+
+  const series = rows.filter(r => r.name === pick);
+  const chart = h("div");
+  if (series.length) { chart.innerHTML = lineChart(series.map(r => ({ day: r.day, kg: r.value, trend: r.value })), null, bodyUnit(pick)); tipHandlers(chart); }
+  const first = series[0], last = series[series.length - 1];
+
+  root.append(h("div", { class: "card" }, h("h2", {}, "Körpermaße"),
+    h("div", { class: "muted" }, "Werte, die Du nicht messen willst, einfach leer lassen."),
+    h("label", {}, "Datum"), day,
+    h("div", { class: "grid body-grid" }, inputs.map(([n, i]) => h("div", {}, h("label", {}, n), i))),
+    h("div", { class: "grid" }, h("div", {}, h("label", {}, "Weitere Messung"), extraName), h("div", {}, h("label", {}, "Wert"), extraVal)),
+    msg,
+    h("div", { class: "actions" }, h("button", { onclick: async () => {
+      const values = {};
+      for (const [n, i] of inputs) if (num(i.value) > 0) values[n] = num(i.value);
+      if (extraName.value.trim() && num(extraVal.value) > 0) values[extraName.value.trim()] = num(extraVal.value);
+      if (!Object.keys(values).length) { msg.textContent = "Bitte mindestens einen Wert eintragen."; return; }
+      try { await send("PUT", "body/" + day.value, { values }); renderWeight(); } catch (e) { msg.textContent = e.message; }
+    } }, "Speichern"))));
+
+  if (rows.length) root.append(h("div", { class: "card" },
+    h("div", { class: "grid", style: "grid-template-columns:1fr auto" }, sel,
+      series.length > 1 ? h("b", { style: "align-self:center" }, `${last.value > first.value ? "+" : ""}${n1(last.value - first.value)} ${bodyUnit(pick)}`) : h("span")),
+    series.length ? chart : h("div", { class: "muted" }, "Noch keine Werte für diese Messung."),
+    h("div", { class: "list" }, [...series].reverse().slice(0, 8).map(r => h("div", {},
+      h("span", { class: "grow" }, longDate(r.day)), h("b", {}, `${n1(r.value)} ${bodyUnit(pick)}`),
+      h("button", { class: "icon", title: "Löschen", "aria-label": "Löschen", onclick: async () => {
+        await api(`body/values/${r.day}/${encodeURIComponent(r.name)}`, { method: "DELETE" }); renderWeight();
+      } }, "✕"))))));
+
+  // photos: stored only on this device's add-on, not part of the JSON export
+  const file = h("input", { type: "file", accept: "image/*", hidden: true, onchange: async () => {
+    if (!file.files[0]) return;
+    try {
+      const data = await resizeImage(file.files[0]);
+      await send("POST", "body/photos", { day: pday.value, note: pnote.value, data });
+      renderWeight();
+    } catch (e) { pmsg.textContent = e.message; }
+  } });
+  const pday = h("input", { type: "date", value: iso(new Date()) });
+  const pnote = h("input", { placeholder: "Notiz (optional), z. B. Vorderansicht" });
+  const pmsg = h("div", { class: "err" });
+  root.append(h("div", { class: "card" }, h("h2", {}, "Fortschrittsfotos"),
+    h("div", { class: "muted" }, "Die Fotos bleiben im Add-on auf Deinem Home Assistant. Sie sind nicht im JSON-Export und nicht in den automatischen Sicherungen, aber in der Home-Assistant-Sicherung des Add-ons."),
+    h("div", { class: "grid" }, h("div", {}, h("label", {}, "Datum"), pday), h("div", {}, h("label", {}, "Notiz"), pnote)),
+    pmsg, file,
+    h("div", { class: "actions" },
+      photos.length > 1 ? h("button", { class: "flat", onclick: () => photoCompare(photos) }, "Vergleichen") : null,
+      h("button", { onclick: () => file.click() }, "Foto hinzufügen")),
+    photos.length ? h("div", { class: "photo-grid" }, photos.map(p => h("figure", {},
+      h("img", { src: `api/body/photos/${p.id}/file`, loading: "lazy", alt: p.note || p.day, onclick: () => photoView(p) }),
+      h("figcaption", {}, longDate(p.day), p.note ? h("div", { class: "muted" }, p.note) : null,
+        h("button", { class: "icon", title: "Foto löschen", "aria-label": "Löschen", onclick: async () => {
+          if (!confirm("Foto löschen?")) return;
+          await api("body/photos/" + p.id, { method: "DELETE" }); renderWeight();
+        } }, "✕"))))) : h("div", { class: "muted", style: "padding:8px 0" }, "Noch keine Fotos.")));
+}
+
+function photoView(p) {
+  setDlg(h("h2", {}, longDate(p.day)), h("img", { class: "photo-big", src: `api/body/photos/${p.id}/file`, alt: p.note || p.day }),
+    p.note ? h("div", { class: "muted" }, p.note) : null,
+    h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Schließen")));
+  dlg.showModal();
+}
+
+// Two photos side by side, e.g. start and now.
+function photoCompare(photos) {
+  const opts = () => photos.map(p => h("option", { value: p.id }, longDate(p.day) + (p.note ? " – " + p.note : "")));
+  const a = h("select", {}, opts()), b = h("select", {}, opts());
+  a.value = photos[photos.length - 1].id; b.value = photos[0].id;
+  const imgA = h("img", { class: "photo-big" }), imgB = h("img", { class: "photo-big" });
+  const draw = () => { imgA.src = `api/body/photos/${a.value}/file`; imgB.src = `api/body/photos/${b.value}/file`; };
+  a.onchange = b.onchange = draw; draw();
+  setDlg(h("h2", {}, "Fotos vergleichen"),
+    h("div", { class: "grid" }, h("div", {}, a, imgA), h("div", {}, b, imgB)),
+    h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Schließen")));
+  dlg.showModal();
 }
 
 // ---------------------------------------------------------------- stats
@@ -1472,6 +1586,7 @@ async function renderSettings() {
       feat("weekday_goals", "Tagesziele pro Wochentag", "z. B. Trainingstage mit mehr Kalorien, Ruhetage mit weniger."),
       feat("trackers", "Wasser und Nahrungsergänzung", "Schnell-Eintrag für Wasser, Koffein, Kreatin usw. mit eigenem Tagesziel."),
       feat("notes", "Notizen", "Freitext zu Mahlzeiten und Tagen (Hunger, Training, Stimmung). Vorhandene Notizen bleiben beim Ausschalten erhalten."),
+      feat("body", "Körpermaße und Fortschrittsfotos", "Umfänge (Taille, Brust, Arm …) mit Verlauf und Fotos mit Vergleich im Reiter Gewicht."),
       feat("micros", "Weitere Nährwerte", "Ballaststoffe, Zucker, Salz und gesättigte Fettsäuren bei Lebensmitteln erfassen und auswerten (Open Food Facts liefert sie mit)."))));
 
   if (state.features.weekday_goals) {

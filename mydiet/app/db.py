@@ -146,6 +146,20 @@ CREATE TABLE IF NOT EXISTS day_notes (        -- free text per day (meal_id 0) o
   text TEXT NOT NULL,
   PRIMARY KEY (owner, day, meal_id)
 );
+CREATE TABLE IF NOT EXISTS body_measures (    -- optional: waist, chest, arm ... (cm, %)
+  owner TEXT NOT NULL,
+  day TEXT NOT NULL,
+  name TEXT NOT NULL,
+  value REAL NOT NULL,
+  PRIMARY KEY (owner, day, name)
+);
+CREATE TABLE IF NOT EXISTS body_photos (      -- progress photos; the files live in <data>/photos/<id>.img
+  id INTEGER PRIMARY KEY,
+  owner TEXT NOT NULL,
+  day TEXT NOT NULL,
+  note TEXT NOT NULL DEFAULT '',
+  mime TEXT NOT NULL DEFAULT 'image/jpeg'
+);
 CREATE TABLE IF NOT EXISTS trackers (         -- optional: water, caffeine, creatine ...
   id INTEGER PRIMARY KEY,
   owner TEXT NOT NULL,

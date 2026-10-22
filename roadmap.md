@@ -12,7 +12,6 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 ## Auswertung
 
-- **Körpermaße und Fotos** (M): Umfänge (Taille, Brust, Arm) neben dem Gewicht, optional Fortschrittsfotos nur lokal.
 - **Bilanz je Kategorie** (S): Statistik getrennt nach Diät-/Bulk-Phasen anhand der Kategorien.
 
 ## Lebensmittel und Eingabe

@@ -2,6 +2,17 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.17.0
+
+### Neu
+- **Körpermaße und Fortschrittsfotos** als Zusatzfunktion (Einstellungen → Zusatzfunktionen, standardmäßig aus), im Reiter Gewicht:
+  - Taille, Brust, Hüfte, Oberarm, Oberschenkel und Körperfett in %, dazu eigene Messungen (z. B. Wade), mit Verlaufsdiagramm und Veränderung.
+  - Fotos hochladen (werden vorher auf 1280 px verkleinert), Galerie und Vergleich zweier Fotos nebeneinander. Die Fotos liegen im Add-on-Datenordner, nicht im JSON-Export und nicht in den automatischen Sicherungen; die Home-Assistant-Sicherung des Add-ons enthält sie.
+- Körpermaße sind im JSON-Export und in der Wiederherstellung enthalten.
+
+### Geändert
+- Gewichtsdiagramm: bei sehr kleinen Schwankungen Achsenschritte von 0,5 kg.
+
 ## 0.16.2
 
 ### Geändert

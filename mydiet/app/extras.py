@@ -34,7 +34,7 @@ def set_pref(owner: str, key: str, value):
 
 # --- settings -------------------------------------------------------------
 
-FEATURES = ("weekday_goals", "trackers", "micros", "notes")   # optional features, off by default
+FEATURES = ("weekday_goals", "trackers", "micros", "notes", "body")   # optional features, off by default
 
 
 def features(owner: str) -> dict:
@@ -478,6 +478,7 @@ def dump(owner: str) -> dict:
             "features": features(owner),
             "goal_weekdays": q("SELECT wd,kcal,protein,carbs,fat FROM goal_weekdays WHERE owner=?", owner),
             "notes": q("SELECT day,meal_id,text FROM day_notes WHERE owner=?", owner),
+            "body_measures": q("SELECT day,name,value FROM body_measures WHERE owner=? ORDER BY day,name", owner),
             "goal_profiles": q("SELECT id,name,kcal,protein,carbs,fat FROM goal_profiles WHERE owner=?", owner),
             "day_profile": q("SELECT day,profile_id FROM day_profile WHERE owner=?", owner),
             "trackers": [{**t, "log": q("SELECT day,amount FROM tracker_log WHERE tracker_id=?", t["id"])}
@@ -534,6 +535,9 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
         c.execute("DELETE FROM triggers WHERE owner=?", (owner,))
         c.execute("DELETE FROM goal_weekdays WHERE owner=?", (owner,))
         c.execute("DELETE FROM day_notes WHERE owner=?", (owner,))
+        c.execute("DELETE FROM body_measures WHERE owner=?", (owner,))
+        for b in d.get("body_measures", []):
+            c.execute("INSERT OR REPLACE INTO body_measures(owner,day,name,value) VALUES(?,?,?,?)", (owner, b["day"], b["name"], b["value"]))
         c.execute("DELETE FROM goal_profiles WHERE owner=?", (owner,))
         c.execute("DELETE FROM day_profile WHERE owner=?", (owner,))
         c.execute("DELETE FROM tracker_log WHERE tracker_id IN (SELECT id FROM trackers WHERE owner=?)", (owner,))
