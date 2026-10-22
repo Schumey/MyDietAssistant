@@ -60,6 +60,7 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 - **Mobile Bedienung** (M): Größere Touch-Flächen, Wischen zwischen Tagen, Eintrag per Langdruck bearbeiten.
 - **Tastaturbedienung** (S): Kürzel für Tag vor/zurück, „Hinzufügen“, Suche fokussieren.
 - **Tagebuch-Notizen** (S): Freitext pro Tag und pro Mahlzeit (Hunger, Training, Stimmung).
+- **Statistik: gerade Zahlen auf der X-Achse** (S): Achsenbeschriftung auf runde Werte/Tage legen (z. B. 5er- oder 10er-Schritte bzw. Monatsanfänge) statt gleichmäßig verteilter, krummer Daten.
 - **Diagramme verbessern** (M): Tooltips, Makro-Verlauf, Ziellinien, auf Wunsch zusätzliche Zeiträume.
 
 ## Technik und Qualität
