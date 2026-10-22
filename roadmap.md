@@ -13,12 +13,8 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 ## Trigger und Home Assistant
 
-- **Zeitfenster für Zustands-Trigger** (S): Eintrag erst nach X Minuten im Zustand (Fitnessstudio) oder nur zwischen bestimmten Uhrzeiten.
-- **Uhrzeit-Trigger** (S): Fester Eintrag zu einer Zeit („täglich 07:30 Vitamine“), ohne HA-Entität.
-- **Trigger-Verlauf** (S): Liste, wann welcher Trigger was eingetragen hat, mit Rückgängig-Button.
 - **Mehrere Bedingungen** (M): UND/ODER-Verknüpfung, z. B. Kalender „Nachtschicht“ UND Person zu Hause.
 - **HA-Dienste und Ereignisse** (M): Aktionen `mydiet.add_entry` und `mydiet.log_weight` für Automationen, damit Waage, Sprachassistent oder Nachrichten-Bot eintragen können.
-- **Mehr Sensoren** (S): Wochenschnitt, Kalorienbilanz, Gewichtstrend und verbleibende Kalorien als Sensoren für Dashboards. Dazu eine fertige Dashboard-Karte als Beispiel.
 - **Erinnerungen** (M): Benachrichtigung, wenn bis zu einer Uhrzeit nichts eingetragen wurde.
 
 ## Auswertung
@@ -31,8 +27,6 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 ## Lebensmittel und Eingabe
 
 - **Barcode-Scan per Kamera** (M): Im Browser/der HA-App scannen statt Nummer tippen (Open Food Facts ist angebunden).
-- **Lebensmittel-Duplikate zusammenführen** (S): Gleiche Namen erkennen und mergen, Einträge umhängen.
-- **Zuletzt verwendet / Favoriten** (S): Pro Lebensmittel Stern, eigener Tab im Hinzufügen-Dialog.
 - **Mehrere Portionsgrößen** (M): „1 Scheibe = 30 g“, „1 Dose = 330 ml“ pro Lebensmittel hinterlegen.
 - **Einheiten und Sprache** (M): Anzeige in oz/lb sowie englische Oberfläche.
 - **Mehrere Datenquellen** (L): Weitere Nährwertdatenbanken neben Open Food Facts (z. B. BLS), optional abschaltbar, da sie online abfragen.

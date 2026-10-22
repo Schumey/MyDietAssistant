@@ -2,6 +2,16 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.11.0
+
+### Neu
+- **Uhrzeit-Trigger:** trägt täglich zu einer festen Zeit ein („täglich 07:30 Vitamine“), ganz ohne HA-Entität.
+- **Zeitfenster und Haltedauer für Trigger:** Trigger können auf eine Tageszeit beschränkt werden (auch über Mitternacht). Zustands-Trigger tragen optional erst ein, wenn der Zustand seit X Minuten anliegt (z. B. seit 20 Minuten im Fitnessstudio).
+- **Trigger-Verlauf** (Einstellungen): Liste, wann welcher Trigger was eingetragen hat, mit „Rückgängig“. Der Trigger trägt an diesem Tag nicht erneut ein.
+- **Favoriten:** Lebensmittel mit ☆ markieren, eigener Reiter „★ Favoriten“ im Hinzufügen-Dialog.
+- **Duplikate zusammenführen** (Lebensmittel → Duplikate suchen): gleiche Namen erkennen, eines behalten, Trigger werden umgehängt.
+- **Mehr Sensoren:** `kcal_remaining_today`, `kcal_week_avg`, `weight_trend` und `energy_balance` (siehe DOCS.md, dort auch eine fertige Dashboard-Karte).
+
 ## 0.10.0
 
 ### Neu

@@ -133,6 +133,16 @@ CREATE TABLE IF NOT EXISTS tracker_log (
   amount REAL NOT NULL,
   PRIMARY KEY (tracker_id, day)
 );
+CREATE TABLE IF NOT EXISTS trigger_runs (     -- what a trigger entered, so it can be undone
+  id INTEGER PRIMARY KEY,
+  owner TEXT NOT NULL,
+  trigger_id INTEGER,
+  label TEXT NOT NULL DEFAULT '',
+  day TEXT NOT NULL,
+  ts TEXT NOT NULL,
+  entry_ids TEXT NOT NULL DEFAULT '[]',
+  undone INTEGER NOT NULL DEFAULT 0
+);
 CREATE TABLE IF NOT EXISTS trigger_log (
   trigger_id INTEGER NOT NULL,
   day TEXT NOT NULL,
@@ -167,6 +177,12 @@ def init():
         for t in ("triggers", "meal_triggers"):  # v0.9: calendar triggers on the start/end day of an event only
             if "part" not in {r["name"] for r in c.execute(f"PRAGMA table_info({t})")}:
                 c.execute(f"ALTER TABLE {t} ADD COLUMN part TEXT NOT NULL DEFAULT 'any'")
+        for col, ddl in (("hold_min", "INTEGER NOT NULL DEFAULT 0"), ("win_from", "TEXT NOT NULL DEFAULT ''"),
+                         ("win_to", "TEXT NOT NULL DEFAULT ''")):  # v0.11: hold time and time window
+            if col not in {r["name"] for r in c.execute("PRAGMA table_info(triggers)")}:
+                c.execute(f"ALTER TABLE triggers ADD COLUMN {col} {ddl}")
+        if "favorite" not in cols:  # v0.11: favourite foods
+            c.execute("ALTER TABLE foods ADD COLUMN favorite INTEGER NOT NULL DEFAULT 0")
         if "time" not in {r["name"] for r in c.execute("PRAGMA table_info(entries)")}:
             c.execute("ALTER TABLE entries ADD COLUMN time TEXT")  # HH:MM, time-based diary
         if "category" not in cols:  # database from v0.2

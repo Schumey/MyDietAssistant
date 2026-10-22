@@ -504,7 +504,7 @@ async function openAdd(meal) {
   const chips = h("div");
   const sug = h("div", { class: "results suggest" });
   const tabs = h("div", { class: "range" },
-    ["foods", "Lebensmittel", "saved", "Meine Mahlzeiten"].flatMap((v, i, a) => i % 2 ? [] : [
+    ["foods", "Lebensmittel", "fav", "★ Favoriten", "saved", "Meine Mahlzeiten"].flatMap((v, i, a) => i % 2 ? [] : [
       h("button", { class: v === tab ? "active" : "", "data-t": v, onclick: () => { tab = v; draw(); } }, a[i + 1])]));
 
   function drawChips() {
@@ -514,18 +514,19 @@ async function openAdd(meal) {
   function draw() {
     for (const b of tabs.children) b.classList.toggle("active", b.dataset.t === tab);
     const q = search.value.toLowerCase();
-    const list = tab === "foods" ? foods : saved;
-    const frequent = (tab === "foods" ? sugg.items : sugg.saved.filter(isVisible));
+    const list = tab === "foods" ? foods : tab === "fav" ? foods.filter(f => f.favorite) : saved;
+    const frequent = tab === "foods" ? sugg.items : tab === "saved" ? sugg.saved.filter(isVisible) : [];
     sug.replaceChildren(...(!q && frequent.length ? [h("div", { class: "muted sect" }, "Häufig verwendet"),
       ...frequent.map(x => h("button", { class: "food", onclick: () => (tab === "foods" ? selectEntry(x) : selectSaved(x)) },
         h("span", {}, x.name), h("span", { class: "muted" }, `${n0(x.kcal)} kcal${x.grams ? " · " + n0(x.grams) + " g" : ""}`))),
       h("div", { class: "muted sect" }, "Alle")] : []));
     const rows = list.filter(isVisible).filter(x => ((x.name || "") + " " + (x.brand || "")).toLowerCase().includes(q)).slice(0, 50);
-    results.replaceChildren(...rows.map(x => h("button", { class: "food", onclick: () => (tab === "foods" ? select(x) : selectSaved(x)) },
-      h("span", {}, x.name, x.brand ? ` (${x.brand})` : "", x.category ? h("span", { class: "tag" }, x.category) : null),
-      h("span", { class: "muted" }, tab === "foods" ? `${n0(x.kcal)} kcal/100 g` : `${n0(x.kcal)} kcal`))));
+    results.replaceChildren(...rows.map(x => h("button", { class: "food", onclick: () => (tab !== "saved" ? select(x) : selectSaved(x)) },
+      h("span", {}, x.favorite ? "★ " : "", x.name, x.brand ? ` (${x.brand})` : "", x.category ? h("span", { class: "tag" }, x.category) : null),
+      h("span", { class: "muted" }, tab !== "saved" ? `${n0(x.kcal)} kcal/100 g` : `${n0(x.kcal)} kcal`))));
     if (!rows.length) results.append(h("div", { class: "muted", style: "padding:8px" },
       tab === "foods" ? "Nichts gefunden – lege ein neues Lebensmittel an."
+        : tab === "fav" ? "Noch keine Favoriten – markiere Lebensmittel auf der Seite „Lebensmittel“ mit ☆."
         : "Keine gespeicherte Mahlzeit. Im Tagebuch über „Als Mahlzeit speichern“ anlegen."));
     drawChips();
   }
@@ -759,6 +760,11 @@ async function renderFoods() {
       h("div", { class: "grow" }, h("div", {}, f.name, f.brand ? ` (${f.brand})` : "", tag(f.category),
         plausibility(f) ? h("span", { class: "warn-mark", title: plausibility(f) }, "⚠") : null),
         h("div", { class: "muted" }, `${n0(f.kcal)} kcal · KH ${n1(f.carbs)} g · Fett ${n1(f.fat)} g · Eiweiß ${n1(f.protein)} g (pro 100 g)`)),
+      h("button", { class: "icon fav" + (f.favorite ? " on" : ""), title: f.favorite ? "Favorit entfernen" : "Als Favorit markieren", "aria-label": "Favorit", onclick: async () => {
+        f.favorite = f.favorite ? 0 : 1;
+        await send("PUT", `foods/${f.id}/favorite`, { favorite: !!f.favorite });
+        draw();
+      } }, f.favorite ? "★" : "☆"),
       h("button", { class: "icon", title: "Trigger anlegen", "aria-label": "Trigger anlegen", onclick: () => triggerDialog({ item: "f:" + f.id }) }, "⚡"),
       h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => openForm(f) }, "✎"),
       h("button", { class: "icon", title: "Löschen", "aria-label": "Löschen", onclick: async () => {
@@ -771,10 +777,34 @@ async function renderFoods() {
 
   const search = h("input", { type: "search", placeholder: "Lebensmittel suchen…", oninput: draw });
   root.append(h("div", { class: "card" },
-    h("div", { class: "grid", style: "grid-template-columns:1fr auto" }, search,
+    h("div", { class: "grid", style: "grid-template-columns:1fr auto auto" }, search,
+      h("button", { class: "flat", onclick: () => dupDialog(renderFoods) }, "Duplikate suchen"),
       h("button", { onclick: () => openForm(null) }, "+ Neues Lebensmittel")),
     chips, list));
   draw();
+}
+
+// Foods with identical name and brand: pick the one to keep, the others are deleted (triggers move to it).
+async function dupDialog(onChange) {
+  const groups = await api("foods/duplicates");
+  const msg = h("div", { class: "muted" });
+  setDlg(h("h2", {}, "Doppelte Lebensmittel"),
+    groups.length ? h("div", { class: "muted" }, "Wähle je Gruppe das Lebensmittel, das bleiben soll. Bereits eingetragene Mahlzeiten bleiben unverändert.")
+      : h("div", { class: "muted" }, "Keine Duplikate gefunden."),
+    groups.map((g, gi) => {
+      const radios = g.map((f, i) => [f, h("input", { type: "radio", name: "dup" + gi, checked: i === 0 })]);
+      return h("div", { class: "card", style: "margin:12px 0 0" },
+        h("b", {}, g[0].name + (g[0].brand ? ` (${g[0].brand})` : "")),
+        radios.map(([f, r]) => h("label", { class: "pick" }, r,
+          `${n0(f.kcal)} kcal · KH ${n1(f.carbs)} · Fett ${n1(f.fat)} · Eiweiß ${n1(f.protein)}${f.favorite ? " · ★" : ""}`)),
+        h("div", { class: "actions", style: "margin-top:8px" }, h("button", { onclick: async () => {
+          const keep = radios.find(([, r]) => r.checked)[0];
+          await send("POST", "foods/merge", { keep_id: keep.id, merge_ids: g.map(f => f.id) });
+          onChange(); dupDialog(onChange);
+        } }, "Zusammenführen")));
+    }), msg,
+    h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Schließen")));
+  if (!dlg.open) dlg.showModal();
 }
 
 // ---------------------------------------------------------------- saved meals page
@@ -981,15 +1011,19 @@ async function renderStats() {
 }
 
 // ---------------------------------------------------------------- triggers
-const KIND = { state: "Zustand", calendar: "Kalender" };
+const KIND = { state: "Zustand", calendar: "Kalender", time: "Uhrzeit" };
 const PART = { start: " (am Starttag)", end: " (am Endtag)" };
-const condText = t => `${KIND[t.kind]} ${t.entity} ${t.negate ? (t.kind === "calendar" ? "enthält nicht" : "≠") : (t.kind === "calendar" ? "enthält" : "=")} ${t.match || "(an)"}${t.kind === "calendar" ? PART[t.part] || "" : ""}`;
+const condText = t => (t.kind === "time" ? `Täglich ab ${t.match} Uhr`
+  : `${KIND[t.kind]} ${t.entity} ${t.negate ? (t.kind === "calendar" ? "enthält nicht" : "≠") : (t.kind === "calendar" ? "enthält" : "=")} ${t.match || "(an)"}${t.kind === "calendar" ? PART[t.part] || "" : ""}`)
+  + (t.hold_min ? ` · seit mind. ${t.hold_min} Min.` : "")
+  + (t.win_from || t.win_to ? ` · nur ${t.win_from || "00:00"}–${t.win_to || "24:00"} Uhr` : "");
 
 // Shared form part: trigger kind (state / calendar), entity with suggestions, condition text.
-function triggerFields(ents) {
+function triggerFields(ents, allowTime = false) {
   const kind = h("select", { onchange: sync },
     h("option", { value: "state" }, "Zustand einer Entität (z. B. Person ist im Fitnessstudio)"),
-    h("option", { value: "calendar" }, "Kalendereintrag"));
+    h("option", { value: "calendar" }, "Kalendereintrag"),
+    allowTime ? h("option", { value: "time" }, "Uhrzeit (täglich ab einer Zeit)") : null);
   const entity = h("input", { list: "ent-list", placeholder: "z. B. person.max" });
   const entList = h("datalist", { id: "ent-list" });
   const negate = h("select", {},
@@ -1000,20 +1034,25 @@ function triggerFields(ents) {
     h("option", { value: "start" }, "nur am Starttag (z. B. Donnerstag 22 Uhr)"),
     h("option", { value: "end" }, "nur am Endtag (z. B. Freitag 6 Uhr)"));
   const partRow = h("div", {}, h("label", {}, "Termin zählt"), part);
+  const entRow = h("div", {}, h("label", {}, "Entität"), entity, entList);
+  const condLabel = h("label", {}, "Bedingung");
   const hint = h("div", { class: "muted" });
   function sync() {
-    const cal = kind.value === "calendar";
+    const cal = kind.value === "calendar", tm = kind.value === "time";
+    entRow.hidden = tm; negate.hidden = tm; condLabel.textContent = tm ? "Uhrzeit" : "Bedingung";
+    match.type = tm ? "time" : "text";
     entList.replaceChildren(...ents.filter(e => cal ? e.id.startsWith("calendar.") : !e.id.startsWith("calendar."))
       .map(e => h("option", { value: e.id }, e.name || e.state)));
     entity.placeholder = cal ? "z. B. calendar.arbeit" : "z. B. person.max";
     match.placeholder = cal ? "Titel enthält, z. B. Nachtschicht" : "Zustand, z. B. Fitnessstudio (Zonenname) oder on";
     partRow.hidden = !cal;
-    hint.textContent = cal ? "Gilt für Tage mit (bzw. ohne) Termin, dessen Titel diesen Text enthält."
+    hint.textContent = tm ? "Trägt einmal pro Tag ein, sobald diese Uhrzeit erreicht ist."
+      : cal ? "Gilt für Tage mit (bzw. ohne) Termin, dessen Titel diesen Text enthält."
       : "Gilt, sobald die Entität diesen Zustand hat (bzw. nicht hat).";
   }
   sync();
-  return { kind, entity, match, negate, part, nodes: [h("label", {}, "Auslöser"), kind, h("label", {}, "Entität"), entity, entList,
-    h("label", {}, "Bedingung"), negate, match, partRow, hint] };
+  return { kind, entity, match, negate, part, nodes: [h("label", {}, "Auslöser"), kind, entRow,
+    condLabel, negate, match, partRow, hint] };
 }
 
 // Show a diary meal only on days where a rule applies (e.g. calendar has "Nachtschicht").
@@ -1048,7 +1087,7 @@ async function triggerDialog(preset = {}, onDone = () => {}) {
   const [day, saved, foods, ents] = await Promise.all([
     api("day/" + state.day), api("saved-meals"), api("foods"), api("ha/entities").catch(() => [])]);
   const times = day.mode === "times";
-  const tf = triggerFields(ents);
+  const tf = triggerFields(ents, true);
   const { kind, entity, match } = tf;
   const item = h("select", {},
     h("optgroup", { label: "Gespeicherte Mahlzeiten" }, saved.map(s => h("option", { value: "s:" + s.id }, s.name))),
@@ -1060,8 +1099,15 @@ async function triggerDialog(preset = {}, onDone = () => {}) {
   const ahead = h("input", { type: "number", step: "1", min: "0", max: "60", value: "0" });
   const aheadRow = h("div", {}, h("label", {}, "Tage im Voraus eintragen (nur Kalender)"), ahead,
     h("div", { class: "muted" }, "0 = erst am Tag selbst. Mit z. B. 7 wird der Eintrag schon für die nächsten 7 Tage geplant, sobald dort ein passender Termin steht."));
+  const hold = h("input", { type: "number", step: "1", min: "0", max: "1440", value: "0" });
+  const holdRow = h("div", {}, h("label", {}, "Zustand muss schon so lange anliegen (Minuten)"), hold,
+    h("div", { class: "muted" }, "0 = sofort. Z. B. 20: erst eintragen, wenn die Person seit 20 Minuten im Fitnessstudio ist."));
+  const winFrom = h("input", { type: "time" }), winTo = h("input", { type: "time" });
+  const winRow = h("div", {}, h("label", {}, "Nur zwischen (Uhrzeit, optional)"),
+    h("div", { class: "grid" }, winFrom, winTo),
+    h("div", { class: "muted" }, "Außerhalb dieses Zeitfensters trägt der Trigger nicht ein. Über Mitternacht möglich (22:00 bis 06:00)."));
   const msg = h("div", { class: "err" });
-  const syncAhead = () => { aheadRow.hidden = kind.value !== "calendar"; };
+  const syncAhead = () => { aheadRow.hidden = kind.value !== "calendar"; holdRow.hidden = kind.value !== "state"; };
   kind.addEventListener("change", syncAhead);
   syncAhead();
   if (ed) {
@@ -1069,18 +1115,19 @@ async function triggerDialog(preset = {}, onDone = () => {}) {
     entity.value = ed.entity; match.value = ed.match; tf.negate.value = ed.negate ? "1" : "0"; tf.part.value = ed.part || "any";
     item.value = (ed.saved_meal_id ? "s:" + ed.saved_meal_id : "f:" + ed.food_id);
     meal.value = ed.meal_id; grams.value = ed.grams ?? ""; ahead.value = ed.days_ahead || 0;
+    hold.value = ed.hold_min || 0; winFrom.value = ed.win_from || ""; winTo.value = ed.win_to || "";
   }
 
   setDlg(h("h2", {}, ed ? "Trigger bearbeiten" : "Neuer Trigger"),
     tf.nodes,
     h("label", {}, "Hinzufügen"), item,
-    h("div", { class: "muted" }, "Bei Lebensmitteln optional mit Menge:"), grams, aheadRow,
+    h("div", { class: "muted" }, "Bei Lebensmitteln optional mit Menge:"), grams, aheadRow, holdRow, winRow,
     times ? null : [h("label", {}, "Zu Mahlzeit im Tagebuch"), meal],
     msg,
     h("div", { class: "actions" },
       h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
       h("button", { onclick: async () => {
-        if (!entity.value.trim()) { msg.textContent = "Bitte eine Entität angeben."; return; }
+        if (kind.value === "time" ? !match.value : !entity.value.trim()) { msg.textContent = kind.value === "time" ? "Bitte eine Uhrzeit angeben." : "Bitte eine Entität angeben."; return; }
         const [t, id] = item.value.split(":");
         if (!id) { msg.textContent = "Bitte ein Lebensmittel oder eine Mahlzeit wählen."; return; }
         try {
@@ -1090,7 +1137,8 @@ async function triggerDialog(preset = {}, onDone = () => {}) {
             saved_meal_id: t === "s" ? Number(id) : null, food_id: t === "f" ? Number(id) : null,
             grams: t === "f" ? num(grams.value) : null, negate: tf.negate.value === "1",
             days_ahead: kind.value === "calendar" ? Number(ahead.value) || 0 : 0,
-            part: kind.value === "calendar" ? tf.part.value : "any" });
+            part: kind.value === "calendar" ? tf.part.value : "any",
+            hold_min: kind.value === "state" ? Number(hold.value) || 0 : 0, win_from: winFrom.value, win_to: winTo.value });
           dlg.close(); onDone(); if (state.tab === "settings") renderSettings();
         } catch (e) { msg.textContent = e.message; }
       } }, "Speichern")));
@@ -1149,7 +1197,7 @@ async function mfpDialog(file) {
 
 // ---------------------------------------------------------------- settings
 async function renderSettings() {
-  const [goal, day, triggers, rules] = await Promise.all([api("goal"), api("day/" + state.day), api("triggers"), api("meal-triggers")]);
+  const [goal, day, triggers, rules, runs] = await Promise.all([api("goal"), api("day/" + state.day), api("triggers"), api("meal-triggers"), api("trigger-runs?limit=15")]);
   const root = $("#settings");
   root.replaceChildren();
 
@@ -1307,7 +1355,8 @@ async function renderSettings() {
       const on = h("input", { type: "checkbox", checked: t.enabled, title: "Aktiv", onchange: async () => {
         await send("PUT", "triggers/" + t.id, { kind: t.kind, entity: t.entity, match: t.match, meal_id: t.meal_id,
           saved_meal_id: t.saved_meal_id, food_id: t.food_id, grams: t.grams, enabled: on.checked,
-          negate: !!t.negate, days_ahead: t.days_ahead || 0, part: t.part || "any" });
+          negate: !!t.negate, days_ahead: t.days_ahead || 0, part: t.part || "any",
+          hold_min: t.hold_min || 0, win_from: t.win_from || "", win_to: t.win_to || "" });
       } });
       return h("div", {}, on,
         h("div", { class: "grow" },
@@ -1336,6 +1385,17 @@ async function renderSettings() {
         } catch (e) { trigMsg.className = "err"; trigMsg.textContent = e.message; }
       } }, "Jetzt prüfen"),
       h("button", { onclick: () => triggerDialog({}) }, "+ Neuer Trigger"))));
+
+  // what triggers entered, with undo
+  if (runs.length) root.append(h("div", { class: "card" }, h("h2", {}, "Trigger-Verlauf"),
+    h("div", { class: "muted" }, "Was Trigger zuletzt eingetragen haben. „Rückgängig“ entfernt die Einträge wieder; der Trigger trägt an diesem Tag nicht erneut ein."),
+    h("div", { class: "list" }, runs.map(r => h("div", {},
+      h("div", { class: "grow" }, h("div", {}, `${r.label || "(gelöscht)"}`, h("span", { class: "tag" }, parse(r.day).toLocaleDateString("de-DE"))),
+        h("div", { class: "muted" }, `${r.ts.slice(11)} Uhr · ${r.kind ? condText(r) : "Trigger gelöscht"}`)),
+      r.undone ? h("span", { class: "muted" }, "rückgängig")
+        : h("button", { class: "flat", disabled: !r.entries, title: r.entries ? "" : "Einträge nicht mehr vorhanden", onclick: async () => {
+          await send("POST", `trigger-runs/${r.id}/undo`, {}); renderSettings();
+        } }, "Rückgängig"))))));
 
   // data
   root.append(h("div", { class: "card" }, h("h2", {}, "Daten"),

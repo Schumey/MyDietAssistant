@@ -6,6 +6,36 @@ Ernährungstagebuch pro HA-Benutzer (Ingress). Daten liegen in `/data/mydiet.db`
 Bei aktivierter Option `publish_sensors` werden nach jeder Änderung diese Entitäten gesetzt:
 `sensor.mydiet_<name>_{kcal,protein,carbs,fat}_today`.
 
+Weitere Sensoren (gleiches Namensschema):
+
+| Entität | Bedeutung |
+|---|---|
+| `sensor.mydiet_<name>_kcal_remaining_today` | verbleibende kcal heute (Tagesziel minus Aufnahme) |
+| `sensor.mydiet_<name>_kcal_week_avg` | Ø kcal der letzten 7 Tage (nur erfasste Tage) |
+| `sensor.mydiet_<name>_weight` | letzter Gewichtswert |
+| `sensor.mydiet_<name>_weight_trend` | geglätteter Gewichtstrend |
+| `sensor.mydiet_<name>_energy_balance` | geschätzte Kalorienbilanz pro Tag (30 Tage, aus Gewichtstrend und Aufnahme; + Überschuss, − Defizit) |
+
+Beispiel für eine Dashboard-Karte (`<name>` anpassen):
+
+```yaml
+type: entities
+title: Ernährung
+entities:
+  - entity: sensor.mydiet_<name>_kcal_today
+    name: Heute gegessen
+  - entity: sensor.mydiet_<name>_kcal_remaining_today
+    name: Verbleibend
+  - entity: sensor.mydiet_<name>_protein_today
+    name: Eiweiß
+  - entity: sensor.mydiet_<name>_kcal_week_avg
+    name: Ø 7 Tage
+  - entity: sensor.mydiet_<name>_weight_trend
+    name: Gewichtstrend
+  - entity: sensor.mydiet_<name>_energy_balance
+    name: Bilanz pro Tag
+```
+
 Hinweis: Sie werden über die States-API gesetzt (keine Unique-ID, nach einem HA-Neustart fehlen sie bis zum nächsten Eintrag). Später: MQTT Discovery.
 
 ## Open Food Facts

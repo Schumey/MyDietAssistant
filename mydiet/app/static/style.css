@@ -383,3 +383,6 @@ html[data-skin="win"] #tip { border-radius: 0; background: #ffffe1; color: #000;
 .tracker-btns { display: flex; gap: 8px; margin-top: 8px; }
 .wd-grid { display: grid; grid-template-columns: auto repeat(4, minmax(60px, 1fr)); gap: 6px 8px; align-items: center; margin-top: 8px; }
 html[data-skin="win"] .tracker { border-bottom: 1px solid #808080; }
+button.icon.fav.on { color: var(--warning-color); }
+button.icon.fav:hover { color: var(--warning-color); }
+.pick input[type="radio"] { width: auto; }

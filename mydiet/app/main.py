@@ -153,8 +153,12 @@ def publish(owner: str, display: str):
               ("carbs", t["carbs"], "g"), ("fat", t["fat"], "g")]
     if w:
         states.append(("weight", w["kg"], "kg"))
+    try:
+        states += sensor_extras(owner)
+    except Exception:  # extra sensors must never break the basic ones
+        pass
     for key, val, unit in states:
-        suffix = "" if key == "weight" else "_today"
+        suffix = "_today" if key in ("kcal", "protein", "carbs", "fat", "kcal_remaining") else ""
         try:
             httpx.post(
                 f"http://supervisor/core/api/states/sensor.mydiet_{slug}_{key}{suffix}",
@@ -162,7 +166,7 @@ def publish(owner: str, display: str):
                 json={"state": val, "attributes": {
                     "unit_of_measurement": unit,
                     "friendly_name": f"{display} {key}",
-                    "state_class": "measurement" if key == "weight" else "total",
+                    "state_class": "total" if key in ("kcal", "protein", "carbs", "fat") else "measurement",
                 }}, timeout=5)
         except httpx.HTTPError:
             pass
@@ -321,6 +325,48 @@ def edit_food(food_id: int, f: FoodIn, x_remote_user_id: str | None = Header(Non
             (f.name.strip(), f.brand.strip(), f.kcal, f.protein, f.carbs, f.fat, f.serving_g,
              f.category.strip(), food_id, owner))
     return {"ok": True}
+
+
+class FavoriteIn(BaseModel):
+    favorite: bool
+
+
+class MergeIn(BaseModel):
+    keep_id: int
+    merge_ids: list[int]
+
+
+@app.put("/api/foods/{food_id}/favorite")
+def set_favorite(food_id: int, f: FavoriteIn, x_remote_user_id: str | None = Header(None)):
+    with db.conn() as c:
+        c.execute("UPDATE foods SET favorite=? WHERE id=? AND owner=?", (int(f.favorite), food_id, user_from(x_remote_user_id)))
+    return {"ok": True}
+
+
+@app.get("/api/foods/duplicates")
+def food_duplicates(x_remote_user_id: str | None = Header(None)):
+    """Foods with the same name and brand (case-insensitive), grouped."""
+    owner = user_from(x_remote_user_id)
+    groups: dict[tuple, list] = {}
+    with db.conn() as c:
+        for r in c.execute("SELECT * FROM foods WHERE owner=? ORDER BY id", (owner,)):
+            groups.setdefault((r["name"].strip().lower(), r["brand"].strip().lower()), []).append(dict(r))
+    return [g for g in groups.values() if len(g) > 1]
+
+
+@app.post("/api/foods/merge")
+def merge_foods(m: MergeIn, x_remote_user_id: str | None = Header(None)):
+    """Keep one food: triggers of the merged ones point to it, the others are deleted."""
+    owner = user_from(x_remote_user_id)
+    ids = [i for i in m.merge_ids if i != m.keep_id]
+    with db.conn() as c:
+        if not c.execute("SELECT 1 FROM foods WHERE id=? AND owner=?", (m.keep_id, owner)).fetchone():
+            raise HTTPException(404, "food not found")
+        for i in ids:
+            if c.execute("SELECT 1 FROM foods WHERE id=? AND owner=?", (i, owner)).fetchone():
+                c.execute("UPDATE triggers SET food_id=? WHERE food_id=? AND owner=?", (m.keep_id, i, owner))
+                c.execute("DELETE FROM foods WHERE id=? AND owner=?", (i, owner))
+    return {"merged": len(ids)}
 
 
 @app.delete("/api/foods/{food_id}")

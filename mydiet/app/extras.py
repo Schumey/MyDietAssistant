@@ -5,7 +5,7 @@ import json
 import re
 import threading
 import time
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 import httpx
 from fastapi import Header, HTTPException
@@ -13,7 +13,7 @@ from fastapi.responses import Response
 from pydantic import BaseModel
 
 import db
-from main import SUPERVISOR_TOKEN, app, check_day, check_time, publish, user_from
+from main import SUPERVISOR_TOKEN, app, check_day, check_time, day_totals, get_goal, publish, user_from
 
 KCAL_PER_KG = 7700
 
@@ -331,12 +331,14 @@ def add_saved_to_diary(c, owner: str, sid: int, day: str, meal_id: int | None, f
         raise HTTPException(404, "saved meal not found")
     if not c.execute("SELECT 1 FROM meals WHERE id=? AND owner=?", (meal_id, owner)).fetchone():
         raise HTTPException(404, "meal not found")
+    ids = []
     for i in c.execute("SELECT * FROM saved_meal_items WHERE saved_meal_id=? ORDER BY id", (sid,)).fetchall():
-        c.execute(
+        ids.append(c.execute(
             "INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,time)"
             " VALUES(?,?,?,?,?,?,?,?,?,?)",
             (owner, day, meal_id, i["name"], i["grams"] * factor, i["kcal"] * factor,
-             i["protein"] * factor, i["carbs"] * factor, i["fat"] * factor, time))
+             i["protein"] * factor, i["carbs"] * factor, i["fat"] * factor, time)).lastrowid)
+    return ids
 
 
 @app.post("/api/saved-meals/{sid}/add")
@@ -382,6 +384,40 @@ def energy_balance(owner: str, days: list[dict]) -> dict | None:
     return res
 
 
+def sensor_extras(owner: str) -> list:
+    """More HA sensors: remaining kcal today, 7-day average, weight trend, estimated daily balance."""
+    today = date.today()
+    out = []
+    with db.conn() as c:
+        goal = get_goal(c, owner, today.isoformat())
+        eaten = day_totals(c, owner, today.isoformat())["kcal"]
+        week = [r["k"] for r in c.execute(
+            "SELECT SUM(kcal) k FROM entries WHERE owner=? AND day>? AND day<=? GROUP BY day",
+            (owner, (today - timedelta(days=7)).isoformat(), today.isoformat()))]
+        weights = [(r["day"], r["kg"]) for r in c.execute("SELECT day, kg FROM weights WHERE owner=? ORDER BY day", (owner,))]
+    if goal["kcal"]:
+        out.append(("kcal_remaining", round(goal["kcal"] - eaten), "kcal"))
+    if week:
+        out.append(("kcal_week_avg", round(sum(week) / len(week)), "kcal"))
+    if weights:
+        tr, prev = None, None
+        for day, kg in weights:
+            d = date.fromisoformat(day)
+            tr = kg if tr is None else tr + (1 - 0.9 ** max(1, (d - prev).days)) * (kg - tr)
+            prev = d
+        out.append(("weight_trend", round(tr, 1), "kg"))
+    start = today - timedelta(days=29)
+    with db.conn() as c:
+        rows = {r["day"]: r["k"] for r in c.execute(
+            "SELECT day, SUM(kcal) k FROM entries WHERE owner=? AND day>=? GROUP BY day", (owner, start.isoformat()))}
+    days = [{"day": (start + timedelta(days=i)).isoformat(), "logged": (start + timedelta(days=i)).isoformat() in rows,
+             "kcal": rows.get((start + timedelta(days=i)).isoformat(), 0)} for i in range(30)]
+    b = energy_balance(owner, days)
+    if b and b["balance"] is not None:
+        out.append(("energy_balance", b["balance"], "kcal"))
+    return out
+
+
 # --- export ----------------------------------------------------------------
 
 def dump(owner: str) -> dict:
@@ -389,7 +425,7 @@ def dump(owner: str) -> dict:
         q = lambda sql, *a: [dict(r) for r in c.execute(sql, a)]
         return {
             "app": "MyDietAssistant", "version": 1,
-            "foods": q("SELECT id,name,brand,kcal,protein,carbs,fat,serving_g,category FROM foods WHERE owner=?", owner),
+            "foods": q("SELECT id,name,brand,kcal,protein,carbs,fat,serving_g,category,favorite FROM foods WHERE owner=?", owner),
             "meals": q("SELECT id,name,position,archived FROM meals WHERE owner=? ORDER BY position", owner),
             "settings": {"diary_mode": get_pref(owner, "diary_mode", "meals")},
             "entries": q("SELECT day,time,meal_id,name,grams,kcal,protein,carbs,fat FROM entries WHERE owner=? ORDER BY day,id", owner),
@@ -463,10 +499,11 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
             for l in t.get("log", []):
                 c.execute("INSERT INTO tracker_log(tracker_id,day,amount) VALUES(?,?,?)", (tid, l["day"], l["amount"]))
         for f in d.get("foods", []):
-            c.execute("INSERT INTO foods(owner,name,brand,kcal,protein,carbs,fat,serving_g,category)"
-                      " VALUES(?,?,?,?,?,?,?,?,?)",
+            c.execute("INSERT INTO foods(owner,name,brand,kcal,protein,carbs,fat,serving_g,category,favorite)"
+                      " VALUES(?,?,?,?,?,?,?,?,?,?)",
                       (owner, f["name"], f.get("brand", ""), f["kcal"], f.get("protein", 0),
-                       f.get("carbs", 0), f.get("fat", 0), f.get("serving_g", 100), f.get("category", "")))
+                       f.get("carbs", 0), f.get("fat", 0), f.get("serving_g", 100), f.get("category", ""),
+                       f.get("favorite", 0)))
         mmap = {}
         for m in d.get("meals", []):
             mmap[m["id"]] = c.execute("INSERT INTO meals(owner,name,position,archived) VALUES(?,?,?,?)",
@@ -663,8 +700,8 @@ def mfp_import(p: MfpImportIn, x_remote_user_id: str | None = Header(None),
 # --- triggers ---------------------------------------------------------------
 
 class TriggerIn(BaseModel):
-    kind: str                       # 'state' | 'calendar'
-    entity: str
+    kind: str                       # 'state' | 'calendar' | 'time'
+    entity: str = ""
     match: str = ""
     meal_id: int
     saved_meal_id: int | None = None
@@ -674,6 +711,9 @@ class TriggerIn(BaseModel):
     negate: bool = False
     days_ahead: int = 0             # calendar triggers: also fill the next N days
     part: str = "any"               # calendar triggers: 'any' day of the event | 'start' day | 'end' day
+    hold_min: int = 0               # state triggers: only after the state lasted this many minutes
+    win_from: str = ""              # only between these times of day (HH:MM, either may be empty)
+    win_to: str = ""
 
 
 def ha_get(path: str, **params):
@@ -717,12 +757,19 @@ def trigger_rows(c, owner: str):
 
 
 def check_trigger_body(c, owner: str, t: TriggerIn):
-    if t.kind not in ("state", "calendar"):
-        raise HTTPException(400, "kind must be state or calendar")
+    if t.kind not in ("state", "calendar", "time"):
+        raise HTTPException(400, "kind must be state, calendar or time")
     if t.part not in ("any", "start", "end"):
         raise HTTPException(400, "part must be any, start or end")
-    if not t.entity.strip():
+    if t.kind == "time":
+        if not check_time(t.match.strip()):
+            raise HTTPException(400, "Uhrzeit (HH:MM) erforderlich")
+    elif not t.entity.strip():
         raise HTTPException(400, "entity required")
+    check_time(t.win_from.strip())
+    check_time(t.win_to.strip())
+    if t.hold_min < 0:
+        raise HTTPException(400, "hold_min must be >= 0")
     if bool(t.saved_meal_id) == bool(t.food_id):
         raise HTTPException(400, "genau eines von Mahlzeit/Lebensmittel angeben")
     if not c.execute("SELECT 1 FROM meals WHERE id=? AND owner=?", (t.meal_id, owner)).fetchone():
@@ -741,10 +788,11 @@ def add_trigger(t: TriggerIn, x_remote_user_id: str | None = Header(None)):
     with db.conn() as c:
         check_trigger_body(c, owner, t)
         cur = c.execute(
-            "INSERT INTO triggers(owner,kind,entity,match,meal_id,saved_meal_id,food_id,grams,enabled,negate,days_ahead,part)"
-            " VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO triggers(owner,kind,entity,match,meal_id,saved_meal_id,food_id,grams,enabled,negate,days_ahead,part,"
+            "hold_min,win_from,win_to) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (owner, t.kind, t.entity.strip(), t.match.strip(), t.meal_id, t.saved_meal_id, t.food_id,
-             t.grams, int(t.enabled), int(t.negate), max(0, min(t.days_ahead, 60)), t.part))
+             t.grams, int(t.enabled), int(t.negate), 0 if t.kind != "calendar" else max(0, min(t.days_ahead, 60)), t.part,
+             t.hold_min if t.kind == "state" else 0, t.win_from.strip(), t.win_to.strip()))
         return {"id": cur.lastrowid}
 
 
@@ -754,9 +802,10 @@ def edit_trigger(tid: int, t: TriggerIn, x_remote_user_id: str | None = Header(N
     with db.conn() as c:
         check_trigger_body(c, owner, t)
         c.execute("UPDATE triggers SET kind=?,entity=?,match=?,meal_id=?,saved_meal_id=?,food_id=?,"
-                  "grams=?,enabled=?,negate=?,days_ahead=?,part=? WHERE id=? AND owner=?",
+                  "grams=?,enabled=?,negate=?,days_ahead=?,part=?,hold_min=?,win_from=?,win_to=? WHERE id=? AND owner=?",
                   (t.kind, t.entity.strip(), t.match.strip(), t.meal_id, t.saved_meal_id, t.food_id,
-                   t.grams, int(t.enabled), int(t.negate), max(0, min(t.days_ahead, 60)), t.part, tid, owner))
+                   t.grams, int(t.enabled), int(t.negate), 0 if t.kind != "calendar" else max(0, min(t.days_ahead, 60)), t.part,
+                   t.hold_min if t.kind == "state" else 0, t.win_from.strip(), t.win_to.strip(), tid, owner))
     return {"ok": True}
 
 
@@ -774,19 +823,61 @@ def fire(c, t, day: str):
     owner = t["owner"]
     # planned days ahead get no clock time; today is stamped with the current time
     stamp = datetime.now().strftime("%H:%M") if day == date.today().isoformat() else None
+    ids, label = [], ""
     if t["saved_meal_id"]:
-        add_saved_to_diary(c, owner, t["saved_meal_id"], day, t["meal_id"], time=stamp)
+        ids = add_saved_to_diary(c, owner, t["saved_meal_id"], day, t["meal_id"], time=stamp)
+        r = c.execute("SELECT name FROM saved_meals WHERE id=?", (t["saved_meal_id"],)).fetchone()
+        label = r["name"] if r else ""
     elif t["food_id"]:
         f = c.execute("SELECT * FROM foods WHERE id=? AND owner=?", (t["food_id"], owner)).fetchone()
         if not f:
             return
         g = t["grams"] or f["serving_g"] or 100
         k = g / 100
-        c.execute("INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,time)"
-                  " VALUES(?,?,?,?,?,?,?,?,?,?)",
-                  (owner, day, t["meal_id"], f["name"], g, f["kcal"] * k, f["protein"] * k,
-                   f["carbs"] * k, f["fat"] * k, stamp))
+        ids.append(c.execute("INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,time)"
+                             " VALUES(?,?,?,?,?,?,?,?,?,?)",
+                             (owner, day, t["meal_id"], f["name"], g, f["kcal"] * k, f["protein"] * k,
+                              f["carbs"] * k, f["fat"] * k, stamp)).lastrowid)
+        label = f["name"]
     c.execute("INSERT OR IGNORE INTO trigger_log(trigger_id, day) VALUES(?,?)", (t["id"], day))
+    c.execute("INSERT INTO trigger_runs(owner,trigger_id,label,day,ts,entry_ids) VALUES(?,?,?,?,?,?)",
+              (owner, t["id"], label, day, datetime.now().strftime("%Y-%m-%d %H:%M"), json.dumps(ids)))
+    c.execute("DELETE FROM trigger_runs WHERE owner=? AND id NOT IN"
+              " (SELECT id FROM trigger_runs WHERE owner=? ORDER BY id DESC LIMIT 200)", (owner, owner))
+
+
+@app.get("/api/trigger-runs")
+def trigger_runs(limit: int = 30, x_remote_user_id: str | None = Header(None)):
+    """History of what triggers entered (newest first), with the trigger's condition for context."""
+    owner = user_from(x_remote_user_id)
+    with db.conn() as c:
+        rows = c.execute(
+            "SELECT r.*, t.kind, t.entity, t.match, t.negate FROM trigger_runs r"
+            " LEFT JOIN triggers t ON t.id=r.trigger_id WHERE r.owner=? ORDER BY r.id DESC LIMIT ?",
+            (owner, max(1, min(limit, 200)))).fetchall()
+        out = []
+        for r in rows:
+            ids = json.loads(r["entry_ids"])
+            alive = [i for i in ids if c.execute("SELECT 1 FROM entries WHERE id=? AND owner=?", (i, owner)).fetchone()]
+            out.append({**{k: r[k] for k in ("id", "label", "day", "ts", "kind", "entity", "match", "negate")},
+                        "undone": bool(r["undone"]), "entries": len(alive)})
+        return out
+
+
+@app.post("/api/trigger-runs/{rid}/undo")
+def undo_trigger_run(rid: int, x_remote_user_id: str | None = Header(None),
+                     x_remote_user_display_name: str | None = Header(None)):
+    """Remove the entries a trigger run created. The trigger will not fire again for that day."""
+    owner = user_from(x_remote_user_id)
+    with db.conn() as c:
+        r = c.execute("SELECT * FROM trigger_runs WHERE id=? AND owner=?", (rid, owner)).fetchone()
+        if not r:
+            raise HTTPException(404, "run not found")
+        for i in json.loads(r["entry_ids"]):
+            c.execute("DELETE FROM entries WHERE id=? AND owner=?", (i, owner))
+        c.execute("UPDATE trigger_runs SET undone=1 WHERE id=?", (rid,))
+    publish(owner, x_remote_user_display_name or owner)
+    return {"ok": True}
 
 
 @app.post("/api/triggers/{tid}/run")
@@ -803,16 +894,34 @@ def run_trigger(tid: int, x_remote_user_id: str | None = Header(None),
     return {"ok": True}
 
 
+def in_window(t, now: datetime) -> bool:
+    """Is the current time inside the trigger's optional time-of-day window (may span midnight)?"""
+    a, b = t["win_from"], t["win_to"]
+    cur = now.strftime("%H:%M")
+    if a and b:
+        return a <= cur <= b if a <= b else (cur >= a or cur <= b)
+    return (cur >= a) if a else (cur <= b if b else True)
+
+
 def condition_met(t, now: datetime, day: str | None = None) -> bool:
     """Does the rule apply (now, or for the given day)? With t['negate'] the condition is inverted."""
     neg = bool(t["negate"])
     part = t["part"] if t["kind"] == "calendar" else "any"
     if day and day != now.date().isoformat():  # calendar day in the future: any matching event counts
         return calendar_has_event(t["entity"], t["match"], day, part) != neg
+    if not in_window(t, now):
+        return False
+    if t["kind"] == "time":
+        return now.strftime("%H:%M") >= t["match"].strip()
     if t["kind"] == "state":
-        st = ha_get(f"states/{t['entity']}")["state"]
+        s = ha_get(f"states/{t['entity']}")
+        st = s["state"]
         want = t["match"].strip().lower()
-        return (st.lower() == want if want else st.lower() in ("on", "home", "true")) != neg
+        ok = (st.lower() == want if want else st.lower() in ("on", "home", "true")) != neg
+        if ok and t["hold_min"]:  # the state must have lasted for a while (e.g. at the gym for 20 minutes)
+            since = datetime.fromisoformat(s["last_changed"].replace("Z", "+00:00"))
+            ok = (datetime.now(timezone.utc) - since).total_seconds() >= t["hold_min"] * 60
+        return ok
     if neg or part != "any":  # "has no event ...", or only the start/end day of an event: judged for the whole day
         return calendar_has_event(t["entity"], t["match"], now.date().isoformat(), part) != neg
     start = now.strftime("%Y-%m-%dT00:00:00")
