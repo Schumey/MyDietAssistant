@@ -1,0 +1,16 @@
+configuration:
+  default_kcal_goal:
+    name: Standard-Kalorienziel
+    description: Tagesziel für neue Benutzer (pro Benutzer in den Einstellungen änderbar).
+  publish_sensors:
+    name: Sensoren veröffentlichen
+    description: Tagessummen und letztes Gewicht als Sensoren an Home Assistant senden.
+  auto_backup:
+    name: Automatische Sicherung
+    description: Täglich eine JSON-Sicherung jedes Benutzers nach /backup/mydiet schreiben.
+  backup_keep_days:
+    name: Sicherungen aufbewahren (Tage)
+    description: Ältere automatische Sicherungen werden gelöscht.
+  api_key:
+    name: API-Schlüssel
+    description: Schlüssel für die externe Schnittstelle (Header X-MDA-Key). Leer = Schnittstelle aus.

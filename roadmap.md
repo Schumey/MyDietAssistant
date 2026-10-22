@@ -16,7 +16,7 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 ## Lebensmittel und Eingabe
 
 - **Barcode-Scan ohne Browser-Unterstützung** (S): Für iPhone/Firefox eine mitgelieferte Scan-Bibliothek (ZXing) als Rückfall, da dort `BarcodeDetector` fehlt.
-- **Einheiten und Sprache** (M): Anzeige in oz/lb sowie englische Oberfläche.
+- **Nahrungsmengen in oz** (M): Mengenfelder und Anzeige in Unzen für Lebensmittel (Gewicht lb und Maße in sind schon umschaltbar). Weitere Sprachen: der Übersetzungsmechanismus (`static/i18n.js`) nimmt zusätzliche Wörterbücher auf.
 - **Mehrere Datenquellen** (L): Weitere Nährwertdatenbanken neben Open Food Facts (z. B. BLS), optional abschaltbar, da sie online abfragen.
 
 ## Import und Export

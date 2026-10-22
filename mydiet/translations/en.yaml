@@ -1,0 +1,16 @@
+configuration:
+  default_kcal_goal:
+    name: Default calorie goal
+    description: Daily calorie goal for new users (changeable per user in the settings).
+  publish_sensors:
+    name: Publish sensors
+    description: Send today's totals and the latest weight to Home Assistant as sensors.
+  auto_backup:
+    name: Automatic backup
+    description: Write a daily JSON backup of every user to /backup/mydiet.
+  backup_keep_days:
+    name: Keep backups (days)
+    description: Older automatic backups are deleted.
+  api_key:
+    name: API key
+    description: Key for the external interface (header X-MDA-Key). Empty = interface off.

@@ -24,15 +24,21 @@ const send = (method, path, body) =>
 
 // Is a calorie total "too much" for the chosen goal (lose: above, maintain: more than 10 % above, gain: never)?
 const goalOver = (kcal, goal) => !goal ? false : state.goalMode === "gain" ? false : state.goalMode === "maintain" ? kcal > goal * 1.1 : kcal > goal;
-const n0 = n => Math.round(n).toLocaleString("de-DE");
-const n1 = n => (Math.round(n * 10) / 10).toLocaleString("de-DE", { minimumFractionDigits: 1 });
+// Weights are stored in kg and body measurements in cm; imperial users see (and type) lb and inches.
+const KG_LB = 2.2046226218, CM_IN = 2.54;
+const imperial = () => I18N.units === "imperial";
+const wUnit = () => (imperial() ? "lb" : "kg");
+const wConv = kg => (imperial() ? kg * KG_LB : kg);
+const wIn = v => (imperial() ? v / KG_LB : v);
+const n0 = n => Math.round(n).toLocaleString(I18N.locale);
+const n1 = n => (Math.round(n * 10) / 10).toLocaleString(I18N.locale, { minimumFractionDigits: 1 });
 const iso = d => d.toLocaleDateString("sv");
 const parse = s => new Date(s + "T12:00:00");
 const num = v => (v === "" || v == null ? null : Number(String(v).replace(",", ".")));
 
 const state = { skin: "auto", goalMode: "lose", goalRate: 0.5, features: {}, day: iso(new Date()), tab: "diary", range: 30, wrange: 90, whist: 10 };
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const longDate = day => parse(day).toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "numeric", year: "numeric" });
+const longDate = day => parse(day).toLocaleDateString(I18N.locale, { weekday: "short", day: "numeric", month: "numeric", year: "numeric" });
 
 // Hover tooltip for charts: elements with a data-tip attribute (SVG hit areas) show their text.
 const tip = h("div", { id: "tip", hidden: true });
@@ -59,11 +65,11 @@ function niceTicks(first, last) {
   const all = [];
   for (let i = 0; i < n; i++) { const d = parse(first); d.setDate(d.getDate() + i); all.push(d); }
   let pick = () => true;
-  let fmt = d => d.toLocaleDateString("de-DE", { day: "numeric", month: "numeric" });
+  let fmt = d => d.toLocaleDateString(I18N.locale, { day: "numeric", month: "numeric" });
   if (n > 100) {
     const every = n > 200 ? 2 : 1;
     pick = d => d.getDate() === 1 && d.getMonth() % every === 0;
-    fmt = d => d.toLocaleDateString("de-DE", d.getMonth() === 0 ? { month: "short", year: "2-digit" } : { month: "short" });
+    fmt = d => d.toLocaleDateString(I18N.locale, d.getMonth() === 0 ? { month: "short", year: "2-digit" } : { month: "short" });
   } else if (n > 31) pick = d => d.getDate() === 1 || d.getDate() === 15;
   else if (n > 10) pick = d => [1, 5, 10, 15, 20, 25].includes(d.getDate());
   return all.filter(pick).map(d => ({ day: iso(d), label: fmt(d) }));
@@ -141,7 +147,7 @@ async function renderDiary() {
   const root = $("#diary");
   root.replaceChildren();
 
-  const label = parse(state.day).toLocaleDateString("de-DE",
+  const label = parse(state.day).toLocaleDateString(I18N.locale,
     { weekday: "long", day: "numeric", month: "long", year: "numeric" });
   const picker = h("input", { type: "date", value: state.day, onchange: e => {
     if (e.target.value) { state.day = e.target.value; renderDiary(); }
@@ -271,7 +277,7 @@ function dayCopyDialog() {
 // Water & supplements (optional feature): +/- buttons with a daily goal.
 function trackerCard(list) {
   const card = h("div", { class: "card" }, h("h2", {}, "Wasser & Ergänzungen"));
-  const fmt = v => (Math.round(v * 10) / 10).toLocaleString("de-DE");
+  const fmt = v => (Math.round(v * 10) / 10).toLocaleString(I18N.locale);
   const draw = () => card.replaceChildren(card.firstChild, ...list.map(t => {
     const set = async amount => {
       t.amount = Math.max(0, Math.round(amount * 100) / 100);
@@ -802,6 +808,7 @@ function barChart(days, goal) {
 
 // Weight curve: raw values (faint) and a smoothed trend line (thick), like Happy Scale.
 function lineChart(points, target, unit = "kg") {
+  const isWeight = unit === "kg" || unit === "lb";
   const W = 600, H = 220, L = 44, B = 24, T = 10, R = 16;
   const vals = points.flatMap(p => [p.kg, p.trend]).concat(target ? [target] : []);
   let lo = Math.min(...vals), hi = Math.max(...vals);
@@ -831,10 +838,10 @@ function lineChart(points, target, unit = "kg") {
   points.forEach((p, i) => {
     const cx = px(p);
     const a = i ? (px(points[i - 1]) + cx) / 2 : L, b = i < points.length - 1 ? (cx + px(points[i + 1])) / 2 : W - R;
-    const text = `${longDate(p.day)}\n${n1(p.kg)} ${unit}` + (unit === "kg" ? `\nTrend ${n1(p.trend)} kg` : "");
+    const text = `${longDate(p.day)}\n${n1(p.kg)} ${unit}` + (isWeight ? `\nTrend ${n1(p.trend)} ${unit}` : "");
     s += `<rect class="hit" x="${a}" y="${T}" width="${Math.max(b - a, 1)}" height="${H - T - B}" data-tip="${esc(text)}"/>`;
   });
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${unit === "kg" ? "Gewichtsverlauf" : "Verlauf"}">${s}</svg>`;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${isWeight ? "Gewichtsverlauf" : "Verlauf"}">${s}</svg>`;
 }
 
 // Exponentially smoothed trend (10 % per day, gap-aware) so daily fluctuations fade out.
@@ -862,7 +869,7 @@ function forecast(pts, target) {
   const d = diff / slope;
   if (d > 730) return { text: "nicht absehbar", perWeek: slope * 7 };
   const when = new Date(lt + d * 864e5);
-  return { text: when.toLocaleDateString("de-DE", { day: "numeric", month: "short", year: "numeric" }), perWeek: slope * 7 };
+  return { text: when.toLocaleDateString(I18N.locale, { day: "numeric", month: "short", year: "numeric" }), perWeek: slope * 7 };
 }
 
 function rangeButtons(options, current, onpick) {
@@ -1149,14 +1156,14 @@ async function renderWeight() {
   root.replaceChildren();
 
   const day = h("input", { type: "date", value: iso(new Date()) });
-  const kg = h("input", { type: "number", step: "0.1", min: "20", max: "500", placeholder: "z. B. 78,5" });
+  const kg = h("input", { type: "number", step: "0.1", min: Math.round(wConv(20)), max: Math.round(wConv(500)), placeholder: "z. B. 78,5" });
   root.append(h("div", { class: "card" }, h("h2", {}, "Gewicht eintragen"),
     h("div", { class: "grid" },
       h("div", {}, h("label", {}, "Datum"), day),
-      h("div", {}, h("label", {}, "Gewicht (kg)"), kg),
+      h("div", {}, h("label", {}, `Gewicht (${wUnit()})`), kg),
       h("button", { onclick: async () => {
         if (!(num(kg.value) > 0) || !day.value) return;
-        await send("PUT", "weights/" + day.value, { kg: num(kg.value) });
+        await send("PUT", "weights/" + day.value, { kg: Math.round(wIn(num(kg.value)) * 100) / 100 });
         renderWeight();
       } }, "Speichern"))));
 
@@ -1175,25 +1182,25 @@ async function renderWeight() {
   const tile = (label, value) => h("div", { class: "tile" }, h("span", { class: "muted" }, label), h("b", {}, value));
 
   const chart = h("div");
-  chart.innerHTML = lineChart(shown, goal.target_weight);
+  chart.innerHTML = lineChart(shown.map(p => ({ ...p, kg: wConv(p.kg), trend: wConv(p.trend) })), goal.target_weight ? wConv(goal.target_weight) : null, wUnit());
   tipHandlers(chart);
   root.append(
     h("div", { class: "stat-tiles" },
-      tile("Aktuell", n1(last.kg) + " kg"),
-      tile("Trend", n1(trended[trended.length - 1].trend) + " kg"),
-      tile("Veränderung", delta == null ? "–" : (delta > 0 ? "+" : "") + n1(delta) + " kg"),
-      tile("Ziel", goal.target_weight ? n1(goal.target_weight) + " kg" : "–"),
+      tile("Aktuell", n1(wConv(last.kg)) + " " + wUnit()),
+      tile("Trend", n1(wConv(trended[trended.length - 1].trend)) + " " + wUnit()),
+      tile("Veränderung", delta == null ? "–" : (delta > 0 ? "+" : "") + n1(wConv(delta)) + " " + wUnit()),
+      tile("Ziel", goal.target_weight ? n1(wConv(goal.target_weight)) + " " + wUnit() : "–"),
       goal.target_weight ? tile("Prognose Ziel", fc ? fc.text : "–") : null),
     h("div", { class: "card" },
       rangeButtons([[30, "30 Tage"], [90, "90 Tage"], [365, "1 Jahr"], [0, "Alle"]], state.wrange,
         v => { state.wrange = v; renderWeight(); }),
       chart,
-      h("div", { class: "muted" }, "Dünne Linie und Punkte: Messwerte. Dicke Linie: geglätteter Trend (Tagesschwankungen ausgeblendet)."
-        + (fc && fc.perWeek != null ? ` Trend aktuell ${fc.perWeek > 0 ? "+" : ""}${n1(fc.perWeek)} kg/Woche.` : ""))),
+      h("div", { class: "muted" }, "Dünne Linie und Punkte: Messwerte. Dicke Linie: geglätteter Trend (Tagesschwankungen ausgeblendet).",
+        fc && fc.perWeek != null ? h("span", {}, ` Trend aktuell ${fc.perWeek > 0 ? "+" : ""}${n1(wConv(fc.perWeek))} ${wUnit()}/Woche.`) : null)),
     h("div", { class: "card" }, h("h2", {}, "Verlauf"),
       h("div", { class: "list" }, [...all].reverse().slice(0, state.whist).map(p => h("div", {},
-        h("span", { class: "grow" }, parse(p.day).toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "long", year: "numeric" })),
-        h("b", {}, n1(p.kg) + " kg"),
+        h("span", { class: "grow" }, parse(p.day).toLocaleDateString(I18N.locale, { weekday: "short", day: "numeric", month: "long", year: "numeric" })),
+        h("b", {}, n1(wConv(p.kg)) + " " + wUnit()),
         h("button", { class: "icon", title: "Löschen", "aria-label": "Löschen", onclick: async () => {
           await api("weights/" + p.day, { method: "DELETE" }); renderWeight();
         } }, "✕")))),
@@ -1207,7 +1214,9 @@ async function renderWeight() {
 
 // ---------------------------------------------------------------- body measurements and photos (optional)
 const BODY_NAMES = ["Taille", "Brust", "Hüfte", "Oberarm", "Oberschenkel", "Körperfett %"];
-const bodyUnit = name => (name.includes("%") ? "%" : "cm");
+const bodyUnit = name => (name.includes("%") ? "%" : imperial() ? "in" : "cm");
+const lenConv = (v, name) => (name.includes("%") || !imperial() ? v : v / CM_IN);   // stored value -> shown
+const lenIn = (v, name) => (name.includes("%") || !imperial() ? v : v * CM_IN);     // typed value -> stored
 
 // Scale a picked image down (long side 1280 px) and return it as a JPEG data URL.
 function resizeImage(file, max = 1280) {
@@ -1233,7 +1242,7 @@ async function bodyCards(root) {
   const day = h("input", { type: "date", value: iso(new Date()) });
   const inputs = names.map(n => [n, h("input", { type: "number", step: "0.1", min: "0", placeholder: bodyUnit(n) })]);
   const extraName = h("input", { placeholder: "Eigene Messung, z. B. Wade" });
-  const extraVal = h("input", { type: "number", step: "0.1", min: "0", placeholder: "cm" });
+  const extraVal = h("input", { type: "number", step: "0.1", min: "0", placeholder: imperial() ? "in" : "cm" });
   const msg = h("div", { class: "err" });
   const pick = state.bodyPick && names.includes(state.bodyPick) ? state.bodyPick : (rows[0] ? rows[rows.length - 1].name : names[0]);
   const sel = h("select", { onchange: () => { state.bodyPick = sel.value; renderWeight(); } }, names.map(n => h("option", { value: n }, n)));
@@ -1241,7 +1250,7 @@ async function bodyCards(root) {
 
   const series = rows.filter(r => r.name === pick);
   const chart = h("div");
-  if (series.length) { chart.innerHTML = lineChart(series.map(r => ({ day: r.day, kg: r.value, trend: r.value })), null, bodyUnit(pick)); tipHandlers(chart); }
+  if (series.length) { chart.innerHTML = lineChart(series.map(r => ({ day: r.day, kg: lenConv(r.value, r.name), trend: lenConv(r.value, r.name) })), null, bodyUnit(pick)); tipHandlers(chart); }
   const first = series[0], last = series[series.length - 1];
 
   root.append(h("div", { class: "card" }, h("h2", {}, "Körpermaße"),
@@ -1252,18 +1261,18 @@ async function bodyCards(root) {
     msg,
     h("div", { class: "actions" }, h("button", { onclick: async () => {
       const values = {};
-      for (const [n, i] of inputs) if (num(i.value) > 0) values[n] = num(i.value);
-      if (extraName.value.trim() && num(extraVal.value) > 0) values[extraName.value.trim()] = num(extraVal.value);
+      for (const [n, i] of inputs) if (num(i.value) > 0) values[n] = Math.round(lenIn(num(i.value), n) * 100) / 100;
+      if (extraName.value.trim() && num(extraVal.value) > 0) values[extraName.value.trim()] = Math.round(lenIn(num(extraVal.value), "x") * 100) / 100;
       if (!Object.keys(values).length) { msg.textContent = "Bitte mindestens einen Wert eintragen."; return; }
       try { await send("PUT", "body/" + day.value, { values }); renderWeight(); } catch (e) { msg.textContent = e.message; }
     } }, "Speichern"))));
 
   if (rows.length) root.append(h("div", { class: "card" },
     h("div", { class: "grid", style: "grid-template-columns:1fr auto" }, sel,
-      series.length > 1 ? h("b", { style: "align-self:center" }, `${last.value > first.value ? "+" : ""}${n1(last.value - first.value)} ${bodyUnit(pick)}`) : h("span")),
+      series.length > 1 ? h("b", { style: "align-self:center" }, `${last.value > first.value ? "+" : ""}${n1(lenConv(last.value - first.value, pick))} ${bodyUnit(pick)}`) : h("span")),
     series.length ? chart : h("div", { class: "muted" }, "Noch keine Werte für diese Messung."),
     h("div", { class: "list" }, [...series].reverse().slice(0, 8).map(r => h("div", {},
-      h("span", { class: "grow" }, longDate(r.day)), h("b", {}, `${n1(r.value)} ${bodyUnit(pick)}`),
+      h("span", { class: "grow" }, longDate(r.day)), h("b", {}, `${n1(lenConv(r.value, pick))} ${bodyUnit(pick)}`),
       h("button", { class: "icon", title: "Löschen", "aria-label": "Löschen", onclick: async () => {
         await api(`body/values/${r.day}/${encodeURIComponent(r.name)}`, { method: "DELETE" }); renderWeight();
       } }, "✕"))))));
@@ -1328,13 +1337,13 @@ function balanceCard(b, goal) {
   return h("div", { class: "card" }, h("h2", {}, "Kalorienbilanz"),
     h("div", { class: "stat-tiles" },
       tile("Ø Aufnahme", n0(b.intake) + " kcal"),
-      tile("Gewichtstrend", ok ? (b.kg_per_week > 0 ? "+" : "") + n1(b.kg_per_week) + " kg/Woche" : "–"),
+      tile("Gewichtstrend", ok ? (b.kg_per_week > 0 ? "+" : "") + n1(wConv(b.kg_per_week)) + " " + wUnit() + "/Woche" : "–"),
       tile(ok ? (b.balance > 0 ? "Überschuss / Tag" : "Defizit / Tag") : "Bilanz / Tag",
         ok ? sign(b.balance) + " kcal" : "–", ok ? (b.balance > 0 ? "over" : "under") : ""),
       tile("Geschätzter Verbrauch", ok ? n0(b.tdee) + " kcal" : "–")),
     ok ? goalAdvice(b, goal) : null,
     h("div", { class: "muted" }, ok
-      ? `Aus ${b.weights} Gewichtswerten und ${b.logged_days} von ${b.range_days} erfassten Tagen (1 kg ≈ 7700 kcal). Je vollständiger Tagebuch und Wiegen, desto genauer.`
+      ? `Aus ${b.weights} Gewichtswerten und ${b.logged_days} von ${b.range_days} erfassten Tagen (1 ${wUnit()} ≈ ${imperial() ? 3500 : 7700} kcal). Je vollständiger Tagebuch und Wiegen, desto genauer.`
       : "Für die Berechnung braucht es mindestens zwei Gewichtswerte im Abstand von einer Woche im gewählten Zeitraum."));
 }
 
@@ -1349,7 +1358,7 @@ function goalAdvice(b, goal) {
   const sugg = Math.max(1200, Math.round((b.tdee + want * 1100) / 10) * 10);   // never suggest crash diets
   const sign = v => (v > 0 ? "+" : "") + n1(v);
   return h("div", { class: "advice" },
-    h("div", {}, h("b", {}, `Ziel: ${label}`), mode === "maintain" ? " (Gewicht halten)" : ` (${sign(want)} kg/Woche)`, ` · Trend aktuell ${sign(b.kg_per_week)} kg/Woche. ${verdict}`),
+    h("div", {}, h("b", {}, `Ziel: ${label}`), mode === "maintain" ? " (Gewicht halten)" : ` (${sign(wConv(want))} ${wUnit()}/Woche)`, ` · Trend aktuell ${sign(wConv(b.kg_per_week))} ${wUnit()}/Woche. ${verdict}`),
     Math.abs(sugg - (goal.kcal || 0)) >= 50 ? h("div", { class: "actions", style: "justify-content:flex-start;align-items:center" },
       h("span", {}, `Für dieses Ziel passen ca. ${n0(sugg)} kcal am Tag (Dein Ziel: ${goal.kcal ? n0(goal.kcal) : "–"}).`),
       h("button", { class: "flat", onclick: async () => {
@@ -1383,7 +1392,7 @@ async function renderStats() {
       tile("Ø Kohlenhydrate", n0(avg("carbs")) + " g"),
       tile("Ø Fett", n0(avg("fat")) + " g"),
       tile("Gewicht", weights.length > 1
-        ? ((d => (d > 0 ? "+" : "") + n1(d) + " kg")(weights[weights.length - 1].kg - weights[0].kg)) : "–")),
+        ? ((d => (d > 0 ? "+" : "") + n1(wConv(d)) + " " + wUnit())(weights[weights.length - 1].kg - weights[0].kg)) : "–")),
     h("div", { class: "card" }, h("h2", {}, "Kalorien pro Tag"), chart,
       goal.kcal ? h("div", { class: "muted" }, days.some(d => d.goal_kcal !== goal.kcal) ? "Gestrichelt: Tagesziel je Wochentag" : `Gestrichelt: Tagesziel ${n0(goal.kcal)} kcal`) : null),
     balanceCard(balance, goal),
@@ -1398,7 +1407,7 @@ async function renderStats() {
     h("div", { class: "stat-tiles" }, MICROS.map(([k, label, u]) => tile(label, `${n1(avg(k))} ${u}`)))));
   root.append(compareCard());
   if (trk.some(t => t.logged)) {
-    const fmt = v => (Math.round(v * 10) / 10).toLocaleString("de-DE");
+    const fmt = v => (Math.round(v * 10) / 10).toLocaleString(I18N.locale);
     root.append(h("div", { class: "card" }, h("h2", {}, "Wasser & Ergänzungen"),
       h("table", { class: "summary" },
         h("thead", {}, h("tr", {}, h("th"), h("th", {}, "Ø pro Tag"), h("th", {}, "Eingetragen"), h("th", {}, "Ziel erreicht"))),
@@ -1432,7 +1441,7 @@ function compareCard() {
     let r;
     try { r = await api("report?" + q); } catch (e) { body.textContent = e.message; return; }
     const [A, B] = r;
-    const fmtD = d => parse(d).toLocaleDateString("de-DE", { day: "numeric", month: "short" });
+    const fmtD = d => parse(d).toLocaleDateString(I18N.locale, { day: "numeric", month: "short" });
     const rows = [
       ["Ø Kalorien", p => n0(p.kcal) + " kcal", p => p.kcal, true],
       ["Ø Eiweiß", p => n0(p.protein) + " g", p => p.protein, false],
@@ -1441,13 +1450,13 @@ function compareCard() {
       ["Eiweißziel erreicht", p => p.protein_goal_days ? `${p.protein_days} / ${p.protein_goal_days} Tage` : "–", p => p.protein_goal_days ? p.protein_days / p.protein_goal_days * 100 : null, false, "pp"],
       ["Kalorien im Ziel", p => p.kcal_goal_days ? `${p.kcal_days} / ${p.kcal_goal_days} Tage` : "–", p => p.kcal_goal_days ? p.kcal_days / p.kcal_goal_days * 100 : null, false, "pp"],
       ["Erfasste Tage", p => `${p.logged} / ${p.days}`, p => p.logged, false],
-      ["Gewichtsänderung", p => p.weight_change == null ? "–" : (p.weight_change > 0 ? "+" : "") + n1(p.weight_change) + " kg", p => p.weight_change, true, "kg"],
+      ["Gewichtsänderung", p => p.weight_change == null ? "–" : (p.weight_change > 0 ? "+" : "") + n1(wConv(p.weight_change)) + " " + wUnit(), p => p.weight_change, true, "kg"],
     ];
     const diff = (row, a, b) => {
       const x = row[2](a), y = row[2](b);
       if (x == null || y == null) return "";
       const d = x - y;
-      return (d > 0 ? "+" : "") + (row[4] === "kg" ? n1(d) + " kg" : row[4] === "pp" ? n0(d) + " %-Pkt." : n0(d));
+      return (d > 0 ? "+" : "") + (row[4] === "kg" ? n1(wConv(d)) + " " + wUnit() : row[4] === "pp" ? n0(d) + " %-Pkt." : n0(d));
     };
     const day = (p, k) => p[k] ? `${fmtD(p[k].day)} (${n0(p[k].kcal)} / ${n0(p[k].goal)} kcal)` : "–";
     body.replaceChildren(
@@ -1734,7 +1743,7 @@ async function renderSettings() {
 
   const gf = {};
   const gfield = (key, label, step = "1") => {
-    gf[key] = h("input", { type: "number", step, min: "0", value: goal[key] ?? "" });
+    gf[key] = h("input", { type: "number", step, min: "0", value: key === "target_weight" && goal[key] != null ? Math.round(wConv(goal[key]) * 10) / 10 : goal[key] ?? "" });
     return h("div", {}, h("label", {}, label), gf[key]);
   };
   const saved = h("span", { class: "muted" });
@@ -1744,8 +1753,8 @@ async function renderSettings() {
   setTimeout(() => wireCalc(gf, refreshers, info)(false), 0);
   const aim = h("select", {}, GOAL_MODES.map(([v, l]) => h("option", { value: v }, l)));
   aim.value = state.goalMode;
-  const rate = h("input", { type: "number", step: "0.05", min: "0", max: "2", value: state.goalRate });
-  const rateRow = h("div", {}, h("label", {}, "Gewünschte Änderung (kg pro Woche)"), rate);
+  const rate = h("input", { type: "number", step: "0.05", min: "0", max: "5", value: Math.round(wConv(state.goalRate) * 100) / 100 });
+  const rateRow = h("div", {}, h("label", {}, `Gewünschte Änderung (${wUnit()} pro Woche)`), rate);
   const syncMode = () => { rateRow.hidden = aim.value === "maintain"; };
   aim.addEventListener("change", syncMode); syncMode();
   root.append(h("div", { class: "card" }, h("h2", {}, "Tagesziele"),
@@ -1754,15 +1763,25 @@ async function renderSettings() {
     h("label", { class: "pick" }, autoBox, h("span", {}, "Kalorien aus Makros berechnen", h("div", { class: "muted" }, "Ändern sich Eiweiß, Kohlenhydrate oder Fett, passen sich die Kalorien an (4/4/9 kcal pro g)."))),
     h("div", { class: "grid" },
       gfield("kcal", "Kalorien (kcal)"), gfield("carbs", "Kohlenhydrate (g)"),
-      gfield("fat", "Fett (g)"), gfield("protein", "Eiweiß (g)"), gfield("target_weight", "Zielgewicht (kg)", "0.1")),
+      gfield("fat", "Fett (g)"), gfield("protein", "Eiweiß (g)"), gfield("target_weight", `Zielgewicht (${wUnit()})`, "0.1")),
     info,
     h("div", { class: "actions" }, saved, h("button", { onclick: async () => {
       await send("PUT", "goal", { kcal: num(gf.kcal.value) || 0, carbs: num(gf.carbs.value) || 0,
-        fat: num(gf.fat.value) || 0, protein: num(gf.protein.value) || 0, target_weight: num(gf.target_weight.value) });
-      await send("PUT", "settings", { goal_mode: aim.value, goal_rate: num(rate.value) ?? 0.5 });
-      state.goalMode = aim.value; state.goalRate = num(rate.value) ?? 0.5;
+        fat: num(gf.fat.value) || 0, protein: num(gf.protein.value) || 0,
+        target_weight: num(gf.target_weight.value) == null ? null : Math.round(wIn(num(gf.target_weight.value)) * 100) / 100 });
+      const rateKg = Math.round(wIn(num(rate.value) ?? 0.5) * 100) / 100;
+      await send("PUT", "settings", { goal_mode: aim.value, goal_rate: rateKg });
+      state.goalMode = aim.value; state.goalRate = rateKg;
       saved.textContent = "Gespeichert ✓";
     } }, "Speichern"))));
+
+  const langSel = h("select", {}, h("option", { value: "auto" }, "Automatisch (Browser)"), h("option", { value: "de" }, "Deutsch"), h("option", { value: "en" }, "English"));
+  const unitSel = h("select", {}, h("option", { value: "metric" }, "Metrisch (kg, cm)"), h("option", { value: "imperial" }, "Imperial (lb, in)"));
+  langSel.value = state.langPref || "auto"; unitSel.value = I18N.units;
+  const savePref = async () => { await send("PUT", "settings", { lang: langSel.value, units: unitSel.value }); location.reload(); };
+  root.append(h("div", { class: "card" }, h("h2", {}, "Sprache und Einheiten"),
+    h("div", { class: "grid" }, h("div", {}, h("label", {}, "Sprache"), langSel), h("div", {}, h("label", {}, "Einheiten"), unitSel)),
+    h("div", { class: "actions" }, h("button", { onclick: savePref }, "Speichern"))));
 
   // optional features
   const feat = (key, label, hint) => {
@@ -1946,10 +1965,11 @@ async function renderSettings() {
       } });
       return h("div", {}, on,
         h("div", { class: "grow" },
-          h("div", {}, condText(t), paused(t) ? h("span", { class: "tag" }, `pausiert bis ${parse(t.paused_until).toLocaleDateString("de-DE")}`) : null),
-          h("div", { class: "muted" }, `→ ${t.item || "(gelöscht)"}${day.mode === "meals" && t.meal ? " zu " + t.meal : ""}`
-            + (t.days_ahead ? ` · ${t.days_ahead} Tage im Voraus` : "")
-            + (t.last_run ? ` · zuletzt ${parse(t.last_run).toLocaleDateString("de-DE")}` : ""))),
+          h("div", {}, condText(t), paused(t) ? h("span", { class: "tag" }, `pausiert bis ${parse(t.paused_until).toLocaleDateString(I18N.locale)}`) : null),
+          h("div", { class: "muted" }, `→ ${t.item || "(gelöscht)"}`,
+            day.mode === "meals" && t.meal ? h("span", {}, ` zu ${t.meal}`) : null,
+            t.days_ahead ? h("span", {}, ` · ${t.days_ahead} Tage im Voraus`) : null,
+            t.last_run ? h("span", {}, ` · zuletzt ${parse(t.last_run).toLocaleDateString(I18N.locale)}`) : null)),
         h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => triggerDialog({ edit: t }) }, "✎"),
         h("button", { class: "icon", title: paused(t) ? "Pause beenden" : "Pausieren …", "aria-label": "Pausieren", onclick: () => pauseDialog(t) }, paused(t) ? "▶▶" : "⏸"),
         h("button", { class: "icon", title: "Jetzt testen (trägt heute ein)", onclick: async () => {
@@ -1977,7 +1997,7 @@ async function renderSettings() {
   if (runs.length) root.append(h("div", { class: "card" }, h("h2", {}, "Trigger-Verlauf"),
     h("div", { class: "muted" }, "Was Trigger zuletzt eingetragen haben. „Rückgängig“ entfernt die Einträge wieder; der Trigger trägt an diesem Tag nicht erneut ein."),
     h("div", { class: "list" }, runs.map(r => h("div", {},
-      h("div", { class: "grow" }, h("div", {}, `${r.label || "(gelöscht)"}`, h("span", { class: "tag" }, parse(r.day).toLocaleDateString("de-DE"))),
+      h("div", { class: "grow" }, h("div", {}, `${r.label || "(gelöscht)"}`, h("span", { class: "tag" }, parse(r.day).toLocaleDateString(I18N.locale))),
         h("div", { class: "muted" }, `${r.ts.slice(11)} Uhr · ${r.kind ? condText(r) : "Trigger gelöscht"}`)),
       r.undone ? h("span", { class: "muted" }, "rückgängig")
         : h("button", { class: "flat", disabled: !r.entries, title: r.entries ? "" : "Einträge nicht mehr vorhanden", onclick: async () => {
@@ -2033,7 +2053,7 @@ async function restoreDialog(data) {
   let p;
   try { p = await send("POST", "import/json/preview", { data }); }
   catch (e) { alert("Keine gültige Sicherung: " + e.message); return; }
-  const range = s => s.first ? `${parse(s.first).toLocaleDateString("de-DE")} – ${parse(s.last).toLocaleDateString("de-DE")}` : "–";
+  const range = s => s.first ? `${parse(s.first).toLocaleDateString(I18N.locale)} – ${parse(s.last).toLocaleDateString(I18N.locale)}` : "–";
   const row = (label, k) => h("tr", {}, h("th", {}, label), h("td", {}, String(p.current[k])), h("td", {}, String(p.backup[k])));
   const msg = h("div", { class: "err" });
   setDlg(h("h2", {}, "Sicherung wiederherstellen"),
@@ -2070,6 +2090,8 @@ api("me").then(m => { $("#who").textContent = m.name; });
     const st = await api("settings");
     state.skin = st.skin;
     state.features = st.features || {};
+    state.langPref = st.lang || "auto";
+    I18N.setLang(st.lang, st.units);
     state.goalMode = st.goal_mode || "lose";
     state.goalRate = st.goal_rate ?? 0.5;
   } catch { /* keep auto */ }

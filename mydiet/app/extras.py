@@ -61,6 +61,8 @@ def goal_hit(mode: str, kcal: float, goal: float) -> bool:
 class SettingsIn(BaseModel):
     diary_mode: str | None = None   # 'meals' | 'times'
     goal_mode: str | None = None    # 'lose' | 'maintain' | 'gain'
+    lang: str | None = None         # 'auto' | 'de' | 'en'
+    units: str | None = None        # 'metric' | 'imperial'
     goal_rate: float | None = None  # intended kg per week (positive)
     skin: str | None = None         # 'auto' | 'default' | 'win'
     features: dict[str, bool] | None = None
@@ -70,7 +72,8 @@ class SettingsIn(BaseModel):
 def read_settings(x_remote_user_id: str | None = Header(None)):
     owner = user_from(x_remote_user_id)
     return {"diary_mode": get_pref(owner, "diary_mode", "meals"), "skin": get_pref(owner, "skin", "auto"),
-            "features": features(owner), "goal_mode": get_pref(owner, "goal_mode", "lose"),
+            "features": features(owner), "lang": get_pref(owner, "lang", "auto"), "units": get_pref(owner, "units", "metric"),
+            "goal_mode": get_pref(owner, "goal_mode", "lose"),
             "goal_rate": get_pref(owner, "goal_rate", 0.5)}
 
 
@@ -81,6 +84,14 @@ def write_settings(s: SettingsIn, x_remote_user_id: str | None = Header(None)):
         if s.diary_mode not in ("meals", "times"):
             raise HTTPException(400, "diary_mode must be meals or times")
         set_pref(owner, "diary_mode", s.diary_mode)
+    if s.lang is not None:
+        if s.lang not in ("auto", "de", "en"):
+            raise HTTPException(400, "lang must be auto, de or en")
+        set_pref(owner, "lang", s.lang)
+    if s.units is not None:
+        if s.units not in ("metric", "imperial"):
+            raise HTTPException(400, "units must be metric or imperial")
+        set_pref(owner, "units", s.units)
     if s.goal_mode is not None:
         if s.goal_mode not in GOAL_MODES:
             raise HTTPException(400, "goal_mode must be lose, maintain or gain")
@@ -491,7 +502,8 @@ def dump(owner: str) -> dict:
                       for f in q("SELECT id,name,brand,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,serving_g,category,favorite FROM foods WHERE owner=?", owner)],
             "meals": q("SELECT id,name,position,archived FROM meals WHERE owner=? ORDER BY position", owner),
             "settings": {"diary_mode": get_pref(owner, "diary_mode", "meals"),
-                         "goal_mode": get_pref(owner, "goal_mode", "lose"), "goal_rate": get_pref(owner, "goal_rate", 0.5)},
+                         "goal_mode": get_pref(owner, "goal_mode", "lose"), "goal_rate": get_pref(owner, "goal_rate", 0.5),
+                         "lang": get_pref(owner, "lang", "auto"), "units": get_pref(owner, "units", "metric")},
             "entries": q("SELECT day,time,meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat FROM entries WHERE owner=? ORDER BY day,id", owner),
             "goal": q("SELECT kcal,protein,carbs,fat,target_weight FROM goals WHERE owner=?", owner),
             "weights": q("SELECT day,kg FROM weights WHERE owner=? ORDER BY day", owner),
@@ -629,6 +641,10 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
                           (owner, n["day"], mid, n["text"]))
     set_pref(owner, "hidden_categories", d.get("hidden_categories", []))
     set_pref(owner, "diary_mode", d.get("settings", {}).get("diary_mode", "meals"))
+    if d.get("settings", {}).get("lang") in ("auto", "de", "en"):
+        set_pref(owner, "lang", d["settings"]["lang"])
+    if d.get("settings", {}).get("units") in ("metric", "imperial"):
+        set_pref(owner, "units", d["settings"]["units"])
     if d.get("settings", {}).get("goal_mode") in GOAL_MODES:
         set_pref(owner, "goal_mode", d["settings"]["goal_mode"])
         set_pref(owner, "goal_rate", d["settings"].get("goal_rate", 0.5))

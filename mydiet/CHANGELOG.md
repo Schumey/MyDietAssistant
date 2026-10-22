@@ -2,6 +2,15 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.21.0
+
+### Neu
+- **Englische Oberfläche** und **imperiale Einheiten**: Einstellungen → Sprache und Einheiten (Deutsch / English / automatisch, metrisch / imperial). Gewicht erscheint dann in lb, Körpermaße in Zoll, Zahlen und Datumsformate passend zur Sprache. Gespeichert wird weiterhin in kg und cm, nichts muss umgerechnet werden. Fehlermeldungen des Servers werden mitübersetzt.
+- Übersetzungen der Add-on-Optionen in Home Assistant (Deutsch und Englisch).
+
+### Hinweis
+- Namen und Texte, die Du selbst vergeben hast (Lebensmittel, Notizen, Trigger-Titel), bleiben unverändert. Die vier Standard-Mahlzeiten (Frühstück, Mittagessen, Abendessen, Snacks) erscheinen auf Englisch als Breakfast, Lunch, Dinner, Snacks. Mengen in Lebensmitteln bleiben in Gramm.
+
 ## 0.20.0
 
 ### Neu

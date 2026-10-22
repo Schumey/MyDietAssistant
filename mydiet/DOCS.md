@@ -81,8 +81,12 @@ Unter Einstellungen → Erinnerung wählst Du eine Uhrzeit und einen Benachricht
 
 Im Tagebuch: ← / → Tag wechseln, T heute, N Nahrungsmittel hinzufügen; / springt ins Suchfeld der Listen.
 
+## Sprache und Einheiten
+
+Einstellungen → Sprache und Einheiten: Deutsch, English oder automatisch nach Browser; metrisch (kg, cm) oder imperial (lb, in). Gewicht und Körpermaße werden intern immer in kg und cm gespeichert, nur Anzeige und Eingabe wechseln. Die Texte des Add-ons selbst (Optionen in Home Assistant) gibt es ebenfalls auf Deutsch und Englisch. Mengen von Lebensmitteln bleiben in Gramm.
+
 ## Open Food Facts
-Die Barcode-Suche ist die einzige Funktion, die Internet braucht.
+Die Barcode-Suche ist die einzige Funktion, die Internet braucht. Den Barcode kannst Du eintippen, mit der Kamera scannen oder aus einem Foto lesen lassen (benötigt die Barcode-Erkennung des Browsers, z. B. Chrome/Android).
 
 ## Neu in 0.3
 
