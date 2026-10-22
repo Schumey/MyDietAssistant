@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.1.2
+
+### Behoben
+- **Barcode-Scan in der Home-Assistant-Companion-App:** Die Kameravorschau blieb auf einem Play-Symbol stehen, weil die Android-WebView Autoplay blockierte. Die Vorschau wird jetzt ausdrücklich gestartet.
+
 ## 1.1.1
 
 ### Neu

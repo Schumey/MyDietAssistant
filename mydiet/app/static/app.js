@@ -2487,8 +2487,9 @@ async function scanBarcode(box) {
     dlg.addEventListener("close", stop);
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(st => {
       if (done) { st.getTracks().forEach(t => t.stop()); return; }
-      stream = st; video.srcObject = st;
+      stream = st; video.muted = true; video.srcObject = st;   // the muted attribute alone does not allow autoplay in the Companion app's WebView
       box.replaceChildren(video, h("div", { class: "muted" }, "Halte den Barcode ins Bild."), cancel);
+      video.play().catch(() => { /* the user can tap the preview to start it */ });
       timer = setInterval(async () => {
         if (done || busy || video.readyState < 2) return;
         busy = true;

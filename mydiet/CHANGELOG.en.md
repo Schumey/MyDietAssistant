@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.1.2
+
+### Fixed
+- **Barcode scanning in the Home Assistant Companion app:** the camera preview stuck on a play icon because the Android WebView blocked autoplay. The preview is now started explicitly.
+
 ## 1.1.1
 
 ### New
