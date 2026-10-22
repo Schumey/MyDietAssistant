@@ -34,6 +34,7 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 ## Lebensmittel und Eingabe
 
 - **Barcode-Scan per Kamera** (M): Im Browser/der HA-App scannen statt Nummer tippen (Open Food Facts ist angebunden).
+- **Plausibilitätsprüfung kcal gegen Makros** (S): Warnhinweis beim Anlegen/Bearbeiten eines Lebensmittels (und ⚠ in der Liste), wenn die kcal nicht zu den Makros passen können (4 kcal/g Kohlenhydrate und Eiweiß, 9 kcal/g Fett, Toleranz für Ballaststoffe/Alkohol). Speichern bleibt trotzdem möglich.
 - **Lebensmittel-Duplikate zusammenführen** (S): Gleiche Namen erkennen und mergen, Einträge umhängen.
 - **Zuletzt verwendet / Favoriten** (S): Pro Lebensmittel Stern, eigener Tab im Hinzufügen-Dialog.
 - **Mehrere Portionsgrößen** (M): „1 Scheibe = 30 g“, „1 Dose = 330 ml“ pro Lebensmittel hinterlegen.
