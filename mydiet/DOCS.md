@@ -19,3 +19,9 @@ Die Barcode-Suche ist die einzige Funktion, die Internet braucht.
 - **Kalorienbilanz** (Statistik): aus Gewichtstrend und Aufnahme (1 kg ≈ 7700 kcal).
 - **Trigger**: Zustand einer HA-Entität oder Kalendertermin trägt ein Lebensmittel/eine Mahlzeit einmal pro Tag ein (Prüfung jede Minute).
 - **Tagebuch-Ansicht** umschaltbar auf Uhrzeiten statt fester Mahlzeiten.
+
+## Neu in 0.4
+
+- Eigene Seite **Mahlzeiten**, Mahlzeiten **kopieren** und **leeren**, **Häufig verwendet** im Hinzufügen-Dialog.
+- **Einblend-Regeln** für Tagebuch-Mahlzeiten (Einstellungen → Mahlzeiten → ⚡), z. B. „Nachtschicht“ nur an Tagen mit gleichnamigem Kalendertermin.
+- Details siehe CHANGELOG.

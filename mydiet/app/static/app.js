@@ -28,8 +28,9 @@ const iso = d => d.toLocaleDateString("sv");
 const parse = s => new Date(s + "T12:00:00");
 const num = v => (v === "" || v == null ? null : Number(String(v).replace(",", ".")));
 
-const state = { day: iso(new Date()), tab: "diary", range: 30, wrange: 90 };
+const state = { day: iso(new Date()), tab: "diary", range: 30, wrange: 90, whist: 10 };
 const dlg = $("#dlg");
+const setDlg = (...kids) => dlg.replaceChildren(...kids.flat(Infinity).filter(x => x != null && x !== false));
 dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
 
 // ---------------------------------------------------------------- tabs
@@ -41,7 +42,7 @@ function show(tab) {
   state.tab = tab;
   for (const b of document.querySelectorAll("#tabs button")) b.classList.toggle("active", b.dataset.tab === tab);
   for (const s of document.querySelectorAll("main > section")) s.hidden = s.id !== tab;
-  ({ diary: renderDiary, foods: renderFoods, weight: renderWeight, stats: renderStats, settings: renderSettings })[tab]();
+  ({ diary: renderDiary, foods: renderFoods, meals: renderMeals, weight: renderWeight, stats: renderStats, settings: renderSettings })[tab]();
 }
 
 // ---------------------------------------------------------------- categories
@@ -107,7 +108,14 @@ async function renderDiary() {
       h("tbody", {}, rows, h("tr", { class: "foot" },
         h("td", {},
           h("button", { class: "flat", onclick: () => openAdd(meal) }, "+ Nahrungsmittel hinzufügen"),
-          items.length ? h("button", { class: "flat", onclick: () => saveMealDialog(meal, items, times) }, "Als Mahlzeit speichern") : null),
+          items.length ? [
+            h("button", { class: "flat", onclick: () => saveMealDialog(meal, items, times) }, "Als Mahlzeit speichern"),
+            h("button", { class: "flat", onclick: () => copyDialog(meal, items, times) }, "Kopieren"),
+            h("button", { class: "flat danger", onclick: async () => {
+              if (!confirm(meal ? `Alle Einträge von „${meal.name}“ löschen?` : "Alle Einträge dieses Tages löschen?")) return;
+              await api(`day/${state.day}/entries` + (meal ? "?meal_id=" + meal.id : ""), { method: "DELETE" });
+              renderDiary();
+            } }, meal ? "Mahlzeit leeren" : "Tag leeren")] : null),
         h("td", {}, items.length ? n0(sum("kcal")) : ""), h("td", {}, items.length ? n0(sum("carbs")) : ""),
         h("td", {}, items.length ? n0(sum("fat")) : ""), h("td", {}, items.length ? n0(sum("protein")) : ""),
         h("td", {})))));
@@ -117,7 +125,14 @@ async function renderDiary() {
     const sorted = [...d.entries].sort((a, b) => (a.time || "99:99").localeCompare(b.time || "99:99") || a.id - b.id);
     root.append(section("Einträge", sorted, null));
   } else {
-    for (const meal of d.meals) root.append(section(meal.name, d.entries.filter(e => e.meal_id === meal.id), meal));
+    const showAll = state.showHidden === state.day;
+    const hidden = d.meals.filter(m => m.hidden);
+    for (const meal of d.meals) {
+      if (!meal.hidden || showAll) root.append(section(meal.name, d.entries.filter(e => e.meal_id === meal.id), meal));
+    }
+    if (hidden.length) root.append(h("div", { class: "hint" }, h("button", { class: "flat", onclick: () => {
+      state.showHidden = showAll ? null : state.day; renderDiary();
+    } }, showAll ? "Ausgeblendete Mahlzeiten wieder verbergen" : `${hidden.length} leere/ausgeblendete Mahlzeit${hidden.length > 1 ? "en" : ""} anzeigen`)));
   }
 
   const t = d.totals, g = d.goal;
@@ -149,7 +164,7 @@ function shiftDay(n) {
 function editEntry(e, times) {
   const grams = h("input", { type: "number", step: "any", min: "1", value: e.grams || "" });
   const time = h("input", { type: "time", value: e.time || "" });
-  dlg.replaceChildren(
+  setDlg(
     h("h2", {}, e.name),
     e.grams > 0 ? [h("label", {}, "Menge (g)"), grams] : null,
     times ? [h("label", {}, "Uhrzeit"), time] : null,
@@ -165,13 +180,41 @@ function editEntry(e, times) {
   dlg.showModal();
 }
 
+// Copy entries of a diary meal to another meal and/or day.
+function copyDialog(meal, items, times) {
+  const meals = state.data.meals;
+  const day = h("input", { type: "date", value: state.day });
+  const target = h("select", {}, meals.map(m => h("option", { value: m.id, selected: meal && m.id === meal.id }, m.name)));
+  const time = h("input", { type: "time" });
+  const picks = items.map(e => [e, h("input", { type: "checkbox", checked: true })]);
+  const msg = h("div", { class: "err" });
+  setDlg(h("h2", {}, meal ? `„${meal.name}“ kopieren` : "Einträge kopieren"),
+    h("label", {}, "Am Tag"), day,
+    times ? [h("label", {}, "Neue Uhrzeit (leer = Originalzeit)"), time] : [h("label", {}, "In Mahlzeit"), target],
+    h("div", { class: "list" }, picks.map(([e, box]) =>
+      h("label", { class: "pick" }, box, `${times && e.time ? e.time + " " : ""}${entryLabel(e)} · ${n0(e.kcal)} kcal`))),
+    msg,
+    h("div", { class: "actions" },
+      h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
+      h("button", { onclick: async () => {
+        const ids = picks.filter(([, b]) => b.checked).map(([e]) => e.id);
+        if (!ids.length || !day.value) { msg.textContent = "Nichts ausgewählt."; return; }
+        try {
+          await send("POST", "entries/copy", { ids, day: day.value, meal_id: times ? null : Number(target.value),
+            time: times ? time.value || null : null });
+          dlg.close(); state.day = day.value; renderDiary();
+        } catch (e) { msg.textContent = e.message; }
+      } }, "Kopieren")));
+  dlg.showModal();
+}
+
 // Save the entries of a diary meal (or, in time mode, a selection of the day) as a reusable meal.
 function saveMealDialog(meal, items, times) {
   const name = h("input", { value: meal ? meal.name : "", placeholder: "Name der Mahlzeit" });
   const category = h("input", { list: "cat-list", placeholder: "z. B. Diät, Bulk (optional)" });
   const picks = times ? items.map(e => [e, h("input", { type: "checkbox", checked: true })]) : [];
   const msg = h("div", { class: "err" });
-  dlg.replaceChildren(h("h2", {}, "Als Mahlzeit speichern"),
+  setDlg(h("h2", {}, "Als Mahlzeit speichern"),
     h("label", {}, "Name"), name, h("label", {}, "Kategorie"), category, catList(),
     times ? h("div", { class: "list" }, picks.map(([e, box]) =>
       h("label", { class: "pick" }, box, `${e.time || ""} ${entryLabel(e)} · ${n0(e.kcal)} kcal`))) : null,
@@ -241,7 +284,8 @@ function foodForm({ food = null, onSave, onCancel }) {
 // ---------------------------------------------------------------- add dialog (foods + saved meals)
 async function openAdd(meal) {
   const times = state.data.mode === "times";
-  let [foods, saved] = await Promise.all([api("foods"), api("saved-meals"), loadCats()]);
+  let [foods, saved, sugg] = await Promise.all([api("foods"), api("saved-meals"),
+    api("suggestions" + (meal ? "?meal_id=" + meal.id : "")), loadCats()]);
   let tab = "foods";
   const time = h("input", { type: "time", value: timeNow() });
   const search = h("input", { type: "search", placeholder: "Suchen…", oninput: draw });
@@ -249,6 +293,7 @@ async function openAdd(meal) {
   const detail = h("div");
   const body = h("div");
   const chips = h("div");
+  const sug = h("div");
   const tabs = h("div", { class: "range" },
     ["foods", "Lebensmittel", "saved", "Meine Mahlzeiten"].flatMap((v, i, a) => i % 2 ? [] : [
       h("button", { class: v === tab ? "active" : "", "data-t": v, onclick: () => { tab = v; draw(); } }, a[i + 1])]));
@@ -261,6 +306,11 @@ async function openAdd(meal) {
     for (const b of tabs.children) b.classList.toggle("active", b.dataset.t === tab);
     const q = search.value.toLowerCase();
     const list = tab === "foods" ? foods : saved;
+    const frequent = (tab === "foods" ? sugg.items : sugg.saved.filter(isVisible));
+    sug.replaceChildren(...(!q && frequent.length ? [h("div", { class: "muted sect" }, "Häufig verwendet"),
+      ...frequent.map(x => h("button", { class: "food", onclick: () => (tab === "foods" ? selectEntry(x) : selectSaved(x)) },
+        h("span", {}, x.name), h("span", { class: "muted" }, `${n0(x.kcal)} kcal${x.grams ? " · " + n0(x.grams) + " g" : ""}`))),
+      h("div", { class: "muted sect" }, "Alle")] : []));
     const rows = list.filter(isVisible).filter(x => ((x.name || "") + " " + (x.brand || "")).toLowerCase().includes(q)).slice(0, 50);
     results.replaceChildren(...rows.map(x => h("button", { class: "food", onclick: () => (tab === "foods" ? select(x) : selectSaved(x)) },
       h("span", {}, x.name, x.brand ? ` (${x.brand})` : "", x.category ? h("span", { class: "tag" }, x.category) : null),
@@ -290,6 +340,30 @@ async function openAdd(meal) {
         h("button", { onclick: async () => {
           if (!(num(grams.value) > 0)) return;
           await send("POST", "entries", { ...target(), food_id: f.id, grams: num(grams.value) });
+          dlg.close(); renderDiary();
+        } }, "Hinzufügen")));
+    body.hidden = true;
+    grams.select();
+  }
+
+  // a frequently used diary entry: re-add it with the last amount (scaled from the stored snapshot)
+  function selectEntry(it) {
+    const grams = h("input", { type: "number", step: "any", min: "1", value: it.grams, oninput: preview });
+    const pv = h("div", { class: "preview" });
+    function preview() {
+      const k = (num(grams.value) || 0) / it.grams;
+      pv.replaceChildren(
+        h("span", {}, h("b", {}, n0(it.kcal * k)), " kcal"), h("span", {}, h("b", {}, n0(it.carbs * k)), " g KH"),
+        h("span", {}, h("b", {}, n0(it.fat * k)), " g Fett"), h("span", {}, h("b", {}, n0(it.protein * k)), " g Eiweiß"));
+    }
+    preview();
+    detail.replaceChildren(h("h3", {}, it.name), h("label", {}, "Menge (g)"), grams, pv,
+      h("div", { class: "actions" },
+        h("button", { class: "flat", onclick: back }, "Zurück"),
+        h("button", { onclick: async () => {
+          if (!(num(grams.value) > 0)) return;
+          const { day, meal_id, time: t } = target();
+          await send("POST", "entries/copy", { ids: [it.entry_id], day, meal_id, time: t, factor: num(grams.value) / it.grams });
           dlg.close(); renderDiary();
         } }, "Hinzufügen")));
     body.hidden = true;
@@ -335,11 +409,11 @@ async function openAdd(meal) {
     dlg.append(form);
   }
 
-  body.append(tabs, search, chips, results,
+  body.append(tabs, search, chips, sug, results,
     h("div", { class: "actions" },
       h("button", { class: "flat", onclick: newFood }, "+ Neues Lebensmittel"),
       h("button", { class: "flat", onclick: () => dlg.close() }, "Schließen")));
-  dlg.replaceChildren(h("h2", {}, meal ? "Zu „" + meal.name + "“ hinzufügen" : "Eintrag hinzufügen"),
+  setDlg(h("h2", {}, meal ? "Zu „" + meal.name + "“ hinzufügen" : "Eintrag hinzufügen"),
     times ? h("div", { style: "margin-bottom:8px" }, h("label", {}, "Uhrzeit"), time) : null, body, detail);
   draw();
   dlg.showModal();
@@ -367,24 +441,32 @@ function barChart(days, goal) {
 }
 
 function lineChart(points, target) {
-  const W = 600, H = 220, L = 44, B = 24, T = 10, R = 12;
+  const W = 600, H = 220, L = 44, B = 24, T = 10, R = 16;
   const vals = points.map(p => p.kg).concat(target ? [target] : []);
   let lo = Math.min(...vals), hi = Math.max(...vals);
-  const pad = Math.max((hi - lo) * 0.15, 0.5);
+  const pad = Math.max((hi - lo) * 0.1, 0.5);
   lo -= pad; hi += pad;
+  // y ticks on even weights: step 1, 2, 5, 10 … kg
+  const step = [1, 2, 5, 10, 20, 50].find(st => (hi - lo) / st <= 6) || 100;
+  const ticks = [];
+  for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) ticks.push(v);
+  if (ticks.length < 2) { lo = Math.floor(lo); hi = Math.ceil(hi); }
   const t0 = parse(points[0].day).getTime(), t1 = parse(points[points.length - 1].day).getTime();
-  const x = d => L + (t1 === t0 ? (W - L - R) / 2 : (parse(d).getTime() - t0) / (t1 - t0) * (W - L - R));
+  const x = t => L + (t1 === t0 ? (W - L - R) / 2 : (t - t0) / (t1 - t0) * (W - L - R));
   const y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
   let s = "";
-  for (let i = 0; i <= 4; i++) {
-    const v = lo + (hi - lo) * i / 4;
-    s += `<line class="grid-line" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${n1(v)}</text>`;
-  }
+  for (const v of ticks) s += `<line class="grid-line" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${n0(v)}</text>`;
   if (target) s += `<line class="goal-line" x1="${L}" x2="${W - R}" y1="${y(target)}" y2="${y(target)}"/>`;
-  s += `<polyline class="line" points="${points.map(p => `${x(p.day)},${y(p.kg)}`).join(" ")}"/>`;
-  if (points.length <= 60) s += points.map(p => `<circle class="dot" cx="${x(p.day)}" cy="${y(p.kg)}" r="3"/>`).join("");
-  const fmt = d => parse(d).toLocaleDateString("de-DE", { day: "numeric", month: "numeric" });
-  s += `<text x="${L}" y="${H - 6}">${fmt(points[0].day)}</text><text x="${W - R}" y="${H - 6}" text-anchor="end">${fmt(points[points.length - 1].day)}</text>`;
+  s += `<polyline class="line" points="${points.map(p => `${x(parse(p.day).getTime())},${y(p.kg)}`).join(" ")}"/>`;
+  if (points.length <= 60) s += points.map(p => `<circle class="dot" cx="${x(parse(p.day).getTime())}" cy="${y(p.kg)}" r="3"/>`).join("");
+  // x ticks: evenly spaced dates between first and last point
+  const long = (t1 - t0) > 300 * 864e5;
+  const fmt = t => new Date(t).toLocaleDateString("de-DE", long ? { month: "short", year: "2-digit" } : { day: "numeric", month: "numeric" });
+  const n = t1 === t0 ? 1 : 5;
+  for (let i = 0; i <= n; i++) {
+    const t = t0 + (t1 - t0) * i / n;
+    s += `<line class="grid-line" x1="${x(t)}" x2="${x(t)}" y1="${H - B}" y2="${H - B + 4}"/><text x="${x(t)}" y="${H - 6}" text-anchor="${i === 0 ? "start" : i === n ? "end" : "middle"}">${fmt(t)}</text>`;
+  }
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Gewichtsverlauf">${s}</svg>`;
 }
 
@@ -394,12 +476,13 @@ function rangeButtons(options, current, onpick) {
 }
 
 // ---------------------------------------------------------------- foods page
+const tag = c => (c ? h("span", { class: "tag" }, c) : null);
+
 async function renderFoods() {
-  const [foods, saved] = await Promise.all([api("foods"), api("saved-meals"), loadCats()]).then(r => r);
+  const [foods] = await Promise.all([api("foods"), loadCats()]);
   const root = $("#foods");
   root.replaceChildren();
   const list = h("div", { class: "list" });
-  const savedList = h("div", { class: "list" });
   const chips = h("div");
 
   const openForm = food => {
@@ -408,27 +491,10 @@ async function renderFoods() {
       onCancel: () => dlg.close(),
       onSave: () => { dlg.close(); renderFoods(); },
     });
-    dlg.replaceChildren(h("h2", {}, food ? "Lebensmittel bearbeiten" : "Neues Lebensmittel"), form);
+    setDlg(h("h2", {}, food ? "Lebensmittel bearbeiten" : "Neues Lebensmittel"), form);
     dlg.showModal();
   };
 
-  const editSaved = s => {
-    const name = h("input", { value: s.name });
-    const category = h("input", { list: "cat-list", value: s.category });
-    dlg.replaceChildren(h("h2", {}, "Mahlzeit bearbeiten"),
-      h("label", {}, "Name"), name, h("label", {}, "Kategorie"), category, catList(),
-      h("div", { class: "muted", style: "margin-top:8px" }, s.items.map(entryLabel).join(" · ")),
-      h("div", { class: "actions" },
-        h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
-        h("button", { onclick: async () => {
-          if (!name.value.trim()) return;
-          await send("PUT", "saved-meals/" + s.id, { name: name.value, category: category.value });
-          dlg.close(); renderFoods();
-        } }, "Speichern")));
-    dlg.showModal();
-  };
-
-  const tag = c => (c ? h("span", { class: "tag" }, c) : null);
   const draw = () => {
     chips.replaceChildren(...[catChips(draw)].filter(Boolean));
     const q = search.value.toLowerCase();
@@ -445,26 +511,59 @@ async function renderFoods() {
       } }, "✕")))
       : [h("div", { class: "muted", style: "padding:8px 0" }, foods.length ? "Nichts gefunden." : "Noch keine Lebensmittel angelegt.")]),
       ...(hiddenN ? [h("div", { class: "muted", style: "padding:8px 0" }, `${hiddenN} Lebensmittel durch ausgeblendete Kategorien versteckt.`)] : []));
-
-    const sv = saved.filter(isVisible);
-    savedList.replaceChildren(...(sv.length ? sv.map(s => h("div", {},
-      h("div", { class: "grow" }, h("div", {}, s.name, tag(s.category)),
-        h("div", { class: "muted" }, `${n0(s.kcal)} kcal · KH ${n1(s.carbs)} g · Fett ${n1(s.fat)} g · Eiweiß ${n1(s.protein)} g · ${s.items.length} Einträge`)),
-      h("button", { class: "icon", title: "Trigger anlegen", "aria-label": "Trigger anlegen", onclick: () => triggerDialog({ item: "s:" + s.id }) }, "⚡"),
-      h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => editSaved(s) }, "✎"),
-      h("button", { class: "icon", title: "Löschen", "aria-label": "Löschen", onclick: async () => {
-        if (!confirm(`Mahlzeit „${s.name}“ löschen?`)) return;
-        await api("saved-meals/" + s.id, { method: "DELETE" }); renderFoods();
-      } }, "✕")))
-      : [h("div", { class: "muted", style: "padding:8px 0" }, saved.length ? "Alle Mahlzeiten sind ausgeblendet." : "Noch keine Mahlzeit gespeichert – im Tagebuch über „Als Mahlzeit speichern“.")]));
   };
 
   const search = h("input", { type: "search", placeholder: "Lebensmittel suchen…", oninput: draw });
   root.append(h("div", { class: "card" },
     h("div", { class: "grid", style: "grid-template-columns:1fr auto" }, search,
       h("button", { onclick: () => openForm(null) }, "+ Neues Lebensmittel")),
-    chips, list),
-    h("div", { class: "card" }, h("h2", {}, "Meine Mahlzeiten"), savedList));
+    chips, list));
+  draw();
+}
+
+// ---------------------------------------------------------------- saved meals page
+async function renderMeals() {
+  const [saved] = await Promise.all([api("saved-meals"), loadCats()]);
+  const root = $("#meals");
+  root.replaceChildren();
+  const list = h("div", { class: "list" });
+  const chips = h("div");
+
+  const editSaved = s => {
+    const name = h("input", { value: s.name });
+    const category = h("input", { list: "cat-list", value: s.category });
+    setDlg(h("h2", {}, "Mahlzeit bearbeiten"),
+      h("label", {}, "Name"), name, h("label", {}, "Kategorie"), category, catList(),
+      h("div", { class: "muted", style: "margin-top:8px" }, s.items.map(entryLabel).join(" · ")),
+      h("div", { class: "actions" },
+        h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
+        h("button", { onclick: async () => {
+          if (!name.value.trim()) return;
+          await send("PUT", "saved-meals/" + s.id, { name: name.value, category: category.value });
+          dlg.close(); renderMeals();
+        } }, "Speichern")));
+    dlg.showModal();
+  };
+
+  const draw = () => {
+    chips.replaceChildren(...[catChips(draw)].filter(Boolean));
+    const q = search.value.toLowerCase();
+    const shown = saved.filter(isVisible).filter(s => s.name.toLowerCase().includes(q));
+    list.replaceChildren(...(shown.length ? shown.map(s => h("div", {},
+      h("div", { class: "grow" }, h("div", {}, s.name, tag(s.category)),
+        h("div", { class: "muted" }, `${n0(s.kcal)} kcal · KH ${n1(s.carbs)} g · Fett ${n1(s.fat)} g · Eiweiß ${n1(s.protein)} g`),
+        h("div", { class: "muted" }, s.items.map(entryLabel).join(" · "))),
+      h("button", { class: "icon", title: "Trigger anlegen", "aria-label": "Trigger anlegen", onclick: () => triggerDialog({ item: "s:" + s.id }) }, "⚡"),
+      h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => editSaved(s) }, "✎"),
+      h("button", { class: "icon", title: "Löschen", "aria-label": "Löschen", onclick: async () => {
+        if (!confirm(`Mahlzeit „${s.name}“ löschen?`)) return;
+        await api("saved-meals/" + s.id, { method: "DELETE" }); renderMeals();
+      } }, "✕")))
+      : [h("div", { class: "muted", style: "padding:8px 0" }, saved.length ? "Nichts gefunden." : "Noch keine Mahlzeit gespeichert – im Tagebuch über „Als Mahlzeit speichern“.")]));
+  };
+
+  const search = h("input", { type: "search", placeholder: "Mahlzeiten suchen…", oninput: draw });
+  root.append(h("div", { class: "card" }, search, chips, list));
   draw();
 }
 
@@ -509,12 +608,17 @@ async function renderWeight() {
         v => { state.wrange = v; renderWeight(); }),
       chart),
     h("div", { class: "card" }, h("h2", {}, "Verlauf"),
-      h("div", { class: "list" }, [...all].reverse().slice(0, 60).map(p => h("div", {},
+      h("div", { class: "list" }, [...all].reverse().slice(0, state.whist).map(p => h("div", {},
         h("span", { class: "grow" }, parse(p.day).toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "long", year: "numeric" })),
         h("b", {}, n1(p.kg) + " kg"),
         h("button", { class: "icon", title: "Löschen", "aria-label": "Löschen", onclick: async () => {
           await api("weights/" + p.day, { method: "DELETE" }); renderWeight();
-        } }, "✕"))))));
+        } }, "✕")))),
+      all.length > 10 ? h("div", { class: "actions", style: "justify-content:flex-start" },
+        all.length > state.whist ? [
+          h("button", { class: "flat", onclick: () => { state.whist += 20; renderWeight(); } }, "Mehr anzeigen"),
+          h("button", { class: "flat", onclick: () => { state.whist = all.length; renderWeight(); } }, `Alle ${all.length}`)] : null,
+        state.whist > 10 ? h("button", { class: "flat", onclick: () => { state.whist = 10; renderWeight(); } }, "Weniger") : null) : null));
 }
 
 // ---------------------------------------------------------------- stats
@@ -551,7 +655,7 @@ async function renderStats() {
   const chart = h("div");
   chart.innerHTML = barChart(days, goal.kcal);
   root.append(
-    rangeButtons([[7, "7 Tage"], [30, "30 Tage"], [90, "90 Tage"]], state.range, v => { state.range = v; renderStats(); }),
+    rangeButtons([[7, "7 Tage"], [30, "30 Tage"], [90, "90 Tage"], [180, "180 Tage"], [365, "1 Jahr"]], state.range, v => { state.range = v; renderStats(); }),
     h("div", { class: "stat-tiles" },
       tile("Ø Kalorien", logged.length ? n0(avg("kcal")) + " kcal" : "–"),
       tile("Erfasste Tage", `${logged.length} / ${days.length}`),
@@ -575,12 +679,8 @@ async function renderStats() {
 // ---------------------------------------------------------------- triggers
 const KIND = { state: "Zustand", calendar: "Kalender" };
 
-// Create a trigger: when an HA entity reaches a state / a calendar event is on today,
-// an item (saved meal or food) is added to the diary.
-async function triggerDialog(preset = {}, onDone = () => {}) {
-  const [day, saved, foods, ents] = await Promise.all([
-    api("day/" + state.day), api("saved-meals"), api("foods"), api("ha/entities").catch(() => [])]);
-  const times = day.mode === "times";
+// Shared form part: trigger kind (state / calendar), entity with suggestions, condition text.
+function triggerFields(ents) {
   const kind = h("select", { onchange: sync },
     h("option", { value: "state" }, "Zustand einer Entität (z. B. Person ist im Fitnessstudio)"),
     h("option", { value: "calendar" }, "Kalendereintrag"));
@@ -588,6 +688,48 @@ async function triggerDialog(preset = {}, onDone = () => {}) {
   const entList = h("datalist", { id: "ent-list" });
   const match = h("input");
   const hint = h("div", { class: "muted" });
+  function sync() {
+    const cal = kind.value === "calendar";
+    entList.replaceChildren(...ents.filter(e => cal ? e.id.startsWith("calendar.") : !e.id.startsWith("calendar."))
+      .map(e => h("option", { value: e.id }, e.name || e.state)));
+    entity.placeholder = cal ? "z. B. calendar.arbeit" : "z. B. person.max";
+    match.placeholder = cal ? "Titel enthält, z. B. Nachtschicht" : "Zustand, z. B. Fitnessstudio (Zonenname) oder on";
+    hint.textContent = cal ? "Gilt für Tage mit einem Termin, dessen Titel diesen Text enthält."
+      : "Gilt, sobald die Entität diesen Zustand hat.";
+  }
+  sync();
+  return { kind, entity, match, nodes: [h("label", {}, "Auslöser"), kind, h("label", {}, "Entität"), entity, entList,
+    h("label", {}, "Bedingung"), match, hint] };
+}
+
+// Show a diary meal only on days where a rule applies (e.g. calendar has "Nachtschicht").
+async function mealRuleDialog(meal) {
+  const ents = await api("ha/entities").catch(() => []);
+  const tf = triggerFields(ents);
+  const msg = h("div", { class: "err" });
+  setDlg(h("h2", {}, `„${meal.name}“ nur an bestimmten Tagen anzeigen`), tf.nodes,
+    h("div", { class: "muted", style: "margin-top:8px" }, "Tage mit Einträgen bleiben immer sichtbar. Ohne Regel wird die Mahlzeit immer angezeigt."),
+    msg,
+    h("div", { class: "actions" },
+      h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
+      h("button", { onclick: async () => {
+        if (!tf.entity.value.trim()) { msg.textContent = "Bitte eine Entität angeben."; return; }
+        try {
+          await send("POST", "meal-triggers", { meal_id: meal.id, kind: tf.kind.value, entity: tf.entity.value, match: tf.match.value });
+          dlg.close(); renderSettings();
+        } catch (e) { msg.textContent = e.message; }
+      } }, "Speichern")));
+  dlg.showModal();
+}
+
+// Create a trigger: when an HA entity reaches a state / a calendar event is on today,
+// an item (saved meal or food) is added to the diary.
+async function triggerDialog(preset = {}, onDone = () => {}) {
+  const [day, saved, foods, ents] = await Promise.all([
+    api("day/" + state.day), api("saved-meals"), api("foods"), api("ha/entities").catch(() => [])]);
+  const times = day.mode === "times";
+  const tf = triggerFields(ents);
+  const { kind, entity, match } = tf;
   const item = h("select", {},
     h("optgroup", { label: "Gespeicherte Mahlzeiten" }, saved.map(s => h("option", { value: "s:" + s.id }, s.name))),
     h("optgroup", { label: "Lebensmittel" }, foods.map(f => h("option", { value: "f:" + f.id }, f.name))));
@@ -596,22 +738,8 @@ async function triggerDialog(preset = {}, onDone = () => {}) {
   const grams = h("input", { type: "number", step: "any", min: "1", placeholder: "Standardportion" });
   const msg = h("div", { class: "err" });
 
-  function sync() {
-    const cal = kind.value === "calendar";
-    entList.replaceChildren(...ents.filter(e => cal ? e.id.startsWith("calendar.") : !e.id.startsWith("calendar."))
-      .map(e => h("option", { value: e.id }, e.name || e.state)));
-    entity.placeholder = cal ? "z. B. calendar.arbeit" : "z. B. person.max";
-    match.placeholder = cal ? "Titel enthält, z. B. Nachtschicht" : "Zustand, z. B. Fitnessstudio (Zonenname) oder on";
-    hint.textContent = cal
-      ? "Wird einmal pro Tag hinzugefügt, sobald ein heutiger Termin mit diesem Titel beginnt."
-      : "Wird einmal pro Tag hinzugefügt, sobald die Entität diesen Zustand hat.";
-  }
-  sync();
-
-  dlg.replaceChildren(h("h2", {}, "Neuer Trigger"),
-    h("label", {}, "Auslöser"), kind,
-    h("label", {}, "Entität"), entity, entList,
-    h("label", {}, "Bedingung"), match, hint,
+  setDlg(h("h2", {}, "Neuer Trigger"),
+    tf.nodes,
     h("label", {}, "Hinzufügen"), item,
     h("div", { class: "muted" }, "Bei Lebensmitteln optional mit Menge:"), grams,
     times ? null : [h("label", {}, "Zu Mahlzeit im Tagebuch"), meal],
@@ -658,11 +786,14 @@ async function mfpDialog(file) {
   });
   const mapBox = h("div", {}, h("h3", { style: "margin-top:12px" }, "Mahlzeiten zuordnen"),
     maps.map(([n, s]) => h("div", { class: "maprow" }, h("span", {}, n), "→", s)));
-  mode.onchange = () => { mapBox.hidden = mode.value === "totals"; };
+  const hide = h("input", { type: "checkbox", checked: true });
+  const hideRow = h("label", { class: "pick" }, hide, "Leere Mahlzeiten an diesen Tagen ausblenden (nur die Tagessumme anzeigen)");
+  hideRow.hidden = true;
+  mode.onchange = () => { mapBox.hidden = mode.value === "totals"; hideRow.hidden = mode.value !== "totals"; };
   const msg = h("div", { class: "err" });
-  dlg.replaceChildren(h("h2", {}, "MyFitnessPal-Import"),
+  setDlg(h("h2", {}, "MyFitnessPal-Import"),
     h("div", { class: "muted" }, `${p.days} Tage (${p.from} bis ${p.to}), ${p.items} Einträge, ${p.weights} Gewichtswerte`),
-    h("label", {}, "Was importieren?"), mode, mapBox,
+    h("label", {}, "Was importieren?"), mode, mapBox, hideRow,
     h("label", { class: "pick" }, weights, "Gewicht übernehmen"),
     h("label", { class: "pick" }, replace, "Vorhandene Einträge an diesen Tagen ersetzen"),
     msg,
@@ -671,7 +802,7 @@ async function mfpDialog(file) {
       h("button", { onclick: async () => {
         try {
           const r = await send("POST", "import/mfp", { csv, mode: mode.value, weights: weights.checked,
-            replace: replace.checked, meal_map: Object.fromEntries(maps.map(([n, s]) => [n, s.value ? Number(s.value) : null])) });
+            replace: replace.checked, hide_empty: mode.value === "totals" && hide.checked, meal_map: Object.fromEntries(maps.map(([n, s]) => [n, s.value ? Number(s.value) : null])) });
           dlg.close();
           alert(`Importiert: ${r.days} Tage, ${r.entries} Einträge, ${r.weights} Gewichtswerte.`);
           renderSettings();
@@ -682,7 +813,7 @@ async function mfpDialog(file) {
 
 // ---------------------------------------------------------------- settings
 async function renderSettings() {
-  const [goal, day, triggers] = await Promise.all([api("goal"), api("day/" + state.day), api("triggers")]);
+  const [goal, day, triggers, rules] = await Promise.all([api("goal"), api("day/" + state.day), api("triggers"), api("meal-triggers")]);
   const root = $("#settings");
   root.replaceChildren();
 
@@ -727,13 +858,21 @@ async function renderSettings() {
     return h("div", {}, name,
       h("button", { class: "icon", disabled: i === 0, title: "Nach oben", onclick: () => move(-1) }, "↑"),
       h("button", { class: "icon", disabled: i === meals.length - 1, title: "Nach unten", onclick: () => move(1) }, "↓"),
+      h("button", { class: "icon", title: "Nur an bestimmten Tagen anzeigen", onclick: () => mealRuleDialog(m) }, "⚡"),
       h("button", { class: "icon", title: "Löschen", onclick: async () => {
         try { await api("meals/" + m.id, { method: "DELETE" }); renderSettings(); }
         catch (e) { mealMsg.textContent = e.message; }
       } }, "✕"));
   }));
   const newMeal = h("input", { placeholder: "Neue Mahlzeit, z. B. Nachtschicht" });
-  root.append(h("div", { class: "card" }, h("h2", {}, "Mahlzeiten"), mealList, mealMsg,
+  const ruleList = rules.length ? h("div", { class: "list" }, rules.map(r => h("div", {},
+    h("div", { class: "grow" }, h("b", {}, r.meal), ` nur an Tagen: ${KIND[r.kind]} ${r.entity}${r.match ? " = " + r.match : ""}`),
+    h("button", { class: "icon", title: "Regel löschen", onclick: async () => {
+      await api("meal-triggers/" + r.id, { method: "DELETE" }); renderSettings();
+    } }, "✕")))) : null;
+  root.append(h("div", { class: "card" }, h("h2", {}, "Mahlzeiten"),
+    h("div", { class: "muted" }, "Mit ⚡ blendest du eine Mahlzeit nur an Tagen ein, an denen z. B. dein Kalender einen bestimmten Termin hat."),
+    mealList, ruleList, mealMsg,
     h("div", { class: "actions" }, newMeal, h("button", { onclick: async () => {
       if (!newMeal.value.trim()) return;
       await send("POST", "meals", { name: newMeal.value });

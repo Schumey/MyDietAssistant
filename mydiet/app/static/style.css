@@ -230,3 +230,6 @@ dialog h2 { margin-bottom: 12px; font-size: 18px; }
 .pick input { width: auto; }
 .maprow { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; margin-top: 6px; }
 .list input[type="checkbox"] { width: auto; flex: none; }
+.hint { text-align: center; margin: -4px 0 12px; }
+.sect { padding: 6px 8px 0; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+button.flat.danger { color: var(--error-color); }

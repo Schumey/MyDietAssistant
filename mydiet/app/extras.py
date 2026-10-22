@@ -161,9 +161,14 @@ def first_meal(c, owner: str) -> int:
     return c.execute("SELECT id FROM meals WHERE owner=? ORDER BY position", (owner,)).fetchone()["id"]
 
 
+def note_use(c, owner: str, sid: int, meal_id: int | None):
+    c.execute("INSERT INTO saved_meal_uses(owner,saved_meal_id,meal_id) VALUES(?,?,?)", (owner, sid, meal_id))
+
+
 def add_saved_to_diary(c, owner: str, sid: int, day: str, meal_id: int | None, factor: float = 1,
                        time: str | None = None):
     meal_id = meal_id or first_meal(c, owner)
+    note_use(c, owner, sid, meal_id)
     if not c.execute("SELECT 1 FROM saved_meals WHERE id=? AND owner=?", (sid, owner)).fetchone():
         raise HTTPException(404, "saved meal not found")
     if not c.execute("SELECT 1 FROM meals WHERE id=? AND owner=?", (meal_id, owner)).fetchone():
@@ -404,6 +409,7 @@ class MfpImportIn(BaseModel):
     weights: bool = True
     meal_map: dict[str, int | None] = {}  # file meal name -> own meal id (None/missing: create)
     replace: bool = True               # clear existing entries on imported days
+    hide_empty: bool = False           # totals-only: hide the other (empty) meals on imported days
 
 
 @app.post("/api/import/mfp/preview")
@@ -460,6 +466,9 @@ def mfp_import(p: MfpImportIn, x_remote_user_id: str | None = Header(None),
                            it["protein"], it["carbs"], it["fat"]))
         else:
             mid = meal_id("MyFitnessPal (Tagessumme)")
+            if p.hide_empty:
+                c.executemany("INSERT OR IGNORE INTO day_flags(owner,day) VALUES(?,?)",
+                              [(owner, x) for x in days])
             for day, t in d["totals"].items():
                 c.execute("INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat)"
                           " VALUES(?,?,?,?,?,?,?,?,?)",
@@ -643,6 +652,10 @@ def poll_triggers():
         pending = c.execute(
             "SELECT * FROM triggers WHERE enabled=1 AND id NOT IN"
             " (SELECT trigger_id FROM trigger_log WHERE day=?)", (day,)).fetchall()
+    with db.conn() as c:
+        rules = c.execute("SELECT * FROM meal_triggers WHERE enabled=1 AND kind='state'").fetchall()
+        for t in rules:
+            meal_rule_active(c, t, day)  # logs the day once the state was seen
     for t in pending:
         try:
             if not condition_met(t, now):
@@ -667,3 +680,161 @@ async def trigger_loop():
 async def start_triggers():
     if SUPERVISOR_TOKEN:
         asyncio.create_task(trigger_loop())
+
+
+# --- copy / clear / suggestions ---------------------------------------------
+
+class CopyIn(BaseModel):
+    ids: list[int]
+    day: str
+    meal_id: int | None = None
+    time: str | None = None
+    factor: float = 1
+
+
+@app.post("/api/entries/copy")
+def copy_entries(cp: CopyIn, x_remote_user_id: str | None = Header(None),
+                 x_remote_user_display_name: str | None = Header(None)):
+    """Copy diary entries to another meal and/or day (optionally scaled)."""
+    check_day(cp.day)
+    if cp.factor <= 0:
+        raise HTTPException(400, "factor must be > 0")
+    owner = user_from(x_remote_user_id)
+    with db.conn() as c:
+        meal_id = cp.meal_id or first_meal(c, owner)
+        if not c.execute("SELECT 1 FROM meals WHERE id=? AND owner=?", (meal_id, owner)).fetchone():
+            raise HTTPException(404, "meal not found")
+        n = 0
+        for eid in cp.ids:
+            e = c.execute("SELECT * FROM entries WHERE id=? AND owner=?", (eid, owner)).fetchone()
+            if not e:
+                continue
+            k = cp.factor
+            c.execute("INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,time)"
+                      " VALUES(?,?,?,?,?,?,?,?,?,?)",
+                      (owner, cp.day, meal_id, e["name"], e["grams"] * k, e["kcal"] * k, e["protein"] * k,
+                       e["carbs"] * k, e["fat"] * k, check_time(cp.time) if cp.time else e["time"]))
+            n += 1
+    publish(owner, x_remote_user_display_name or owner)
+    return {"copied": n}
+
+
+@app.delete("/api/day/{day}/entries")
+def clear_entries(day: str, meal_id: int | None = None, x_remote_user_id: str | None = Header(None),
+                  x_remote_user_display_name: str | None = Header(None)):
+    """Delete all entries of a diary meal (or of the whole day without meal_id)."""
+    check_day(day)
+    owner = user_from(x_remote_user_id)
+    with db.conn() as c:
+        if meal_id is None:
+            c.execute("DELETE FROM entries WHERE owner=? AND day=?", (owner, day))
+        else:
+            c.execute("DELETE FROM entries WHERE owner=? AND day=? AND meal_id=?", (owner, day, meal_id))
+    publish(owner, x_remote_user_display_name or owner)
+    return {"ok": True}
+
+
+@app.get("/api/suggestions")
+def suggestions(meal_id: int | None = None, limit: int = 6, x_remote_user_id: str | None = Header(None)):
+    """Frequently used entries and saved meals, for the given diary meal if any."""
+    owner = user_from(x_remote_user_id)
+    limit = max(1, min(limit, 20))
+    with db.conn() as c:
+        where, args = ("AND meal_id=?", (owner, meal_id)) if meal_id else ("", (owner,))
+        items = []
+        for r in c.execute(
+                f"SELECT name, COUNT(*) n, MAX(id) last_id FROM entries WHERE owner=? {where} AND grams>0"
+                " GROUP BY name ORDER BY n DESC, last_id DESC LIMIT ?", (*args, limit)):
+            e = c.execute("SELECT id, grams, kcal, protein, carbs, fat FROM entries WHERE id=?",
+                          (r["last_id"],)).fetchone()
+            items.append({"name": r["name"], "n": r["n"], "entry_id": e["id"], "grams": e["grams"],
+                          "kcal": e["kcal"], "protein": e["protein"], "carbs": e["carbs"], "fat": e["fat"]})
+        uw, ua = ("AND u.meal_id=?", (owner, meal_id)) if meal_id else ("", (owner,))
+        ids = [(r["saved_meal_id"], r["n"]) for r in c.execute(
+            f"SELECT u.saved_meal_id, COUNT(*) n FROM saved_meal_uses u WHERE u.owner=? {uw}"
+            " GROUP BY u.saved_meal_id ORDER BY n DESC, MAX(u.id) DESC LIMIT ?", (*ua, limit))]
+        by_id = {s["id"]: s for s in saved_meal_rows(c, owner)}
+        saved = [{**by_id[i], "n": n} for i, n in ids if i in by_id]
+    return {"items": items, "saved": saved}
+
+
+# --- meal visibility rules ----------------------------------------------------
+
+_cal_cache: dict[tuple, tuple[float, bool]] = {}
+
+
+def calendar_has_event(entity: str, match: str, day: str) -> bool:
+    key = (entity, match, day)
+    hit = _cal_cache.get(key)
+    now = datetime.now().timestamp()
+    if hit and now - hit[0] < 60:
+        return hit[1]
+    nxt = (date.fromisoformat(day) + timedelta(days=1)).isoformat()
+    events = ha_get(f"calendars/{entity}", start=f"{day}T00:00:00", end=f"{nxt}T00:00:00")
+    res = any(match.strip().lower() in str(ev.get("summary", "")).lower() for ev in events)
+    _cal_cache[key] = (now, res)
+    return res
+
+
+def meal_rule_active(c, t, day: str) -> bool:
+    if c.execute("SELECT 1 FROM meal_trigger_log WHERE meal_trigger_id=? AND day=?", (t["id"], day)).fetchone():
+        return True
+    if not SUPERVISOR_TOKEN:
+        return True  # no HA (local dev): don't hide anything
+    try:
+        if t["kind"] == "calendar":
+            return calendar_has_event(t["entity"], t["match"], day)
+        if day == date.today().isoformat() and condition_met(t, datetime.now()):
+            c.execute("INSERT OR IGNORE INTO meal_trigger_log VALUES(?,?)", (t["id"], day))
+            return True
+        return False
+    except (httpx.HTTPError, ValueError, KeyError):
+        return True  # HA unreachable: show rather than hide
+
+
+def hidden_meals(c, owner: str, day: str, meals: list[dict], with_entries: set[int]) -> set[int]:
+    """Meals not shown on this day: gated by a rule that doesn't apply, or empty on a totals-only day."""
+    rules = c.execute("SELECT * FROM meal_triggers WHERE owner=? AND enabled=1", (owner,)).fetchall()
+    gated = {t["meal_id"] for t in rules}
+    active = {t["meal_id"] for t in rules if meal_rule_active(c, t, day)}
+    flagged = c.execute("SELECT 1 FROM day_flags WHERE owner=? AND day=?", (owner, day)).fetchone()
+    return {m["id"] for m in meals if m["id"] not in with_entries
+            and (flagged or (m["id"] in gated and m["id"] not in active))}
+
+
+class MealRuleIn(BaseModel):
+    meal_id: int
+    kind: str
+    entity: str
+    match: str = ""
+
+
+@app.get("/api/meal-triggers")
+def list_meal_triggers(x_remote_user_id: str | None = Header(None)):
+    with db.conn() as c:
+        return [dict(r) for r in c.execute(
+            "SELECT t.*, m.name meal FROM meal_triggers t LEFT JOIN meals m ON m.id=t.meal_id"
+            " WHERE t.owner=? ORDER BY t.id", (user_from(x_remote_user_id),))]
+
+
+@app.post("/api/meal-triggers")
+def add_meal_trigger(r: MealRuleIn, x_remote_user_id: str | None = Header(None)):
+    owner = user_from(x_remote_user_id)
+    if r.kind not in ("state", "calendar") or not r.entity.strip():
+        raise HTTPException(400, "kind/entity invalid")
+    with db.conn() as c:
+        if not c.execute("SELECT 1 FROM meals WHERE id=? AND owner=?", (r.meal_id, owner)).fetchone():
+            raise HTTPException(404, "meal not found")
+        cur = c.execute("INSERT INTO meal_triggers(owner,meal_id,kind,entity,match) VALUES(?,?,?,?,?)",
+                        (owner, r.meal_id, r.kind, r.entity.strip(), r.match.strip()))
+        return {"id": cur.lastrowid}
+
+
+@app.delete("/api/meal-triggers/{rid}")
+def del_meal_trigger(rid: int, x_remote_user_id: str | None = Header(None)):
+    owner = user_from(x_remote_user_id)
+    with db.conn() as c:
+        if c.execute("SELECT 1 FROM meal_triggers WHERE id=? AND owner=?", (rid, owner)).fetchone():
+            c.execute("DELETE FROM meal_triggers WHERE id=?", (rid,))
+            c.execute("DELETE FROM meal_trigger_log WHERE meal_trigger_id=?", (rid,))
+    return {"ok": True}

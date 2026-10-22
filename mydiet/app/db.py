@@ -86,6 +86,28 @@ CREATE TABLE IF NOT EXISTS triggers (
   grams REAL,
   enabled INTEGER NOT NULL DEFAULT 1
 );
+CREATE TABLE IF NOT EXISTS meal_triggers (   -- show a diary meal only when the rule applies
+  id INTEGER PRIMARY KEY,
+  owner TEXT NOT NULL,
+  meal_id INTEGER NOT NULL,
+  kind TEXT NOT NULL,
+  entity TEXT NOT NULL,
+  match TEXT NOT NULL DEFAULT '',
+  enabled INTEGER NOT NULL DEFAULT 1
+);
+CREATE TABLE IF NOT EXISTS meal_trigger_log (meal_trigger_id INTEGER NOT NULL, day TEXT NOT NULL,
+  PRIMARY KEY (meal_trigger_id, day));
+CREATE TABLE IF NOT EXISTS day_flags (        -- days whose empty meals are hidden (totals-only imports)
+  owner TEXT NOT NULL,
+  day TEXT NOT NULL,
+  PRIMARY KEY (owner, day)
+);
+CREATE TABLE IF NOT EXISTS saved_meal_uses (
+  id INTEGER PRIMARY KEY,
+  owner TEXT NOT NULL,
+  saved_meal_id INTEGER NOT NULL,
+  meal_id INTEGER
+);
 CREATE TABLE IF NOT EXISTS trigger_log (
   trigger_id INTEGER NOT NULL,
   day TEXT NOT NULL,
