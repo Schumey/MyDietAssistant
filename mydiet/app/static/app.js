@@ -70,6 +70,7 @@ const EN = {
   "wie Summe der Zutaten": "same as sum of ingredients", "Gesamt: {} g": "Total: {} g", "pro Portion ({} g)": "per portion ({} g)",
   "Rezept bearbeiten": "Edit recipe", "Neues Rezept": "New recipe", "Gewicht fertig (g, optional)": "Cooked weight (g, optional)", "Zutaten": "Ingredients",
   "Noch keine Zutaten.": "No ingredients yet.", "Zutat hinzufügen": "Add ingredient", "+ Zutat": "+ Ingredient",
+  "Orange Zutaten fehlten in Deinen Lebensmitteln und wurden aus Online-Datenbanken ergänzt (Richtwerte, bitte prüfen).": "Orange ingredients were missing from your foods and were filled in from online databases (estimates, please check).", "aus Open Food Facts": "from Open Food Facts", "aus USDA": "from USDA",
   "Pro Portion ({} g): {} kcal · KH {} g · Fett {} g · Eiweiß {} g · {} Portionen": "Per portion ({} g): {} kcal · carbs {} g · fat {} g · protein {} g · {} portions",
   "Rezept „{}“ löschen? Das zugehörige Lebensmittel wird ebenfalls gelöscht, bereits eingetragene Mahlzeiten bleiben erhalten.": "Delete recipe “{}”? The matching food is deleted too; meals already logged are kept.",
   "Noch kein Rezept angelegt.": "No recipe yet.", "Rezepte suchen…": "Search recipes…", "+ Neues Rezept": "+ New recipe",
@@ -511,6 +512,7 @@ Object.assign(LANGS, {
     "Gewicht fertig (g, optional)": "Poids cuit (g, facultatif)",
     "Zutaten": "Ingrédients",
     "Noch keine Zutaten.": "Pas encore d’ingrédients.",
+    "Orange Zutaten fehlten in Deinen Lebensmitteln und wurden aus Online-Datenbanken ergänzt (Richtwerte, bitte prüfen).": "Les ingrédients orange manquaient dans vos aliments et ont été complétés depuis des bases de données en ligne (valeurs indicatives, à vérifier).", "aus Open Food Facts": "d’après Open Food Facts", "aus USDA": "d’après USDA",
     "Zutat hinzufügen": "Ajouter un ingrédient",
     "+ Zutat": "+ Ingrédient",
     "Pro Portion ({} g): {} kcal · KH {} g · Fett {} g · Eiweiß {} g · {} Portionen": "Par portion ({} g) : {} kcal · gluc. {} g · lip. {} g · prot. {} g · {} portions",
@@ -1218,6 +1220,7 @@ Object.assign(LANGS, {
     "Gewicht fertig (g, optional)": "Peso cocinado (g, opcional)",
     "Zutaten": "Ingredientes",
     "Noch keine Zutaten.": "Aún no hay ingredientes.",
+    "Orange Zutaten fehlten in Deinen Lebensmitteln und wurden aus Online-Datenbanken ergänzt (Richtwerte, bitte prüfen).": "Los ingredientes naranjas faltaban en tus alimentos y se completaron con bases de datos en línea (valores orientativos, revísalos).", "aus Open Food Facts": "de Open Food Facts", "aus USDA": "de USDA",
     "Zutat hinzufügen": "Añadir ingrediente",
     "+ Zutat": "+ Ingrediente",
     "Pro Portion ({} g): {} kcal · KH {} g · Fett {} g · Eiweiß {} g · {} Portionen": "Por porción ({} g): {} kcal · carb. {} g · grasa {} g · prot. {} g · {} porciones",
@@ -3318,8 +3321,9 @@ async function renderRecipes() {
         for (const key of ["kcal", "protein", "carbs", "fat", "fiber", "sugar", "salt", "sat_fat"]) it[key] = (it[key] || 0) * k;
         it.grams = ng; kc.textContent = `${n0(it.kcal)} kcal`; drawTotal();
       } });
-      return h("div", { class: it.matched === false ? "unmatched" : "" }, h("div", { class: "grow" }, it.name, " ", kc,
-        it.text && it.text !== it.name ? h("div", { class: "muted" }, it.text) : null), g, mUnit(),
+      return h("div", { class: it.matched === false ? "unmatched" : it.source ? "guess" : "" }, h("div", { class: "grow" }, it.name, " ", kc,
+        it.text && it.text !== it.name ? h("div", { class: "muted" }, it.text) : null,
+        it.source ? h("div", { class: "muted" }, `aus ${it.source === "usda" ? "USDA" : "Open Food Facts"}`) : null), g, mUnit(),
         h("button", { class: "icon edit", title: "Durch anderes Lebensmittel tauschen", "aria-label": "Tauschen", onclick: () => swap(idx, `„${it.name}“ tauschen`) }, "⇄"),
         h("button", { class: "icon", title: "Entfernen", "aria-label": "Entfernen", onclick: () => { draft.items.splice(idx, 1); editRecipe(r, draft); } }, "✕"));
     });
@@ -3330,6 +3334,7 @@ async function renderRecipes() {
       open.length ? h("div", { class: "warn-note" }, open.length === 1
         ? "1 Zutat nicht zugeordnet (rot): mit ⇄ ein Lebensmittel wählen, sonst zählt sie mit 0 kcal. Mengen ohne Angabe bitte ergänzen."
         : `${open.length} Zutaten nicht zugeordnet (rot): mit ⇄ ein Lebensmittel wählen, sonst zählen sie mit 0 kcal. Mengen ohne Angabe bitte ergänzen.`) : null,
+      draft.items.some(i => i.source) ? h("div", { class: "warn-note" }, "Orange Zutaten fehlten in Deinen Lebensmitteln und wurden aus Online-Datenbanken ergänzt (Richtwerte, bitte prüfen).") : null,
       h("div", { class: "list" }, rows.length ? rows : [h("div", { class: "muted" }, "Noch keine Zutaten.")]),
       h("button", { class: "flat", onclick: () => swap(null, "Zutat hinzufügen") }, "+ Zutat"),
       total, h("label", {}, "Zubereitung"), instr, h("label", {}, "Quelle"), source, msg,

@@ -11,7 +11,6 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 ## Lebensmittel und Eingabe
 
-- **Rezept-Import: Zutaten online zuordnen** (M): Nicht zugeordnete Zutaten bei Open Food Facts oder USDA suchen und zur Auswahl anbieten, statt nur in der eigenen Bibliothek.
 - **Rezept-Import aus Text und Foto** (L): Rezepte aus eingefügtem Text oder einem Foto lesen, wenn die Seite keine Rezeptdaten mitliefert.
 - **Gemeinsame Bibliothek auch für Rezepte und gespeicherte Mahlzeiten** (M): bisher gilt sie für Lebensmittel, Rezepte und Mahlzeiten lassen sich nur kopieren.
 - **Weitere Sprachen** (S je Sprache): zum Beispiel Italienisch oder Niederländisch; ein Wörterbuch in `static/app.js` und ein Eintrag in `LANGS` (`extras.py`) genügen.

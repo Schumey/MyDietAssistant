@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.2.0
+
+### New
+- **Recipe import: missing ingredients from online databases:** with the "More data sources" feature on, ingredients missing from your library are looked up in Open Food Facts and USDA (median of the matching hits, per 100 g). They show in orange with the source in the editor and can be swapped with ⇄ as usual. Without a hit, internet access or an amount the ingredient stays red. Results come from the lookup cache when available.
+
 ## 1.1.2
 
 ### Fixed

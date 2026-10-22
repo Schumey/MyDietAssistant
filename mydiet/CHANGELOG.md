@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.2.0
+
+### Neu
+- **Rezept-Import: fehlende Zutaten aus Online-Datenbanken:** Mit der Zusatzfunktion „Weitere Datenquellen“ werden Zutaten, die in Deiner Bibliothek fehlen, bei Open Food Facts und USDA gesucht (Median der passenden Treffer, pro 100 g). Sie erscheinen orange mit Quellenangabe im Editor und lassen sich wie gewohnt per ⇄ tauschen. Ohne Treffer, Internet oder Mengenangabe bleibt die Zutat rot. Ergebnisse kommen aus dem Abfrage-Zwischenspeicher, wenn vorhanden.
+
 ## 1.1.2
 
 ### Behoben

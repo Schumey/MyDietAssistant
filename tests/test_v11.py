@@ -278,3 +278,40 @@ def test_fetch_limits_size_errors_and_redirect_loops(monkeypatch):
         ri.fetch_page("https://x.test", get=lambda m, url, **kw: FakeResponse(404))
     with pytest.raises(ValueError, match="Weiterleitungen"):
         ri.fetch_page("https://x.test", get=lambda m, url, **kw: FakeResponse(302, location="https://x.test"))
+
+
+# --- staples from nutrition databases ------------------------------------------------
+
+def _hit(name, kcal, source="off"):
+    return {"source": source, "name": name, "kcal": kcal, "protein": 1, "carbs": 2, "fat": 3, "fiber": 0, "sugar": 0, "salt": 0, "sat_fat": 0}
+
+
+def test_missing_staples_are_filled_from_database_hits():
+    items = ri.build_items(["200 g Weizenmehl", "100 g Haferflocken", "1 Prise Zimt"], [{"name": "Mehl", "kcal": 340}])
+    hits = {"Haferflocken": [_hit("Zarte Haferflocken", 360), _hit("Bio Haferflocken", 370), _hit("Schokoriegel", 500), _hit("Haferflocken kernig", 380)]}
+    ri.fill_missing(items, lambda name: hits.get(name, []))
+    assert items[0]["matched"] and "source" not in items[0]                      # library match stays as it was
+    assert items[1]["matched"] and items[1]["source"] == "off" and items[1]["kcal"] == 370   # median of the three matching hits, per 100 g
+    assert not items[2]["matched"] and items[2]["kcal"] == 0                      # no amount, no lookup
+
+
+def test_failing_lookup_leaves_the_ingredient_unmatched():
+    items = ri.build_items(["100 g Haferflocken"], [])
+    def boom(name):
+        raise OSError("offline")
+    ri.fill_missing(items, boom)
+    assert items[0]["matched"] is False
+
+
+def test_import_endpoint_uses_databases_only_with_the_sources_feature(user, monkeypatch):
+    import extras5
+    monkeypatch.setattr(ri, "fetch_page", lambda url: page())
+    calls = []
+    monkeypatch.setattr(extras5, "cached_search", lambda s, q, b: (calls.append((s, q)) or [_hit(q, 400, s)], False))
+    plain = user(feature=("recipes",))
+    assert all(i["matched"] is False or i["name"] for i in plain.post("/api/recipes/import-url", json={"url": "x.test/p"}).json()["items"])
+    assert calls == []
+    c = user(feature=("recipes", "sources"))
+    d = c.post("/api/recipes/import-url", json={"url": "x.test/p"}).json()
+    assert calls and [i["name"] for i in d["items"] if i.get("source")]
+    assert all(i["kcal"] > 0 for i in d["items"] if i.get("source"))

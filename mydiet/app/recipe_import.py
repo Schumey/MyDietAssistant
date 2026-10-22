@@ -5,6 +5,7 @@ import ipaddress
 import json
 import re
 import socket
+from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urljoin, urlparse
 
 import httpx
@@ -262,6 +263,42 @@ def build_items(lines: list[str], foods: list[dict]) -> list[dict]:
             item[key] = round((f.get(key) or 0) * k, 2) if f else 0
         items.append(item)
     return items
+
+
+MAX_LOOKUPS = 25
+SOURCE_LABELS = {"off": "Open Food Facts", "usda": "USDA"}
+
+
+def consensus(name: str, hits: list[dict]) -> dict | None:
+    """Per-100 g values for a staple from database hits: only hits whose name shares a word with the ingredient count,
+    and the median of up to five of them smooths out odd branded products."""
+    want = tokens(name)
+    ok = [h for h in hits if want and any(_hit(t, w) for t in tokens(h["name"]) for w in want)][:5]
+    if not ok:
+        return None
+    mid = lambda key: sorted(h.get(key) or 0 for h in ok)[len(ok) // 2]
+    return {"source": ok[0]["source"], **{k: mid(k) for k in NUTR}}
+
+
+def fill_missing(items: list[dict], search) -> None:
+    """Complete unmatched ingredients that have an amount from nutrition databases (`search(name)` -> list of hits).
+    They keep matched=False semantics out of the way: matched becomes True and `source` names the database, so the editor
+    shows them as a database guess to review. Failing lookups leave the item as it was."""
+    todo = [i for i in items if not i["matched"] and i["grams"] > 0 and i["name"]][:MAX_LOOKUPS]
+    if not todo:
+        return
+
+    def one(item):
+        try:
+            return consensus(item["name"], search(item["name"]))
+        except Exception:   # offline, rate limit, odd payload: the ingredient just stays unmatched
+            return None
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        for item, per100 in zip(todo, pool.map(one, todo)):
+            if per100:
+                k = item["grams"] / 100
+                item.update({key: round(per100[key] * k, 2) for key in NUTR})
+                item["matched"], item["source"] = True, per100["source"]
 
 
 def to_draft(page: str, url: str, foods: list[dict]) -> dict:
