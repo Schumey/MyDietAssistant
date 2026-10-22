@@ -43,6 +43,11 @@ def user_from(user_id: str | None) -> str:
     return user_id or "default"
 
 
+class PortionIn(BaseModel):
+    name: str
+    grams: float
+
+
 class FoodIn(BaseModel):
     name: str
     brand: str = ""
@@ -50,8 +55,13 @@ class FoodIn(BaseModel):
     protein: float = 0
     carbs: float = 0
     fat: float = 0
+    fiber: float = 0
+    sugar: float = 0
+    salt: float = 0
+    sat_fat: float = 0
     serving_g: float = 100
     category: str = ""
+    portions: list[PortionIn] | None = None   # named portion sizes ("1 slice" = 30 g)
 
 
 class EntryIn(BaseModel):
@@ -135,7 +145,8 @@ def get_goal(c, owner: str, day: str | None = None) -> dict:
 def day_totals(c, owner: str, day: str) -> dict:
     r = c.execute(
         "SELECT COALESCE(SUM(kcal),0) kcal, COALESCE(SUM(protein),0) protein,"
-        " COALESCE(SUM(carbs),0) carbs, COALESCE(SUM(fat),0) fat"
+        " COALESCE(SUM(carbs),0) carbs, COALESCE(SUM(fat),0) fat, COALESCE(SUM(fiber),0) fiber,"
+        " COALESCE(SUM(sugar),0) sugar, COALESCE(SUM(salt),0) salt, COALESCE(SUM(sat_fat),0) sat_fat"
         " FROM entries WHERE owner=? AND day=?", (owner, day)).fetchone()
     return {k: round(r[k], 1) for k in r.keys()}
 
@@ -219,10 +230,10 @@ def add_entry(e: EntryIn, x_remote_user_id: str | None = Header(None),
             raise HTTPException(404, "meal not found")
         k = e.grams / 100
         c.execute(
-            "INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,time)"
-            " VALUES(?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,time)"
+            " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (owner, e.day, meal_id, f["name"], e.grams, f["kcal"] * k, f["protein"] * k,
-             f["carbs"] * k, f["fat"] * k, check_time(e.time)))
+             f["carbs"] * k, f["fat"] * k, *(f[m] * k for m in db.MICROS), check_time(e.time)))
     publish(owner, x_remote_user_display_name or owner)
     return {"ok": True}
 
@@ -266,9 +277,10 @@ def edit_entry(entry_id: int, g: EntryEdit, x_remote_user_id: str | None = Heade
                 raise HTTPException(404, "food not found")
             grams = g.grams if g.grams is not None else (r["grams"] or f["serving_g"])
             k = grams / 100
-            c.execute("UPDATE entries SET name=?, grams=?, kcal=?, protein=?, carbs=?, fat=?, time=? WHERE id=?",
+            c.execute("UPDATE entries SET name=?, grams=?, kcal=?, protein=?, carbs=?, fat=?, fiber=?, sugar=?, salt=?,"
+                      " sat_fat=?, time=? WHERE id=?",
                       (f["name"], grams, f["kcal"] * k, f["protein"] * k, f["carbs"] * k, f["fat"] * k,
-                       time_, entry_id))
+                       *(f[m] * k for m in db.MICROS), time_, entry_id))
         elif not r["grams"] and g.kcal is not None:  # quick entry: values are edited directly
             c.execute("UPDATE entries SET name=?, kcal=?, protein=?, carbs=?, fat=?, time=? WHERE id=?",
                       ((g.name or r["name"]).strip(), g.kcal, g.protein or 0, g.carbs or 0, g.fat or 0,
@@ -276,9 +288,10 @@ def edit_entry(entry_id: int, g: EntryEdit, x_remote_user_id: str | None = Heade
         else:
             grams = g.grams if g.grams is not None else r["grams"]
             k = grams / r["grams"] if r["grams"] else 1
-            c.execute("UPDATE entries SET grams=?, kcal=?, protein=?, carbs=?, fat=?, time=? WHERE id=?",
+            c.execute("UPDATE entries SET grams=?, kcal=?, protein=?, carbs=?, fat=?, fiber=?, sugar=?, salt=?,"
+                      " sat_fat=?, time=? WHERE id=?",
                       (grams, r["kcal"] * k, r["protein"] * k, r["carbs"] * k, r["fat"] * k,
-                       time_, entry_id))
+                       *(r[m] * k for m in db.MICROS), time_, entry_id))
     publish(owner, x_remote_user_display_name or owner)
     return {"ok": True}
 
@@ -302,7 +315,20 @@ def list_foods(q: str = "", x_remote_user_id: str | None = Header(None)):
         rows = c.execute(
             "SELECT * FROM foods WHERE owner=? AND (name LIKE ? OR brand LIKE ?)"
             " ORDER BY id DESC LIMIT 200", (owner, f"%{q}%", f"%{q}%"))
-        return [dict(r) for r in rows]
+        foods = [dict(r) for r in rows]
+        ports = {}
+        for p in c.execute("SELECT food_id, name, grams FROM food_portions WHERE food_id IN"
+                           " (SELECT id FROM foods WHERE owner=?) ORDER BY id", (owner,)):
+            ports.setdefault(p["food_id"], []).append({"name": p["name"], "grams": p["grams"]})
+        for f in foods:
+            f["portions"] = ports.get(f["id"], [])
+        return foods
+
+
+def save_portions(c, food_id: int, portions):
+    c.execute("DELETE FROM food_portions WHERE food_id=?", (food_id,))
+    c.executemany("INSERT INTO food_portions(food_id,name,grams) VALUES(?,?,?)",
+                  [(food_id, p.name.strip(), p.grams) for p in portions or [] if p.name.strip() and p.grams > 0])
 
 
 @app.post("/api/foods")
@@ -310,10 +336,11 @@ def add_food(f: FoodIn, x_remote_user_id: str | None = Header(None)):
     owner = user_from(x_remote_user_id)
     with db.conn() as c:
         cur = c.execute(
-            "INSERT INTO foods(owner,name,brand,kcal,protein,carbs,fat,serving_g,category)"
-            " VALUES(?,?,?,?,?,?,?,?,?)",
-            (owner, f.name.strip(), f.brand.strip(), f.kcal, f.protein, f.carbs, f.fat, f.serving_g,
-             f.category.strip()))
+            "INSERT INTO foods(owner,name,brand,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,serving_g,category)"
+            " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (owner, f.name.strip(), f.brand.strip(), f.kcal, f.protein, f.carbs, f.fat, f.fiber, f.sugar, f.salt,
+             f.sat_fat, f.serving_g, f.category.strip()))
+        save_portions(c, cur.lastrowid, f.portions)
         return {"id": cur.lastrowid}
 
 
@@ -322,10 +349,12 @@ def edit_food(food_id: int, f: FoodIn, x_remote_user_id: str | None = Header(Non
     owner = user_from(x_remote_user_id)
     with db.conn() as c:
         c.execute(
-            "UPDATE foods SET name=?,brand=?,kcal=?,protein=?,carbs=?,fat=?,serving_g=?,category=?"
-            " WHERE id=? AND owner=?",
-            (f.name.strip(), f.brand.strip(), f.kcal, f.protein, f.carbs, f.fat, f.serving_g,
-             f.category.strip(), food_id, owner))
+            "UPDATE foods SET name=?,brand=?,kcal=?,protein=?,carbs=?,fat=?,fiber=?,sugar=?,salt=?,sat_fat=?,"
+            "serving_g=?,category=? WHERE id=? AND owner=?",
+            (f.name.strip(), f.brand.strip(), f.kcal, f.protein, f.carbs, f.fat, f.fiber, f.sugar, f.salt,
+             f.sat_fat, f.serving_g, f.category.strip(), food_id, owner))
+        if f.portions is not None and c.execute("SELECT 1 FROM foods WHERE id=? AND owner=?", (food_id, owner)).fetchone():
+            save_portions(c, food_id, f.portions)
     return {"ok": True}
 
 
@@ -367,6 +396,7 @@ def merge_foods(m: MergeIn, x_remote_user_id: str | None = Header(None)):
         for i in ids:
             if c.execute("SELECT 1 FROM foods WHERE id=? AND owner=?", (i, owner)).fetchone():
                 c.execute("UPDATE triggers SET food_id=? WHERE food_id=? AND owner=?", (m.keep_id, i, owner))
+                c.execute("DELETE FROM food_portions WHERE food_id=?", (i,))
                 c.execute("DELETE FROM foods WHERE id=? AND owner=?", (i, owner))
     return {"merged": len(ids)}
 
@@ -375,6 +405,7 @@ def merge_foods(m: MergeIn, x_remote_user_id: str | None = Header(None)):
 def del_food(food_id: int, x_remote_user_id: str | None = Header(None)):
     owner = user_from(x_remote_user_id)
     with db.conn() as c:
+        c.execute("DELETE FROM food_portions WHERE food_id IN (SELECT id FROM foods WHERE id=? AND owner=?)", (food_id, owner))
         c.execute("DELETE FROM foods WHERE id=? AND owner=?", (food_id, owner))
     return {"ok": True}
 
@@ -395,7 +426,9 @@ def off_barcode(code: str):
     n = p.get("nutriments", {})
     return {"name": p.get("product_name", ""), "brand": p.get("brands", ""),
             "kcal": n.get("energy-kcal_100g", 0), "protein": n.get("proteins_100g", 0),
-            "carbs": n.get("carbohydrates_100g", 0), "fat": n.get("fat_100g", 0)}
+            "carbs": n.get("carbohydrates_100g", 0), "fat": n.get("fat_100g", 0),
+            "fiber": n.get("fiber_100g", 0), "sugar": n.get("sugars_100g", 0), "salt": n.get("salt_100g", 0),
+            "sat_fat": n.get("saturated-fat_100g", 0)}
 
 
 # --- meals & goals ---------------------------------------------------------
@@ -495,7 +528,8 @@ def stats(days: int = 30, x_remote_user_id: str | None = Header(None)):
     start = date.today() - timedelta(days=days - 1)
     with db.conn() as c:
         rows = {r["day"]: dict(r) for r in c.execute(
-            "SELECT day, SUM(kcal) kcal, SUM(protein) protein, SUM(carbs) carbs, SUM(fat) fat"
+            "SELECT day, SUM(kcal) kcal, SUM(protein) protein, SUM(carbs) carbs, SUM(fat) fat, SUM(fiber) fiber,"
+            " SUM(sugar) sugar, SUM(salt) salt, SUM(sat_fat) sat_fat"
             " FROM entries WHERE owner=? AND day>=? GROUP BY day", (owner, start.isoformat()))}
         goal = get_goal(c, owner)
         per_day = feature_on(owner, "weekday_goals")
@@ -508,7 +542,7 @@ def stats(days: int = 30, x_remote_user_id: str | None = Header(None)):
     for i in range(days):
         d = (start + timedelta(days=i)).isoformat()
         r = rows.get(d)
-        out.append({"day": d, "logged": bool(r), "goal_kcal": day_goals.get(d, goal["kcal"]), **{k: (r[k] if r else 0) for k in ("kcal", "protein", "carbs", "fat")}})
+        out.append({"day": d, "logged": bool(r), "goal_kcal": day_goals.get(d, goal["kcal"]), **{k: (r[k] if r else 0) for k in ("kcal", "protein", "carbs", "fat", *db.MICROS)}})
     return {"days": out, "goal": goal, "balance": energy_balance(owner, out)}
 
 

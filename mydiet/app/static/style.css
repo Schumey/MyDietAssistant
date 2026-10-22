@@ -416,3 +416,5 @@ html[data-skin="win"] .diary thead th.title { color: var(--w-text); }
 textarea { font: inherit; padding: 8px; border-radius: 6px; border: 1px solid var(--divider-color); background: var(--card-background-color); color: var(--primary-text-color); box-sizing: border-box; }
 html[data-skin="win"] .note { border-left-color: #000080; background: var(--w-field); color: #000; border-radius: 0; }
 html[data-skin="win"] textarea { border-radius: 0; background: var(--w-field); color: #000; }
+.portion-pick { margin-top: 8px; }
+.card.micros h2 { font-size: 15px; }

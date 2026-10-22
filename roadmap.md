@@ -7,7 +7,6 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 ## Als Nächstes (hoher Nutzen im Alltag)
 
 - **Wochentagsziele automatisch per Trigger** (S): Tageszielprofil (Training/Ruhe) zusätzlich über Kalender oder HA-Zustand (Fitnessstudio-Tag) umschalten. Die manuelle Zuordnung je Wochentag gibt es bereits.
-- **Mikronährstoffe** (M): Ballaststoffe, Zucker, Salz, gesättigte Fette als optionale Spalten (Open Food Facts liefert sie bereits).
 
 ## Trigger und Home Assistant
 
@@ -22,7 +21,6 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 - **Rezepte mit Portionen** (M): Zutaten zu einem Rezept bündeln, Gesamtmakros durch Portionen teilen, als Lebensmittel nutzen. Baut auf der Komponenten-Bearbeitung der gespeicherten Mahlzeiten auf.
 - **Barcode-Scan per Kamera** (M): Im Browser/der HA-App scannen statt Nummer tippen (Open Food Facts ist angebunden).
-- **Mehrere Portionsgrößen** (M): „1 Scheibe = 30 g“, „1 Dose = 330 ml“ pro Lebensmittel hinterlegen.
 - **Einheiten und Sprache** (M): Anzeige in oz/lb sowie englische Oberfläche.
 - **Mehrere Datenquellen** (L): Weitere Nährwertdatenbanken neben Open Food Facts (z. B. BLS), optional abschaltbar, da sie online abfragen.
 

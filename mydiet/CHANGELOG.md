@@ -2,6 +2,17 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.15.0
+
+### Neu
+- **Trigger pausieren:** ⏸ am Trigger, wahlweise heute, 3 Tage, 1 Woche, 30 Tage oder bis zu einem Datum. Der Trigger behält seine Einstellungen und läuft danach von selbst weiter; ▶▶ beendet die Pause früher. (Der Haken „Aktiv“ bleibt für dauerhaftes Abschalten.)
+- **Portionsgrößen:** Pro Lebensmittel lassen sich benannte Portionen hinterlegen („1 Scheibe = 40 g“). Beim Hinzufügen und Tauschen gibt es dann die Auswahl „Anzahl × Portion“, die Menge in Gramm folgt automatisch.
+- **Weitere Nährwerte** (Zusatzfunktion, Einstellungen → Zusatzfunktionen): Ballaststoffe, Zucker, Salz und gesättigte Fettsäuren bei Lebensmitteln, Einträgen, gespeicherten Mahlzeiten und in der Sicherung. Open Food Facts liefert sie beim Barcode-Abruf mit. Tagessumme im Tagebuch, Tagesdurchschnitt in der Statistik.
+- `CLAUDE.md` mit Projektüberblick, Konventionen und Release-Ablauf.
+
+### Geändert
+- Gespeicherte Mahlzeiten behalten beim Bearbeiten die weiteren Nährwerte.
+
 ## 0.14.1
 
 ### Neu

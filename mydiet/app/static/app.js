@@ -218,6 +218,8 @@ async function renderDiary() {
         h("tr", {}, h("th", {}, "Gesamt"), h("td", {}, n0(t.kcal)), h("td", {}, n0(t.carbs)), h("td", {}, n0(t.fat)), h("td", {}, n0(t.protein)), h("td")),
         h("tr", {}, h("th", {}, "Verbleibend"), rem(g.kcal, t.kcal), rem(g.carbs, t.carbs), rem(g.fat, t.fat), rem(g.protein, t.protein), h("td"))))));
 
+  if (state.features.micros) root.append(h("div", { class: "card micros" }, h("h2", {}, "Weitere Nährwerte"),
+    h("div", { class: "stat-tiles" }, MICROS.map(([k, label, u]) => h("div", { class: "tile" }, h("span", { class: "muted" }, label), h("b", {}, `${n1(t[k] || 0)} ${u}`))))));
   root.append(h("div", { class: "hint" },
     d.notes[0] ? h("div", { class: "note", onclick: () => noteDialog(0, "Tag") }, d.notes[0])
       : h("button", { class: "flat", onclick: () => noteDialog(0, "Tag") }, "Notiz zum Tag"),
@@ -316,7 +318,7 @@ function foodSwapDialog({ title, grams, confirm, onDone, onCancel }) {
         h("span", {}, h("b", {}, n0(f.fat * k)), " g Fett"), h("span", {}, h("b", {}, n0(f.protein * k)), " g Eiweiß"));
     }
     preview();
-    detail.replaceChildren(h("h3", {}, f.name), h("label", {}, "Menge (g)"), g, pv,
+    detail.replaceChildren(h("h3", {}, f.name), portionPicker(f, g), h("label", {}, "Menge (g)"), g, pv,
       h("div", { class: "actions" },
         h("button", { class: "flat", onclick: () => { detail.replaceChildren(); body.hidden = false; } }, "Zurück"),
         h("button", { onclick: () => { if (num(g.value) > 0) onDone(f, num(g.value)); } }, confirm)));
@@ -328,10 +330,29 @@ function foodSwapDialog({ title, grams, confirm, onDone, onCancel }) {
   return [h("h2", {}, title), body, detail];
 }
 
+const MICROS = [["fiber", "Ballaststoffe", "g"], ["sugar", "Zucker", "g"], ["salt", "Salz", "g"], ["sat_fat", "ges. Fettsäuren", "g"]];
+
 const foodItem = (f, grams) => {
   const k = grams / 100;
-  return { name: f.name, grams, kcal: f.kcal * k, protein: f.protein * k, carbs: f.carbs * k, fat: f.fat * k };
+  return { name: f.name, grams, kcal: f.kcal * k, protein: f.protein * k, carbs: f.carbs * k, fat: f.fat * k,
+    fiber: (f.fiber || 0) * k, sugar: (f.sugar || 0) * k, salt: (f.salt || 0) * k, sat_fat: (f.sat_fat || 0) * k };
 };
+
+// "1 Scheibe = 30 g": choose a named portion and a count, the amount field follows. Null without portions.
+function portionPicker(f, gramsInput) {
+  if (!f.portions || !f.portions.length) return null;
+  const pick = h("select", {}, h("option", { value: "" }, "Portion wählen …"),
+    f.portions.map((p, i) => h("option", { value: i }, `${p.name} (${n0(p.grams)} g)`)));
+  const count = h("input", { type: "number", step: "any", min: "0.1", value: "1", style: "width:70px;flex:none" });
+  const apply = () => {
+    if (pick.value === "") return;
+    gramsInput.value = Math.round(f.portions[Number(pick.value)].grams * (num(count.value) || 1) * 10) / 10;
+    gramsInput.dispatchEvent(new Event("input"));
+  };
+  pick.onchange = apply;
+  count.oninput = apply;
+  return h("div", { class: "portion-pick" }, h("label", {}, "Portion"), h("div", { style: "display:flex;gap:8px" }, count, "×", pick));
+}
 
 function editEntry(e, times) {
   const quick = !(e.grams > 0);
@@ -489,6 +510,13 @@ function foodForm({ food = null, onSave, onCancel }) {
   };
   const msg = h("div", { class: "err" });
   const warn = h("div", { class: "warn" });
+  const portions = ((food && food.portions) || []).map(p => ({ ...p }));
+  const pbox = h("div", { class: "list" });
+  const drawPortions = () => pbox.replaceChildren(...portions.map((p, i) => h("div", {},
+    h("input", { value: p.name, placeholder: "z. B. 1 Scheibe", oninput: e => { p.name = e.target.value; } }),
+    h("input", { type: "number", step: "any", min: "0", value: p.grams || "", placeholder: "g", style: "max-width:90px", oninput: e => { p.grams = num(e.target.value) || 0; } }), "g",
+    h("button", { class: "icon", title: "Entfernen", "aria-label": "Entfernen", onclick: () => { portions.splice(i, 1); drawPortions(); } }, "✕"))));
+  drawPortions();
   const check = () => {
     const v = { kcal: num(f.kcal.value), carbs: num(f.carbs.value) || 0, fat: num(f.fat.value) || 0, protein: num(f.protein.value) || 0 };
     warn.textContent = v.kcal == null ? "" : plausibility(v) || "";
@@ -502,6 +530,7 @@ function foodForm({ food = null, onSave, onCancel }) {
           const p = await api("off/barcode/" + encodeURIComponent(f.barcode.value.trim()));
           f.name.value = p.name; f.brand.value = p.brand;
           for (const k of ["kcal", "protein", "carbs", "fat"]) f[k].value = Math.round(p[k] * 10) / 10;
+          for (const [k] of MICROS) if (f[k]) f[k].value = Math.round((p[k] || 0) * 100) / 100;
           check();
         } catch (e) { msg.textContent = "Produkt nicht gefunden (" + e.message + ")"; }
       } }, "Suchen")),
@@ -515,6 +544,10 @@ function foodForm({ food = null, onSave, onCancel }) {
       field("carbs", "KH / 100 g", { type: "number", step: "any" }),
       field("fat", "Fett / 100 g", { type: "number", step: "any" }),
       field("protein", "Eiweiß / 100 g", { type: "number", step: "any" })),
+    state.features.micros ? h("div", { class: "grid", style: "margin-top:12px" },
+      MICROS.map(([k, label]) => field(k, `${label} / 100 g`, { type: "number", step: "any", value: 0 }))) : null,
+    h("div", { style: "margin-top:12px" }, h("label", {}, "Portionsgrößen (optional)"), pbox,
+      h("button", { class: "flat", onclick: () => { portions.push({ name: "", grams: 0 }); drawPortions(); } }, "+ Portion")),
     warn, msg, catList(),
     h("div", { class: "actions" },
       h("button", { class: "flat", onclick: onCancel }, food ? "Abbrechen" : "Zurück"),
@@ -523,6 +556,8 @@ function foodForm({ food = null, onSave, onCancel }) {
         const body = {
           name: f.name.value, brand: f.brand.value, kcal: num(f.kcal.value),
           protein: num(f.protein.value) || 0, carbs: num(f.carbs.value) || 0, fat: num(f.fat.value) || 0,
+          ...Object.fromEntries(MICROS.map(([k]) => [k, f[k] ? num(f[k].value) || 0 : (food ? food[k] || 0 : 0)])),
+          portions: portions.filter(p => p.name.trim() && p.grams > 0),
           serving_g: num(f.serving_g.value) || 100, category: f.category.value };
         const id = food ? food.id : (await send("POST", "foods", body)).id;
         if (food) await send("PUT", "foods/" + food.id, body);
@@ -588,7 +623,7 @@ async function openAdd(meal) {
         h("span", {}, h("b", {}, n0(f.fat * k)), " g Fett"), h("span", {}, h("b", {}, n0(f.protein * k)), " g Eiweiß"));
     }
     preview();
-    detail.replaceChildren(h("h3", {}, f.name), h("label", {}, "Menge (g)"), grams, pv,
+    detail.replaceChildren(h("h3", {}, f.name), portionPicker(f, grams), h("label", {}, "Menge (g)"), grams, pv,
       h("div", { class: "actions" },
         h("button", { class: "flat", onclick: back }, "Zurück"),
         h("button", { onclick: async () => {
@@ -886,7 +921,7 @@ async function renderMeals() {
         const ng = num(g.value);
         if (!(ng > 0)) { g.value = Math.round(it.grams * 10) / 10; return; }
         const k = ng / it.grams;
-        for (const key of ["kcal", "protein", "carbs", "fat"]) it[key] *= k;
+        for (const key of ["kcal", "protein", "carbs", "fat", "fiber", "sugar", "salt", "sat_fat"]) it[key] = (it[key] || 0) * k;
         it.grams = ng;
         drawTotal();
         kc.textContent = `${n0(it.kcal)} kcal`;
@@ -910,7 +945,8 @@ async function renderMeals() {
           if (!draft.name.trim()) { msg.textContent = "Bitte einen Namen angeben."; return; }
           try {
             await send("PUT", "saved-meals/" + s.id, { name: draft.name, category: draft.category, items: draft.items.map(i => ({
-              name: i.name, grams: i.grams, kcal: i.kcal, protein: i.protein, carbs: i.carbs, fat: i.fat })) });
+              name: i.name, grams: i.grams, kcal: i.kcal, protein: i.protein, carbs: i.carbs, fat: i.fat,
+              fiber: i.fiber || 0, sugar: i.sugar || 0, salt: i.salt || 0, sat_fat: i.sat_fat || 0 })) });
             dlg.close(); renderMeals();
           } catch (e) { msg.textContent = e.message; }
         } }, "Speichern")));
@@ -1061,6 +1097,8 @@ async function renderStats() {
         h("span", { style: "--c:var(--info-color)" }, `Eiweiß ${logged.length ? pct(kc.p) : 0} %`),
         h("span", { style: "--c:var(--warning-color)" }, `Kohlenhydrate ${logged.length ? pct(kc.c) : 0} %`),
         h("span", { style: "--c:var(--error-color)" }, `Fett ${logged.length ? pct(kc.f) : 0} %`))));
+  if (state.features.micros && logged.length) root.append(h("div", { class: "card" }, h("h2", {}, "Weitere Nährwerte (Ø pro Tag)"),
+    h("div", { class: "stat-tiles" }, MICROS.map(([k, label, u]) => tile(label, `${n1(avg(k))} ${u}`)))));
   root.append(compareCard());
   if (trk.some(t => t.logged)) {
     const fmt = v => (Math.round(v * 10) / 10).toLocaleString("de-DE");
@@ -1133,6 +1171,23 @@ const condText = t => (t.kind === "time" ? `Täglich ab ${t.match} Uhr`
   : `${KIND[t.kind]} ${t.entity} ${t.negate ? (t.kind === "calendar" ? "enthält nicht" : "≠") : (t.kind === "calendar" ? "enthält" : "=")} ${t.match || "(an)"}${t.kind === "calendar" ? PART[t.part] || "" : ""}`)
   + (t.hold_min ? ` · seit mind. ${t.hold_min} Min.` : "")
   + (t.win_from || t.win_to ? ` · nur ${t.win_from || "00:00"}–${t.win_to || "24:00"} Uhr` : "");
+
+const paused = t => t.paused_until && t.paused_until >= iso(new Date());
+
+// Pause a trigger for a while (it keeps its settings and resumes by itself).
+function pauseDialog(t) {
+  const set = async until => { await send("PUT", `triggers/${t.id}/pause`, { until }); dlg.close(); renderSettings(); };
+  const ahead = n => { const d = new Date(); d.setDate(d.getDate() + n - 1); return iso(d); };
+  const until = h("input", { type: "date", value: ahead(7) });
+  setDlg(h("h2", {}, "Trigger pausieren"), h("div", { class: "muted" }, condText(t)),
+    paused(t) ? h("div", { class: "actions", style: "justify-content:flex-start" }, h("button", { onclick: () => set("") }, "Pause beenden")) : null,
+    h("div", { class: "range" },
+      [[1, "Heute"], [3, "3 Tage"], [7, "1 Woche"], [30, "30 Tage"]].map(([n, l]) => h("button", { onclick: () => set(ahead(n)) }, l))),
+    h("label", {}, "Oder bis einschließlich"), until,
+    h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
+      h("button", { onclick: () => until.value && set(until.value) }, "Pausieren")));
+  dlg.showModal();
+}
 
 // Shared form part: trigger kind (state / calendar), entity with suggestions, condition text.
 function triggerFields(ents, allowTime = false) {
@@ -1379,7 +1434,8 @@ async function renderSettings() {
     h("div", { class: "muted" }, "Optionale Funktionen, standardmäßig aus. Eingeschaltet erscheinen sie im Tagebuch und hier in den Einstellungen."),
     h("div", { class: "list" },
       feat("weekday_goals", "Tagesziele pro Wochentag", "z. B. Trainingstage mit mehr Kalorien, Ruhetage mit weniger."),
-      feat("trackers", "Wasser und Nahrungsergänzung", "Schnell-Eintrag für Wasser, Koffein, Kreatin usw. mit eigenem Tagesziel."))));
+      feat("trackers", "Wasser und Nahrungsergänzung", "Schnell-Eintrag für Wasser, Koffein, Kreatin usw. mit eigenem Tagesziel."),
+      feat("micros", "Weitere Nährwerte", "Ballaststoffe, Zucker, Salz und gesättigte Fettsäuren bei Lebensmitteln erfassen und auswerten (Open Food Facts liefert sie mit)."))));
 
   if (state.features.weekday_goals) {
     const wd = await api("goal-weekdays");
@@ -1511,11 +1567,12 @@ async function renderSettings() {
       } });
       return h("div", {}, on,
         h("div", { class: "grow" },
-          h("div", {}, condText(t)),
+          h("div", {}, condText(t), paused(t) ? h("span", { class: "tag" }, `pausiert bis ${parse(t.paused_until).toLocaleDateString("de-DE")}`) : null),
           h("div", { class: "muted" }, `→ ${t.item || "(gelöscht)"}${day.mode === "meals" && t.meal ? " zu " + t.meal : ""}`
             + (t.days_ahead ? ` · ${t.days_ahead} Tage im Voraus` : "")
             + (t.last_run ? ` · zuletzt ${parse(t.last_run).toLocaleDateString("de-DE")}` : ""))),
         h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => triggerDialog({ edit: t }) }, "✎"),
+        h("button", { class: "icon", title: paused(t) ? "Pause beenden" : "Pausieren …", "aria-label": "Pausieren", onclick: () => pauseDialog(t) }, paused(t) ? "▶▶" : "⏸"),
         h("button", { class: "icon", title: "Jetzt testen (trägt heute ein)", onclick: async () => {
           try { await send("POST", `triggers/${t.id}/run`, {}); trigMsg.textContent = ""; alert("Eingetragen."); }
           catch (e) { trigMsg.textContent = e.message; }

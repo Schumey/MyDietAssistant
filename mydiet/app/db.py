@@ -118,6 +118,12 @@ CREATE TABLE IF NOT EXISTS goal_weekdays (    -- optional per-weekday goals (0 =
   fat REAL NOT NULL DEFAULT 0,
   PRIMARY KEY (owner, wd)
 );
+CREATE TABLE IF NOT EXISTS food_portions (    -- "1 slice = 30 g", "1 can = 330 g"
+  id INTEGER PRIMARY KEY,
+  food_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  grams REAL NOT NULL
+);
 CREATE TABLE IF NOT EXISTS day_notes (        -- free text per day (meal_id 0) or per meal
   owner TEXT NOT NULL,
   day TEXT NOT NULL,
@@ -170,6 +176,9 @@ def conn():
         c.close()
 
 
+MICROS = ("fiber", "sugar", "salt", "sat_fat")
+
+
 def init():
     with conn() as c:
         c.executescript(SCHEMA)
@@ -188,10 +197,17 @@ def init():
                          ("win_to", "TEXT NOT NULL DEFAULT ''")):  # v0.11: hold time and time window
             if col not in {r["name"] for r in c.execute("PRAGMA table_info(triggers)")}:
                 c.execute(f"ALTER TABLE triggers ADD COLUMN {col} {ddl}")
+        if "paused_until" not in {r["name"] for r in c.execute("PRAGMA table_info(triggers)")}:  # v0.15: pause a trigger
+            c.execute("ALTER TABLE triggers ADD COLUMN paused_until TEXT NOT NULL DEFAULT ''")
         if "favorite" not in cols:  # v0.11: favourite foods
             c.execute("ALTER TABLE foods ADD COLUMN favorite INTEGER NOT NULL DEFAULT 0")
         if "time" not in {r["name"] for r in c.execute("PRAGMA table_info(entries)")}:
             c.execute("ALTER TABLE entries ADD COLUMN time TEXT")  # HH:MM, time-based diary
+        for t in ("foods", "entries", "saved_meal_items"):  # v0.15: optional micronutrients (g per 100 g / absolute)
+            have = {r["name"] for r in c.execute(f"PRAGMA table_info({t})")}
+            for col in MICROS:
+                if col not in have:
+                    c.execute(f"ALTER TABLE {t} ADD COLUMN {col} REAL NOT NULL DEFAULT 0")
         if "category" not in cols:  # database from v0.2
             c.execute("ALTER TABLE foods ADD COLUMN category TEXT NOT NULL DEFAULT ''")
 

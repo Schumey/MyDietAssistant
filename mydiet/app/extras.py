@@ -34,7 +34,7 @@ def set_pref(owner: str, key: str, value):
 
 # --- settings -------------------------------------------------------------
 
-FEATURES = ("weekday_goals", "trackers")   # optional features, off by default
+FEATURES = ("weekday_goals", "trackers", "micros")   # optional features, off by default
 
 
 def features(owner: str) -> dict:
@@ -250,6 +250,10 @@ class SavedItemIn(BaseModel):
     protein: float = 0
     carbs: float = 0
     fat: float = 0
+    fiber: float = 0
+    sugar: float = 0
+    salt: float = 0
+    sat_fat: float = 0
 
 
 class SavedMealEdit(BaseModel):
@@ -269,10 +273,10 @@ def saved_meal_rows(c, owner: str):
     out = []
     for m in c.execute("SELECT * FROM saved_meals WHERE owner=? ORDER BY name COLLATE NOCASE", (owner,)):
         items = [dict(i) for i in c.execute(
-            "SELECT name, grams, kcal, protein, carbs, fat FROM saved_meal_items"
+            "SELECT name, grams, kcal, protein, carbs, fat, fiber, sugar, salt, sat_fat FROM saved_meal_items"
             " WHERE saved_meal_id=? ORDER BY id", (m["id"],))]
         out.append({**dict(m), "items": items,
-                    **{k: round(sum(i[k] for i in items), 1) for k in ("kcal", "protein", "carbs", "fat")}})
+                    **{k: round(sum(i[k] for i in items), 1) for k in ("kcal", "protein", "carbs", "fat", *db.MICROS)}})
     return out
 
 
@@ -300,10 +304,10 @@ def save_from_diary(s: SaveMealIn, x_remote_user_id: str | None = Header(None)):
         cur = c.execute("INSERT INTO saved_meals(owner,name,category) VALUES(?,?,?)",
                         (owner, s.name.strip(), s.category.strip()))
         c.executemany(
-            "INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat)"
-            " VALUES(?,?,?,?,?,?,?)",
-            [(cur.lastrowid, r["name"], r["grams"], r["kcal"], r["protein"], r["carbs"], r["fat"])
-             for r in rows])
+            "INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat)"
+            " VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+            [(cur.lastrowid, r["name"], r["grams"], r["kcal"], r["protein"], r["carbs"], r["fat"],
+              *(r[m] for m in db.MICROS)) for r in rows])
         return {"id": cur.lastrowid}
 
 
@@ -318,8 +322,8 @@ def edit_saved(sid: int, s: SavedMealEdit, x_remote_user_id: str | None = Header
         if s.items is not None and c.execute("SELECT 1 FROM saved_meals WHERE id=? AND owner=?", (sid, owner)).fetchone():
             c.execute("DELETE FROM saved_meal_items WHERE saved_meal_id=?", (sid,))
             c.executemany(
-                "INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat) VALUES(?,?,?,?,?,?,?)",
-                [(sid, i.name, i.grams, i.kcal, i.protein, i.carbs, i.fat) for i in s.items])
+                "INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                [(sid, i.name, i.grams, i.kcal, i.protein, i.carbs, i.fat, i.fiber, i.sugar, i.salt, i.sat_fat) for i in s.items])
     return {"ok": True}
 
 
@@ -333,8 +337,8 @@ def copy_saved(sid: int, x_remote_user_id: str | None = Header(None)):
             raise HTTPException(404, "saved meal not found")
         cur = c.execute("INSERT INTO saved_meals(owner,name,category) VALUES(?,?,?)",
                         (owner, f"{m['name']} (Kopie)", m["category"]))
-        c.execute("INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat)"
-                  " SELECT ?,name,grams,kcal,protein,carbs,fat FROM saved_meal_items WHERE saved_meal_id=? ORDER BY id",
+        c.execute("INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat)"
+                  " SELECT ?,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat FROM saved_meal_items WHERE saved_meal_id=? ORDER BY id",
                   (cur.lastrowid, sid))
         return {"id": cur.lastrowid}
 
@@ -370,10 +374,11 @@ def add_saved_to_diary(c, owner: str, sid: int, day: str, meal_id: int | None, f
     ids = []
     for i in c.execute("SELECT * FROM saved_meal_items WHERE saved_meal_id=? ORDER BY id", (sid,)).fetchall():
         ids.append(c.execute(
-            "INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,time)"
-            " VALUES(?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,time)"
+            " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (owner, day, meal_id, i["name"], i["grams"] * factor, i["kcal"] * factor,
-             i["protein"] * factor, i["carbs"] * factor, i["fat"] * factor, time)).lastrowid)
+             i["protein"] * factor, i["carbs"] * factor, i["fat"] * factor,
+             *(i[m] * factor for m in db.MICROS), time)).lastrowid)
     return ids
 
 
@@ -461,10 +466,11 @@ def dump(owner: str) -> dict:
         q = lambda sql, *a: [dict(r) for r in c.execute(sql, a)]
         return {
             "app": "MyDietAssistant", "version": 1,
-            "foods": q("SELECT id,name,brand,kcal,protein,carbs,fat,serving_g,category,favorite FROM foods WHERE owner=?", owner),
+            "foods": [{**f, "portions": q("SELECT name,grams FROM food_portions WHERE food_id=? ORDER BY id", f["id"])}
+                      for f in q("SELECT id,name,brand,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,serving_g,category,favorite FROM foods WHERE owner=?", owner)],
             "meals": q("SELECT id,name,position,archived FROM meals WHERE owner=? ORDER BY position", owner),
             "settings": {"diary_mode": get_pref(owner, "diary_mode", "meals")},
-            "entries": q("SELECT day,time,meal_id,name,grams,kcal,protein,carbs,fat FROM entries WHERE owner=? ORDER BY day,id", owner),
+            "entries": q("SELECT day,time,meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat FROM entries WHERE owner=? ORDER BY day,id", owner),
             "goal": q("SELECT kcal,protein,carbs,fat,target_weight FROM goals WHERE owner=?", owner),
             "weights": q("SELECT day,kg FROM weights WHERE owner=? ORDER BY day", owner),
             "saved_meals": saved_meal_rows(c, owner),
@@ -517,6 +523,7 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
         raise HTTPException(400, "Keine MyDietAssistant-Sicherung")
     owner = user_from(x_remote_user_id)
     with db.conn() as c:
+        c.execute("DELETE FROM food_portions WHERE food_id IN (SELECT id FROM foods WHERE owner=?)", (owner,))
         for t in ("foods", "meals", "entries", "goals", "weights", "saved_meals"):
             if t == "saved_meals":
                 c.execute("DELETE FROM saved_meal_items WHERE saved_meal_id IN"
@@ -537,21 +544,23 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
             for l in t.get("log", []):
                 c.execute("INSERT INTO tracker_log(tracker_id,day,amount) VALUES(?,?,?)", (tid, l["day"], l["amount"]))
         for f in d.get("foods", []):
-            c.execute("INSERT INTO foods(owner,name,brand,kcal,protein,carbs,fat,serving_g,category,favorite)"
-                      " VALUES(?,?,?,?,?,?,?,?,?,?)",
-                      (owner, f["name"], f.get("brand", ""), f["kcal"], f.get("protein", 0),
-                       f.get("carbs", 0), f.get("fat", 0), f.get("serving_g", 100), f.get("category", ""),
-                       f.get("favorite", 0)))
+            fid = c.execute("INSERT INTO foods(owner,name,brand,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,serving_g,category,favorite)"
+                            " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                            (owner, f["name"], f.get("brand", ""), f["kcal"], f.get("protein", 0),
+                             f.get("carbs", 0), f.get("fat", 0), *(f.get(m, 0) for m in db.MICROS),
+                             f.get("serving_g", 100), f.get("category", ""), f.get("favorite", 0))).lastrowid
+            for p in f.get("portions", []):
+                c.execute("INSERT INTO food_portions(food_id,name,grams) VALUES(?,?,?)", (fid, p["name"], p["grams"]))
         mmap = {}
         for m in d.get("meals", []):
             mmap[m["id"]] = c.execute("INSERT INTO meals(owner,name,position,archived) VALUES(?,?,?,?)",
                                       (owner, m["name"], m["position"], m.get("archived", 0))).lastrowid
         for e in d.get("entries", []):
             if e["meal_id"] in mmap:
-                c.execute("INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,time)"
-                          " VALUES(?,?,?,?,?,?,?,?,?,?)",
+                c.execute("INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,time)"
+                          " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                           (owner, e["day"], mmap[e["meal_id"]], e["name"], e["grams"], e["kcal"],
-                           e["protein"], e["carbs"], e["fat"], e.get("time")))
+                           e["protein"], e["carbs"], e["fat"], *(e.get(m, 0) for m in db.MICROS), e.get("time")))
         for g in d.get("goal", []):
             c.execute("INSERT INTO goals(owner,kcal,protein,carbs,fat,target_weight) VALUES(?,?,?,?,?,?)",
                       (owner, g["kcal"], g["protein"], g["carbs"], g["fat"], g.get("target_weight")))
@@ -561,9 +570,10 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
             sid = c.execute("INSERT INTO saved_meals(owner,name,category) VALUES(?,?,?)",
                             (owner, s["name"], s.get("category", ""))).lastrowid
             for i in s.get("items", []):
-                c.execute("INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat)"
-                          " VALUES(?,?,?,?,?,?,?)",
-                          (sid, i["name"], i["grams"], i["kcal"], i["protein"], i["carbs"], i["fat"]))
+                c.execute("INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat)"
+                          " VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                          (sid, i["name"], i["grams"], i["kcal"], i["protein"], i["carbs"], i["fat"],
+                           *(i.get(m, 0) for m in db.MICROS)))
         for n in d.get("notes", []):
             mid = 0 if not n["meal_id"] else mmap.get(n["meal_id"])
             if mid is not None:
@@ -877,10 +887,10 @@ def fire(c, t, day: str):
             return
         g = t["grams"] or f["serving_g"] or 100
         k = g / 100
-        ids.append(c.execute("INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,time)"
-                             " VALUES(?,?,?,?,?,?,?,?,?,?)",
+        ids.append(c.execute("INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,time)"
+                             " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                              (owner, day, t["meal_id"], f["name"], g, f["kcal"] * k, f["protein"] * k,
-                              f["carbs"] * k, f["fat"] * k, stamp)).lastrowid)
+                              f["carbs"] * k, f["fat"] * k, *(f[m] * k for m in db.MICROS), stamp)).lastrowid)
         label = f["name"]
     c.execute("INSERT OR IGNORE INTO trigger_log(trigger_id, day) VALUES(?,?)", (t["id"], day))
     c.execute("INSERT INTO trigger_runs(owner,trigger_id,label,day,ts,entry_ids) VALUES(?,?,?,?,?,?)",
@@ -1001,7 +1011,7 @@ def poll_triggers():
     poll_state["last"] = now.strftime("%Y-%m-%d %H:%M:%S")
     day = now.date().isoformat()
     with db.conn() as c:
-        triggers = c.execute("SELECT * FROM triggers WHERE enabled=1").fetchall()
+        triggers = c.execute("SELECT * FROM triggers WHERE enabled=1 AND paused_until < ?", (day,)).fetchall()
         done = {(r["trigger_id"], r["day"]) for r in c.execute("SELECT trigger_id, day FROM trigger_log WHERE day>=?", (day,))}
     errors = []
     pending = []  # (trigger, day): state triggers act today only, calendar triggers also days ahead
@@ -1043,6 +1053,20 @@ def trigger_loop():
 @app.get("/api/triggers/status")
 def trigger_status():
     return poll_state
+
+
+class PauseIn(BaseModel):
+    until: str = ""      # last paused day (YYYY-MM-DD); empty = resume
+
+
+@app.put("/api/triggers/{tid}/pause")
+def pause_trigger(tid: int, p: PauseIn, x_remote_user_id: str | None = Header(None)):
+    """Pause a trigger up to and including a day, without touching its enabled switch."""
+    if p.until:
+        check_day(p.until)
+    with db.conn() as c:
+        c.execute("UPDATE triggers SET paused_until=? WHERE id=? AND owner=?", (p.until, tid, user_from(x_remote_user_id)))
+    return {"ok": True}
 
 
 @app.post("/api/triggers/poll")
@@ -1139,10 +1163,11 @@ def copy_entries(cp: CopyIn, x_remote_user_id: str | None = Header(None),
             if not e:
                 continue
             k = cp.factor
-            c.execute("INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,time)"
-                      " VALUES(?,?,?,?,?,?,?,?,?,?)",
+            c.execute("INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,time)"
+                      " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                       (owner, cp.day, meal_id, e["name"], e["grams"] * k, e["kcal"] * k, e["protein"] * k,
-                       e["carbs"] * k, e["fat"] * k, check_time(cp.time) if cp.time else e["time"]))
+                       e["carbs"] * k, e["fat"] * k, *(e[m] * k for m in db.MICROS),
+                       check_time(cp.time) if cp.time else e["time"]))
             n += 1
     publish(owner, x_remote_user_display_name or owner)
     return {"copied": n}
@@ -1168,9 +1193,9 @@ def copy_day(day: str, cp: DayCopyIn, x_remote_user_id: str | None = Header(None
     with db.conn() as c:
         rows = c.execute("SELECT * FROM entries WHERE owner=? AND day=? ORDER BY id", (owner, day)).fetchall()
         c.executemany(
-            "INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,time) VALUES(?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,time) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             [(owner, cp.to_day, r["meal_id"], r["name"], r["grams"] * k, r["kcal"] * k, r["protein"] * k,
-              r["carbs"] * k, r["fat"] * k, r["time"]) for r in rows])
+              r["carbs"] * k, r["fat"] * k, *(r[m] * k for m in db.MICROS), r["time"]) for r in rows])
     publish(owner, x_remote_user_display_name or owner)
     return {"copied": len(rows)}
 
