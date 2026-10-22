@@ -118,6 +118,13 @@ CREATE TABLE IF NOT EXISTS goal_weekdays (    -- optional per-weekday goals (0 =
   fat REAL NOT NULL DEFAULT 0,
   PRIMARY KEY (owner, wd)
 );
+CREATE TABLE IF NOT EXISTS day_notes (        -- free text per day (meal_id 0) or per meal
+  owner TEXT NOT NULL,
+  day TEXT NOT NULL,
+  meal_id INTEGER NOT NULL DEFAULT 0,
+  text TEXT NOT NULL,
+  PRIMARY KEY (owner, day, meal_id)
+);
 CREATE TABLE IF NOT EXISTS trackers (         -- optional: water, caffeine, creatine ...
   id INTEGER PRIMARY KEY,
   owner TEXT NOT NULL,

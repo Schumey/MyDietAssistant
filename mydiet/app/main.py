@@ -196,7 +196,9 @@ def get_day(day: str, x_remote_user_id: str | None = Header(None)):
         for m in meals:
             m["hidden"] = m["id"] in hidden
         return {"meals": meals, "entries": entries, "mode": get_pref(owner, "diary_mode", "meals"),
-                "totals": day_totals(c, owner, day), "goal": get_goal(c, owner, day)}
+                "totals": day_totals(c, owner, day), "goal": get_goal(c, owner, day),
+                "notes": {str(r["meal_id"]): r["text"] for r in c.execute(
+                    "SELECT meal_id, text FROM day_notes WHERE owner=? AND day=?", (owner, day))}}
 
 
 @app.post("/api/entries")
@@ -511,6 +513,7 @@ def stats(days: int = 30, x_remote_user_id: str | None = Header(None)):
 
 
 from extras import *  # noqa: E402,F401,F403  (routes for v0.3 features)
+from extras2 import *  # noqa: E402,F401,F403  (notes, backups, external API, reminders)
 
 
 @app.get("/")

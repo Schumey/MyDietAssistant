@@ -160,6 +160,7 @@ async function renderDiary() {
         await api("entries/" + e.id, { method: "DELETE" });
         renderDiary();
       } }, "✕"))));
+    const note = d.notes[meal ? meal.id : 0];
     return h("div", { class: "card" }, h("table", { class: "diary" },
       h("thead", {}, h("tr", {},
         h("th", { class: "title" }, title),
@@ -171,6 +172,8 @@ async function renderDiary() {
       h("tbody", {}, rows, h("tr", { class: "foot" },
         h("td", {},
           h("button", { class: "flat", onclick: () => openAdd(meal) }, "+ Nahrungsmittel hinzufügen"),
+          h("button", { class: "flat", title: "Notiz zur Mahlzeit", onclick: () => noteDialog(meal ? meal.id : 0, meal ? meal.name : "Tag") },
+            d.notes[meal ? meal.id : 0] ? "Notiz ändern" : "Notiz"),
           items.length ? [
             h("button", { class: "flat", onclick: () => copyDialog(meal, items, times) }, "Speichern / Kopieren")] : null),
         h("td", {}, items.length ? n0(sum("kcal")) : ""), h("td", {}, items.length ? n0(sum("carbs")) : ""),
@@ -180,7 +183,7 @@ async function renderDiary() {
             if (!confirm(meal ? `Alle Einträge von „${meal.name}“ löschen?` : "Alle Einträge dieses Tages löschen?")) return;
             await api(`day/${state.day}/entries` + (meal ? "?meal_id=" + meal.id : ""), { method: "DELETE" });
             renderDiary();
-          } }, "✕") : null)))));
+          } }, "✕") : null)))), note ? h("div", { class: "note", onclick: () => noteDialog(meal ? meal.id : 0, meal ? meal.name : "Tag") }, note) : null);
   };
 
   if (times) {
@@ -215,9 +218,26 @@ async function renderDiary() {
         h("tr", {}, h("th", {}, "Gesamt"), h("td", {}, n0(t.kcal)), h("td", {}, n0(t.carbs)), h("td", {}, n0(t.fat)), h("td", {}, n0(t.protein)), h("td")),
         h("tr", {}, h("th", {}, "Verbleibend"), rem(g.kcal, t.kcal), rem(g.carbs, t.carbs), rem(g.fat, t.fat), rem(g.protein, t.protein), h("td"))))));
 
-  if (d.entries.length) root.append(h("div", { class: "hint" },
-    h("button", { class: "flat", onclick: () => dayCopyDialog() }, "Ganzen Tag kopieren")));
+  root.append(h("div", { class: "hint" },
+    d.notes[0] ? h("div", { class: "note", onclick: () => noteDialog(0, "Tag") }, d.notes[0])
+      : h("button", { class: "flat", onclick: () => noteDialog(0, "Tag") }, "Notiz zum Tag"),
+    d.entries.length ? h("button", { class: "flat", onclick: () => dayCopyDialog() }, "Ganzen Tag kopieren") : null));
   if (state.features.trackers && trackers.length) root.append(trackerCard(trackers));
+}
+
+// Free-text note for a meal or (meal_id 0) the whole day: hunger, training, mood ...
+function noteDialog(mealId, title) {
+  const text = h("textarea", { rows: 4, maxlength: 2000, placeholder: "z. B. Hunger, Training, Stimmung …", style: "width:100%" });
+  text.value = state.data.notes[mealId] || "";
+  setDlg(h("h2", {}, `Notiz: ${title}`), text,
+    h("div", { class: "actions" },
+      h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
+      h("button", { onclick: async () => {
+        await send("PUT", "notes/" + state.day, { meal_id: mealId, text: text.value });
+        dlg.close(); renderDiary();
+      } }, "Speichern")));
+  dlg.showModal();
+  text.focus();
 }
 
 // Copy every entry of the shown day to another day (meals and times are kept).
@@ -1291,7 +1311,8 @@ async function mfpDialog(file) {
 
 // ---------------------------------------------------------------- settings
 async function renderSettings() {
-  const [goal, day, triggers, rules, runs] = await Promise.all([api("goal"), api("day/" + state.day), api("triggers"), api("meal-triggers"), api("trigger-runs?limit=15")]);
+  const [goal, day, triggers, rules, runs, tstat, bk, rem, ext] = await Promise.all([api("goal"), api("day/" + state.day), api("triggers"), api("meal-triggers"), api("trigger-runs?limit=15"),
+    api("triggers/status"), api("backups"), api("reminder"), api("ext/info")]);
   const root = $("#settings");
   root.replaceChildren();
 
@@ -1445,6 +1466,7 @@ async function renderSettings() {
   const trigMsg = h("div", { class: "err" });
   root.append(h("div", { class: "card" }, h("h2", {}, "Trigger"),
     h("div", { class: "muted" }, "Lebensmittel oder Mahlzeiten automatisch eintragen, wenn Home Assistant etwas meldet (Ort, Kalender, Schalter …). Auch über ⚡ bei Lebensmitteln anlegbar."),
+    tstat.error ? h("div", { class: "err" }, `Letzter Fehler (${tstat.error.ts}): ${tstat.error.msg}`) : null,
     h("div", { class: "list" }, triggers.length ? triggers.map(t => {
       const on = h("input", { type: "checkbox", checked: t.enabled, title: "Aktiv", onchange: async () => {
         await send("PUT", "triggers/" + t.id, { kind: t.kind, entity: t.entity, match: t.match, meal_id: t.meal_id,
@@ -1491,6 +1513,37 @@ async function renderSettings() {
           await send("POST", `trigger-runs/${r.id}/undo`, {}); renderSettings();
         } }, "Rückgängig"))))));
 
+  // reminder
+  const remOn = h("input", { type: "checkbox", checked: rem.enabled });
+  const remTime = h("input", { type: "time", value: rem.time, style: "width:auto" });
+  const remSvc = h("input", { placeholder: "notify.mobile_app_handy", value: rem.notify });
+  const remMsg = h("div", { class: "muted" });
+  root.append(h("div", { class: "card" }, h("h2", {}, "Erinnerung"),
+    h("div", { class: "muted" }, "Benachrichtigung über Home Assistant, wenn bis zur gewählten Uhrzeit nichts eingetragen wurde."),
+    h("label", { class: "pick" }, remOn, "Erinnerung aktiv"),
+    h("label", {}, "Uhrzeit"), remTime, h("label", {}, "Benachrichtigungsdienst"), remSvc, remMsg,
+    h("div", { class: "actions" }, h("button", { onclick: async () => {
+      try { await send("PUT", "reminder", { enabled: remOn.checked, time: remTime.value, notify: remSvc.value.trim() }); remMsg.className = "muted"; remMsg.textContent = "Gespeichert ✓"; }
+      catch (e) { remMsg.className = "err"; remMsg.textContent = e.message; }
+    } }, "Speichern"))));
+
+  // automatic backups
+  root.append(h("div", { class: "card" }, h("h2", {}, "Automatische Sicherung"),
+    h("div", { class: "muted" }, bk.auto
+      ? `Täglich eine JSON-Sicherung in ${bk.dir}, Aufbewahrung ${bk.keep_days} Tage (Add-on-Option „backup_keep_days“).`
+      : "Aus (Add-on-Option „auto_backup“)."),
+    h("div", { class: "list" }, bk.files.length ? bk.files.slice(0, 10).map(f => h("div", {},
+      h("div", { class: "grow" }, f.ts, h("span", { class: "muted" }, ` · ${Math.max(1, Math.round(f.size / 1024))} KB`)),
+      h("button", { class: "flat", onclick: async () => restoreDialog(await api("backups/" + encodeURIComponent(f.name))) }, "Wiederherstellen")))
+      : [h("div", { class: "muted", style: "padding:8px 0" }, "Noch keine Sicherung.")]),
+    h("div", { class: "actions" }, h("button", { class: "flat", onclick: async () => { await send("POST", "backups", {}); renderSettings(); } }, "Jetzt sichern"))));
+
+  // external API hint
+  root.append(h("div", { class: "card" }, h("h2", {}, "Schnittstelle für Automationen"),
+    h("div", { class: "muted" }, ext.enabled
+      ? `Aktiv. Deine Benutzer-ID: ${ext.user}. Aufrufbeispiele (rest_command) stehen in der Dokumentation des Add-ons.`
+      : "Aus. Zum Einschalten in den Add-on-Optionen einen Schlüssel „api_key“ setzen. Damit können Waage, Sprachassistent oder Automationen Einträge und Gewicht senden.")));
+
   // data
   root.append(h("div", { class: "card" }, h("h2", {}, "Daten"),
     h("div", { class: "muted" }, "Export/Import betrifft nur dein Benutzerkonto."),
@@ -1498,12 +1551,47 @@ async function renderSettings() {
       h("button", { class: "flat", onclick: () => { location.href = "api/export/json"; } }, "Sicherung (JSON)"),
       h("button", { class: "flat", onclick: () => { location.href = "api/export/csv"; } }, "Tagebuch als CSV"),
       h("button", { class: "flat", onclick: () => pickFile(".json,application/json", async f => {
-        if (!confirm("Sicherung einspielen? Alle bisherigen Daten werden dabei ersetzt.")) return;
-        try { await send("POST", "import/json", { data: JSON.parse(await f.text()) }); alert("Wiederhergestellt."); show("diary"); }
-        catch (e) { alert("Import fehlgeschlagen: " + e.message); }
+        try { restoreDialog(JSON.parse(await f.text())); }
+        catch (e) { alert("Datei nicht lesbar: " + e.message); }
       }) }, "Sicherung einspielen"),
       h("button", { onclick: () => pickFile(".csv,text/csv", mfpDialog) }, "MyFitnessPal-CSV importieren"))));
 }
+
+// Restore a backup: show what would be replaced first.
+async function restoreDialog(data) {
+  let p;
+  try { p = await send("POST", "import/json/preview", { data }); }
+  catch (e) { alert("Keine gültige Sicherung: " + e.message); return; }
+  const range = s => s.first ? `${parse(s.first).toLocaleDateString("de-DE")} – ${parse(s.last).toLocaleDateString("de-DE")}` : "–";
+  const row = (label, k) => h("tr", {}, h("th", {}, label), h("td", {}, String(p.current[k])), h("td", {}, String(p.backup[k])));
+  const msg = h("div", { class: "err" });
+  setDlg(h("h2", {}, "Sicherung wiederherstellen"),
+    h("div", { class: "muted" }, "Alle jetzigen Daten deines Kontos werden durch die Sicherung ersetzt."),
+    h("table", { class: "summary cmp" }, h("thead", {}, h("tr", {}, h("th"), h("th", {}, "Jetzt"), h("th", {}, "Sicherung"))),
+      h("tbody", {}, row("Einträge", "entries"), row("Tage", "days"), row("Lebensmittel", "foods"), row("Mahlzeiten", "saved_meals"), row("Gewichtswerte", "weights"),
+        h("tr", {}, h("th", {}, "Zeitraum"), h("td", {}, range(p.current)), h("td", {}, range(p.backup))))),
+    msg,
+    h("div", { class: "actions" },
+      h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
+      h("button", { onclick: async () => {
+        try { await send("POST", "import/json", { data }); dlg.close(); alert("Wiederhergestellt."); show("diary"); }
+        catch (e) { msg.textContent = e.message; }
+      } }, "Ersetzen")));
+  dlg.showModal();
+}
+
+// Keyboard: ← → change day, T today, N add (first meal), / focus search
+document.addEventListener("keydown", e => {
+  if (e.ctrlKey || e.metaKey || e.altKey || dlg.open) return;
+  const el = document.activeElement;
+  if (el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
+  const diary = state.tab === "diary";
+  if (diary && e.key === "ArrowLeft") { e.preventDefault(); shiftDay(-1); }
+  else if (diary && e.key === "ArrowRight") { e.preventDefault(); shiftDay(1); }
+  else if (diary && e.key.toLowerCase() === "t") { state.day = iso(new Date()); renderDiary(); }
+  else if (diary && e.key.toLowerCase() === "n") { e.preventDefault(); openAdd(state.data.mode === "times" ? null : state.data.meals.find(m => !m.hidden && !m.archived) || state.data.meals[0]); }
+  else if (e.key === "/") { const s = document.querySelector(`#${state.tab} input[type=search]`); if (s) { e.preventDefault(); s.focus(); } }
+});
 
 api("me").then(m => { $("#who").textContent = m.name; });
 (async () => {

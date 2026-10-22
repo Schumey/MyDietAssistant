@@ -471,6 +471,7 @@ def dump(owner: str) -> dict:
             "hidden_categories": get_pref(owner, "hidden_categories", []),
             "features": features(owner),
             "goal_weekdays": q("SELECT wd,kcal,protein,carbs,fat FROM goal_weekdays WHERE owner=?", owner),
+            "notes": q("SELECT day,meal_id,text FROM day_notes WHERE owner=?", owner),
             "trackers": [{**t, "log": q("SELECT day,amount FROM tracker_log WHERE tracker_id=?", t["id"])}
                          for t in q("SELECT id,name,unit,goal,step,position FROM trackers WHERE owner=?", owner)],
         }
@@ -523,6 +524,7 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
             c.execute(f"DELETE FROM {t} WHERE owner=?", (owner,))
         c.execute("DELETE FROM triggers WHERE owner=?", (owner,))
         c.execute("DELETE FROM goal_weekdays WHERE owner=?", (owner,))
+        c.execute("DELETE FROM day_notes WHERE owner=?", (owner,))
         c.execute("DELETE FROM tracker_log WHERE tracker_id IN (SELECT id FROM trackers WHERE owner=?)", (owner,))
         c.execute("DELETE FROM trackers WHERE owner=?", (owner,))
         for g in d.get("goal_weekdays", []):
@@ -562,6 +564,11 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
                 c.execute("INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat)"
                           " VALUES(?,?,?,?,?,?,?)",
                           (sid, i["name"], i["grams"], i["kcal"], i["protein"], i["carbs"], i["fat"]))
+        for n in d.get("notes", []):
+            mid = 0 if not n["meal_id"] else mmap.get(n["meal_id"])
+            if mid is not None:
+                c.execute("INSERT OR REPLACE INTO day_notes(owner,day,meal_id,text) VALUES(?,?,?,?)",
+                          (owner, n["day"], mid, n["text"]))
     set_pref(owner, "hidden_categories", d.get("hidden_categories", []))
     set_pref(owner, "diary_mode", d.get("settings", {}).get("diary_mode", "meals"))
     if "features" in d:
@@ -980,7 +987,7 @@ def condition_met(t, now: datetime, day: str | None = None) -> bool:
     return False
 
 
-poll_state = {"token": bool(SUPERVISOR_TOKEN), "last": None, "log": []}
+poll_state = {"token": bool(SUPERVISOR_TOKEN), "last": None, "log": [], "error": None}
 
 
 def note(msg: str):
@@ -996,6 +1003,7 @@ def poll_triggers():
     with db.conn() as c:
         triggers = c.execute("SELECT * FROM triggers WHERE enabled=1").fetchall()
         done = {(r["trigger_id"], r["day"]) for r in c.execute("SELECT trigger_id, day FROM trigger_log WHERE day>=?", (day,))}
+    errors = []
     pending = []  # (trigger, day): state triggers act today only, calendar triggers also days ahead
     for t in triggers:
         for i in range(0, (t["days_ahead"] if t["kind"] == "calendar" else 0) + 1):
@@ -1012,11 +1020,13 @@ def poll_triggers():
                 continue
         except (httpx.HTTPError, ValueError, KeyError) as e:
             note(f"Trigger {t['id']} ({t['entity']}, {d}): Fehler {e!r}")
+            errors.append(f"{t['entity'] or 'Uhrzeit'}: {e}")
             continue
         with db.conn() as c:
             fire(c, t, d)
         note(f"Trigger {t['id']} ({t['entity']}): für {d} eingetragen")
         publish(t["owner"], get_pref(t["owner"], "display", t["owner"]))
+    poll_state["error"] = {"ts": now.strftime("%Y-%m-%d %H:%M"), "msg": errors[-1]} if errors else None
 
 
 def trigger_loop():
@@ -1026,6 +1036,7 @@ def trigger_loop():
             poll_triggers()
         except Exception as e:  # keep the loop alive whatever HA does
             note(f"Abfrage fehlgeschlagen: {e!r}")
+            poll_state["error"] = {"ts": datetime.now().strftime("%Y-%m-%d %H:%M"), "msg": str(e)}
         time.sleep(60)
 
 

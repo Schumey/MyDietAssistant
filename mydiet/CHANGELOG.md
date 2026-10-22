@@ -2,6 +2,22 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.14.0
+
+### Neu
+- **Notizen** im Tagebuch: Freitext pro Tag und pro Mahlzeit (Hunger, Training, Stimmung); in der Sicherung enthalten.
+- **Tastaturbedienung:** ← / → Tag wechseln, T heute, N hinzufügen, / Suche fokussieren.
+- **Automatische Sicherung:** täglich eine JSON-Sicherung nach `/backup/mydiet/` mit einstellbarer Aufbewahrung (`auto_backup`, `backup_keep_days`); Liste und „Jetzt sichern“ in den Einstellungen.
+- **Wiederherstellung mit Vorschau:** vor dem Einspielen (Datei oder automatische Sicherung) werden jetzt-Zustand und Sicherung gegenübergestellt.
+- **Schnittstelle für Automationen** (`api_key`): `POST /api/ext/entry` und `/api/ext/weight`, z. B. per `rest_command` (Beispiele in DOCS.md).
+- **Erinnerung:** Benachrichtigung über einen HA-Notify-Dienst, wenn bis zur Uhrzeit nichts eingetragen wurde.
+- **Trigger-Fehler** werden dauerhaft im Trigger-Bereich der Einstellungen angezeigt.
+- **Zeitzone** wird beim Start aus Home Assistant übernommen.
+
+### Geändert
+- Tabellenköpfe im Tagebuch schlanker: keine dicken Farbbalken mehr, nur kleine Beschriftung über einer feinen Linie.
+- Neue Add-on-Option `backup`-Zugriff (`map: backup`); nach dem Update das Add-on neu bauen, damit der Zugriff gilt.
+
 ## 0.13.0
 
 ### Neu

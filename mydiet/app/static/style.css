@@ -397,3 +397,22 @@ button.icon.fav:hover { color: var(--warning-color); }
 table.cmp th:first-child { text-align: left; }
 table.cmp th:nth-child(n+2), table.cmp td:nth-child(n+2) { width: auto; }
 table.cmp th:last-child, table.cmp td:last-child { width: auto; padding: 6px 10px; }
+
+/* slim table headers: no filled bars, just small labels over a thin rule */
+.diary thead th, table.summary thead th, table.cmp thead th {
+  background: none; color: var(--secondary-text-color); font-size: 12px; font-weight: 500;
+  padding-top: 2px; padding-bottom: 4px; border-bottom: 1px solid var(--divider-color);
+}
+.diary thead th small { display: inline; margin-left: 3px; opacity: .7; font-size: 10px; }
+.diary thead th.title { color: var(--primary-text-color); border-bottom-color: var(--divider-color); }
+html[data-skin="win"] .diary thead th, html[data-skin="win"] table.summary thead th, html[data-skin="win"] table.cmp thead th {
+  background: none; color: var(--w-text); border-bottom: 1px solid #808080;
+}
+html[data-skin="win"] .diary thead th.title { color: var(--w-text); }
+@media (max-width: 520px) { .diary thead th small { display: none; } }
+
+.note { margin: 6px 4px 2px; padding: 6px 10px; border-left: 3px solid var(--primary-color); background: var(--secondary-background-color); border-radius: 4px; white-space: pre-wrap; cursor: pointer; font-size: 14px; }
+.hint .note { flex: 1; }
+textarea { font: inherit; padding: 8px; border-radius: 6px; border: 1px solid var(--divider-color); background: var(--card-background-color); color: var(--primary-text-color); box-sizing: border-box; }
+html[data-skin="win"] .note { border-left-color: #000080; background: var(--w-field); color: #000; border-radius: 0; }
+html[data-skin="win"] textarea { border-radius: 0; background: var(--w-field); color: #000; }

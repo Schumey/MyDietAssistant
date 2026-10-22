@@ -38,6 +38,49 @@ entities:
 
 Hinweis: Sie werden über die States-API gesetzt (keine Unique-ID, nach einem HA-Neustart fehlen sie bis zum nächsten Eintrag). Später: MQTT Discovery.
 
+## Optionen
+
+| Option | Bedeutung |
+|---|---|
+| `publish_sensors` | Sensoren in Home Assistant setzen (siehe oben) |
+| `auto_backup` | täglich eine JSON-Sicherung je Benutzer nach `/backup/mydiet/` (im Samba-Share „backup“ sichtbar) |
+| `backup_keep_days` | wie lange Sicherungen aufbewahrt werden (Standard 14 Tage) |
+| `api_key` | Schlüssel für die Schnittstelle unten; leer = Schnittstelle aus |
+
+Das Add-on ist zusätzlich in jedem normalen Home-Assistant-Backup enthalten (Datenbank in `/data`). Die JSON-Sicherung ist unabhängig davon lesbar und lässt sich unter Einstellungen → Automatische Sicherung mit Vorschau wiederherstellen.
+
+## Schnittstelle für Automationen
+
+Mit gesetztem `api_key` können Home-Assistant-Automationen (Waage, Sprachassistent, Nachrichten) eintragen. Das Add-on ist intern unter `http://local-mydiet:8099` erreichbar. Deine Benutzer-ID steht in den Einstellungen (Feld `user`; ohne Angabe wird der lokale Benutzer `default` verwendet).
+
+```yaml
+rest_command:
+  mydiet_weight:
+    url: "http://local-mydiet:8099/api/ext/weight"
+    method: POST
+    headers:
+      X-MDA-Key: "DEIN_SCHLUESSEL"
+      Content-Type: application/json
+    payload: '{"user": "{{ user }}", "kg": {{ kg }}}'
+  mydiet_entry:
+    url: "http://local-mydiet:8099/api/ext/entry"
+    method: POST
+    headers:
+      X-MDA-Key: "DEIN_SCHLUESSEL"
+      Content-Type: application/json
+    payload: '{"user": "{{ user }}", "food": "{{ food }}", "grams": {{ grams }}, "meal": "{{ meal }}"}'
+```
+
+`/api/ext/entry` akzeptiert entweder `food` (Name eines vorhandenen Lebensmittels, optional `grams`) oder `name` mit `kcal`, `protein`, `carbs`, `fat` für eine Schnelleingabe; zusätzlich optional `day`, `time` (HH:MM) und `meal` (Name der Mahlzeit). Ob der Hostname bei Dir `local-mydiet` lautet, siehst Du auf der Add-on-Seite unter „Hostname“.
+
+## Erinnerung
+
+Unter Einstellungen → Erinnerung wählst Du eine Uhrzeit und einen Benachrichtigungsdienst (z. B. `notify.mobile_app_handy`). Ist bis dahin nichts eingetragen, schickt das Add-on einmal pro Tag eine Nachricht.
+
+## Tastatur
+
+Im Tagebuch: ← / → Tag wechseln, T heute, N Nahrungsmittel hinzufügen; / springt ins Suchfeld der Listen.
+
 ## Open Food Facts
 Die Barcode-Suche ist die einzige Funktion, die Internet braucht.
 

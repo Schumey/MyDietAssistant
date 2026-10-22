@@ -12,8 +12,6 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 ## Trigger und Home Assistant
 
 - **Mehrere Bedingungen** (M): UND/ODER-Verknüpfung, z. B. Kalender „Nachtschicht“ UND Person zu Hause.
-- **HA-Dienste und Ereignisse** (M): Aktionen `mydiet.add_entry` und `mydiet.log_weight` für Automationen, damit Waage, Sprachassistent oder Nachrichten-Bot eintragen können.
-- **Erinnerungen** (M): Benachrichtigung, wenn bis zu einer Uhrzeit nichts eingetragen wurde.
 
 ## Auswertung
 
@@ -31,8 +29,6 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 ## Import und Export
 
 - **Weitere Importe** (M): Cronometer, FDDB, Yazio, Apple Health/Google Fit (Gewicht).
-- **Automatische Sicherung** (S): Täglicher JSON-Export in den HA-Backup-Ordner, mit Aufbewahrungsdauer.
-- **Wiederherstellung mit Vorschau** (S): Import zeigt vorher, was ersetzt oder ergänzt wird.
 - **Export für Dritte** (S): PDF/CSV-Bericht für Ernährungsberatung oder Trainer.
 
 ## Mehrere Benutzer
@@ -46,16 +42,12 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 - **Weitere Looks** (M): Zusätzliche Skins neben dem Windows-Look (z. B. Mac-OS-9-Stil), Theme-Erkennung dafür erweiterbar machen.
 - **Dunkles/helles Theme sauber** (S): Kontrast der Windows-Skins bei hellen und dunklen Themes prüfen und angleichen.
 - **Mobile Bedienung** (M): Größere Touch-Flächen, Wischen zwischen Tagen, Eintrag per Langdruck bearbeiten.
-- **Tastaturbedienung** (S): Kürzel für Tag vor/zurück, „Hinzufügen“, Suche fokussieren.
-- **Tagebuch-Notizen** (S): Freitext pro Tag und pro Mahlzeit (Hunger, Training, Stimmung).
 - **Diagramme verbessern** (M): Makro-Verlauf, Ziellinien für Makros, auf Wunsch zusätzliche Zeiträume. (Mouse-over mit genauen Werten gibt es bereits.)
 
 ## Technik und Qualität
 
 - **Automatische Tests** (M): API-Tests für Import, Trigger-Logik (Start-/Endtag, Zeitzonen) und Energiebilanz; CI auf GitHub.
 - **Datenbank-Migrationen strukturieren** (S): Versionsnummer in der Datenbank statt Spaltenprüfungen.
-- **Zeitzone** (S): Zeitzone des Add-ons explizit aus HA lesen, damit Kalendergrenzen sicher stimmen.
-- **Fehleranzeige für Trigger** (S): Fehler der HA-Verbindung dauerhaft in den Einstellungen anzeigen statt nur bei „Jetzt prüfen“.
 - **Veröffentlichung** (M): Öffentliches Repository oder Add-on-Repository mit Icon/Logo, Übersetzungen und Release-Notes für die HA-Add-on-Seite.
 - **Performance bei großen Datenmengen** (S): Indizes und Paginierung, wenn viele Jahre MyFitnessPal-Daten importiert sind.
 
