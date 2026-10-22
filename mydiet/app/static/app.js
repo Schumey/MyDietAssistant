@@ -1777,6 +1777,157 @@ function pickFile(accept, cb) {
   i.click();
 }
 
+
+// ---------------------------------------------------------------- more imports
+// Which app do you come from? CSV tables are matched by their column headers, Apple Health is read in the browser.
+function importMenu() {
+  setDlg(h("h2", {}, "Weitere Importe"),
+    h("div", { class: "muted" }, "Der Import betrifft nur Dein Benutzerkonto. Vorhandene Daten bleiben erhalten, außer Du wählst ausdrücklich „ersetzen“."),
+    h("div", { class: "list" },
+      h("div", {}, h("div", { class: "grow" }, h("b", {}, "CSV aus einer anderen App"), h("div", { class: "muted" }, "Cronometer (servings.csv, biometrics.csv), FDDB, Yazio, Google Fit (Takeout) und ähnliche Tabellen. Die Spalten werden erkannt und lassen sich korrigieren.")),
+        h("button", { onclick: () => pickFile(".csv,.txt,text/csv", tableDialog) }, "Datei wählen")),
+      h("div", {}, h("div", { class: "grow" }, h("b", {}, "Apple Health"), h("div", { class: "muted" }, "export.zip oder export.xml aus der Health-App (Profil → Gesundheitsdaten exportieren). Gelesen wird direkt im Browser, nichts wird hochgeladen außer den Tageswerten.")),
+        h("button", { onclick: () => pickFile(".zip,.xml,application/zip,text/xml", healthDialog) }, "Datei wählen"))),
+    h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Schließen")));
+  dlg.showModal();
+}
+
+const TABLE_FIELDS = [["date", "Datum"], ["time", "Uhrzeit"], ["meal", "Mahlzeit"], ["name", "Lebensmittel"], ["amount", "Menge"], ["kcal", "Kalorien"],
+  ["protein", "Eiweiß"], ["carbs", "Kohlenhydrate"], ["fat", "Fett"], ["fiber", "Ballaststoffe"], ["sugar", "Zucker"], ["sat_fat", "ges. Fettsäuren"],
+  ["salt", "Salz"], ["sodium", "Natrium"], ["weight", "Gewicht"], ["metric", "Messart"], ["unit", "Einheit"]];
+
+async function tableDialog(file) {
+  const text = await file.text();
+  let p;
+  try { p = await send("POST", "import/table/preview", { text }); } catch (e) { alert(e.message); return; }
+  const selects = {};
+  const info = h("div", { class: "muted" });
+  const sample = h("div", { class: "lk-wrap" });
+  const mapping = () => Object.fromEntries(TABLE_FIELDS.map(([k]) => [k, selects[k].value === "" ? null : Number(selects[k].value)]));
+  const redraw = (q) => {
+    info.textContent = q.mapping.date == null ? "Bitte die Spalte mit dem Datum zuordnen."
+      : `${q.items} Einträge, ${q.weights} Gewichtswerte${q.from ? ` (${q.from} bis ${q.to})` : ""} aus ${q.count} Zeilen.`;
+    sample.replaceChildren(h("table", { class: "lk" }, h("thead", {}, h("tr", {}, q.headers.map(x => h("th", {}, x)))),
+      h("tbody", {}, q.rows.map(r => h("tr", {}, q.headers.map((_, i) => h("td", {}, r[i] || "")))))));
+  };
+  for (const [k, label] of TABLE_FIELDS) {
+    selects[k] = h("select", { onchange: async () => { p = await send("POST", "import/table/preview", { text, mapping: mapping() }); redraw(p); weightUnitRow.hidden = selects.weight.value === "" || selects.unit.value !== ""; } },
+      h("option", { value: "" }, "– nicht vorhanden –"), p.headers.map((hd, i) => h("option", { value: i }, hd)));
+    if (p.mapping[k] != null) selects[k].value = p.mapping[k];
+  }
+  const wUnitSel = h("select", {}, h("option", { value: "kg" }, "kg"), h("option", { value: "lb" }, "lb"), h("option", { value: "st" }, "Stone"));
+  const weightUnitRow = h("div", {}, h("label", {}, "Einheit der Gewichtsspalte"), wUnitSel);
+  weightUnitRow.hidden = selects.weight.value === "" || selects.unit.value !== "";
+  const weights = h("input", { type: "checkbox", checked: true });
+  const replace = h("input", { type: "checkbox" });
+  const msg = h("div", { class: "err" });
+  setDlg(h("h2", {}, "CSV importieren"),
+    p.preset ? h("div", {}, `Erkannt: ${p.preset}`) : null, info,
+    h("details", {}, h("summary", {}, "Zuordnung der Spalten"),
+      h("div", { class: "grid" }, TABLE_FIELDS.map(([k, label]) => h("div", {}, h("label", {}, label), selects[k])))),
+    sample, weightUnitRow,
+    h("label", { class: "pick" }, weights, "Gewicht übernehmen"),
+    h("label", { class: "pick" }, replace, "Vorhandene Einträge an diesen Tagen ersetzen"),
+    msg,
+    h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
+      h("button", { onclick: async () => {
+        try {
+          const r = await send("POST", "import/table", { text, mapping: mapping(), replace: replace.checked, weights: weights.checked, weight_unit: wUnitSel.value });
+          dlg.close();
+          alert(`Importiert: ${r.days} Tage, ${r.entries} Einträge, ${r.weights} Gewichtswerte.`);
+          renderSettings();
+        } catch (e) { msg.textContent = e.message; }
+      } }, "Importieren")));
+  redraw(p);
+  dlg.showModal();
+}
+
+// Apple Health: stream export.xml (directly or out of export.zip) and keep only body weight and daily nutrition totals.
+async function healthStream(file, onProgress) {
+  if (!/\.zip$/i.test(file.name)) return { stream: file.stream(), size: file.size };
+  const tail = new DataView(await file.slice(Math.max(0, file.size - 65557)).arrayBuffer());
+  let e = tail.byteLength - 22;
+  while (e >= 0 && tail.getUint32(e, true) !== 0x06054b50) e--;
+  if (e < 0) throw new Error("Keine gültige ZIP-Datei.");
+  const cdSize = tail.getUint32(e + 12, true), cdOff = tail.getUint32(e + 16, true);
+  if (cdOff === 0xFFFFFFFF) throw new Error("Sehr große ZIP-Datei (ZIP64): bitte entpacken und die export.xml wählen.");
+  const cd = new DataView(await file.slice(cdOff, cdOff + cdSize).arrayBuffer());
+  let best = null;
+  for (let o = 0; o + 46 <= cd.byteLength && cd.getUint32(o, true) === 0x02014b50;) {
+    const nameLen = cd.getUint16(o + 28, true), extra = cd.getUint16(o + 30, true), comment = cd.getUint16(o + 32, true);
+    const name = new TextDecoder().decode(new Uint8Array(cd.buffer, o + 46, nameLen));
+    if (/export\.xml$/i.test(name) && !/cda/i.test(name)) best = { method: cd.getUint16(o + 10, true), comp: cd.getUint32(o + 20, true), size: cd.getUint32(o + 24, true), off: cd.getUint32(o + 42, true) };
+    o += 46 + nameLen + extra + comment;
+  }
+  if (!best) throw new Error("In der ZIP-Datei wurde keine export.xml gefunden.");
+  const lh = new DataView(await file.slice(best.off, best.off + 30).arrayBuffer());
+  const start = best.off + 30 + lh.getUint16(26, true) + lh.getUint16(28, true);
+  const raw = file.slice(start, start + best.comp).stream();
+  if (best.method === 0) return { stream: raw, size: best.size };
+  if (best.method !== 8 || typeof DecompressionStream === "undefined") throw new Error("Dieser Browser kann die ZIP-Datei nicht entpacken. Bitte entpacken und die export.xml wählen.");
+  return { stream: raw.pipeThrough(new DecompressionStream("deflate-raw")), size: best.size };
+}
+
+async function readHealth(file, onProgress) {
+  const { stream, size } = await healthStream(file);
+  const reader = stream.pipeThrough(new TextDecoderStream()).getReader();
+  const weights = {}, wTime = {}, nutr = {};
+  const attr = (s, n) => { const m = new RegExp("\\b" + n + '="([^"]*)"').exec(s); return m ? m[1] : ""; };
+  const KEYS = { HKQuantityTypeIdentifierDietaryEnergyConsumed: "kcal", HKQuantityTypeIdentifierDietaryProtein: "protein",
+    HKQuantityTypeIdentifierDietaryCarbohydrates: "carbs", HKQuantityTypeIdentifierDietaryFatTotal: "fat" };
+  let buf = "", done = 0;
+  const take = rec => {
+    const type = attr(rec, "type");
+    const val = parseFloat(attr(rec, "value")), when = attr(rec, "startDate"), day = when.slice(0, 10);
+    if (!(val >= 0) || !/^\d{4}-\d{2}-\d{2}$/.test(day)) return;
+    if (type === "HKQuantityTypeIdentifierBodyMass") {
+      const u = attr(rec, "unit"), kg = u === "lb" ? val * 0.45359237 : u === "g" ? val / 1000 : val;
+      if (!wTime[day] || when > wTime[day]) { weights[day] = Math.round(kg * 100) / 100; wTime[day] = when; }
+    } else if (KEYS[type]) {
+      const u = attr(rec, "unit"), v = KEYS[type] === "kcal" && /kj/i.test(u) ? val / 4.184 : val;
+      (nutr[day] ||= { kcal: 0, protein: 0, carbs: 0, fat: 0 })[KEYS[type]] += v;
+    }
+  };
+  for (;;) {
+    const { value, done: end } = await reader.read();
+    if (value) { buf += value; done += value.length; }
+    let last = 0;
+    for (const m of buf.matchAll(/<Record\b[^>]*>/g)) { take(m[0]); last = m.index + m[0].length; }
+    buf = buf.slice(last > 0 ? last : Math.max(0, buf.length - 2000));
+    onProgress(Math.min(1, done / (size || done || 1)));
+    if (end) break;
+  }
+  return { weights, nutrition: Object.fromEntries(Object.entries(nutr).map(([d, t]) => [d, Object.fromEntries(Object.entries(t).map(([k, v]) => [k, Math.round(v * 10) / 10]))])) };
+}
+
+async function healthDialog(file) {
+  const prog = h("div", { class: "muted" }, "Lese Datei …");
+  setDlg(h("h2", {}, "Apple Health"), prog, h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen")));
+  dlg.showModal();
+  let data;
+  try { data = await readHealth(file, f => { prog.textContent = `Lese Datei … ${Math.round(f * 100)} %`; }); }
+  catch (e) { prog.textContent = e.message; return; }
+  const nw = Object.keys(data.weights).length, nn = Object.values(data.nutrition).filter(t => t.kcal > 0).length;
+  const weights = h("input", { type: "checkbox", checked: nw > 0, disabled: !nw });
+  const nutr = h("input", { type: "checkbox", checked: false, disabled: !nn });
+  const msg = h("div", { class: "err" });
+  setDlg(h("h2", {}, "Apple Health"),
+    h("div", { class: "muted" }, `${nw} Gewichtswerte, ${nn} Tage mit Ernährungsdaten gefunden.`),
+    h("label", { class: "pick" }, weights, "Gewicht übernehmen (ein Wert pro Tag, vorhandene Werte werden überschrieben)"),
+    h("label", { class: "pick" }, nutr, "Tagessummen der Ernährung übernehmen (eine Schnelleingabe pro Tag, nur sinnvoll, wenn Du Deine Mahlzeiten sonst nicht hier führst)"),
+    msg,
+    h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
+      h("button", { disabled: !nw && !nn, onclick: async () => {
+        try {
+          const r = await send("POST", "import/records", { source: "Apple Health", replace: true,
+            weights: weights.checked ? data.weights : {}, nutrition: nutr.checked ? data.nutrition : {} });
+          dlg.close();
+          alert(`Importiert: ${r.entries} Tage, ${r.weights} Gewichtswerte.`);
+          renderSettings();
+        } catch (e) { msg.textContent = e.message; }
+      } }, "Importieren")));
+}
+
 async function mfpDialog(file) {
   const csv = await file.text();
   let p;
@@ -2171,7 +2322,8 @@ async function renderSettings() {
         try { restoreDialog(JSON.parse(await f.text())); }
         catch (e) { alert("Datei nicht lesbar: " + e.message); }
       }) }, "Sicherung einspielen"),
-      h("button", { onclick: () => pickFile(".csv,text/csv", mfpDialog) }, "MyFitnessPal-CSV importieren"))));
+      h("button", { onclick: () => pickFile(".csv,text/csv", mfpDialog) }, "MyFitnessPal-CSV importieren"),
+      h("button", { onclick: importMenu }, "Weitere Importe …"))));
 }
 
 // Restore a backup: show what would be replaced first.

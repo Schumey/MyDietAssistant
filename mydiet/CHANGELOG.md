@@ -2,6 +2,16 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.25.0
+
+### Neu
+- **Weitere Importe** (Einstellungen → Daten → „Weitere Importe …“):
+  - **CSV aus anderen Apps** (Cronometer `servings.csv` und `biometrics.csv`, FDDB, Yazio, Google-Fit-Takeout und ähnliche Tabellen): Trennzeichen, Datumsformat (TT.MM.JJJJ, MM/TT/JJJJ, ISO), Dezimalkomma und Mengenangaben („80 g“, „2 oz“) werden erkannt. Die Spalten werden anhand der Überschriften (deutsch und englisch) zugeordnet und lassen sich in der Vorschau korrigieren. Mahlzeiten wie Breakfast/Lunch/Dinner landen in Frühstück/Mittagessen/Abendessen. Gewichte in kg, lb oder Stone.
+  - **Apple Health** (`export.zip` oder `export.xml`): wird direkt im Browser gelesen (auch sehr große Dateien), übernommen werden Körpergewicht und auf Wunsch die Tagessummen der Ernährung. Hochgeladen werden nur die Tageswerte.
+
+### Hinweis
+- Die Spaltenerkennung ist für Cronometer, FDDB-ähnliche deutsche Tabellen und Google Fit mit Beispieldateien geprüft. Bei Yazio und echten FDDB-Exporten konnte ich kein Original ansehen; falls die Zuordnung nicht passt, lässt sie sich in der Vorschau korrigieren.
+
 ## 0.24.0
 
 ### Neu

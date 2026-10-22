@@ -563,6 +563,7 @@ from extras3 import *  # noqa: E402,F401,F403  (body measurements, photos)
 from extras4 import *  # noqa: E402,F401,F403  (recipes)
 from extras5 import *  # noqa: E402,F401,F403  (more data sources)
 from extras6 import *  # noqa: E402,F401,F403  (export for third parties)
+from extras7 import *  # noqa: E402,F401,F403  (table import, bulk records)
 
 
 @app.get("/")

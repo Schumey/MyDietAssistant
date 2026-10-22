@@ -21,7 +21,6 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 ## Import und Export
 
-- **Weitere Importe** (M): Cronometer, FDDB, Yazio, Apple Health/Google Fit (Gewicht).
 
 ## Mehrere Benutzer
 

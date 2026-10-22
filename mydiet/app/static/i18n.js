@@ -195,6 +195,27 @@ const EN = {
   "Sprache und Einheiten": "Language and units", "Sprache": "Language", "Einheiten": "Units", "Automatisch (Browser)": "Automatic (browser)",
   "Metrisch (kg, cm)": "Metric (kg, cm)", "Imperial (lb, in)": "Imperial (lb, in)",
 
+  // more imports
+  "Weitere Importe": "More imports", "Weitere Importe …": "More imports …",
+  "Der Import betrifft nur Dein Benutzerkonto. Vorhandene Daten bleiben erhalten, außer Du wählst ausdrücklich „ersetzen“.": "The import only affects your user account. Existing data is kept unless you explicitly choose “replace”.",
+  "CSV aus einer anderen App": "CSV from another app", "Datei wählen": "Choose file",
+  "Cronometer (servings.csv, biometrics.csv), FDDB, Yazio, Google Fit (Takeout) und ähnliche Tabellen. Die Spalten werden erkannt und lassen sich korrigieren.": "Cronometer (servings.csv, biometrics.csv), FDDB, Yazio, Google Fit (Takeout) and similar tables. The columns are detected and can be corrected.",
+  "Apple Health": "Apple Health",
+  "export.zip oder export.xml aus der Health-App (Profil → Gesundheitsdaten exportieren). Gelesen wird direkt im Browser, nichts wird hochgeladen außer den Tageswerten.": "export.zip or export.xml from the Health app (profile → export health data). The file is read directly in the browser; only the daily values are uploaded.",
+  "Messart": "Metric", "Natrium": "Sodium", "Bitte die Spalte mit dem Datum zuordnen.": "Please assign the date column.",
+  "{} Einträge, {} Gewichtswerte aus {} Zeilen.": "{} entries, {} weight values from {} rows.", "CSV importieren": "Import CSV", "Erkannt: {}": "Detected: {}",
+  "Zuordnung der Spalten": "Column assignment", "– nicht vorhanden –": "– not present –", "Einheit der Gewichtsspalte": "Unit of the weight column", "Stone": "Stone",
+  "Lese Datei …": "Reading file …", "Lese Datei … {} %": "Reading file … {} %", "Keine gültige ZIP-Datei.": "Not a valid ZIP file.",
+  "Sehr große ZIP-Datei (ZIP64): bitte entpacken und die export.xml wählen.": "Very large ZIP file (ZIP64): please unzip it and choose export.xml.",
+  "In der ZIP-Datei wurde keine export.xml gefunden.": "No export.xml found in the ZIP file.",
+  "Dieser Browser kann die ZIP-Datei nicht entpacken. Bitte entpacken und die export.xml wählen.": "This browser cannot unzip the file. Please unzip it and choose export.xml.",
+  "{} Gewichtswerte, {} Tage mit Ernährungsdaten gefunden.": "Found {} weight values and {} days with nutrition data.",
+  "Gewicht übernehmen (ein Wert pro Tag, vorhandene Werte werden überschrieben)": "Import weight (one value per day, existing values are overwritten)",
+  "Tagessummen der Ernährung übernehmen (eine Schnelleingabe pro Tag, nur sinnvoll, wenn Du Deine Mahlzeiten sonst nicht hier führst)": "Import daily nutrition totals (one quick entry per day, only useful if you do not log your meals here otherwise)",
+  "Importiert: {} Tage, {} Einträge, {} Gewichtswerte.": "Imported: {} days, {} entries, {} weight values.",
+  "Importiert: {} Tage, {} Gewichtswerte.": "Imported: {} days, {} weight values.",
+  "Die Datei enthält keine Datenzeilen.": "The file contains no data rows.",
+
   // export for third parties
   "Export für Berater und Trainer": "Export for dietitian and trainer",
   "Ein Bericht zum Ausdrucken oder als PDF (im Druckdialog „Als PDF speichern“ wählen) und eine Tabelle mit den Tageswerten. Enthält nur den gewählten Zeitraum.": "A report to print or save as PDF (choose “Save as PDF” in the print dialog) and a table of the daily values. Contains only the chosen period.",
