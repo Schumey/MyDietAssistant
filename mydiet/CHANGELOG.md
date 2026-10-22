@@ -2,6 +2,13 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.12.0
+
+### Neu
+- **Ganzen Tag kopieren:** Im Tagebuch unter der Tagessumme; alle Einträge samt Mahlzeit und Uhrzeit auf einen anderen Tag, optional mit Mengenfaktor.
+- **Gespeicherte Mahlzeit kopieren** (⧉ in der Mahlzeitenliste): legt „… (Kopie)“ an und öffnet sie gleich zum Bearbeiten – ideal für Varianten mit getauschten Komponenten.
+- **Wasser & Ergänzungen in der Statistik:** Ø pro Tag, eingetragene Tage und Tage mit erreichtem Ziel für den gewählten Zeitraum (nur mit aktivierter Zusatzfunktion).
+
 ## 0.11.0
 
 ### Neu

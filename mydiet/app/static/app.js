@@ -215,7 +215,31 @@ async function renderDiary() {
         h("tr", {}, h("th", {}, "Dein Tagesziel"), goalCell(g.kcal), goalCell(g.carbs), goalCell(g.fat), goalCell(g.protein)),
         h("tr", {}, h("th", {}, "Verbleibend"), rem(g.kcal, t.kcal), rem(g.carbs, t.carbs), rem(g.fat, t.fat), rem(g.protein, t.protein))))));
 
+  if (d.entries.length) root.append(h("div", { class: "hint" },
+    h("button", { class: "flat", onclick: () => dayCopyDialog() }, "Ganzen Tag kopieren")));
   if (state.features.trackers && trackers.length) root.append(trackerCard(trackers));
+}
+
+// Copy every entry of the shown day to another day (meals and times are kept).
+function dayCopyDialog() {
+  const next = new Date(parse(state.day)); next.setDate(next.getDate() + 1);
+  const to = h("input", { type: "date", value: iso(next) });
+  const factor = h("input", { type: "number", step: "any", min: "0.1", value: "1", style: "width:80px;flex:none" });
+  const msg = h("div", { class: "err" });
+  setDlg(h("h2", {}, "Ganzen Tag kopieren"),
+    h("div", { class: "muted" }, `${state.data.entries.length} Einträge, ${n0(state.data.totals.kcal)} kcal`),
+    h("label", {}, "Auf den Tag"), to,
+    h("label", {}, "Mengenfaktor (1 = unverändert)"), factor, msg,
+    h("div", { class: "actions" },
+      h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
+      h("button", { onclick: async () => {
+        if (!to.value) { msg.textContent = "Bitte einen Tag wählen."; return; }
+        try {
+          await send("POST", `day/${state.day}/copy`, { to_day: to.value, factor: num(factor.value) || 1 });
+          dlg.close(); state.day = to.value; renderDiary();
+        } catch (e) { msg.textContent = e.message; }
+      } }, "Kopieren")));
+  dlg.showModal();
 }
 
 // Water & supplements (optional feature): +/- buttons with a daily goal.
@@ -881,6 +905,12 @@ async function renderMeals() {
         h("div", { class: "muted" }, s.items.map(entryLabel).join(" · "))),
       h("button", { class: "icon", title: "Trigger anlegen", "aria-label": "Trigger anlegen", onclick: () => triggerDialog({ item: "s:" + s.id }) }, "⚡"),
       h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => editSaved(s) }, "✎"),
+      h("button", { class: "icon", title: "Kopie anlegen", "aria-label": "Kopieren", onclick: async () => {
+        const { id } = await send("POST", `saved-meals/${s.id}/copy`);
+        await renderMeals();
+        const copy = (await api("saved-meals")).find(x => x.id === id);
+        if (copy) editSaved(copy);
+      } }, "⧉"),
       h("button", { class: "icon", title: "Löschen", "aria-label": "Löschen", onclick: async () => {
         if (!confirm(`Mahlzeit „${s.name}“ löschen?`)) return;
         await api("saved-meals/" + s.id, { method: "DELETE" }); renderMeals();
@@ -974,7 +1004,8 @@ function balanceCard(b) {
 }
 
 async function renderStats() {
-  const [{ days, goal, balance }, weights] = await Promise.all([api("stats?days=" + state.range), api("weights?days=" + state.range)]);
+  const [{ days, goal, balance }, weights, trk] = await Promise.all([api("stats?days=" + state.range), api("weights?days=" + state.range),
+    state.features.trackers ? api("trackers/stats?days=" + state.range) : []]);
   const root = $("#stats");
   root.replaceChildren();
   const logged = days.filter(d => d.logged);
@@ -1008,6 +1039,15 @@ async function renderStats() {
         h("span", { style: "--c:var(--info-color)" }, `Eiweiß ${logged.length ? pct(kc.p) : 0} %`),
         h("span", { style: "--c:var(--warning-color)" }, `Kohlenhydrate ${logged.length ? pct(kc.c) : 0} %`),
         h("span", { style: "--c:var(--error-color)" }, `Fett ${logged.length ? pct(kc.f) : 0} %`))));
+  if (trk.some(t => t.logged)) {
+    const fmt = v => (Math.round(v * 10) / 10).toLocaleString("de-DE");
+    root.append(h("div", { class: "card" }, h("h2", {}, "Wasser & Ergänzungen"),
+      h("table", { class: "summary" },
+        h("thead", {}, h("tr", {}, h("th"), h("th", {}, "Ø pro Tag"), h("th", {}, "Eingetragen"), h("th", {}, "Ziel erreicht"))),
+        h("tbody", {}, trk.filter(t => t.logged).map(t => h("tr", {}, h("th", {}, t.name),
+          h("td", {}, `${fmt(t.avg)} ${t.unit}`), h("td", {}, `${t.logged} / ${t.days} Tage`),
+          h("td", {}, t.goal ? `${t.reached} / ${t.days} Tage` : "–")))))));
+  }
 }
 
 // ---------------------------------------------------------------- triggers

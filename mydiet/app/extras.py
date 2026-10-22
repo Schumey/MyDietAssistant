@@ -145,6 +145,26 @@ def list_trackers(day: str, x_remote_user_id: str | None = Header(None)):
             " WHERE t.owner=? ORDER BY t.position, t.id", (day, owner))]
 
 
+@app.get("/api/trackers/stats")
+def tracker_stats(days: int = 30, x_remote_user_id: str | None = Header(None)):
+    """Per tracker: average per day, days with a log, days the goal was reached, over the last `days` days."""
+    owner = user_from(x_remote_user_id)
+    if not feature_on(owner, "trackers"):
+        return []
+    days = max(1, min(days, 3650))
+    since = (datetime.now(timezone.utc).astimezone().date() - timedelta(days=days - 1)).isoformat()
+    with db.conn() as c:
+        ensure_trackers(c, owner)
+        out = []
+        for t in c.execute("SELECT id,name,unit,goal FROM trackers WHERE owner=? ORDER BY position,id", (owner,)).fetchall():
+            amounts = [r["amount"] for r in c.execute(
+                "SELECT amount FROM tracker_log WHERE tracker_id=? AND day>=? AND amount>0", (t["id"], since))]
+            out.append({**dict(t), "days": days, "logged": len(amounts),
+                        "avg": round(sum(amounts) / days, 1),
+                        "reached": sum(1 for a in amounts if t["goal"] and a >= t["goal"])})
+        return out
+
+
 @app.post("/api/trackers")
 def add_tracker(t: TrackerIn, x_remote_user_id: str | None = Header(None)):
     if not t.name.strip() or t.step <= 0:
@@ -301,6 +321,22 @@ def edit_saved(sid: int, s: SavedMealEdit, x_remote_user_id: str | None = Header
                 "INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat) VALUES(?,?,?,?,?,?,?)",
                 [(sid, i.name, i.grams, i.kcal, i.protein, i.carbs, i.fat) for i in s.items])
     return {"ok": True}
+
+
+@app.post("/api/saved-meals/{sid}/copy")
+def copy_saved(sid: int, x_remote_user_id: str | None = Header(None)):
+    """Duplicate a saved meal as a starting point for a variant."""
+    owner = user_from(x_remote_user_id)
+    with db.conn() as c:
+        m = c.execute("SELECT * FROM saved_meals WHERE id=? AND owner=?", (sid, owner)).fetchone()
+        if not m:
+            raise HTTPException(404, "saved meal not found")
+        cur = c.execute("INSERT INTO saved_meals(owner,name,category) VALUES(?,?,?)",
+                        (owner, f"{m['name']} (Kopie)", m["category"]))
+        c.execute("INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat)"
+                  " SELECT ?,name,grams,kcal,protein,carbs,fat FROM saved_meal_items WHERE saved_meal_id=? ORDER BY id",
+                  (cur.lastrowid, sid))
+        return {"id": cur.lastrowid}
 
 
 @app.delete("/api/saved-meals/{sid}")
@@ -1047,6 +1083,33 @@ def copy_entries(cp: CopyIn, x_remote_user_id: str | None = Header(None),
             n += 1
     publish(owner, x_remote_user_display_name or owner)
     return {"copied": n}
+
+
+class DayCopyIn(BaseModel):
+    to_day: str
+    factor: float = 1
+
+
+@app.post("/api/day/{day}/copy")
+def copy_day(day: str, cp: DayCopyIn, x_remote_user_id: str | None = Header(None),
+             x_remote_user_display_name: str | None = Header(None)):
+    """Copy all entries of a day to another day, keeping meal and time."""
+    check_day(day)
+    check_day(cp.to_day)
+    if cp.factor <= 0:
+        raise HTTPException(400, "factor must be > 0")
+    if day == cp.to_day:
+        raise HTTPException(400, "Quell- und Zieltag sind gleich")
+    owner = user_from(x_remote_user_id)
+    k = cp.factor
+    with db.conn() as c:
+        rows = c.execute("SELECT * FROM entries WHERE owner=? AND day=? ORDER BY id", (owner, day)).fetchall()
+        c.executemany(
+            "INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,time) VALUES(?,?,?,?,?,?,?,?,?,?)",
+            [(owner, cp.to_day, r["meal_id"], r["name"], r["grams"] * k, r["kcal"] * k, r["protein"] * k,
+              r["carbs"] * k, r["fat"] * k, r["time"]) for r in rows])
+    publish(owner, x_remote_user_display_name or owner)
+    return {"copied": len(rows)}
 
 
 @app.delete("/api/day/{day}/entries")

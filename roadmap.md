@@ -7,7 +7,6 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 ## Als Nächstes (hoher Nutzen im Alltag)
 
 - **Wochentagsziele automatisch per Trigger** (S): Tageszielprofil (Training/Ruhe) zusätzlich über Kalender oder HA-Zustand (Fitnessstudio-Tag) umschalten. Die manuelle Zuordnung je Wochentag gibt es bereits.
-- **Tracker im Verlauf** (S): Wasser und Supplements in der Statistik (Wochenschnitt, Ziel erreicht an X Tagen).
 - **Rezepte mit Portionen** (M): Zutaten zu einem Rezept bündeln, Gesamtmakros durch Portionen teilen, als Lebensmittel nutzen. Baut auf der Komponenten-Bearbeitung der gespeicherten Mahlzeiten auf.
 - **Mikronährstoffe** (M): Ballaststoffe, Zucker, Salz, gesättigte Fette als optionale Spalten (Open Food Facts liefert sie bereits).
 
