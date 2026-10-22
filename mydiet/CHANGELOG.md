@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.12.1
+
+### Geändert
+- Tagesübersicht im Tagebuch: Spalten stehen jetzt exakt unter denen der Mahlzeiten, Reihenfolge Tagesziel, Gesamt, Verbleibend.
+
 ## 0.12.0
 
 ### Neu

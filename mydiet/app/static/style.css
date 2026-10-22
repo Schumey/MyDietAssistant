@@ -148,9 +148,12 @@ table { width: 100%; border-collapse: collapse; }
 .diary thead th { overflow: hidden; text-overflow: ellipsis; }
 .card:has(> .diary) { padding-bottom: 8px; }
 
-table.summary { margin-left: auto; width: auto; }
-table.summary th, table.summary td { text-align: right; padding: 6px 14px; }
-table.summary th:first-child { text-align: right; }
+table.summary { width: 100%; table-layout: fixed; }
+table.summary th, table.summary td { text-align: right; padding: 6px 10px; white-space: nowrap; }
+table.summary th:nth-child(n+2), table.summary td:nth-child(n+2) { width: 98px; }
+table.summary th:last-child, table.summary td:last-child { width: 36px; padding: 0 4px; }
+table.summary thead th { overflow: hidden; text-overflow: ellipsis; }
+table.summary thead th:nth-child(3) { font-size: 11px; }
 table.summary tbody tr:nth-child(odd) td { background: var(--secondary-background-color); }
 table.summary thead th { background: var(--primary-color); color: var(--text-primary-color); font-size: 12px; font-weight: 500; }
 table.summary tbody th { font-weight: 600; }
@@ -217,7 +220,9 @@ dialog h2 { margin-bottom: 12px; font-size: 18px; }
   .diary th, .diary td { padding: 5px 3px; }
   .diary thead th { font-size: 10px; }
   .diary thead th.title { font-size: 16px; }
-  table.summary th, table.summary td { padding: 6px 8px; }
+  table.summary th:nth-child(n+2), table.summary td:nth-child(n+2) { width: 58px; }
+  table.summary th, table.summary td { padding: 6px 3px; }
+  table.summary thead th { font-size: 10px; }
   .appbar h1 { display: none; }
 }
 
