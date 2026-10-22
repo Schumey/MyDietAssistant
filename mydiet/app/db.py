@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS foods (
   protein REAL NOT NULL DEFAULT 0,
   carbs REAL NOT NULL DEFAULT 0,
   fat REAL NOT NULL DEFAULT 0,
-  serving_g REAL NOT NULL DEFAULT 100
+  serving_g REAL NOT NULL DEFAULT 100,
+  category TEXT NOT NULL DEFAULT ''
 );
 CREATE TABLE IF NOT EXISTS meals (
   id INTEGER PRIMARY KEY,
@@ -51,6 +52,45 @@ CREATE TABLE IF NOT EXISTS weights (
   kg REAL NOT NULL,
   PRIMARY KEY (owner, day)
 );
+CREATE TABLE IF NOT EXISTS saved_meals (
+  id INTEGER PRIMARY KEY,
+  owner TEXT NOT NULL,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL DEFAULT ''
+);
+CREATE TABLE IF NOT EXISTS saved_meal_items (
+  id INTEGER PRIMARY KEY,
+  saved_meal_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  grams REAL NOT NULL,
+  kcal REAL NOT NULL,
+  protein REAL NOT NULL,
+  carbs REAL NOT NULL,
+  fat REAL NOT NULL
+);
+CREATE TABLE IF NOT EXISTS prefs (
+  owner TEXT NOT NULL,
+  key TEXT NOT NULL,
+  value TEXT NOT NULL,
+  PRIMARY KEY (owner, key)
+);
+CREATE TABLE IF NOT EXISTS triggers (
+  id INTEGER PRIMARY KEY,
+  owner TEXT NOT NULL,
+  kind TEXT NOT NULL,           -- 'state' | 'calendar'
+  entity TEXT NOT NULL,         -- HA entity id
+  match TEXT NOT NULL DEFAULT '',  -- state value / calendar title substring
+  meal_id INTEGER NOT NULL,     -- diary meal the item is added to
+  saved_meal_id INTEGER,        -- what to add: a saved meal ...
+  food_id INTEGER,              -- ... or a food
+  grams REAL,
+  enabled INTEGER NOT NULL DEFAULT 1
+);
+CREATE TABLE IF NOT EXISTS trigger_log (
+  trigger_id INTEGER NOT NULL,
+  day TEXT NOT NULL,
+  PRIMARY KEY (trigger_id, day)
+);
 """
 
 
@@ -69,6 +109,11 @@ def conn():
 def init():
     with conn() as c:
         c.executescript(SCHEMA)
+        cols = {r["name"] for r in c.execute("PRAGMA table_info(foods)")}
+        if "time" not in {r["name"] for r in c.execute("PRAGMA table_info(entries)")}:
+            c.execute("ALTER TABLE entries ADD COLUMN time TEXT")  # HH:MM, time-based diary
+        if "category" not in cols:  # database from v0.2
+            c.execute("ALTER TABLE foods ADD COLUMN category TEXT NOT NULL DEFAULT ''")
 
 
 def ensure_meals(c, owner: str):

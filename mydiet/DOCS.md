@@ -10,3 +10,12 @@ Hinweis: Sie werden über die States-API gesetzt (keine Unique-ID, nach einem HA
 
 ## Open Food Facts
 Die Barcode-Suche ist die einzige Funktion, die Internet braucht.
+
+## Neu in 0.3
+
+- **Import/Export** (Einstellungen → Daten): JSON-Sicherung, CSV-Export, MyFitnessPal-CSV-Import (komplett oder nur Tagessummen + Gewicht).
+- **Mahlzeiten speichern** im Tagebuch, wiederverwendbar über „Meine Mahlzeiten“.
+- **Kategorien** für Lebensmittel und Mahlzeiten (z. B. Diät/Bulk), per Chip ein-/ausblendbar.
+- **Kalorienbilanz** (Statistik): aus Gewichtstrend und Aufnahme (1 kg ≈ 7700 kcal).
+- **Trigger**: Zustand einer HA-Entität oder Kalendertermin trägt ein Lebensmittel/eine Mahlzeit einmal pro Tag ein (Prüfung jede Minute).
+- **Tagebuch-Ansicht** umschaltbar auf Uhrzeiten statt fester Mahlzeiten.

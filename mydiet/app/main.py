@@ -36,17 +36,20 @@ class FoodIn(BaseModel):
     carbs: float = 0
     fat: float = 0
     serving_g: float = 100
+    category: str = ""
 
 
 class EntryIn(BaseModel):
     day: str
-    meal_id: int
+    meal_id: int | None = None
     food_id: int
     grams: float
+    time: str | None = None
 
 
-class GramsIn(BaseModel):
-    grams: float
+class EntryEdit(BaseModel):
+    grams: float | None = None
+    time: str | None = None
 
 
 class GoalIn(BaseModel):
@@ -72,6 +75,14 @@ class WeightIn(BaseModel):
 def check_day(day: str):
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", day):
         raise HTTPException(400, "day must be YYYY-MM-DD")
+
+
+def check_time(t: str | None) -> str | None:
+    if not t:
+        return None
+    if not re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", t):
+        raise HTTPException(400, "time must be HH:MM")
+    return t
 
 
 def get_goal(c, owner: str) -> dict:
@@ -121,6 +132,8 @@ def publish(owner: str, display: str):
 @app.get("/api/me")
 def me(x_remote_user_id: str | None = Header(None),
        x_remote_user_display_name: str | None = Header(None)):
+    if x_remote_user_display_name:
+        set_pref(user_from(x_remote_user_id), "display", x_remote_user_display_name)
     return {"id": user_from(x_remote_user_id), "name": x_remote_user_display_name or "Lokal"}
 
 
@@ -136,7 +149,7 @@ def get_day(day: str, x_remote_user_id: str | None = Header(None)):
             "SELECT id, name FROM meals WHERE owner=? ORDER BY position", (owner,))]
         entries = [dict(r) for r in c.execute(
             "SELECT * FROM entries WHERE owner=? AND day=? ORDER BY id", (owner, day))]
-        return {"meals": meals, "entries": entries,
+        return {"meals": meals, "entries": entries, "mode": get_pref(owner, "diary_mode", "meals"),
                 "totals": day_totals(c, owner, day), "goal": get_goal(c, owner)}
 
 
@@ -151,31 +164,36 @@ def add_entry(e: EntryIn, x_remote_user_id: str | None = Header(None),
         f = c.execute("SELECT * FROM foods WHERE id=? AND owner=?", (e.food_id, owner)).fetchone()
         if not f:
             raise HTTPException(404, "food not found")
-        if not c.execute("SELECT 1 FROM meals WHERE id=? AND owner=?", (e.meal_id, owner)).fetchone():
+        db.ensure_meals(c, owner)
+        meal_id = e.meal_id or c.execute("SELECT id FROM meals WHERE owner=? ORDER BY position",
+                                         (owner,)).fetchone()["id"]
+        if not c.execute("SELECT 1 FROM meals WHERE id=? AND owner=?", (meal_id, owner)).fetchone():
             raise HTTPException(404, "meal not found")
         k = e.grams / 100
         c.execute(
-            "INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat)"
-            " VALUES(?,?,?,?,?,?,?,?,?)",
-            (owner, e.day, e.meal_id, f["name"], e.grams, f["kcal"] * k, f["protein"] * k,
-             f["carbs"] * k, f["fat"] * k))
+            "INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,time)"
+            " VALUES(?,?,?,?,?,?,?,?,?,?)",
+            (owner, e.day, meal_id, f["name"], e.grams, f["kcal"] * k, f["protein"] * k,
+             f["carbs"] * k, f["fat"] * k, check_time(e.time)))
     publish(owner, x_remote_user_display_name or owner)
     return {"ok": True}
 
 
 @app.put("/api/entries/{entry_id}")
-def edit_entry(entry_id: int, g: GramsIn, x_remote_user_id: str | None = Header(None),
+def edit_entry(entry_id: int, g: EntryEdit, x_remote_user_id: str | None = Header(None),
                x_remote_user_display_name: str | None = Header(None)):
-    if g.grams <= 0:
+    if g.grams is not None and g.grams <= 0:
         raise HTTPException(400, "grams must be > 0")
     owner = user_from(x_remote_user_id)
     with db.conn() as c:
         r = c.execute("SELECT * FROM entries WHERE id=? AND owner=?", (entry_id, owner)).fetchone()
         if not r:
             raise HTTPException(404, "entry not found")
-        k = g.grams / r["grams"] if r["grams"] else 1
-        c.execute("UPDATE entries SET grams=?, kcal=?, protein=?, carbs=?, fat=? WHERE id=?",
-                  (g.grams, r["kcal"] * k, r["protein"] * k, r["carbs"] * k, r["fat"] * k, entry_id))
+        grams = g.grams if g.grams is not None else r["grams"]
+        k = grams / r["grams"] if r["grams"] else 1
+        c.execute("UPDATE entries SET grams=?, kcal=?, protein=?, carbs=?, fat=?, time=? WHERE id=?",
+                  (grams, r["kcal"] * k, r["protein"] * k, r["carbs"] * k, r["fat"] * k,
+                   check_time(g.time) if g.time is not None else r["time"], entry_id))
     publish(owner, x_remote_user_display_name or owner)
     return {"ok": True}
 
@@ -207,9 +225,10 @@ def add_food(f: FoodIn, x_remote_user_id: str | None = Header(None)):
     owner = user_from(x_remote_user_id)
     with db.conn() as c:
         cur = c.execute(
-            "INSERT INTO foods(owner,name,brand,kcal,protein,carbs,fat,serving_g)"
-            " VALUES(?,?,?,?,?,?,?,?)",
-            (owner, f.name.strip(), f.brand.strip(), f.kcal, f.protein, f.carbs, f.fat, f.serving_g))
+            "INSERT INTO foods(owner,name,brand,kcal,protein,carbs,fat,serving_g,category)"
+            " VALUES(?,?,?,?,?,?,?,?,?)",
+            (owner, f.name.strip(), f.brand.strip(), f.kcal, f.protein, f.carbs, f.fat, f.serving_g,
+             f.category.strip()))
         return {"id": cur.lastrowid}
 
 
@@ -218,10 +237,10 @@ def edit_food(food_id: int, f: FoodIn, x_remote_user_id: str | None = Header(Non
     owner = user_from(x_remote_user_id)
     with db.conn() as c:
         c.execute(
-            "UPDATE foods SET name=?,brand=?,kcal=?,protein=?,carbs=?,fat=?,serving_g=?"
+            "UPDATE foods SET name=?,brand=?,kcal=?,protein=?,carbs=?,fat=?,serving_g=?,category=?"
             " WHERE id=? AND owner=?",
             (f.name.strip(), f.brand.strip(), f.kcal, f.protein, f.carbs, f.fat, f.serving_g,
-             food_id, owner))
+             f.category.strip(), food_id, owner))
     return {"ok": True}
 
 
@@ -357,7 +376,10 @@ def stats(days: int = 30, x_remote_user_id: str | None = Header(None)):
         d = (start + timedelta(days=i)).isoformat()
         r = rows.get(d)
         out.append({"day": d, "logged": bool(r), **{k: (r[k] if r else 0) for k in ("kcal", "protein", "carbs", "fat")}})
-    return {"days": out, "goal": goal}
+    return {"days": out, "goal": goal, "balance": energy_balance(owner, out)}
+
+
+from extras import *  # noqa: E402,F401,F403  (routes for v0.3 features)
 
 
 @app.get("/")

@@ -220,3 +220,13 @@ dialog h2 { margin-bottom: 12px; font-size: 18px; }
   table.summary th, table.summary td { padding: 6px 8px; }
   .appbar h1 { display: none; }
 }
+
+/* v0.3 */
+.time { font-variant-numeric: tabular-nums; color: var(--secondary-text-color); margin-right: 10px; }
+.tag { display: inline-block; margin-left: 8px; padding: 0 8px; border-radius: var(--ha-border-radius-pill, 10px); font-size: 12px; background: var(--secondary-background-color); color: var(--secondary-text-color); }
+.chips { flex-wrap: wrap; align-items: center; }
+.chips > .muted { margin-right: 4px; }
+.pick { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.pick input { width: auto; }
+.maprow { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; margin-top: 6px; }
+.list input[type="checkbox"] { width: auto; flex: none; }
