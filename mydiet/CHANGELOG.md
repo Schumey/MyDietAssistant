@@ -2,6 +2,16 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.23.0
+
+### Neu
+- **Makro-Verlauf** in der Statistik: Eiweiß, Kohlenhydrate oder Fett als Balken pro Tag, dazu das Tagesziel als gestrichelte Linie (folgt Wochentagszielen und Zielprofilen) und der gleitende 7-Tage-Durchschnitt.
+- **Mobile Bedienung:** größere Touch-Flächen (Knöpfe, Eingabefelder, Listen), 16-px-Schrift in Feldern, damit das Handy nicht hineinzoomt, und im Tagebuch **Wischen nach links/rechts** wechselt den Tag.
+
+### Geändert
+- **Windows-Look bei dunklen Themes:** Eingabefelder, Tabellenzeilen und Schrift waren auf dunklen HA-Themes kaum lesbar (weiße Felder mit heller Schrift). Der Look erkennt jetzt helle und dunkle Themes und passt Felder, Schriftfarbe, Rot/Grün und die Kanten der Bedienelemente an.
+- Die Statistik liefert die Tagesziele aller Makros je Tag.
+
 ## 0.22.0
 
 ### Neu

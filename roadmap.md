@@ -32,10 +32,6 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 ## Oberfläche
 
-- **Weitere Looks** (M): Zusätzliche Skins neben dem Windows-Look (z. B. Mac-OS-9-Stil), Theme-Erkennung dafür erweiterbar machen.
-- **Dunkles/helles Theme sauber** (S): Kontrast der Windows-Skins bei hellen und dunklen Themes prüfen und angleichen.
-- **Mobile Bedienung** (M): Größere Touch-Flächen, Wischen zwischen Tagen, Eintrag per Langdruck bearbeiten.
-- **Diagramme verbessern** (M): Makro-Verlauf, Ziellinien für Makros, auf Wunsch zusätzliche Zeiträume. (Mouse-over mit genauen Werten gibt es bereits.)
 
 ## Technik und Qualität
 

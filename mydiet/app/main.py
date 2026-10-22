@@ -542,17 +542,17 @@ def stats(days: int = 30, x_remote_user_id: str | None = Header(None)):
             " SUM(sugar) sugar, SUM(salt) salt, SUM(sat_fat) sat_fat"
             " FROM entries WHERE owner=? AND day>=? GROUP BY day", (owner, start.isoformat()))}
         goal = get_goal(c, owner)
-        per_day = feature_on(owner, "weekday_goals")
-        day_goals = {}
-        if per_day:
-            for i in range(days):
-                d = (start + timedelta(days=i)).isoformat()
-                day_goals[d] = get_goal(c, owner, d)["kcal"]
+        day_goals = {}   # weekday goals and day profiles can differ per day
+        for i in range(days):
+            d = (start + timedelta(days=i)).isoformat()
+            day_goals[d] = get_goal(c, owner, d)
     out = []
     for i in range(days):
         d = (start + timedelta(days=i)).isoformat()
         r = rows.get(d)
-        out.append({"day": d, "logged": bool(r), "goal_kcal": day_goals.get(d, goal["kcal"]), **{k: (r[k] if r else 0) for k in ("kcal", "protein", "carbs", "fat", *db.MICROS)}})
+        g = day_goals.get(d, goal)
+        out.append({"day": d, "logged": bool(r), "goal_kcal": g["kcal"], "goal_protein": g["protein"], "goal_carbs": g["carbs"],
+                    "goal_fat": g["fat"], **{k: (r[k] if r else 0) for k in ("kcal", "protein", "carbs", "fat", *db.MICROS)}})
     return {"days": out, "goal": goal, "balance": energy_balance(owner, out),
             "mode": get_pref(owner, "goal_mode", "lose"), "rate": get_pref(owner, "goal_rate", 0.5)}
 

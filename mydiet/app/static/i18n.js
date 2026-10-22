@@ -195,6 +195,11 @@ const EN = {
   "Sprache und Einheiten": "Language and units", "Sprache": "Language", "Einheiten": "Units", "Automatisch (Browser)": "Automatic (browser)",
   "Metrisch (kg, cm)": "Metric (kg, cm)", "Imperial (lb, in)": "Imperial (lb, in)",
 
+  // macro chart
+  "Makro-Verlauf": "Macro history", "Balken: Gramm pro Tag. Gestrichelt: Tagesziel. Durchgezogene Linie: Ø der letzten 7 Tage.": "Bars: grams per day. Dashed: daily goal. Solid line: average of the last 7 days.",
+  "Balken: Gramm pro Tag. Durchgezogene Linie: Ø der letzten 7 Tage. Ein Ziel für dieses Makro lässt sich unter Einstellungen → Tagesziele setzen.": "Bars: grams per day. Solid line: average of the last 7 days. You can set a goal for this macro under Settings → Daily goals.",
+  "{} g (Ziel {} g)": "{} g (goal {} g)", "Ø 7 Tage {} g": "Ø 7 days {} g", "nicht erfasst": "not logged",
+
   // data sources
   "Online suchen & vergleichen": "Search online & compare", "Name oder Barcode": "Name or barcode", "Quelle": "Source", "KH": "Carbs", "Fett": "Fat", "Abweichung": "Deviation",
   "Abweichung der kcal von dem Wert im Formular": "Deviation of the kcal from the value in the form", "Übernehmen": "Apply",

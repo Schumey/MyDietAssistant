@@ -100,7 +100,20 @@ function applySkin() {
   const name = document.documentElement.dataset.themeName || "";
   const win = state.skin === "win" || (state.skin !== "default" && SKIN_RE.test(name));
   document.documentElement.dataset.skin = win ? "win" : "default";
+  applyTone();
 }
+// Light or dark HA theme, from the resolved card colour: the Windows look needs it for fields, ink and bevels.
+function applyTone() {
+  const probe = h("div", { style: "position:absolute;visibility:hidden;background:var(--card-background-color,#fff)" });
+  document.body.append(probe);
+  const m = /\d+(\.\d+)?/g, rgb = (getComputedStyle(probe).backgroundColor.match(m) || [255, 255, 255]).map(Number);
+  probe.remove();
+  const dark = (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) < 128;
+  const tone = dark ? "dark" : "light";
+  if (document.documentElement.dataset.tone !== tone) document.documentElement.dataset.tone = tone;
+}
+setInterval(applyTone, 2000);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTone);
 new MutationObserver(applySkin).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme-name"] });
 dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
 
@@ -824,6 +837,54 @@ async function openAdd(meal) {
 }
 
 // ---------------------------------------------------------------- charts
+// Daily grams of one macro as bars, the goal as a dashed line and the 7-day average of logged days as a solid line.
+function macroChart(days, key, cls) {
+  const W = 600, H = 200, L = 40, B = 24, T = 10, R = 8;
+  const goals = days.map(d => d["goal_" + key] || 0);
+  const avg = days.map((d, i) => {
+    const w = days.slice(Math.max(0, i - 6), i + 1).filter(x => x.logged);
+    return w.length ? w.reduce((a, x) => a + x[key], 0) / w.length : null;
+  });
+  const top = Math.max(...goals, ...days.map(d => d[key]), 10);
+  const step = [5, 10, 20, 25, 50, 100, 200, 500].find(st => top / st <= 6) || 1000;
+  const max = Math.ceil(top / step) * step * 1.04;
+  const y = v => T + (H - T - B) * (1 - v / max);
+  const bw = (W - L - R) / days.length;
+  let s = "";
+  for (let v = 0; v <= max / 1.04 + 1e-6; v += step) {
+    s += `<line class="grid-line" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${n0(v)}</text>`;
+  }
+  const ticks = new Map(niceTicks(days[0].day, days[days.length - 1].day).map(t => [t.day, t.label]));
+  days.forEach((d, i) => {
+    const x = L + i * bw;
+    if (d.logged) s += `<rect class="bar-m ${cls}" x="${x + bw * 0.15}" y="${y(d[key])}" width="${bw * 0.7}" height="${H - B - y(d[key])}" rx="2"/>`;
+    if (ticks.has(d.day)) s += `<line class="grid-line" x1="${x + bw / 2}" x2="${x + bw / 2}" y1="${H - B}" y2="${H - B + 4}"/><text x="${x + bw / 2}" y="${H - 6}" text-anchor="middle">${ticks.get(d.day)}</text>`;
+  });
+  if (goals.some(g => g > 0)) s += `<polyline class="goal-line" points="${goals.map((g, i) => `${L + i * bw},${y(g)} ${L + (i + 1) * bw},${y(g)}`).join(" ")}"/>`;
+  const pts = avg.map((v, i) => (v == null ? null : `${L + (i + 0.5) * bw},${y(v)}`)).filter(Boolean);
+  if (pts.length > 1) s += `<polyline class="avg-line" points="${pts.join(" ")}"/>`;
+  days.forEach((d, i) => {
+    const text = d.logged ? `${longDate(d.day)}\n${n0(d[key])} g${goals[i] ? ` (Ziel ${n0(goals[i])} g)` : ""}` + (avg[i] != null ? `\nØ 7 Tage ${n0(avg[i])} g` : "")
+      : `${longDate(d.day)}\nnicht erfasst`;
+    s += `<rect class="hit" x="${L + i * bw}" y="${T}" width="${bw}" height="${H - T - B}" data-tip="${esc(text)}"/>`;
+  });
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Makro-Verlauf">${s}</svg>`;
+}
+
+const MACRO_VIEWS = [["protein", "Eiweiß", "bar-protein"], ["carbs", "Kohlenhydrate", "bar-carbs"], ["fat", "Fett", "bar-fat"]];
+function macroCard(days) {
+  const [key, label, cls] = MACRO_VIEWS.find(m => m[0] === state.macroKey) || MACRO_VIEWS[0];
+  const chart = h("div");
+  chart.innerHTML = macroChart(days, key, cls);
+  tipHandlers(chart);
+  const hasGoal = days.some(d => d["goal_" + key] > 0);
+  return h("div", { class: "card" }, h("h2", {}, "Makro-Verlauf"),
+    rangeButtons(MACRO_VIEWS.map(m => [m[0], m[1]]), key, v => { state.macroKey = v; renderStats(); }),
+    chart,
+    h("div", { class: "muted" }, hasGoal ? "Balken: Gramm pro Tag. Gestrichelt: Tagesziel. Durchgezogene Linie: Ø der letzten 7 Tage."
+      : "Balken: Gramm pro Tag. Durchgezogene Linie: Ø der letzten 7 Tage. Ein Ziel für dieses Makro lässt sich unter Einstellungen → Tagesziele setzen."));
+}
+
 function barChart(days, goal) {
   const W = 600, H = 220, L = 40, B = 24, T = 10, R = 8;
   const goals = days.map(d => d.goal_kcal ?? goal);
@@ -1446,6 +1507,7 @@ async function renderStats() {
     h("div", { class: "card" }, h("h2", {}, "Kalorien pro Tag"), chart,
       goal.kcal ? h("div", { class: "muted" }, days.some(d => d.goal_kcal !== goal.kcal) ? "Gestrichelt: Tagesziel je Wochentag" : `Gestrichelt: Tagesziel ${n0(goal.kcal)} kcal`) : null),
     balanceCard(balance, goal),
+    macroCard(days),
     h("div", { class: "card" }, h("h2", {}, "Nährwertverteilung (Ø)"),
       h("div", { class: "macro-split" },
         h("i", { style: `width:${pct(kc.p)}%` }), h("i", { style: `width:${pct(kc.c)}%` }), h("i", { style: `width:${pct(kc.f)}%` })),
@@ -2121,6 +2183,21 @@ async function restoreDialog(data) {
       } }, "Ersetzen")));
   dlg.showModal();
 }
+
+// Touch: swipe left/right in the diary changes the day (tapping an entry edits it).
+(() => {
+  let x0 = 0, y0 = 0, t0 = 0, track = false;
+  const diary = $("#diary");
+  diary.addEventListener("touchstart", e => {
+    track = e.touches.length === 1 && !e.target.closest("input, select, textarea, button, .hit, svg");
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now();
+  }, { passive: true });
+  diary.addEventListener("touchend", e => {
+    if (!track || state.tab !== "diary" || dlg.open) return;
+    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+    if (Math.abs(dx) > 70 && Math.abs(dy) < 50 && Date.now() - t0 < 600) shiftDay(dx < 0 ? 1 : -1);
+  }, { passive: true });
+})();
 
 // Keyboard: ← → change day, T today, N add (first meal), / focus search
 document.addEventListener("keydown", e => {
