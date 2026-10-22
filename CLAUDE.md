@@ -18,6 +18,7 @@ Home-Assistant-Add-on: lokales Ernährungstagebuch (Kalorien, Makros, Gewicht) m
 - `tests/`: pytest-Suite (siehe „Lokal testen“), läuft in GitHub Actions (`.github/workflows/test.yml`); `tests/e2e/` sind Playwright-Browser-Tests (übersprungen, wenn Playwright fehlt). `lint.yml` prüft das Add-on mit dem HA-Linter, `build.yml` baut Images bei Versions-Tags (siehe README, „Fertige Images“; `image:` in `config.yaml` erst setzen, wenn die Images existieren).
 - `mydiet/app/static/vendor/zxing.min.js`: ZXing (Apache-2.0) als Barcode-Rückfall, wird nur bei Bedarf nachgeladen.
 - `mydiet/app/static/`: `app.js` (Vanilla-JS-SPA, Helfer `h()`, `api()`, `send()`, Dialoge über `setDlg`/`dlg.showModal()`), `style.css`, `index.html`.
+- `README.en.md` und `mydiet/CHANGELOG.en.md`: englische Fassungen; bei jedem Release mitpflegen. Screenshots unter `docs/screenshots/{de,en}` erzeugt `python docs/make_screenshots.py` (Playwright, Beispieldaten, nach größeren UI-Änderungen neu erzeugen).
 - `roadmap.md`: Ideenliste. Erledigtes wird dort **gelöscht** und steht im Changelog.
 
 ## Konventionen

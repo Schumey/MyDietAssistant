@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.1.1
+
+### Neu
+- **README und Changelog auf Englisch** (`README.en.md`, `CHANGELOG.en.md`), aus den deutschen Dateien verlinkt.
+- **Screenshots** im README (Standard-Theme von Home Assistant, deutsch und englisch), erzeugt aus Beispieldaten mit `docs/make_screenshots.py`.
+
 ## 1.1.0
 
 ### Neu

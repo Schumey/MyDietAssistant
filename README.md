@@ -1,5 +1,7 @@
 # MyDietAssistant
 
+[English](README.en.md) · **Deutsch**
+
 [![Tests](https://github.com/Schumey/MyDietAssistant/actions/workflows/test.yml/badge.svg)](https://github.com/Schumey/MyDietAssistant/actions/workflows/test.yml)
 [![Add-on lint](https://github.com/Schumey/MyDietAssistant/actions/workflows/lint.yml/badge.svg)](https://github.com/Schumey/MyDietAssistant/actions/workflows/lint.yml)
 
@@ -8,6 +10,8 @@
 Lokales Ernährungstagebuch im Stil von MyFitnessPal als **Home-Assistant-Add-on**. Kalorien, Makros, Gewicht, Trigger aus Home Assistant und Auswertungen, alles bleibt bei Dir: die Daten liegen in einer SQLite-Datei im Add-on-Speicher und sind im HA-Backup enthalten. Internet brauchen nur die optionalen Online-Datenbanken (Open Food Facts, USDA).
 
 Die Oberfläche läuft per Ingress im HA-Seitenmenü, übernimmt das aktive HA-Theme (bei Themes namens „HA 95/98“ automatisch im Windows-Look, einstellbar), gibt es auf Deutsch, Englisch, Französisch und Spanisch (metrisch und imperial) und trennt Benutzer anhand ihres HA-Kontos.
+
+<p align="center"><img src="docs/screenshots/de/diary.png" alt="Tagebuch mit Mahlzeiten, Einträgen und Tagesziel" width="640"></p>
 
 ## Funktionen
 
@@ -21,7 +25,19 @@ Die Oberfläche läuft per Ingress im HA-Seitenmenü, übernimmt das aktive HA-T
 - **Optionale Zusatzfunktionen** (standardmäßig aus): Wochentagsziele, Wasser und Ergänzungen, Rezepte, weitere Nährwerte, Notizen, Körpermaße und Fortschrittsfotos, Online-Datenbanken mit Abgleich, Aktivität, Mahlzeiten-Zeitplan, Haushalt (mehrere Benutzer teilen Einträge, Lebensmittel und Mahlzeiten)
 - **Benutzerverwaltung** für Administratoren, automatische Sicherungen, Erinnerung per Benachrichtigung
 
-Details zu Optionen, Sensoren und Bedienung: [mydiet/DOCS.md](mydiet/DOCS.md). Änderungen: [mydiet/CHANGELOG.md](mydiet/CHANGELOG.md). Ideen: [roadmap.md](roadmap.md).
+<p align="center">
+  <img src="docs/screenshots/de/foods.png" alt="Lebensmittelbibliothek" width="49%">
+  <img src="docs/screenshots/de/weight.png" alt="Gewichtsverlauf" width="49%">
+</p>
+<p align="center">
+  <img src="docs/screenshots/de/recipe-import.png" alt="Rezept-Import von einer Webseite" width="49%">
+  <img src="docs/screenshots/de/stats.png" alt="Statistik und Kalorienbilanz" width="49%">
+</p>
+<p align="center"><img src="docs/screenshots/de/diary-mobile.png" alt="Tagebuch auf dem Handy" width="260"></p>
+
+Die Bilder zeigen das Standard-Theme von Home Assistant mit Beispieldaten (erzeugt mit `docs/make_screenshots.py`).
+
+Details zu Optionen, Sensoren und Bedienung: [mydiet/DOCS.md](mydiet/DOCS.md). Änderungen: [mydiet/CHANGELOG.md](mydiet/CHANGELOG.md) ([English](mydiet/CHANGELOG.en.md)). Ideen: [roadmap.md](roadmap.md).
 
 ## Installation
 
