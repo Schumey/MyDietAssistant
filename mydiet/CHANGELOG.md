@@ -2,6 +2,15 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.5.0
+
+### Neu
+- **NICHT-Bedingung** für Trigger und Einblend-Regeln, z. B. „calendar.schichtplan enthält nicht Frühschicht“ oder „Zustand ≠ Fitnessstudio“.
+
+### Geändert
+- „Als Mahlzeit speichern“ und „Kopieren“ sind ein gemeinsamer Button **Speichern / Kopieren** mit zwei Reitern im Dialog.
+- „Mahlzeit leeren“ ist jetzt ein ✕ am rechten Rand der Mahlzeiten-Kopfzeile, analog zum Löschen einzelner Einträge.
+
 ## 0.4.0
 
 ### Neu

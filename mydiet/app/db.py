@@ -132,6 +132,9 @@ def init():
     with conn() as c:
         c.executescript(SCHEMA)
         cols = {r["name"] for r in c.execute("PRAGMA table_info(foods)")}
+        for t in ("triggers", "meal_triggers"):  # v0.5: "does NOT match" conditions
+            if "negate" not in {r["name"] for r in c.execute(f"PRAGMA table_info({t})")}:
+                c.execute(f"ALTER TABLE {t} ADD COLUMN negate INTEGER NOT NULL DEFAULT 0")
         if "time" not in {r["name"] for r in c.execute("PRAGMA table_info(entries)")}:
             c.execute("ALTER TABLE entries ADD COLUMN time TEXT")  # HH:MM, time-based diary
         if "category" not in cols:  # database from v0.2
