@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.20.0
+
+### Neu
+- **Barcode-Scan per Kamera** im Formular „Neues Lebensmittel“: „Scannen (Kamera)“ liest EAN/UPC live, „Foto vom Barcode“ liest ihn aus einem Foto (funktioniert auch ohne HTTPS). Danach wird das Produkt automatisch bei Open Food Facts gesucht. Voraussetzung ist die Barcode-Erkennung des Browsers (Chrome, Android, HA-App auf Android); wo sie fehlt, kommt ein Hinweis und die Nummer lässt sich weiter eintippen.
+
 ## 0.19.0
 
 ### Neu

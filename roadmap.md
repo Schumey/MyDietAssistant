@@ -15,7 +15,7 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 ## Lebensmittel und Eingabe
 
-- **Barcode-Scan per Kamera** (M): Im Browser/der HA-App scannen statt Nummer tippen (Open Food Facts ist angebunden).
+- **Barcode-Scan ohne Browser-Unterstützung** (S): Für iPhone/Firefox eine mitgelieferte Scan-Bibliothek (ZXing) als Rückfall, da dort `BarcodeDetector` fehlt.
 - **Einheiten und Sprache** (M): Anzeige in oz/lb sowie englische Oberfläche.
 - **Mehrere Datenquellen** (L): Weitere Nährwertdatenbanken neben Open Food Facts (z. B. BLS), optional abschaltbar, da sie online abfragen.
 

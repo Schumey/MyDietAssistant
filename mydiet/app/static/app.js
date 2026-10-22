@@ -504,6 +504,46 @@ function saveMealDialog(meal, items, times) {
   dlg.showModal();
 }
 
+
+// ---------------------------------------------------------------- barcode scanner
+// Uses the browser's BarcodeDetector (Chrome / Android WebView). Two ways in: live camera (needs HTTPS) or a photo.
+const scanSupported = () => "BarcodeDetector" in window;
+
+// Resolves with the barcode text, rejects with a readable Error. `box` receives the video preview and a cancel button.
+function scanBarcode(box) {
+  return new Promise((resolve, reject) => {
+    if (!scanSupported()) return reject(new Error("Dieser Browser kann keine Barcodes lesen (BarcodeDetector fehlt). Bitte die Nummer eintippen."));
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return reject(new Error("Kein Kamerazugriff (die Seite braucht HTTPS). Nutze „Foto“ oder tippe die Nummer ein."));
+    const det = new BarcodeDetector({ formats: ["ean_13", "ean_8", "upc_a", "upc_e"] });
+    const video = h("video", { class: "scan-video", autoplay: true, playsinline: true, muted: true });
+    let stream = null, timer = null, done = false;
+    const stop = () => { done = true; clearInterval(timer); if (stream) stream.getTracks().forEach(t => t.stop()); box.replaceChildren(); dlg.removeEventListener("close", stop); };
+    const cancel = h("button", { class: "flat", onclick: () => { stop(); reject(new Error("Abgebrochen")); } }, "Scan abbrechen");
+    dlg.addEventListener("close", stop);
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(s => {
+      if (done) { s.getTracks().forEach(t => t.stop()); return; }
+      stream = s; video.srcObject = s;
+      box.replaceChildren(video, h("div", { class: "muted" }, "Halte den Barcode ins Bild."), cancel);
+      timer = setInterval(async () => {
+        if (done || video.readyState < 2) return;
+        try {
+          const r = await det.detect(video);
+          if (r.length) { const v = r[0].rawValue; stop(); resolve(v); }
+        } catch { /* keep trying */ }
+      }, 300);
+    }).catch(e => { stop(); reject(new Error(e.name === "NotAllowedError" ? "Kamerazugriff wurde nicht erlaubt." : "Kamera nicht verfügbar: " + (e.message || e.name))); });
+  });
+}
+
+// Barcode from a photo (works without HTTPS, e.g. through the phone's camera app).
+async function scanPhoto(file) {
+  if (!scanSupported()) throw new Error("Dieser Browser kann keine Barcodes lesen (BarcodeDetector fehlt). Bitte die Nummer eintippen.");
+  const det = new BarcodeDetector({ formats: ["ean_13", "ean_8", "upc_a", "upc_e"] });
+  const r = await det.detect(await createImageBitmap(file));
+  if (!r.length) throw new Error("Auf dem Foto wurde kein Barcode erkannt.");
+  return r[0].rawValue;
+}
+
 // ---------------------------------------------------------------- food form (shared)
 // Create (food == null) or edit a food; onSave receives the food id.
 function foodForm({ food = null, onSave, onCancel }) {
@@ -521,6 +561,22 @@ function foodForm({ food = null, onSave, onCancel }) {
     h("input", { type: "number", step: "any", min: "0", value: p.grams || "", placeholder: "g", style: "max-width:90px", oninput: e => { p.grams = num(e.target.value) || 0; } }), "g",
     h("button", { class: "icon", title: "Entfernen", "aria-label": "Entfernen", onclick: () => { portions.splice(i, 1); drawPortions(); } }, "✕"))));
   drawPortions();
+  const scanBox = h("div", { class: "scan-box" });
+  const photoIn = h("input", { type: "file", accept: "image/*", capture: "environment", hidden: true, onchange: async () => {
+    msg.textContent = "";
+    try { f.barcode.value = await scanPhoto(photoIn.files[0]); await lookup(); } catch (e) { msg.textContent = e.message; }
+    photoIn.value = "";
+  } });
+  async function lookup() {
+    msg.textContent = "";
+    try {
+      const p = await api("off/barcode/" + encodeURIComponent(f.barcode.value.trim()));
+      f.name.value = p.name; f.brand.value = p.brand;
+      for (const k of ["kcal", "protein", "carbs", "fat"]) f[k].value = Math.round(p[k] * 10) / 10;
+      for (const [k] of MICROS) if (f[k]) f[k].value = Math.round((p[k] || 0) * 100) / 100;
+      check();
+    } catch (e) { msg.textContent = "Produkt nicht gefunden (" + e.message + ")"; }
+  }
   const check = () => {
     const v = { kcal: num(f.kcal.value), carbs: num(f.carbs.value) || 0, fat: num(f.fat.value) || 0, protein: num(f.protein.value) || 0 };
     warn.textContent = v.kcal == null ? "" : plausibility(v) || "";
@@ -528,16 +584,14 @@ function foodForm({ food = null, onSave, onCancel }) {
   const form = h("div", {},
     h("div", { class: "grid" },
       h("div", {}, h("label", {}, "Barcode (Open Food Facts)"), f.barcode),
+      h("button", { class: "flat", onclick: lookup }, "Suchen")),
+    h("div", { class: "actions", style: "justify-content:flex-start;margin-top:4px" },
       h("button", { class: "flat", onclick: async () => {
         msg.textContent = "";
-        try {
-          const p = await api("off/barcode/" + encodeURIComponent(f.barcode.value.trim()));
-          f.name.value = p.name; f.brand.value = p.brand;
-          for (const k of ["kcal", "protein", "carbs", "fat"]) f[k].value = Math.round(p[k] * 10) / 10;
-          for (const [k] of MICROS) if (f[k]) f[k].value = Math.round((p[k] || 0) * 100) / 100;
-          check();
-        } catch (e) { msg.textContent = "Produkt nicht gefunden (" + e.message + ")"; }
-      } }, "Suchen")),
+        try { f.barcode.value = await scanBarcode(scanBox); await lookup(); } catch (e) { if (e.message !== "Abgebrochen") msg.textContent = e.message; }
+      } }, "Scannen (Kamera)"),
+      h("button", { class: "flat", onclick: () => photoIn.click() }, "Foto vom Barcode"), photoIn),
+    scanBox,
     h("div", { style: "margin-top:12px" }, field("name", "Name")),
     h("div", { class: "grid", style: "margin-top:12px" },
       field("brand", "Marke"),
