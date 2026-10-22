@@ -34,7 +34,7 @@ def set_pref(owner: str, key: str, value):
 
 # --- settings -------------------------------------------------------------
 
-FEATURES = ("weekday_goals", "trackers", "micros")   # optional features, off by default
+FEATURES = ("weekday_goals", "trackers", "micros", "notes")   # optional features, off by default
 
 
 def features(owner: str) -> dict:

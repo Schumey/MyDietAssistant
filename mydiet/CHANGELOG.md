@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.16.2
+
+### Geändert
+- Notizen sind jetzt eine Zusatzfunktion (Einstellungen → Zusatzfunktionen → „Notizen“, standardmäßig aus). Vorhandene Notizen bleiben gespeichert, auch wenn die Funktion aus ist, und erscheinen wieder, sobald Du sie einschaltest. Wenn Du bisher Notizen genutzt hast, schalte die Option einmal ein.
+
 ## 0.16.1
 
 ### Behoben
