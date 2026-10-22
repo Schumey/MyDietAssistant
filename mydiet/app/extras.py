@@ -34,7 +34,7 @@ def set_pref(owner: str, key: str, value):
 
 # --- settings -------------------------------------------------------------
 
-FEATURES = ("weekday_goals", "trackers", "micros", "notes", "body")   # optional features, off by default
+FEATURES = ("weekday_goals", "trackers", "micros", "notes", "body", "recipes")   # optional features, off by default
 
 
 def features(owner: str) -> dict:
@@ -500,6 +500,8 @@ def dump(owner: str) -> dict:
             "features": features(owner),
             "goal_weekdays": q("SELECT wd,kcal,protein,carbs,fat FROM goal_weekdays WHERE owner=?", owner),
             "notes": q("SELECT day,meal_id,text FROM day_notes WHERE owner=?", owner),
+            "recipes": [{**r, "items": q("SELECT name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat FROM recipe_items WHERE recipe_id=?", r["id"])}
+                        for r in q("SELECT id,name,portions,cooked_g,category,food_id FROM recipes WHERE owner=?", owner)],
             "body_measures": q("SELECT day,name,value FROM body_measures WHERE owner=? ORDER BY day,name", owner),
             "goal_profiles": q("SELECT id,name,kcal,protein,carbs,fat FROM goal_profiles WHERE owner=?", owner),
             "day_profile": q("SELECT day,profile_id FROM day_profile WHERE owner=?", owner),
@@ -558,6 +560,8 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
         c.execute("DELETE FROM goal_weekdays WHERE owner=?", (owner,))
         c.execute("DELETE FROM day_notes WHERE owner=?", (owner,))
         c.execute("DELETE FROM body_measures WHERE owner=?", (owner,))
+        c.execute("DELETE FROM recipe_items WHERE recipe_id IN (SELECT id FROM recipes WHERE owner=?)", (owner,))
+        c.execute("DELETE FROM recipes WHERE owner=?", (owner,))
         for b in d.get("body_measures", []):
             c.execute("INSERT OR REPLACE INTO body_measures(owner,day,name,value) VALUES(?,?,?,?)", (owner, b["day"], b["name"], b["value"]))
         c.execute("DELETE FROM goal_profiles WHERE owner=?", (owner,))
@@ -573,14 +577,21 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
                              t.get("position", 0))).lastrowid
             for l in t.get("log", []):
                 c.execute("INSERT INTO tracker_log(tracker_id,day,amount) VALUES(?,?,?)", (tid, l["day"], l["amount"]))
+        fmap = {}
         for f in d.get("foods", []):
-            fid = c.execute("INSERT INTO foods(owner,name,brand,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,serving_g,category,favorite)"
+            fid = fmap[f.get("id")] = c.execute("INSERT INTO foods(owner,name,brand,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,serving_g,category,favorite)"
                             " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                             (owner, f["name"], f.get("brand", ""), f["kcal"], f.get("protein", 0),
                              f.get("carbs", 0), f.get("fat", 0), *(f.get(m, 0) for m in db.MICROS),
                              f.get("serving_g", 100), f.get("category", ""), f.get("favorite", 0))).lastrowid
             for p in f.get("portions", []):
                 c.execute("INSERT INTO food_portions(food_id,name,grams) VALUES(?,?,?)", (fid, p["name"], p["grams"]))
+        for r in d.get("recipes", []):
+            rid = c.execute("INSERT INTO recipes(owner,name,portions,cooked_g,category,food_id) VALUES(?,?,?,?,?,?)",
+                            (owner, r["name"], r["portions"], r.get("cooked_g"), r.get("category", ""), fmap.get(r.get("food_id")))).lastrowid
+            for i in r.get("items", []):
+                c.execute("INSERT INTO recipe_items(recipe_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                          (rid, i["name"], i["grams"], i["kcal"], i.get("protein", 0), i.get("carbs", 0), i.get("fat", 0), *(i.get(m, 0) for m in db.MICROS)))
         mmap = {}
         for m in d.get("meals", []):
             mmap[m["id"]] = c.execute("INSERT INTO meals(owner,name,position,archived) VALUES(?,?,?,?)",

@@ -15,7 +15,6 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 ## Lebensmittel und Eingabe
 
-- **Rezepte mit Portionen** (M): Zutaten zu einem Rezept bündeln, Gesamtmakros durch Portionen teilen, als Lebensmittel nutzen. Baut auf der Komponenten-Bearbeitung der gespeicherten Mahlzeiten auf.
 - **Barcode-Scan per Kamera** (M): Im Browser/der HA-App scannen statt Nummer tippen (Open Food Facts ist angebunden).
 - **Einheiten und Sprache** (M): Anzeige in oz/lb sowie englische Oberfläche.
 - **Mehrere Datenquellen** (L): Weitere Nährwertdatenbanken neben Open Food Facts (z. B. BLS), optional abschaltbar, da sie online abfragen.

@@ -559,6 +559,7 @@ def stats(days: int = 30, x_remote_user_id: str | None = Header(None)):
 from extras import *  # noqa: E402,F401,F403  (routes for v0.3 features)
 from extras2 import *  # noqa: E402,F401,F403  (notes, backups, external API, reminders)
 from extras3 import *  # noqa: E402,F401,F403  (body measurements, photos)
+from extras4 import *  # noqa: E402,F401,F403  (recipes)
 
 
 @app.get("/")

@@ -2,6 +2,15 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.19.0
+
+### Neu
+- **Rezepte** als Zusatzfunktion (Einstellungen → Zusatzfunktionen → „Rezepte“, standardmäßig aus), eigener Reiter „Rezepte“:
+  - Zutaten aus Deinen Lebensmitteln mit Mengen, Anzahl der Portionen und optional dem Gewicht nach dem Kochen (dann stimmen die Werte pro 100 g).
+  - Anzeige pro Portion und gesamt, Zutaten tauschen oder in der Menge ändern, Kopie anlegen.
+  - Jedes Rezept legt automatisch ein Lebensmittel an (pro 100 g, mit der Portion „1 Portion“) und hält es aktuell. So lässt es sich im Tagebuch, in Mahlzeiten und per Trigger wie jedes andere Lebensmittel nutzen.
+- Rezepte sind im JSON-Export und in der Wiederherstellung enthalten.
+
 ## 0.18.0
 
 ### Neu

@@ -107,7 +107,7 @@ function show(tab) {
   state.tab = tab;
   for (const b of document.querySelectorAll("#tabs button")) b.classList.toggle("active", b.dataset.tab === tab);
   for (const s of document.querySelectorAll("main > section")) s.hidden = s.id !== tab;
-  ({ diary: renderDiary, foods: renderFoods, meals: renderMeals, weight: renderWeight, stats: renderStats, settings: renderSettings })[tab]();
+  ({ diary: renderDiary, foods: renderFoods, meals: renderMeals, weight: renderWeight, stats: renderStats, settings: renderSettings, recipes: renderRecipes })[tab]();
 }
 
 // ---------------------------------------------------------------- categories
@@ -985,6 +985,109 @@ async function renderMeals() {
   draw();
 }
 
+
+// ---------------------------------------------------------------- recipes page (optional)
+async function renderRecipes() {
+  const [recipes] = await Promise.all([api("recipes"), loadCats()]);
+  const root = $("#recipes");
+  root.replaceChildren();
+  const list = h("div", { class: "list" });
+  const chips = h("div");
+
+  const editRecipe = (r, draft = r ? { name: r.name, category: r.category, portions: r.portions, cooked_g: r.cooked_g, items: r.items.map(i => ({ ...i })) }
+    : { name: "", category: "", portions: 2, cooked_g: null, items: [] }) => {
+    const name = h("input", { value: draft.name, oninput: () => { draft.name = name.value; } });
+    const category = h("input", { list: "cat-list", value: draft.category, oninput: () => { draft.category = category.value; } });
+    const portions = h("input", { type: "number", step: "any", min: "0.1", value: draft.portions, oninput: () => { draft.portions = num(portions.value); drawTotal(); } });
+    const cooked = h("input", { type: "number", step: "any", min: "1", placeholder: "wie Summe der Zutaten", value: draft.cooked_g || "",
+      oninput: () => { draft.cooked_g = num(cooked.value); drawTotal(); } });
+    const msg = h("div", { class: "err" });
+    const total = h("div", { class: "preview" });
+    const sum = k => draft.items.reduce((a, i) => a + (i[k] || 0), 0);
+    function drawTotal() {
+      const p = draft.portions > 0 ? draft.portions : 1;
+      const g = draft.cooked_g > 0 ? draft.cooked_g : sum("grams");
+      total.replaceChildren(h("div", { class: "muted" }, `Gesamt: ${n0(g)} g`),
+        h("span", {}, h("b", {}, n0(sum("kcal") / p)), " kcal"), h("span", {}, h("b", {}, n0(sum("carbs") / p)), " g KH"),
+        h("span", {}, h("b", {}, n0(sum("fat") / p)), " g Fett"), h("span", {}, h("b", {}, n0(sum("protein") / p)), " g Eiweiß"),
+        h("div", { class: "muted" }, `pro Portion (${n0(g / p)} g)`));
+    }
+    drawTotal();
+    const swap = (idx, title) => setDlg(foodSwapDialog({
+      title, grams: idx == null ? null : draft.items[idx].grams, confirm: idx == null ? "Hinzufügen" : "Tauschen",
+      onCancel: () => editRecipe(r, draft),
+      onDone: (f, g) => { if (idx == null) draft.items.push(foodItem(f, g)); else draft.items[idx] = foodItem(f, g); editRecipe(r, draft); },
+    }));
+    const rows = draft.items.map((it, idx) => {
+      const kc = h("span", { class: "muted" }, `${n0(it.kcal)} kcal`);
+      const g = h("input", { type: "number", step: "any", min: "1", style: "width:80px;flex:none", value: Math.round(it.grams * 10) / 10, onchange: () => {
+        const ng = num(g.value);
+        if (!(ng > 0)) { g.value = Math.round(it.grams * 10) / 10; return; }
+        const k = ng / it.grams;
+        for (const key of ["kcal", "protein", "carbs", "fat", "fiber", "sugar", "salt", "sat_fat"]) it[key] = (it[key] || 0) * k;
+        it.grams = ng; kc.textContent = `${n0(it.kcal)} kcal`; drawTotal();
+      } });
+      return h("div", {}, h("div", { class: "grow" }, it.name, " ", kc), g, "g",
+        h("button", { class: "icon edit", title: "Durch anderes Lebensmittel tauschen", "aria-label": "Tauschen", onclick: () => swap(idx, `„${it.name}“ tauschen`) }, "⇄"),
+        h("button", { class: "icon", title: "Entfernen", "aria-label": "Entfernen", onclick: () => { draft.items.splice(idx, 1); editRecipe(r, draft); } }, "✕"));
+    });
+    setDlg(h("h2", {}, r ? "Rezept bearbeiten" : "Neues Rezept"),
+      h("label", {}, "Name"), name, h("label", {}, "Kategorie"), category, catList(),
+      h("div", { class: "grid" }, h("div", {}, h("label", {}, "Portionen"), portions), h("div", {}, h("label", {}, "Gewicht fertig (g, optional)"), cooked)),
+      h("label", { style: "margin-top:12px" }, "Zutaten"),
+      h("div", { class: "list" }, rows.length ? rows : [h("div", { class: "muted" }, "Noch keine Zutaten.")]),
+      h("button", { class: "flat", onclick: () => swap(null, "Zutat hinzufügen") }, "+ Zutat"),
+      total, msg,
+      h("div", { class: "actions" },
+        h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
+        h("button", { onclick: async () => {
+          const body = { name: draft.name, category: draft.category, portions: draft.portions || 0, cooked_g: draft.cooked_g || null,
+            items: draft.items.map(i => ({ name: i.name, grams: i.grams, kcal: i.kcal, protein: i.protein, carbs: i.carbs, fat: i.fat,
+              fiber: i.fiber || 0, sugar: i.sugar || 0, salt: i.salt || 0, sat_fat: i.sat_fat || 0 })) };
+          try { await send(r ? "PUT" : "POST", "recipes" + (r ? "/" + r.id : ""), body); dlg.close(); renderRecipes(); }
+          catch (e) { msg.textContent = e.message; }
+        } }, "Speichern")));
+    if (!dlg.open) dlg.showModal();
+  };
+
+  const draw = () => {
+    chips.replaceChildren(...[catChips(draw)].filter(Boolean));
+    const q = search.value.toLowerCase();
+    const shown = recipes.filter(isVisible).filter(r => r.name.toLowerCase().includes(q));
+    list.replaceChildren(...(shown.length ? shown.map(r => h("div", {},
+      h("div", { class: "grow" }, h("div", {}, r.name, tag(r.category)),
+        h("div", { class: "muted" }, `Pro Portion (${n0(r.portion_g)} g): ${n0(r.portion.kcal)} kcal · KH ${n1(r.portion.carbs)} g · Fett ${n1(r.portion.fat)} g · Eiweiß ${n1(r.portion.protein)} g · ${n1(r.portions)} Portionen`),
+        h("div", { class: "muted" }, r.items.map(i => `${i.name} ${n0(i.grams)} g`).join(" · "))),
+      h("button", { class: "icon", title: "Trigger anlegen", "aria-label": "Trigger anlegen", disabled: !r.food_id, onclick: () => triggerDialog({ item: "f:" + r.food_id }) }, "⚡"),
+      h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => editRecipe(r) }, "✎"),
+      h("button", { class: "icon", title: "Kopie anlegen", "aria-label": "Kopieren", onclick: async () => {
+        const { id } = await send("POST", `recipes/${r.id}/copy`);
+        await renderRecipes();
+        const copy = (await api("recipes")).find(x => x.id === id);
+        if (copy) editRecipe(copy);
+      } }, "⧉"),
+      h("button", { class: "icon", title: "Löschen", "aria-label": "Löschen", onclick: async () => {
+        if (!confirm(`Rezept „${r.name}“ löschen? Das zugehörige Lebensmittel wird ebenfalls gelöscht, bereits eingetragene Mahlzeiten bleiben erhalten.`)) return;
+        await api("recipes/" + r.id, { method: "DELETE" }); renderRecipes();
+      } }, "✕")))
+      : [h("div", { class: "muted", style: "padding:8px 0" }, recipes.length ? "Nichts gefunden." : "Noch kein Rezept angelegt.")]));
+  };
+
+  const search = h("input", { type: "search", placeholder: "Rezepte suchen…", oninput: draw });
+  root.append(h("div", { class: "card" },
+    h("div", { class: "grid", style: "grid-template-columns:1fr auto" }, search, h("button", { onclick: () => editRecipe(null) }, "+ Neues Rezept")),
+    h("div", { class: "muted", style: "margin-top:8px" }, "Jedes Rezept erscheint auch unter Lebensmittel (pro 100 g, mit „1 Portion“) und lässt sich überall eintragen. Änderungen am Rezept aktualisieren dieses Lebensmittel."),
+    chips, list));
+  draw();
+}
+
+// Show the Rezepte tab only when the feature is on.
+function applyTabs() {
+  const t = document.querySelector('#tabs [data-tab="recipes"]');
+  if (t) t.hidden = !state.features.recipes;
+  if (!state.features.recipes && state.tab === "recipes") show("settings");
+}
+
 // ---------------------------------------------------------------- weight
 async function renderWeight() {
   const [all, goal] = await Promise.all([api("weights"), api("goal")]);
@@ -1612,6 +1715,7 @@ async function renderSettings() {
     const box = h("input", { type: "checkbox", checked: !!state.features[key], onchange: async () => {
       state.features[key] = box.checked;
       await send("PUT", "settings", { features: { [key]: box.checked } });
+      applyTabs();
       renderSettings();
     } });
     return h("div", {}, h("label", { class: "pick" }, box, h("span", {}, label, h("div", { class: "muted" }, hint))));
@@ -1621,6 +1725,7 @@ async function renderSettings() {
     h("div", { class: "list" },
       feat("weekday_goals", "Tagesziele pro Wochentag", "z. B. Trainingstage mit mehr Kalorien, Ruhetage mit weniger."),
       feat("trackers", "Wasser und Nahrungsergänzung", "Schnell-Eintrag für Wasser, Koffein, Kreatin usw. mit eigenem Tagesziel."),
+      feat("recipes", "Rezepte", "Zutaten zu einem Rezept bündeln, durch Portionen teilen und wie ein Lebensmittel eintragen (eigener Reiter)."),
       feat("notes", "Notizen", "Freitext zu Mahlzeiten und Tagen (Hunger, Training, Stimmung). Vorhandene Notizen bleiben beim Ausschalten erhalten."),
       feat("body", "Körpermaße und Fortschrittsfotos", "Umfänge (Taille, Brust, Arm …) mit Verlauf und Fotos mit Vergleich im Reiter Gewicht."),
       feat("micros", "Weitere Nährwerte", "Ballaststoffe, Zucker, Salz und gesättigte Fettsäuren bei Lebensmitteln erfassen und auswerten (Open Food Facts liefert sie mit)."))));
@@ -1915,5 +2020,6 @@ api("me").then(m => { $("#who").textContent = m.name; });
     state.goalRate = st.goal_rate ?? 0.5;
   } catch { /* keep auto */ }
   applySkin();
+  applyTabs();
   show("diary");
 })();

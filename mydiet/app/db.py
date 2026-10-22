@@ -146,6 +146,29 @@ CREATE TABLE IF NOT EXISTS day_notes (        -- free text per day (meal_id 0) o
   text TEXT NOT NULL,
   PRIMARY KEY (owner, day, meal_id)
 );
+CREATE TABLE IF NOT EXISTS recipes (          -- optional: ingredients + portions, mirrored into a food
+  id INTEGER PRIMARY KEY,
+  owner TEXT NOT NULL,
+  name TEXT NOT NULL,
+  portions REAL NOT NULL DEFAULT 1,
+  cooked_g REAL,
+  category TEXT NOT NULL DEFAULT '',
+  food_id INTEGER
+);
+CREATE TABLE IF NOT EXISTS recipe_items (
+  id INTEGER PRIMARY KEY,
+  recipe_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  grams REAL NOT NULL,
+  kcal REAL NOT NULL,
+  protein REAL NOT NULL DEFAULT 0,
+  carbs REAL NOT NULL DEFAULT 0,
+  fat REAL NOT NULL DEFAULT 0,
+  fiber REAL NOT NULL DEFAULT 0,
+  sugar REAL NOT NULL DEFAULT 0,
+  salt REAL NOT NULL DEFAULT 0,
+  sat_fat REAL NOT NULL DEFAULT 0
+);
 CREATE TABLE IF NOT EXISTS body_measures (    -- optional: waist, chest, arm ... (cm, %)
   owner TEXT NOT NULL,
   day TEXT NOT NULL,
