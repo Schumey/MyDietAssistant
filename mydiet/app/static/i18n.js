@@ -195,6 +195,20 @@ const EN = {
   "Sprache und Einheiten": "Language and units", "Sprache": "Language", "Einheiten": "Units", "Automatisch (Browser)": "Automatic (browser)",
   "Metrisch (kg, cm)": "Metric (kg, cm)", "Imperial (lb, in)": "Imperial (lb, in)",
 
+  // household and admin
+  "Teilen …": "Share …", "„{}“ teilen": "Share “{}”",
+  "Portion als Vielfaches des Eintrags (1 = gleich viel). Der Eintrag erscheint am selben Tag im Tagebuch der anderen.": "Portion as a multiple of the entry (1 = same amount). The entry appears in the others' diary on the same day.",
+  "Menge für jede Person in Gramm. Der Eintrag erscheint am selben Tag im Tagebuch der anderen.": "Amount for each person in grams. The entry appears in the others' diary on the same day.",
+  "Noch niemand sonst nimmt am Haushalt teil. Jeder Benutzer schaltet dafür unter Einstellungen → Zusatzfunktionen „Haushalt“ ein.": "Nobody else takes part in the household yet. Every user switches on “Household” under Settings → Optional features.",
+  "Bitte mindestens eine Person wählen.": "Please choose at least one person.", "Eingetragen bei {} Person(en).": "Logged for {} person(s).",
+  "Haushalt": "Household", "Einträge mit anderen Benutzern teilen, jeder mit eigener Portion (z. B. ein Gericht für die Familie). Beide Seiten müssen die Funktion einschalten.": "Share entries with other users, each with their own portion (e.g. one dish for the family). Both sides must switch the feature on.",
+  "Benutzerverwaltung": "User administration", "Nur für Administratoren sichtbar (Add-on-Option „admin_users“; leer = der erste Benutzer).": "Only visible to administrators (add-on option “admin_users”; empty = the first user).",
+  "Benutzer": "User", "Zuletzt": "Last", "Export": "Export", "Admin": "Admin",
+  "Alle Daten von „{}“ unwiderruflich löschen? Zur Bestätigung den Namen eingeben:": "Permanently delete all data of “{}”? Enter the name to confirm:",
+  "Nur für Administratoren": "Administrators only", "Das eigene Konto kann hier nicht gelöscht werden": "Your own account cannot be deleted here",
+  "Zur Bestätigung den Namen des Benutzers eingeben": "Enter the user's name to confirm", "Haushaltsfunktion ist nicht aktiviert": "Household feature is not enabled",
+  "Dieser Benutzer nimmt nicht am Haushalt teil": "This user does not take part in the household",
+
   // more imports
   "Weitere Importe": "More imports", "Weitere Importe …": "More imports …",
   "Der Import betrifft nur Dein Benutzerkonto. Vorhandene Daten bleiben erhalten, außer Du wählst ausdrücklich „ersetzen“.": "The import only affects your user account. Existing data is kept unless you explicitly choose “replace”.",

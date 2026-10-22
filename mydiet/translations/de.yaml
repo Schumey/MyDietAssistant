@@ -11,6 +11,9 @@ configuration:
   backup_keep_days:
     name: Sicherungen aufbewahren (Tage)
     description: Ältere automatische Sicherungen werden gelöscht.
+  admin_users:
+    name: Administratoren
+    description: Benutzer-IDs oder Namen, die die Benutzerverwaltung öffnen dürfen. Leer = der erste Benutzer, der das Add-on geöffnet hat.
   usda_api_key:
     name: USDA-API-Schlüssel
     description: Optionaler Schlüssel von api.data.gov für die Datenquelle USDA (ohne Schlüssel gilt der gemeinsame DEMO_KEY mit niedrigem Limit).

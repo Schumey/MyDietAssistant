@@ -81,6 +81,10 @@ Unter Einstellungen → Erinnerung wählst Du eine Uhrzeit und einen Benachricht
 
 Im Tagebuch: ← / → Tag wechseln, T heute, N Nahrungsmittel hinzufügen; / springt ins Suchfeld der Listen.
 
+## Mehrere Benutzer
+
+Jeder Home-Assistant-Benutzer hat ein eigenes Tagebuch. Die Option `admin_users` (Liste von Benutzer-IDs oder Namen) bestimmt, wer die Benutzerverwaltung unter Einstellungen sieht; leer bedeutet: der erste Benutzer, der das Add-on geöffnet hat. Mit der Zusatzfunktion „Haushalt“ können Benutzer Einträge mit anderen teilen, die diese Funktion ebenfalls eingeschaltet haben.
+
 ## Sprache und Einheiten
 
 Einstellungen → Sprache und Einheiten: Deutsch, English oder automatisch nach Browser; metrisch (kg, cm) oder imperial (lb, in). Gewicht und Körpermaße werden intern immer in kg und cm gespeichert, nur Anzeige und Eingabe wechseln. Die Texte des Add-ons selbst (Optionen in Home Assistant) gibt es ebenfalls auf Deutsch und Englisch. Mengen von Lebensmitteln bleiben in Gramm.

@@ -25,8 +25,6 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 ## Mehrere Benutzer
 
 - **Geteilte Lebensmittel und Mahlzeiten** (M): Gemeinsame Bibliothek im Haushalt, persönliche Einträge bleiben getrennt.
-- **Haushaltsmahlzeiten** (M): Ein Gericht für mehrere Personen mit jeweils eigener Portion eintragen.
-- **Admin-Ansicht** (S): Benutzer auflisten, Daten eines Benutzers exportieren/löschen.
 
 ## Oberfläche
 

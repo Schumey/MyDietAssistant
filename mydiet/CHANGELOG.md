@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.26.0
+
+### Neu
+- **Benutzerverwaltung** (Einstellungen, nur für Administratoren): Liste aller Benutzer mit Einträgen, Tagen, Lebensmitteln und letzter Aktivität, Export der Daten eines Benutzers als JSON und endgültiges Löschen seiner Daten (mit Eingabe des Namens zur Bestätigung; das eigene Konto ist ausgenommen). Administratoren sind die Benutzer aus der neuen Add-on-Option `admin_users` (IDs oder Namen); ist sie leer, gilt der erste Benutzer, der das Add-on geöffnet hat. Das Add-on merkt sich Benutzer ab diesem Update, sobald sie es öffnen.
+- **Haushalt** als Zusatzfunktion: Im Dialog eines Tagebucheintrags „Teilen …“ trägt den Eintrag am selben Tag in die Tagebücher anderer Benutzer ein, jeder mit eigener Menge (z. B. ein Gericht für die Familie, Menge in Gramm oder als Vielfaches). Der Eintrag heißt dort „Name (von Absender)“. Teilen ist nur zwischen Benutzern möglich, die beide „Haushalt“ eingeschaltet haben.
+
 ## 0.25.0
 
 ### Neu

@@ -396,6 +396,7 @@ function editEntry(e, times) {
     msg,
     h("div", { class: "actions" },
       h("button", { class: "flat", onclick: () => swapEntry(e, times, quick ? null : num(grams.value)) }, "Lebensmittel tauschen"),
+      state.features.household ? h("button", { class: "flat", onclick: () => shareDialog(e) }, "Teilen …") : null,
       h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
       h("button", { onclick: async () => {
         const body = {};
@@ -2063,6 +2064,7 @@ async function renderSettings() {
       feat("trackers", "Wasser und Nahrungsergänzung", "Schnell-Eintrag für Wasser, Koffein, Kreatin usw. mit eigenem Tagesziel."),
       feat("recipes", "Rezepte", "Zutaten zu einem Rezept bündeln, durch Portionen teilen und wie ein Lebensmittel eintragen (eigener Reiter)."),
       feat("sources", "Weitere Datenquellen", "Online-Suche in Open Food Facts und USDA mit Abgleich der Werte untereinander und mit Deinen eigenen (Suchbegriffe werden an diese Dienste gesendet)."),
+      feat("household", "Haushalt", "Einträge mit anderen Benutzern teilen, jeder mit eigener Portion (z. B. ein Gericht für die Familie). Beide Seiten müssen die Funktion einschalten."),
       feat("notes", "Notizen", "Freitext zu Mahlzeiten und Tagen (Hunger, Training, Stimmung). Vorhandene Notizen bleiben beim Ausschalten erhalten."),
       feat("body", "Körpermaße und Fortschrittsfotos", "Umfänge (Taille, Brust, Arm …) mit Verlauf und Fotos mit Vergleich im Reiter Gewicht."),
       feat("micros", "Weitere Nährwerte", "Ballaststoffe, Zucker, Salz und gesättigte Fettsäuren bei Lebensmitteln erfassen und auswerten (Open Food Facts liefert sie mit)."))));
@@ -2299,6 +2301,8 @@ async function renderSettings() {
       ? `Aktiv. Deine Benutzer-ID: ${ext.user}. Aufrufbeispiele (rest_command) stehen in der Dokumentation des Add-ons.`
       : "Aus. Zum Einschalten in den Add-on-Optionen einen Schlüssel „api_key“ setzen. Damit können Waage, Sprachassistent oder Automationen Einträge und Gewicht senden.")));
 
+  if (state.admin) await adminCard(root);
+
   // export for a dietitian or trainer
   const exFrom = h("input", { type: "date", value: iso(new Date(Date.now() - 29 * 864e5)) });
   const exTo = h("input", { type: "date", value: iso(new Date()) });
@@ -2324,6 +2328,50 @@ async function renderSettings() {
       }) }, "Sicherung einspielen"),
       h("button", { onclick: () => pickFile(".csv,text/csv", mfpDialog) }, "MyFitnessPal-CSV importieren"),
       h("button", { onclick: importMenu }, "Weitere Importe …"))));
+}
+
+
+// Household meal: put this entry into other people's diaries, each with their own portion.
+async function shareDialog(e) {
+  const users = await api("household/users");
+  const quick = !(e.grams > 0);
+  const msg = h("div", { class: "err" });
+  const rows = users.map(u => ({ u, on: h("input", { type: "checkbox" }), amt: h("input", { type: "number", step: "any", min: "0.1", value: quick ? 1 : Math.round(e.grams), style: "width:90px;flex:none" }) }));
+  setDlg(h("h2", {}, `„${e.name}“ teilen`),
+    h("div", { class: "muted" }, quick ? "Portion als Vielfaches des Eintrags (1 = gleich viel). Der Eintrag erscheint am selben Tag im Tagebuch der anderen."
+      : "Menge für jede Person in Gramm. Der Eintrag erscheint am selben Tag im Tagebuch der anderen."),
+    rows.length ? h("div", { class: "list" }, rows.map(r => h("div", {}, h("label", { class: "pick grow" }, r.on, r.u.name), r.amt, quick ? "×" : "g")))
+      : h("div", { class: "muted", style: "padding:8px 0" }, "Noch niemand sonst nimmt am Haushalt teil. Jeder Benutzer schaltet dafür unter Einstellungen → Zusatzfunktionen „Haushalt“ ein."),
+    msg,
+    h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
+      h("button", { disabled: !rows.length, onclick: async () => {
+        const targets = rows.filter(r => r.on.checked && num(r.amt.value) > 0).map(r => ({ user: r.u.id, factor: quick ? num(r.amt.value) : num(r.amt.value) / e.grams }));
+        if (!targets.length) { msg.textContent = "Bitte mindestens eine Person wählen."; return; }
+        try { const r = await send("POST", `entries/${e.id}/share`, { targets }); dlg.close(); alert(`Eingetragen bei ${r.shared} Person(en).`); }
+        catch (err) { msg.textContent = err.message; }
+      } }, "Eintragen")));
+  dlg.showModal();
+}
+
+// Admin view: who uses the add-on, export or delete a user's data.
+async function adminCard(root) {
+  const users = await api("admin/users");
+  const fmt = s => (s ? parse(s.slice(0, 10)).toLocaleDateString(I18N.locale) : "–");
+  root.append(h("div", { class: "card" }, h("h2", {}, "Benutzerverwaltung"),
+    h("div", { class: "muted" }, "Nur für Administratoren sichtbar (Add-on-Option „admin_users“; leer = der erste Benutzer)."),
+    h("div", { class: "lk-wrap" }, h("table", { class: "lk" },
+      h("thead", {}, h("tr", {}, ["Benutzer", "Einträge", "Tage", "Lebensmittel", "Zuletzt", ""].map(x => h("th", {}, x)))),
+      h("tbody", {}, users.map(u => h("tr", {},
+        h("td", {}, u.name || u.id, u.admin ? h("span", { class: "tag" }, "Admin") : null, u.name ? h("div", { class: "muted" }, u.id) : null),
+        h("td", {}, String(u.entries)), h("td", {}, String(u.days)), h("td", {}, String(u.foods)), h("td", {}, fmt(u.last_entry || u.last_seen)),
+        h("td", {}, h("button", { class: "flat", onclick: () => { location.href = `api/admin/users/${encodeURIComponent(u.id)}/export`; } }, "Export"),
+          h("button", { class: "flat danger", onclick: async () => {
+            const shown = u.name || u.id;
+            const typed = prompt(`Alle Daten von „${shown}“ unwiderruflich löschen? Zur Bestätigung den Namen eingeben:`);
+            if (typed == null) return;
+            try { await api(`admin/users/${encodeURIComponent(u.id)}?confirm=${encodeURIComponent(typed)}`, { method: "DELETE" }); renderSettings(); }
+            catch (err) { alert(err.message); }
+          } }, "Löschen")))))))));
 }
 
 // Restore a backup: show what would be replaced first.
@@ -2377,7 +2425,7 @@ document.addEventListener("keydown", e => {
   else if (e.key === "/") { const s = document.querySelector(`#${state.tab} input[type=search]`); if (s) { e.preventDefault(); s.focus(); } }
 });
 
-api("me").then(m => { $("#who").textContent = m.name; });
+api("me").then(m => { $("#who").textContent = m.name; state.admin = !!m.admin; });
 (async () => {
   try {
     const st = await api("settings");

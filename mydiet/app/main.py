@@ -191,12 +191,7 @@ def publish(owner: str, display: str):
             pass
 
 
-@app.get("/api/me")
-def me(x_remote_user_id: str | None = Header(None),
-       x_remote_user_display_name: str | None = Header(None)):
-    if x_remote_user_display_name:
-        set_pref(user_from(x_remote_user_id), "display", x_remote_user_display_name)
-    return {"id": user_from(x_remote_user_id), "name": x_remote_user_display_name or "Lokal"}
+# /api/me lives in extras8 (user list and admin flag)
 
 
 # --- diary -----------------------------------------------------------------
@@ -564,6 +559,7 @@ from extras4 import *  # noqa: E402,F401,F403  (recipes)
 from extras5 import *  # noqa: E402,F401,F403  (more data sources)
 from extras6 import *  # noqa: E402,F401,F403  (export for third parties)
 from extras7 import *  # noqa: E402,F401,F403  (table import, bulk records)
+from extras8 import *  # noqa: E402,F401,F403  (users, admin view, household meals)
 
 
 @app.get("/")
