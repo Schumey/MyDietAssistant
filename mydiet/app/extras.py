@@ -1,9 +1,10 @@
 """v0.3 features: categories, saved meals, export/import, energy balance, triggers."""
-import asyncio
 import csv
 import io
 import json
 import re
+import threading
+import time
 from datetime import date, datetime, timedelta
 
 import httpx
@@ -655,8 +656,18 @@ def condition_met(t, now: datetime, day: str | None = None) -> bool:
     return False
 
 
+poll_state = {"token": bool(SUPERVISOR_TOKEN), "last": None, "log": []}
+
+
+def note(msg: str):
+    line = f"{datetime.now():%H:%M:%S} {msg}"
+    print("[trigger] " + line, flush=True)
+    poll_state["log"] = (poll_state["log"] + [line])[-30:]
+
+
 def poll_triggers():
     now = datetime.now()
+    poll_state["last"] = now.strftime("%Y-%m-%d %H:%M:%S")
     day = now.date().isoformat()
     with db.conn() as c:
         triggers = c.execute("SELECT * FROM triggers WHERE enabled=1").fetchall()
@@ -675,26 +686,42 @@ def poll_triggers():
         try:
             if not condition_met(t, now, d):
                 continue
-        except (httpx.HTTPError, ValueError, KeyError):
+        except (httpx.HTTPError, ValueError, KeyError) as e:
+            note(f"Trigger {t['id']} ({t['entity']}, {d}): Fehler {e!r}")
             continue
         with db.conn() as c:
             fire(c, t, d)
+        note(f"Trigger {t['id']} ({t['entity']}): für {d} eingetragen")
         publish(t["owner"], get_pref(t["owner"], "display", t["owner"]))
 
 
-async def trigger_loop():
+def trigger_loop():
+    time.sleep(5)
     while True:
-        await asyncio.sleep(60)
         try:
-            await asyncio.to_thread(poll_triggers)
-        except Exception:  # keep the loop alive whatever HA does
-            pass
+            poll_triggers()
+        except Exception as e:  # keep the loop alive whatever HA does
+            note(f"Abfrage fehlgeschlagen: {e!r}")
+        time.sleep(60)
 
 
-@app.on_event("startup")
-async def start_triggers():
-    if SUPERVISOR_TOKEN:
-        asyncio.create_task(trigger_loop())
+@app.get("/api/triggers/status")
+def trigger_status():
+    return poll_state
+
+
+@app.post("/api/triggers/poll")
+def trigger_poll_now():
+    """Run the check right away (for diagnosing)."""
+    poll_triggers()
+    return poll_state
+
+
+if SUPERVISOR_TOKEN:
+    threading.Thread(target=trigger_loop, daemon=True, name="triggers").start()
+    note("Trigger-Prüfung gestartet (alle 60 s)")
+else:
+    note("Kein SUPERVISOR_TOKEN: Trigger-Prüfung inaktiv")
 
 
 # --- copy / clear / suggestions ---------------------------------------------

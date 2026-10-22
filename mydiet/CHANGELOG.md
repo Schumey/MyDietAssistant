@@ -2,6 +2,15 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.7.1
+
+### Behoben
+- Leerzeichen zwischen Zahl und Text im Knopf „n leere/ausgeblendete Mahlzeit(en) anzeigen“.
+- Die Trigger-Prüfung läuft jetzt in einem eigenen Hintergrund-Thread statt über einen Startup-Hook, der je nach FastAPI-Version nicht mehr ausgeführt wird.
+
+### Neu
+- **Diagnose für Trigger:** Einstellungen → Trigger → „Jetzt prüfen“ führt die Prüfung sofort aus und zeigt Ergebnis bzw. Fehler an; dieselben Meldungen stehen im Add-on-Protokoll.
+
 ## 0.7.0
 
 ### Neu

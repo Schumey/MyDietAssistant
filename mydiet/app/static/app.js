@@ -131,7 +131,7 @@ async function renderDiary() {
     }
     if (hidden.length) root.append(h("div", { class: "hint" }, h("button", { class: "flat", onclick: () => {
       state.showHidden = showAll ? null : state.day; renderDiary();
-    } }, showAll ? "Ausgeblendete Mahlzeiten wieder verbergen" : `${hidden.length} leere/ausgeblendete Mahlzeit${hidden.length > 1 ? "en" : ""} anzeigen`)));
+    } }, showAll ? "Ausgeblendete Mahlzeiten wieder verbergen" : [h("span", { class: "num" }, hidden.length), `leere/ausgeblendete Mahlzeit${hidden.length > 1 ? "en" : ""} anzeigen`])));
   }
 
   const t = d.totals, g = d.goal;
@@ -937,7 +937,17 @@ async function renderSettings() {
         } }, "✕"));
     }) : [h("div", { class: "muted", style: "padding:8px 0" }, "Noch keine Trigger.")]),
     trigMsg,
-    h("div", { class: "actions" }, h("button", { onclick: () => triggerDialog({}) }, "+ Neuer Trigger"))));
+    h("div", { class: "actions" },
+      h("button", { class: "flat", onclick: async () => {
+        trigMsg.className = "muted";
+        trigMsg.textContent = "Prüfe …";
+        try {
+          const r = await send("POST", "triggers/poll", {});
+          trigMsg.textContent = (r.token ? "" : "Kein Home-Assistant-Zugriff (SUPERVISOR_TOKEN fehlt). ")
+            + (r.log.length ? r.log.slice(-6).join(" · ") : `Geprüft ${r.last}, nichts zu tun.`);
+        } catch (e) { trigMsg.className = "err"; trigMsg.textContent = e.message; }
+      } }, "Jetzt prüfen"),
+      h("button", { onclick: () => triggerDialog({}) }, "+ Neuer Trigger"))));
 
   // data
   root.append(h("div", { class: "card" }, h("h2", {}, "Daten"),
