@@ -2,6 +2,13 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.24.0
+
+### Neu
+- **Export für Berater und Trainer** (Einstellungen → Export für Berater und Trainer): Zeitraum wählen und
+  - einen **Bericht** öffnen, der sich drucken oder über den Druckdialog als PDF speichern lässt: Zusammenfassung (Ø Kalorien und Makros, Tage im Ziel, Gewichtsverlauf, Ziel der Person), Balkendiagramm mit Ziellinie, Tagesübersicht mit Gewicht und Notizen, auf Wunsch alle einzelnen Einträge sowie Körpermaße. Sprache und Einheiten folgen Deinen Einstellungen.
+  - eine **Tagesübersicht als CSV** (Kalorien, Ziel, Makros, Gewicht, Notiz, auf Wunsch weitere Nährwerte).
+
 ## 0.23.0
 
 ### Neu

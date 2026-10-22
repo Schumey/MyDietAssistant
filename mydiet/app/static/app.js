@@ -2148,6 +2148,19 @@ async function renderSettings() {
       ? `Aktiv. Deine Benutzer-ID: ${ext.user}. Aufrufbeispiele (rest_command) stehen in der Dokumentation des Add-ons.`
       : "Aus. Zum Einschalten in den Add-on-Optionen einen Schlüssel „api_key“ setzen. Damit können Waage, Sprachassistent oder Automationen Einträge und Gewicht senden.")));
 
+  // export for a dietitian or trainer
+  const exFrom = h("input", { type: "date", value: iso(new Date(Date.now() - 29 * 864e5)) });
+  const exTo = h("input", { type: "date", value: iso(new Date()) });
+  const exEntries = h("input", { type: "checkbox" });
+  const exQuery = () => `a_from=${exFrom.value}&a_to=${exTo.value}`;
+  root.append(h("div", { class: "card" }, h("h2", {}, "Export für Berater und Trainer"),
+    h("div", { class: "muted" }, "Ein Bericht zum Ausdrucken oder als PDF (im Druckdialog „Als PDF speichern“ wählen) und eine Tabelle mit den Tageswerten. Enthält nur den gewählten Zeitraum."),
+    h("div", { class: "grid" }, h("div", {}, h("label", {}, "Von"), exFrom), h("div", {}, h("label", {}, "Bis"), exTo)),
+    h("label", { class: "pick" }, exEntries, "Einzelne Einträge im Bericht auflisten"),
+    h("div", { class: "actions", style: "justify-content:flex-start" },
+      h("button", { onclick: () => window.open(`api/export/report?${exQuery()}&entries=${exEntries.checked}`, "_blank") }, "Bericht öffnen (Drucken / PDF)"),
+      h("button", { class: "flat", onclick: () => { location.href = `api/export/summary.csv?${exQuery()}`; } }, "Tagesübersicht (CSV)"))));
+
   // data
   root.append(h("div", { class: "card" }, h("h2", {}, "Daten"),
     h("div", { class: "muted" }, "Export/Import betrifft nur dein Benutzerkonto."),
