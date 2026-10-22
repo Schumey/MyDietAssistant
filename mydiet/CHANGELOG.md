@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.16.1
+
+### Behoben
+- Tagebuch und Einstellungen blieben leer, sobald eine Mahlzeit nur an bestimmten Tagen angezeigt werden sollte (Mahlzeiten-Regel mit Zustand, z. B. „Sport“ nur im Fitnessstudio). Seit 0.11.0 fehlten diesen Regeln Zeitfenster und Haltedauer, die Abfrage brach mit einem Fehler ab. Betroffen waren nur Zustands-Regeln für heute; die Daten sind unverändert.
+
 ## 0.16.0
 
 ### Neu

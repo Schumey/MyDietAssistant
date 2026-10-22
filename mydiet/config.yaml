@@ -1,5 +1,5 @@
 name: MyDietAssistant
-version: "0.16.0"
+version: "0.16.1"
 slug: mydiet
 description: Lokales Ernährungstagebuch (Kalorien & Makros) mit HA-Sensoren
 arch: [amd64, aarch64]

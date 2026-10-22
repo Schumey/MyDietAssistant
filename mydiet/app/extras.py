@@ -1397,11 +1397,12 @@ def meal_rule_active(c, t, day: str) -> bool:
     try:
         if t["kind"] == "calendar":
             return calendar_has_event(t["entity"], t["match"], day, t["part"]) != bool(t["negate"])
-        if day == date.today().isoformat() and condition_met(t, datetime.now()):
+        rule = {**dict(t), "win_from": "", "win_to": "", "hold_min": 0}  # meal rules have no window / hold time
+        if day == date.today().isoformat() and condition_met(rule, datetime.now()):
             c.execute("INSERT OR IGNORE INTO meal_trigger_log VALUES(?,?)", (t["id"], day))
             return True
         return False
-    except (httpx.HTTPError, ValueError, KeyError):
+    except (httpx.HTTPError, ValueError, KeyError, IndexError):
         return True  # HA unreachable: show rather than hide
 
 
