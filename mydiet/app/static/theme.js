@@ -38,6 +38,10 @@
     }
     for (const [k, v] of next) { root.style.setProperty(k, v); applied.add(k); }
     for (const k of [...applied]) if (!next.has(k)) { root.style.removeProperty(k); applied.delete(k); }
+    // name of the selected HA theme, so the app can switch to a matching look (e.g. Windows 95/98)
+    const hass = p.document.querySelector("home-assistant")?.hass;
+    const themeName = hass?.selectedTheme?.theme || hass?.themes?.theme || "";
+    if (root.dataset.themeName !== themeName) root.dataset.themeName = themeName;
     const bg = cs.getPropertyValue("--primary-background-color").trim();
     if (bg) root.style.colorScheme = isDark(bg) ? "dark" : "light";
   }

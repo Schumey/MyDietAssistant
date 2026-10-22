@@ -35,19 +35,27 @@ def set_pref(owner: str, key: str, value):
 # --- settings -------------------------------------------------------------
 
 class SettingsIn(BaseModel):
-    diary_mode: str
+    diary_mode: str | None = None   # 'meals' | 'times'
+    skin: str | None = None         # 'auto' | 'default' | 'win'
 
 
 @app.get("/api/settings")
 def read_settings(x_remote_user_id: str | None = Header(None)):
-    return {"diary_mode": get_pref(user_from(x_remote_user_id), "diary_mode", "meals")}
+    owner = user_from(x_remote_user_id)
+    return {"diary_mode": get_pref(owner, "diary_mode", "meals"), "skin": get_pref(owner, "skin", "auto")}
 
 
 @app.put("/api/settings")
 def write_settings(s: SettingsIn, x_remote_user_id: str | None = Header(None)):
-    if s.diary_mode not in ("meals", "times"):
-        raise HTTPException(400, "diary_mode must be meals or times")
-    set_pref(user_from(x_remote_user_id), "diary_mode", s.diary_mode)
+    owner = user_from(x_remote_user_id)
+    if s.diary_mode is not None:
+        if s.diary_mode not in ("meals", "times"):
+            raise HTTPException(400, "diary_mode must be meals or times")
+        set_pref(owner, "diary_mode", s.diary_mode)
+    if s.skin is not None:
+        if s.skin not in ("auto", "default", "win"):
+            raise HTTPException(400, "skin must be auto, default or win")
+        set_pref(owner, "skin", s.skin)
     return {"ok": True}
 
 

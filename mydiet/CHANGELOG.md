@@ -2,6 +2,15 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.8.0
+
+### Neu
+- **Windows-Look:** Fenster mit Titelleiste, klassische Reiter, erhabene/eingesunkene Rahmen, Dialoge als Fenster. Farben kommen weiter aus dem HA-Theme (Fensterfläche = Kartenfarbe, Titelleiste = Primärfarbe).
+- Wird automatisch aktiviert, wenn das gewählte HA-Theme „HA 95“/„HA 98“ (oder „Windows …“) heißt. Unter Einstellungen → Darstellung → Optik lässt es sich auch fest ein- oder ausschalten.
+
+### Behoben
+- „Häufig verwendet“ im Hinzufügen-Dialog war nicht wie die übrige Liste formatiert.
+
 ## 0.7.1
 
 ### Behoben

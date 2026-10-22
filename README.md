@@ -2,7 +2,7 @@
 
 Lokales Ernährungstagebuch im Stil von MyFitnessPal als **Home-Assistant-Add-on**. Die Daten bleiben in deinem HA (SQLite im Add-on-Speicher); einzige Internetfunktion ist die optionale Barcode-Suche über Open Food Facts.
 
-Die Oberfläche läuft per Ingress im HA-Seitenmenü, übernimmt das aktive HA-Theme und trennt Benutzer anhand ihres HA-Kontos.
+Die Oberfläche läuft per Ingress im HA-Seitenmenü, übernimmt das aktive HA-Theme (bei Themes namens „HA 95/98“ automatisch im Windows-Look, einstellbar) und trennt Benutzer anhand ihres HA-Kontos.
 
 ## Funktionen
 

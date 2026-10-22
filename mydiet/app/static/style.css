@@ -235,3 +235,119 @@ dialog h2 { margin-bottom: 12px; font-size: 18px; }
 button.flat.danger { color: var(--error-color); }
 .list > .archived { opacity: .55; }
 .num { margin-right: .4em; }
+
+/* ---------------------------------------------------------------------------
+   Windows look (html[data-skin="win"]): raised/sunken bevels, title bar, classic tabs.
+   Colours still come from the HA theme: face = card background, title bar = primary colour.
+   Activated automatically for HA 95/98 themes, or chosen in the settings.
+   ------------------------------------------------------------------------- */
+#win { display: contents; }
+html[data-skin="win"] {
+  --w-face: var(--card-background-color, #c0c0c0);
+  --w-field: var(--input-fill-color, #fff);
+  --w-text: var(--primary-text-color, #000);
+  --w-title: linear-gradient(90deg, var(--primary-color, #000080), color-mix(in srgb, var(--primary-color, #000080) 50%, #1084d0));
+  --w-raised: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+  --w-pressed: inset -1px -1px #fff, inset 1px 1px #0a0a0a, inset -2px -2px #dfdfdf, inset 2px 2px #808080;
+  --w-sunken: inset -1px -1px #fff, inset 1px 1px #808080, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a;
+  --w-etched: 0 0 0 1px #808080, 1px 1px 0 1px #fff, inset 1px 1px 0 #fff, inset -1px -1px 0 #808080;
+}
+html[data-skin="win"] body { font-size: 13px; line-height: 1.35; }
+
+/* the window: title bar + tabs on top, tab panel below */
+html[data-skin="win"] #win {
+  display: block; max-width: 940px; margin: 12px auto; padding: 3px;
+  background: var(--w-face); box-shadow: var(--w-raised);
+}
+html[data-skin="win"] .appbar {
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0; padding: 0; min-height: 0;
+  background: var(--w-face); color: var(--w-text); position: sticky; top: 0; z-index: 5;
+}
+html[data-skin="win"] .appbar h1 {
+  grid-column: 1 / -1; grid-row: 1; margin: 0; padding: 3px 6px; font-size: 13px; font-weight: 700;
+  background: var(--w-title); color: #fff; display: block !important;
+}
+html[data-skin="win"] .appbar #who { grid-column: 2; grid-row: 1; margin: 0; padding: 3px 6px; opacity: 1; color: #fff; z-index: 1; font-size: 12px; }
+html[data-skin="win"] nav { grid-column: 1 / -1; grid-row: 2; gap: 0; padding: 6px 2px 0; overflow: visible; flex-wrap: wrap; }
+html[data-skin="win"] nav button {
+  position: relative; top: 2px; margin-right: 1px; padding: 3px 12px 4px; border: 0; border-radius: 0;
+  background: var(--w-face); color: var(--w-text); opacity: 1; text-transform: none; letter-spacing: 0; font-weight: 400;
+  box-shadow: inset 1px 1px #fff, inset -1px 0 #0a0a0a, inset -2px 0 #808080, inset 2px 2px #dfdfdf;
+}
+html[data-skin="win"] nav button.active {
+  top: 0; z-index: 2; margin: -2px -1px 0 -2px; padding: 5px 14px 6px; font-weight: 700;
+  border-bottom: 0;
+}
+html[data-skin="win"] main {
+  max-width: none; margin: 0; padding: 12px; background: var(--w-face); box-shadow: var(--w-raised);
+  position: relative; z-index: 1; border-top: 0;
+}
+
+/* surfaces */
+html[data-skin="win"] .card {
+  background: var(--w-face); border: 0; border-radius: 0; box-shadow: var(--w-etched); margin: 0 2px 14px;
+}
+html[data-skin="win"] .card > h2 { font-size: 13px; font-weight: 700; }
+html[data-skin="win"] .tile { background: var(--w-face); border-radius: 0; box-shadow: var(--w-sunken); }
+html[data-skin="win"] .tile b { font-weight: 700; }
+html[data-skin="win"] .tag { border-radius: 0; background: var(--w-field); box-shadow: var(--w-sunken); color: var(--w-text); padding: 0 6px; }
+html[data-skin="win"] .bar, html[data-skin="win"] .macro-split { border-radius: 0; background: var(--w-field); box-shadow: var(--w-sunken); padding: 2px; height: 16px; }
+html[data-skin="win"] .bar > i { border-radius: 0; height: 100%; }
+html[data-skin="win"] .macro-split { overflow: hidden; }
+html[data-skin="win"] .legend span::before { border-radius: 0; }
+
+/* controls */
+html[data-skin="win"] button {
+  border: 0; border-radius: 0; background: var(--w-face); color: var(--w-text); font-weight: 400;
+  padding: 5px 14px; box-shadow: var(--w-raised);
+}
+html[data-skin="win"] button:active:not(:disabled) { box-shadow: var(--w-pressed); padding: 6px 13px 4px 15px; }
+html[data-skin="win"] button.flat, html[data-skin="win"] button.flat.danger { background: var(--w-face); color: var(--w-text); padding: 4px 10px; }
+html[data-skin="win"] button.danger { color: var(--error-color); }
+html[data-skin="win"] button.icon { background: transparent; box-shadow: none; padding: 2px 7px; color: var(--w-text); }
+html[data-skin="win"] button.icon:hover:not(:disabled) { background: var(--w-face); box-shadow: var(--w-raised); color: var(--w-text); }
+html[data-skin="win"] button.icon:active:not(:disabled) { box-shadow: var(--w-pressed); }
+html[data-skin="win"] button:disabled { opacity: 1; color: #808080; text-shadow: 1px 1px #fff; }
+html[data-skin="win"] input, html[data-skin="win"] select {
+  background: var(--w-field); color: var(--input-ink-color, #000); border: 0; border-radius: 0;
+  padding: 4px 6px; box-shadow: var(--w-sunken);
+}
+html[data-skin="win"] input:focus, html[data-skin="win"] select:focus { outline: 1px dotted var(--w-text); outline-offset: -4px; }
+html[data-skin="win"] input[type="checkbox"] { box-shadow: none; }
+html[data-skin="win"] label { color: var(--w-text); font-size: 12px; margin-bottom: 3px; }
+html[data-skin="win"] .range { gap: 0; }
+html[data-skin="win"] .range button { background: var(--w-face); color: var(--w-text); box-shadow: var(--w-raised); padding: 4px 12px; }
+html[data-skin="win"] .range button.active { box-shadow: var(--w-pressed); font-weight: 700; background: repeating-conic-gradient(var(--w-face) 0 25%, #fff 0 50%) 0 0 / 2px 2px; color: var(--w-text); }
+html[data-skin="win"] .daynav .date {
+  background: var(--w-field); color: var(--w-text); border-radius: 0; box-shadow: var(--w-sunken); font-weight: 400;
+}
+html[data-skin="win"] .daynav button.step { border-radius: 0; }
+
+/* diary tables look like list views */
+html[data-skin="win"] .diary thead th.title { color: var(--w-text); font-size: 14px; font-weight: 700; background: none; }
+html[data-skin="win"] .diary thead th, html[data-skin="win"] table.summary thead th { font-weight: 400; }
+html[data-skin="win"] .diary tbody tr.item td { background: var(--w-field); color: var(--input-ink-color, #000); border-bottom: 1px solid #c0c0c0; }
+html[data-skin="win"] .diary tbody tr.foot td { color: var(--w-text); border-bottom: 1px solid #808080; background: var(--w-face); }
+html[data-skin="win"] .diary tbody tr.item td:first-child:hover { color: var(--primary-color); }
+html[data-skin="win"] table.summary tbody tr:nth-child(odd) td { background: var(--w-field); color: var(--input-ink-color, #000); }
+html[data-skin="win"] .list > div { border-bottom: 1px solid #808080; }
+html[data-skin="win"] .results { background: var(--w-field); box-shadow: var(--w-sunken); padding: 2px; }
+html[data-skin="win"] .results button.food { background: var(--w-field); color: var(--input-ink-color, #000); box-shadow: none; border-radius: 0; border-bottom: 0; padding: 3px 6px; }
+html[data-skin="win"] .results button.food:hover { background: var(--primary-color); color: var(--text-primary-color, #fff); }
+html[data-skin="win"] .results button.food:hover .muted { color: inherit; }
+
+/* dialogs are windows too */
+html[data-skin="win"] dialog {
+  padding: 3px; border-radius: 0; background: var(--w-face); color: var(--w-text); box-shadow: var(--w-raised); filter: drop-shadow(4px 4px 0 #0006);
+}
+html[data-skin="win"] dialog > h2:first-child {
+  margin: 0; padding: 3px 6px; font-size: 13px; font-weight: 700; background: var(--w-title); color: #fff;
+}
+html[data-skin="win"] dialog::backdrop { background: #0004; }
+html[data-skin="win"] .dlg-body { padding: 12px; }
+@media (max-width: 560px) {
+  html[data-skin="win"] #win { margin: 0; }
+  html[data-skin="win"] main { padding: 6px; }
+  html[data-skin="win"] .card { margin: 0 0 10px; padding: 10px 6px; }
+}
+.results.suggest { max-height: none; margin-bottom: 0; }

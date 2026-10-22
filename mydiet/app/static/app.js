@@ -28,9 +28,23 @@ const iso = d => d.toLocaleDateString("sv");
 const parse = s => new Date(s + "T12:00:00");
 const num = v => (v === "" || v == null ? null : Number(String(v).replace(",", ".")));
 
-const state = { day: iso(new Date()), tab: "diary", range: 30, wrange: 90, whist: 10 };
+const state = { skin: "auto", day: iso(new Date()), tab: "diary", range: 30, wrange: 90, whist: 10 };
 const dlg = $("#dlg");
-const setDlg = (...kids) => dlg.replaceChildren(...kids.flat(Infinity).filter(x => x != null && x !== false));
+// A dialog is a title (h2) plus a body; the body wrapper lets the Windows look pad the content.
+const setDlg = (...kids) => {
+  const [first, ...rest] = kids.flat(Infinity).filter(x => x != null && x !== false);
+  if (first && first.tagName === "H2") dlg.replaceChildren(first, h("div", { class: "dlg-body" }, ...rest));
+  else dlg.replaceChildren(h("div", { class: "dlg-body" }, first, ...rest));
+};
+
+// Optik: "auto" switches to the Windows look when the HA theme is called HA 95/98 (see theme.js).
+const SKIN_RE = /ha[\s_-]*9[58]|windows|win[\s_-]*9[58]/i;
+function applySkin() {
+  const name = document.documentElement.dataset.themeName || "";
+  const win = state.skin === "win" || (state.skin !== "default" && SKIN_RE.test(name));
+  document.documentElement.dataset.skin = win ? "win" : "default";
+}
+new MutationObserver(applySkin).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme-name"] });
 dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
 
 // ---------------------------------------------------------------- tabs
@@ -296,7 +310,7 @@ async function openAdd(meal) {
   const detail = h("div");
   const body = h("div");
   const chips = h("div");
-  const sug = h("div");
+  const sug = h("div", { class: "results suggest" });
   const tabs = h("div", { class: "range" },
     ["foods", "Lebensmittel", "saved", "Meine Mahlzeiten"].flatMap((v, i, a) => i % 2 ? [] : [
       h("button", { class: v === tab ? "active" : "", "data-t": v, onclick: () => { tab = v; draw(); } }, a[i + 1])]));
@@ -409,7 +423,7 @@ async function openAdd(meal) {
       },
     });
     body.hidden = true;
-    dlg.append(form);
+    (dlg.querySelector(".dlg-body") || dlg).append(form);
   }
 
   body.append(tabs, search, chips, sug, results,
@@ -865,7 +879,15 @@ async function renderSettings() {
     h("option", { value: "meals" }, "Feste Mahlzeiten (Frühstück, Mittagessen, …)"),
     h("option", { value: "times" }, "Uhrzeiten (08:47 …, 11:30 …)"));
   mode.value = day.mode;
-  root.append(h("div", { class: "card" }, h("h2", {}, "Tagebuch-Ansicht"), mode,
+  const skin = h("select", { onchange: async () => {
+    await send("PUT", "settings", { skin: skin.value }); state.skin = skin.value; applySkin();
+  } },
+    h("option", { value: "auto" }, "Automatisch (Windows-Look bei HA-95/98-Theme)"),
+    h("option", { value: "default" }, "Standard (HA-Theme)"),
+    h("option", { value: "win" }, "Windows-Look"));
+  skin.value = state.skin;
+  root.append(h("div", { class: "card" }, h("h2", {}, "Darstellung"),
+    h("label", {}, "Tagebuch"), mode, h("label", { style: "margin-top:12px" }, "Optik"), skin,
     h("div", { class: "muted", style: "margin-top:8px" },
       "Bestehende Einträge bleiben erhalten; ohne Uhrzeit erscheinen sie in der Zeitansicht am Ende.")));
 
@@ -964,4 +986,8 @@ async function renderSettings() {
 }
 
 api("me").then(m => { $("#who").textContent = m.name; });
-show("diary");
+(async () => {
+  try { state.skin = (await api("settings")).skin; } catch { /* keep auto */ }
+  applySkin();
+  show("diary");
+})();
