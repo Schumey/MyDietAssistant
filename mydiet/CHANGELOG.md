@@ -2,6 +2,30 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.0.0
+
+Erste veröffentlichte Version. Außer den neuen Funktionen unten steht jetzt eine automatische Test-Suite hinter dem Add-on (siehe „Technik“).
+
+### Neu
+- **Aktivität** (Zusatzfunktion): Schritte und verbrannte Kalorien aus Home-Assistant-Sensoren oder von Hand erhöhen das Tagesziel des jeweiligen Tages um einen einstellbaren Anteil (Standard 50 %). Ohne Kalorien-Sensor werden die Kalorien aus Schritten und Körpergewicht geschätzt. Das Tagebuch zeigt Schritte, Verbrauch und den Zuschlag; Statistik und Sensor „verbleibende kcal“ rechnen mit dem erhöhten Ziel. Die Sensoren werden alle fünf Minuten gelesen (nur im echten Home Assistant, dort noch ungeprüft).
+- **Mahlzeiten-Zeitplan** (Zusatzfunktion): Zeitfenster pro Mahlzeit (Standardfenster für Frühstück, Mittag- und Abendessen), im Tagebuch „Jetzt: Mittagessen“ mit Hinzufügen-Knopf und hervorgehobener Mahlzeit; auf Wunsch eine Benachrichtigung, wenn ein Fenster beginnt und die Mahlzeit noch leer ist.
+- **Zwischenspeicher für Online-Abfragen:** Barcodes (60 Tage) und Suchbegriffe (14 Tage) bei Open Food Facts und USDA werden lokal gespeichert; wiederholte Suchen gehen nicht mehr ins Internet. Einsehbar und leerbar unter Einstellungen.
+- **Barcode am Lebensmittel:** Das Feld wird gespeichert und exportiert. Im Hinzufügen-Dialog gibt es „Barcode scannen“ und „Foto vom Barcode“: eigene Lebensmittel mit dem Code werden direkt gewählt, unbekannte Codes bei Open Food Facts nachgeschlagen.
+- **Barcode-Leser für iPhone, Firefox und Safari:** Wo der Browser keine eigene Erkennung hat, wird die mitgelieferte ZXing-Bibliothek (Apache-2.0) bei Bedarf nachgeladen.
+- **Werte online prüfen** (Lebensmittel, mit „Weitere Datenquellen“): Alle eigenen Lebensmittel in einem Durchgang mit Open Food Facts (Barcode, sonst Name) vergleichen, Abweichungen ansehen und Werte einzeln übernehmen. Optional auch USDA.
+- **Lebensmittel-Tabelle importieren:** CSV, TXT oder Excel mit Nährwerten pro 100 g, erkennt unter anderem die BLS-Kürzel und Open-Food-Facts-Spalten, rechnet kJ in kcal und Natrium in Salz um, überspringt vorhandene Lebensmittel und setzt eine Kategorie.
+- **Lebensmittel und Mahlzeiten teilen** (Zusatzfunktion „Haushalt“): ⇪ bei einem Lebensmittel oder einer gespeicherten Mahlzeit legt eine Kopie in der Bibliothek anderer Haushaltsmitglieder ab. Gleichnamige Einträge bleiben unverändert, spätere Änderungen werden nicht abgeglichen.
+- **Mengen in Unzen:** Einstellung „Lebensmittelmengen“ (Gramm oder oz) für Einträge, Portionen, Rezepte, gespeicherte Mahlzeiten und Teilen. Gespeichert wird weiter in Gramm.
+- **Symbol und Logo** für die Add-on-Seite, `url` in der Add-on-Konfiguration.
+
+### Technik
+- **Automatische Tests** (`tests/`, pytest, 70 Tests) und **GitHub Actions**: Tagebuch, Ziele, Import/Export mit Rundreise, Tabellen-Importe, Trigger-Bedingungen (Zeitfenster, Haltedauer, Start-/Endtag), Migrationen alter Datenbanken, neue Funktionen und Prüfungen der Oberfläche (referenzierte Dateien, Reihenfolge der Übersetzung, doppelte Schlüssel, Version in `config.yaml` gleich Changelog).
+- **Datenbank-Migrationen mit Versionsnummer** statt einzelner Spaltenprüfungen; vor einer Migration entsteht eine Kopie `mydiet.db.v<n>.bak`.
+- **Indizes** für Lebensmittel, Einträge, Mahlzeiten und Gewicht. Die Lebensmittelliste lädt seitenweise („Mehr laden“) und sucht auf dem Server; Hinzufügen-Dialog und Tauschen-Dialog suchen ab zwei Buchstaben ebenfalls dort, so bleibt auch eine Bibliothek mit Tausenden Lebensmitteln flott. Die Jahresstatistik (und Bericht und Export), die für jeden Tag das Ziel berechnet, liest Einstellungen jetzt einmal statt je Tag aus der Datenbank: ein Jahr dauert statt fast zwei Sekunden etwa eine Viertelsekunde.
+
+### Behoben
+- Im Mengen-Dialog eines Lebensmittels ohne Portionsgrößen stand das Wort „null“ über dem Mengenfeld.
+
 ## 0.26.1
 
 ### Behoben

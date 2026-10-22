@@ -3,3 +3,5 @@ __pycache__/
 .venv/
 data/
 *.db
+*.bak
+.pytest_cache/

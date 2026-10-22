@@ -5,6 +5,8 @@ import json
 import re
 import threading
 import time
+from contextlib import contextmanager
+from contextvars import ContextVar
 from datetime import date, datetime, timedelta, timezone
 
 import httpx
@@ -20,21 +22,44 @@ KCAL_PER_KG = 7700
 
 # --- prefs -----------------------------------------------------------------
 
+_pref_memo: ContextVar = ContextVar("pref_memo", default=None)
+_MISSING = object()
+
+
+@contextmanager
+def pref_cache():
+    """Inside the block repeated pref reads are served from memory (loops that ask for the goal of every day)."""
+    token = _pref_memo.set({})
+    try:
+        yield
+    finally:
+        _pref_memo.reset(token)
+
+
 def get_pref(owner: str, key: str, default=None):
+    memo = _pref_memo.get()
+    if memo is not None and (owner, key) in memo:
+        return default if memo[(owner, key)] is _MISSING else memo[(owner, key)]
     with db.conn() as c:
         r = c.execute("SELECT value FROM prefs WHERE owner=? AND key=?", (owner, key)).fetchone()
-    return json.loads(r["value"]) if r else default
+    value = json.loads(r["value"]) if r else _MISSING
+    if memo is not None:
+        memo[(owner, key)] = value
+    return default if value is _MISSING else value
 
 
 def set_pref(owner: str, key: str, value):
     with db.conn() as c:
         c.execute("INSERT OR REPLACE INTO prefs(owner,key,value) VALUES(?,?,?)",
                   (owner, key, json.dumps(value)))
+    memo = _pref_memo.get()
+    if memo is not None:
+        memo[(owner, key)] = json.loads(json.dumps(value))
 
 
 # --- settings -------------------------------------------------------------
 
-FEATURES = ("weekday_goals", "trackers", "micros", "notes", "body", "recipes", "sources", "household")   # optional features, off by default
+FEATURES = ("weekday_goals", "trackers", "micros", "notes", "body", "recipes", "sources", "household", "activity", "schedule")   # optional features, off by default
 
 
 def features(owner: str) -> dict:
@@ -63,6 +88,7 @@ class SettingsIn(BaseModel):
     goal_mode: str | None = None    # 'lose' | 'maintain' | 'gain'
     lang: str | None = None         # 'auto' | 'de' | 'en'
     units: str | None = None        # 'metric' | 'imperial'
+    mass: str | None = None         # food amounts: 'g' | 'oz'
     goal_rate: float | None = None  # intended kg per week (positive)
     skin: str | None = None         # 'auto' | 'default' | 'win'
     features: dict[str, bool] | None = None
@@ -72,7 +98,7 @@ class SettingsIn(BaseModel):
 def read_settings(x_remote_user_id: str | None = Header(None)):
     owner = user_from(x_remote_user_id)
     return {"diary_mode": get_pref(owner, "diary_mode", "meals"), "skin": get_pref(owner, "skin", "auto"),
-            "features": features(owner), "lang": get_pref(owner, "lang", "auto"), "units": get_pref(owner, "units", "metric"),
+            "features": features(owner), "lang": get_pref(owner, "lang", "auto"), "units": get_pref(owner, "units", "metric"), "mass": get_pref(owner, "mass", "g"),
             "goal_mode": get_pref(owner, "goal_mode", "lose"),
             "goal_rate": get_pref(owner, "goal_rate", 0.5)}
 
@@ -92,6 +118,10 @@ def write_settings(s: SettingsIn, x_remote_user_id: str | None = Header(None)):
         if s.units not in ("metric", "imperial"):
             raise HTTPException(400, "units must be metric or imperial")
         set_pref(owner, "units", s.units)
+    if s.mass is not None:
+        if s.mass not in ("g", "oz"):
+            raise HTTPException(400, "mass must be g or oz")
+        set_pref(owner, "mass", s.mass)
     if s.goal_mode is not None:
         if s.goal_mode not in GOAL_MODES:
             raise HTTPException(400, "goal_mode must be lose, maintain or gain")
@@ -499,11 +529,14 @@ def dump(owner: str) -> dict:
         return {
             "app": "MyDietAssistant", "version": 1,
             "foods": [{**f, "portions": q("SELECT name,grams FROM food_portions WHERE food_id=? ORDER BY id", f["id"])}
-                      for f in q("SELECT id,name,brand,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,serving_g,category,favorite FROM foods WHERE owner=?", owner)],
-            "meals": q("SELECT id,name,position,archived FROM meals WHERE owner=? ORDER BY position", owner),
+                      for f in q("SELECT id,name,brand,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,serving_g,category,favorite,barcode FROM foods WHERE owner=?", owner)],
+            "meals": q("SELECT id,name,position,archived,from_time,to_time FROM meals WHERE owner=? ORDER BY position", owner),
+            "activity": get_pref(owner, "activity", {}),
+            "activity_days": q("SELECT day,steps,kcal,manual FROM activity_days WHERE owner=? ORDER BY day", owner),
             "settings": {"diary_mode": get_pref(owner, "diary_mode", "meals"),
                          "goal_mode": get_pref(owner, "goal_mode", "lose"), "goal_rate": get_pref(owner, "goal_rate", 0.5),
-                         "lang": get_pref(owner, "lang", "auto"), "units": get_pref(owner, "units", "metric")},
+                         "lang": get_pref(owner, "lang", "auto"), "units": get_pref(owner, "units", "metric"),
+                         "mass": get_pref(owner, "mass", "g")},
             "entries": q("SELECT day,time,meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat FROM entries WHERE owner=? ORDER BY day,id", owner),
             "goal": q("SELECT kcal,protein,carbs,fat,target_weight FROM goals WHERE owner=?", owner),
             "weights": q("SELECT day,kg FROM weights WHERE owner=? ORDER BY day", owner),
@@ -572,6 +605,10 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
         c.execute("DELETE FROM goal_weekdays WHERE owner=?", (owner,))
         c.execute("DELETE FROM day_notes WHERE owner=?", (owner,))
         c.execute("DELETE FROM body_measures WHERE owner=?", (owner,))
+        c.execute("DELETE FROM activity_days WHERE owner=?", (owner,))
+        for a in d.get("activity_days", []):
+            c.execute("INSERT OR REPLACE INTO activity_days(owner,day,steps,kcal,manual) VALUES(?,?,?,?,?)",
+                      (owner, a["day"], a.get("steps", 0), a.get("kcal", 0), a.get("manual", 0)))
         c.execute("DELETE FROM recipe_items WHERE recipe_id IN (SELECT id FROM recipes WHERE owner=?)", (owner,))
         c.execute("DELETE FROM recipes WHERE owner=?", (owner,))
         for b in d.get("body_measures", []):
@@ -591,11 +628,11 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
                 c.execute("INSERT INTO tracker_log(tracker_id,day,amount) VALUES(?,?,?)", (tid, l["day"], l["amount"]))
         fmap = {}
         for f in d.get("foods", []):
-            fid = fmap[f.get("id")] = c.execute("INSERT INTO foods(owner,name,brand,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,serving_g,category,favorite)"
-                            " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            fid = fmap[f.get("id")] = c.execute("INSERT INTO foods(owner,name,brand,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,serving_g,category,favorite,barcode)"
+                            " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                             (owner, f["name"], f.get("brand", ""), f["kcal"], f.get("protein", 0),
                              f.get("carbs", 0), f.get("fat", 0), *(f.get(m, 0) for m in db.MICROS),
-                             f.get("serving_g", 100), f.get("category", ""), f.get("favorite", 0))).lastrowid
+                             f.get("serving_g", 100), f.get("category", ""), f.get("favorite", 0), f.get("barcode", ""))).lastrowid
             for p in f.get("portions", []):
                 c.execute("INSERT INTO food_portions(food_id,name,grams) VALUES(?,?,?)", (fid, p["name"], p["grams"]))
         for r in d.get("recipes", []):
@@ -606,8 +643,8 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
                           (rid, i["name"], i["grams"], i["kcal"], i.get("protein", 0), i.get("carbs", 0), i.get("fat", 0), *(i.get(m, 0) for m in db.MICROS)))
         mmap = {}
         for m in d.get("meals", []):
-            mmap[m["id"]] = c.execute("INSERT INTO meals(owner,name,position,archived) VALUES(?,?,?,?)",
-                                      (owner, m["name"], m["position"], m.get("archived", 0))).lastrowid
+            mmap[m["id"]] = c.execute("INSERT INTO meals(owner,name,position,archived,from_time,to_time) VALUES(?,?,?,?,?,?)",
+                                      (owner, m["name"], m["position"], m.get("archived", 0), m.get("from_time", ""), m.get("to_time", ""))).lastrowid
         for e in d.get("entries", []):
             if e["meal_id"] in mmap:
                 c.execute("INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,time)"
@@ -645,11 +682,15 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
         set_pref(owner, "lang", d["settings"]["lang"])
     if d.get("settings", {}).get("units") in ("metric", "imperial"):
         set_pref(owner, "units", d["settings"]["units"])
+    if d.get("settings", {}).get("mass") in ("g", "oz"):
+        set_pref(owner, "mass", d["settings"]["mass"])
     if d.get("settings", {}).get("goal_mode") in GOAL_MODES:
         set_pref(owner, "goal_mode", d["settings"]["goal_mode"])
         set_pref(owner, "goal_rate", d["settings"].get("goal_rate", 0.5))
     if "features" in d:
         set_pref(owner, "features", d["features"])
+    if isinstance(d.get("activity"), dict):
+        set_pref(owner, "activity", d["activity"])
     return {"ok": True}
 
 
@@ -1257,9 +1298,10 @@ def period_report(c, owner: str, start: date, end: date) -> dict:
         "SELECT day, SUM(kcal) kcal, SUM(protein) protein, SUM(carbs) carbs, SUM(fat) fat FROM entries"
         " WHERE owner=? AND day BETWEEN ? AND ? GROUP BY day", (owner, start.isoformat(), end.isoformat()))}
     logged = []
-    for d, r in sorted(rows.items()):
-        g = get_goal(c, owner, d)
-        logged.append({**r, "goal_kcal": g["kcal"], "goal_protein": g["protein"]})
+    with pref_cache():
+        for d, r in sorted(rows.items()):
+            g = get_goal(c, owner, d)
+            logged.append({**r, "goal_kcal": g["kcal"], "goal_protein": g["protein"]})
     avg = lambda k: round(sum(r[k] for r in logged) / len(logged), 1) if logged else 0
     with_goal = [r for r in logged if r["goal_kcal"]]
     best = min(with_goal, key=lambda r: abs(r["kcal"] - r["goal_kcal"]), default=None)

@@ -475,3 +475,12 @@ svg.chart .avg-line { fill: none; stroke: var(--primary-text-color); stroke-widt
 }
 html[data-skin="win"] .diary tbody tr.item td:first-child { min-height: 0; }
 .swipe-hint { text-align: center; font-size: 12px; color: var(--secondary-text-color); margin: 4px 0 0; }
+
+/* v1.0: meal schedule banner, current meal, activity tiles */
+.now-banner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.now-banner .grow { flex: 1; min-width: 160px; }
+.card.now { box-shadow: 0 0 0 2px var(--primary-color); }
+.tile span.muted { display: block; font-size: 12px; }
+html[data-skin="win"] .card.now { box-shadow: var(--w-etched), 0 0 0 2px var(--primary-color); }
+html[data-skin="win"] .now-banner { background: var(--w-field); color: var(--w-text); box-shadow: var(--w-sunken); }
+.list input[type="time"] { width: auto; flex: none; }

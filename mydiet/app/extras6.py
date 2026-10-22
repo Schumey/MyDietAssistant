@@ -7,7 +7,7 @@ from html import escape
 from fastapi import Header, HTTPException, Response
 
 import db
-from extras import feature_on, get_pref, goal_hit
+from extras import feature_on, get_pref, goal_hit, pref_cache
 from main import app, check_day, get_goal, user_from
 
 KG_LB = 2.2046226218
@@ -58,11 +58,12 @@ def collect(owner: str, start: date, end: date) -> dict:
             "SELECT e.day, e.time, m.name meal, e.name, e.grams, e.kcal, e.protein, e.carbs, e.fat FROM entries e LEFT JOIN meals m ON m.id=e.meal_id"
             " WHERE e.owner=? AND e.day BETWEEN ? AND ? ORDER BY e.day, e.time, e.id", (owner, s, e))]
         days = []
-        for i in range((end - start).days + 1):
-            d = (start + timedelta(days=i)).isoformat()
-            g = get_goal(c, owner, d)
-            days.append({"day": d, "logged": d in rows, **{k: (rows[d][k] if d in rows else 0) for k in ("kcal", "protein", "carbs", "fat", "fiber", "sugar", "salt", "sat_fat")},
-                         "goal_kcal": g["kcal"], "goal_protein": g["protein"], "weight": weights.get(d), "note": notes.get(d, "")})
+        with pref_cache():
+            for i in range((end - start).days + 1):
+                d = (start + timedelta(days=i)).isoformat()
+                g = get_goal(c, owner, d)
+                days.append({"day": d, "logged": d in rows, **{k: (rows[d][k] if d in rows else 0) for k in ("kcal", "protein", "carbs", "fat", "fiber", "sugar", "salt", "sat_fat")},
+                             "goal_kcal": g["kcal"], "goal_protein": g["protein"], "weight": weights.get(d), "note": notes.get(d, "")})
     return {"days": days, "body": body, "entries": entries}
 
 

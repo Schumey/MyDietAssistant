@@ -3,8 +3,11 @@ returned in one common shape so the app can compare them with each other and wit
 import httpx
 from fastapi import Header, HTTPException
 
+import db
 from extras import feature_on
-from main import OPTIONS, app, user_from
+from main import CACHE_DAYS, OPTIONS, app, off_product, user_from
+
+QUERY_CACHE_DAYS = 14   # text searches go stale faster than a product's barcode entry
 
 UA = {"User-Agent": "MyDietAssistant/1.0 (Home Assistant add-on; github.com/Schumey/MyDietAssistant)"}
 NUTR = ("kcal", "protein", "carbs", "fat", "fiber", "sugar", "salt", "sat_fat")
@@ -36,9 +39,7 @@ def off_item(p: dict) -> dict:
 
 def search_off(q: str, barcode: str) -> list[dict]:
     if barcode:
-        r = httpx.get(f"https://world.openfoodfacts.org/api/v2/product/{barcode}.json",
-                      params={"fields": "code,product_name,brands,nutriments"}, headers=UA, timeout=10)
-        p = r.json().get("product")
+        p = off_product(barcode)
         return [off_item({**p, "code": barcode})] if p else []
     r = httpx.get("https://search.openfoodfacts.org/search",
                   params={"q": q, "page_size": 8, "fields": "code,product_name,brands,nutriments"}, headers=UA, timeout=10)
@@ -83,6 +84,21 @@ def search_usda(q: str, barcode: str) -> list[dict]:
 SOURCES = {"off": search_off, "usda": search_usda}
 
 
+def cached_search(source: str, q: str, barcode: str) -> tuple[list[dict], bool]:
+    """(results, from_cache). Barcode hits of Open Food Facts are cached by main.off_product itself."""
+    if source == "off" and barcode:
+        hit = db.cache_get(f"off:{barcode}", CACHE_DAYS) is not None
+        return SOURCES[source](q, barcode), hit
+    key = f"{source}:{'b' if barcode else 'q'}:{(barcode or q).lower()}"
+    hit = db.cache_get(key, CACHE_DAYS if barcode else QUERY_CACHE_DAYS)
+    if hit is not None:
+        return hit, True
+    res = SOURCES[source](q, barcode)
+    if res:
+        db.cache_put(key, res)
+    return res, False
+
+
 @app.get("/api/lookup")
 def lookup(q: str = "", barcode: str = "", sources: str = "off,usda", x_remote_user_id: str | None = Header(None)):
     """Search several nutrition databases at once. Needs the feature "sources" (queries leave the device)."""
@@ -93,12 +109,15 @@ def lookup(q: str = "", barcode: str = "", sources: str = "off,usda", x_remote_u
         raise HTTPException(400, "bad barcode")
     if not q and not barcode:
         raise HTTPException(400, "Suchbegriff oder Barcode angeben")
-    results, errors = [], {}
+    results, errors, cached = [], {}, []
     for s in [x for x in sources.split(",") if x in SOURCES]:
         try:
-            results += SOURCES[s](q, barcode)
+            res, hit = cached_search(s, q, barcode)
+            results += res
+            if hit:
+                cached.append(s)
         except HTTPException as e:
             errors[s] = e.detail
         except (httpx.HTTPError, ValueError, KeyError):
             errors[s] = "nicht erreichbar"
-    return {"results": results, "errors": errors}
+    return {"results": results, "errors": errors, "cached": cached}

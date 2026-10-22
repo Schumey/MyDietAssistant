@@ -213,6 +213,19 @@ CREATE TABLE IF NOT EXISTS trigger_log (
   day TEXT NOT NULL,
   PRIMARY KEY (trigger_id, day)
 );
+CREATE TABLE IF NOT EXISTS lookup_cache (     -- cached answers of online food databases
+  key TEXT PRIMARY KEY,
+  payload TEXT NOT NULL,
+  fetched TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS activity_days (    -- optional: steps / active kcal per day (from HA sensors or typed in)
+  owner TEXT NOT NULL,
+  day TEXT NOT NULL,
+  steps REAL NOT NULL DEFAULT 0,
+  kcal REAL NOT NULL DEFAULT 0,
+  manual INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (owner, day)
+);
 """
 
 
@@ -231,43 +244,82 @@ def conn():
 MICROS = ("fiber", "sugar", "salt", "sat_fat")
 
 
+def _cols(c, table: str) -> set:
+    return {r["name"] for r in c.execute(f"PRAGMA table_info({table})")}
+
+
+def _add(c, table: str, col: str, ddl: str):
+    if col not in _cols(c, table):
+        c.execute(f"ALTER TABLE {table} ADD COLUMN {col} {ddl}")
+
+
+def _m1_legacy(c):
+    """Everything up to v0.26 (formerly one column check after the other); idempotent."""
+    _add(c, "foods", "category", "TEXT NOT NULL DEFAULT ''")
+    _add(c, "meals", "archived", "INTEGER NOT NULL DEFAULT 0")
+    _add(c, "triggers", "days_ahead", "INTEGER NOT NULL DEFAULT 0")
+    for t in ("triggers", "meal_triggers"):
+        _add(c, t, "negate", "INTEGER NOT NULL DEFAULT 0")        # v0.5: "does NOT match" conditions
+        _add(c, t, "part", "TEXT NOT NULL DEFAULT 'any'")         # v0.9: start/end day of a calendar event
+    for col, ddl in (("hold_min", "INTEGER NOT NULL DEFAULT 0"), ("win_from", "TEXT NOT NULL DEFAULT ''"),
+                     ("win_to", "TEXT NOT NULL DEFAULT ''"),      # v0.11: hold time and time window
+                     ("extra", "TEXT NOT NULL DEFAULT '[]'"), ("combine", "TEXT NOT NULL DEFAULT 'and'"),
+                     ("profile_id", "INTEGER"),                   # v0.16: several conditions, goal-profile action
+                     ("paused_until", "TEXT NOT NULL DEFAULT ''")):  # v0.15: pause a trigger
+        _add(c, "triggers", col, ddl)
+    _add(c, "trigger_runs", "profile_id", "INTEGER")
+    _add(c, "foods", "favorite", "INTEGER NOT NULL DEFAULT 0")   # v0.11
+    _add(c, "entries", "time", "TEXT")                           # HH:MM, time-based diary
+    for t in ("foods", "entries", "saved_meal_items"):           # v0.15: optional micronutrients
+        for col in MICROS:
+            _add(c, t, col, "REAL NOT NULL DEFAULT 0")
+
+
+def _m2_v1(c):
+    """v1.0: barcode on foods, meal time windows, indexes for large diaries."""
+    _add(c, "foods", "barcode", "TEXT NOT NULL DEFAULT ''")
+    _add(c, "meals", "from_time", "TEXT NOT NULL DEFAULT ''")
+    _add(c, "meals", "to_time", "TEXT NOT NULL DEFAULT ''")
+    for ddl in ("CREATE INDEX IF NOT EXISTS foods_owner_name ON foods(owner, name COLLATE NOCASE)",
+                "CREATE INDEX IF NOT EXISTS foods_owner_barcode ON foods(owner, barcode)",
+                "CREATE INDEX IF NOT EXISTS entries_owner_meal ON entries(owner, meal_id)",
+                "CREATE INDEX IF NOT EXISTS entries_owner_name ON entries(owner, name)",
+                "CREATE INDEX IF NOT EXISTS meals_owner ON meals(owner, position)",
+                "CREATE INDEX IF NOT EXISTS saved_meals_owner ON saved_meals(owner)",
+                "CREATE INDEX IF NOT EXISTS saved_items_meal ON saved_meal_items(saved_meal_id)",
+                "CREATE INDEX IF NOT EXISTS portions_food ON food_portions(food_id)",
+                "CREATE INDEX IF NOT EXISTS recipe_items_recipe ON recipe_items(recipe_id)",
+                "CREATE INDEX IF NOT EXISTS weights_day ON weights(owner, day)",
+                "CREATE INDEX IF NOT EXISTS triggers_owner ON triggers(owner)"):
+        c.execute(ddl)
+
+
+# Append new migrations here; never edit or reorder old ones. The database stores how many have run (PRAGMA user_version).
+MIGRATIONS = (_m1_legacy, _m2_v1)
+
+
 def init():
+    existed = os.path.exists(DB_PATH)
     with conn() as c:
+        had_data = existed and c.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='entries'").fetchone() is not None
         c.executescript(SCHEMA)
-        cols = {r["name"] for r in c.execute("PRAGMA table_info(foods)")}
-        if "archived" not in {r["name"] for r in c.execute("PRAGMA table_info(meals)")}:
-            c.execute("ALTER TABLE meals ADD COLUMN archived INTEGER NOT NULL DEFAULT 0")
-        if "days_ahead" not in {r["name"] for r in c.execute("PRAGMA table_info(triggers)")}:
-            c.execute("ALTER TABLE triggers ADD COLUMN days_ahead INTEGER NOT NULL DEFAULT 0")
-        for t in ("triggers", "meal_triggers"):  # v0.5: "does NOT match" conditions
-            if "negate" not in {r["name"] for r in c.execute(f"PRAGMA table_info({t})")}:
-                c.execute(f"ALTER TABLE {t} ADD COLUMN negate INTEGER NOT NULL DEFAULT 0")
-        for t in ("triggers", "meal_triggers"):  # v0.9: calendar triggers on the start/end day of an event only
-            if "part" not in {r["name"] for r in c.execute(f"PRAGMA table_info({t})")}:
-                c.execute(f"ALTER TABLE {t} ADD COLUMN part TEXT NOT NULL DEFAULT 'any'")
-        for col, ddl in (("hold_min", "INTEGER NOT NULL DEFAULT 0"), ("win_from", "TEXT NOT NULL DEFAULT ''"),
-                         ("win_to", "TEXT NOT NULL DEFAULT ''")):  # v0.11: hold time and time window
-            if col not in {r["name"] for r in c.execute("PRAGMA table_info(triggers)")}:
-                c.execute(f"ALTER TABLE triggers ADD COLUMN {col} {ddl}")
-        for col, ddl in (("extra", "TEXT NOT NULL DEFAULT '[]'"), ("combine", "TEXT NOT NULL DEFAULT 'and'"),
-                         ("profile_id", "INTEGER")):  # v0.16: several conditions, goal-profile action
-            if col not in {r["name"] for r in c.execute("PRAGMA table_info(triggers)")}:
-                c.execute(f"ALTER TABLE triggers ADD COLUMN {col} {ddl}")
-        if "profile_id" not in {r["name"] for r in c.execute("PRAGMA table_info(trigger_runs)")}:
-            c.execute("ALTER TABLE trigger_runs ADD COLUMN profile_id INTEGER")
-        if "paused_until" not in {r["name"] for r in c.execute("PRAGMA table_info(triggers)")}:  # v0.15: pause a trigger
-            c.execute("ALTER TABLE triggers ADD COLUMN paused_until TEXT NOT NULL DEFAULT ''")
-        if "favorite" not in cols:  # v0.11: favourite foods
-            c.execute("ALTER TABLE foods ADD COLUMN favorite INTEGER NOT NULL DEFAULT 0")
-        if "time" not in {r["name"] for r in c.execute("PRAGMA table_info(entries)")}:
-            c.execute("ALTER TABLE entries ADD COLUMN time TEXT")  # HH:MM, time-based diary
-        for t in ("foods", "entries", "saved_meal_items"):  # v0.15: optional micronutrients (g per 100 g / absolute)
-            have = {r["name"] for r in c.execute(f"PRAGMA table_info({t})")}
-            for col in MICROS:
-                if col not in have:
-                    c.execute(f"ALTER TABLE {t} ADD COLUMN {col} REAL NOT NULL DEFAULT 0")
-        if "category" not in cols:  # database from v0.2
-            c.execute("ALTER TABLE foods ADD COLUMN category TEXT NOT NULL DEFAULT ''")
+        done = c.execute("PRAGMA user_version").fetchone()[0]
+        todo = MIGRATIONS[done:]
+        if todo and had_data:   # keep a copy before upgrading a database that already holds data
+            try:
+                import shutil
+                shutil.copyfile(DB_PATH, f"{DB_PATH}.v{done}.bak")
+            except OSError:
+                pass
+        for m in todo:
+            m(c)
+        if todo:
+            c.execute(f"PRAGMA user_version = {len(MIGRATIONS)}")
+
+
+def schema_version() -> int:
+    with conn() as c:
+        return c.execute("PRAGMA user_version").fetchone()[0]
 
 
 def ensure_meals(c, owner: str):
@@ -275,3 +327,33 @@ def ensure_meals(c, owner: str):
         return
     c.executemany("INSERT INTO meals(owner,name,position) VALUES(?,?,?)",
                   [(owner, n, i) for i, n in enumerate(DEFAULT_MEALS)])
+
+
+def cache_get(key: str, max_age_days: int):
+    """Cached online lookups (Open Food Facts, USDA). Product data is public, so one cache serves all users."""
+    from datetime import datetime, timedelta
+    with conn() as c:
+        r = c.execute("SELECT payload, fetched FROM lookup_cache WHERE key=?", (key,)).fetchone()
+    if not r or datetime.fromisoformat(r["fetched"]) < datetime.now() - timedelta(days=max_age_days):
+        return None
+    import json
+    return json.loads(r["payload"])
+
+
+def cache_put(key: str, payload):
+    import json
+    from datetime import datetime
+    with conn() as c:
+        c.execute("INSERT OR REPLACE INTO lookup_cache(key,payload,fetched) VALUES(?,?,?)",
+                  (key, json.dumps(payload, ensure_ascii=False), datetime.now().isoformat(timespec="seconds")))
+
+
+def cache_stats() -> dict:
+    with conn() as c:
+        r = c.execute("SELECT COUNT(*) n, COALESCE(SUM(LENGTH(payload)),0) b FROM lookup_cache").fetchone()
+    return {"entries": r["n"], "bytes": r["b"]}
+
+
+def cache_clear():
+    with conn() as c:
+        c.execute("DELETE FROM lookup_cache")

@@ -4,40 +4,20 @@ Ideensammlung für MyDietAssistant. Reihenfolge und Zuschnitt sind Vorschläge, 
 
 Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhaben.
 
-## Als Nächstes (hoher Nutzen im Alltag)
+## Home Assistant
 
-
-## Trigger und Home Assistant
-
-
-## Auswertung
-
+- **Sensor für die aktuelle Mahlzeit** (S): `sensor.mydiet_<name>_current_meal` aus dem Mahlzeiten-Zeitplan, damit Automationen darauf reagieren können.
+- **Aktivität aus der Verlaufsdatenbank nachladen** (M): Schritte und Kalorien vergangener Tage aus der HA-Historie holen, statt nur ab dem Einschalten zu sammeln.
+- **MQTT Discovery** (M): Sensoren mit eindeutiger ID, damit sie nach einem HA-Neustart nicht fehlen und sich Entitäten verwalten lassen.
 
 ## Lebensmittel und Eingabe
 
-- **Barcode-Scan ohne Browser-Unterstützung** (S): Für iPhone/Firefox eine mitgelieferte Scan-Bibliothek (ZXing) als Rückfall, da dort `BarcodeDetector` fehlt.
-- **Nahrungsmengen in oz** (M): Mengenfelder und Anzeige in Unzen für Lebensmittel (Gewicht lb und Maße in sind schon umschaltbar). Weitere Sprachen: der Übersetzungsmechanismus (Anfang von `static/app.js`) nimmt zusätzliche Wörterbücher auf.
-- **Datenquellen ausbauen** (M): BLS (Deutschland) und weitere Datenbanken ergänzen (BLS bietet keine freie API, daher als Datei-Import), alle eigenen Lebensmittel in einem Durchgang gegen Online-Quellen prüfen, Barcode als Feld am Lebensmittel speichern.
-
-## Import und Export
-
-
-## Mehrere Benutzer
-
-- **Geteilte Lebensmittel und Mahlzeiten** (M): Gemeinsame Bibliothek im Haushalt, persönliche Einträge bleiben getrennt.
-
-## Oberfläche
-
+- **Live geteilte Bibliothek im Haushalt** (M): Statt Kopien eine gemeinsame Bibliothek, in der Änderungen sofort für alle gelten (die Kopie-Variante gibt es seit 1.0).
+- **Weitere Sprachen** (S je Sprache): Der Übersetzungsmechanismus (Anfang von `static/app.js`) nimmt zusätzliche Wörterbücher auf.
+- **Weitere Datenquellen** (M): zum Beispiel Swiss Food Composition Database oder CIQUAL als Dateiimport über die Lebensmittel-Tabelle (Spaltenkürzel ergänzen).
 
 ## Technik und Qualität
 
-- **Automatische Tests** (M): API-Tests für Import, Trigger-Logik (Start-/Endtag, Zeitzonen) und Energiebilanz; CI auf GitHub.
-- **Datenbank-Migrationen strukturieren** (S): Versionsnummer in der Datenbank statt Spaltenprüfungen.
-- **Veröffentlichung** (M): Öffentliches Repository oder Add-on-Repository mit Icon/Logo, Übersetzungen und Release-Notes für die HA-Add-on-Seite.
-- **Performance bei großen Datenmengen** (S): Indizes und Paginierung, wenn viele Jahre MyFitnessPal-Daten importiert sind.
-
-## Ungeklärt / zu entscheiden
-
-- Soll es eine **Kalorienberechnung aus Aktivitäten** geben (Schritte, Training aus HA-Sensoren), oder bleibt die Bilanz rein aus Gewicht und Aufnahme?
-- **Mahlzeiten-Zeitplan** statt fester Mahlzeiten: Vorschlag, welche Mahlzeit jetzt ansteht?
-- **Datenschutz bei Open Food Facts**: Barcode-Abfragen nur auf Knopfdruck (Ist-Zustand) oder lokaler Cache der Treffer?
+- **Browser-Tests** (M): Ende-zu-Ende-Tests der Oberfläche (Playwright) zusätzlich zu den API-Tests.
+- **Add-on-Linter in CI** (S): Prüfung der Add-on-Konfiguration über den Linter der Home-Assistant-Community.
+- **Veröffentlichung als Add-on-Repository mit fertigen Images** (M): Container-Images über GitHub Actions bauen, damit die Installation nicht lokal baut.

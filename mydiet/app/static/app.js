@@ -226,7 +226,6 @@ const EN = {
   "{} Gewichtswerte, {} Tage mit Ernährungsdaten gefunden.": "Found {} weight values and {} days with nutrition data.",
   "Gewicht übernehmen (ein Wert pro Tag, vorhandene Werte werden überschrieben)": "Import weight (one value per day, existing values are overwritten)",
   "Tagessummen der Ernährung übernehmen (eine Schnelleingabe pro Tag, nur sinnvoll, wenn Du Deine Mahlzeiten sonst nicht hier führst)": "Import daily nutrition totals (one quick entry per day, only useful if you do not log your meals here otherwise)",
-  "Importiert: {} Tage, {} Einträge, {} Gewichtswerte.": "Imported: {} days, {} entries, {} weight values.",
   "Importiert: {} Tage, {} Gewichtswerte.": "Imported: {} days, {} weight values.",
   "Die Datei enthält keine Datenzeilen.": "The file contains no data rows.",
 
@@ -263,6 +262,59 @@ const EN = {
   "Uhrzeit fehlt": "time missing", "Benachrichtigungsdienst wie notify.mobile_app_handy angeben": "specify a notification service such as notify.mobile_app_phone",
   "not found": "not found",
 
+  // v1.0: activity, schedule, sharing libraries, food tables, ounces, lookup cache
+  "Aktivität": "Activity", "Aktivität eintragen": "Log activity", "Schritte": "Steps", "Verbrannt": "Burned", "Zum Tagesziel": "Added to goal",
+  "aus Schritten geschätzt": "estimated from steps", "Eintragen": "Log", "Aus Home Assistant lesen": "Read from Home Assistant", "Handeingabe verwerfen": "Discard manual entry",
+  "Dein Tagesziel (+{} kcal Aktivität)": "Your daily goal (+{} kcal activity)", "Tagesziel ({}) (+{} kcal Aktivität)": "Daily goal ({}) (+{} kcal activity)", "(+{} kcal Aktivität)": "(+{} kcal activity)",
+  "Von Hand eingetragene Werte werden für diesen Tag nicht mehr von den Sensoren überschrieben.": "Values typed in by hand are no longer overwritten by the sensors for this day.",
+  "Verbrannte Kalorien (kcal)": "Burned calories (kcal)", "leer = aus Schritten schätzen": "empty = estimate from steps",
+  "{} % der verbrannten Kalorien": "{} % of the burned calories",
+  "Sensoren aus Home Assistant, die über den Tag hochzählen und um Mitternacht auf 0 springen (ein dauerhaft steigender Zähler lässt sich mit dem Helfer „Verbrauchszähler“ auf täglich umstellen). Das Add-on liest sie alle fünf Minuten. Ohne Kalorien-Sensor werden Kalorien aus Schritten, Körpergewicht und dem Faktor unten geschätzt; Werte lassen sich auch von Hand eintragen.":
+    "Home Assistant sensors that count up during the day and reset to 0 at midnight (a counter that only ever grows can be made daily with the “Utility Meter” helper). The add-on reads them every five minutes. Without a calorie sensor, calories are estimated from steps, body weight and the factor below; values can also be typed in by hand.",
+  "Sensor für Schritte": "Steps sensor", "Sensor für aktive Kalorien (kcal)": "Active calories sensor (kcal)",
+  "Anteil, der das Tagesziel erhöht (%)": "Share that raises the daily goal (%)", "kcal je Schritt und kg Körpergewicht": "kcal per step and kg body weight",
+  "Viele Apps rechnen nur einen Teil der verbrannten Kalorien an (50 % ist ein vorsichtiger Wert), weil Aktivitätswerte oft zu hoch geschätzt sind.":
+    "Many apps only credit part of the burned calories (50 % is a cautious value) because activity figures are often overestimated.",
+  "z. B. sensor.handy_schritte": "e.g. sensor.phone_steps", "z. B. sensor.handy_aktive_kalorien": "e.g. sensor.phone_active_calories",
+  "Schritte und verbrannte Kalorien (aus Home-Assistant-Sensoren oder von Hand) erhöhen das Tagesziel des jeweiligen Tages.": "Steps and burned calories (from Home Assistant sensors or by hand) raise the calorie goal of that day.",
+  "Mahlzeiten-Zeitplan": "Meal schedule", "Zeitfenster pro Mahlzeit: das Tagebuch zeigt, welche Mahlzeit gerade ansteht, und erinnert auf Wunsch per Benachrichtigung.": "A time window per meal: the diary shows which meal is due and can send a notification.",
+  "Jetzt: {}": "Now: {}", "({} Uhr)": "({})", "Als Nächstes: {} ab {} Uhr": "Next: {} from {}", "schon eingetragen": "already logged", "+ Hinzufügen": "+ Add",
+  "Von (leer = Standardfenster)": "From (empty = default window)", "Bis (leer = Standardfenster)": "To (empty = default window)", "Standardfenster": "Default window",
+  "Zeitfenster: Von–Bis pro Mahlzeit. Leer gelassen gilt ein Standardfenster (Frühstück, Mittag- und Abendessen), Snacks haben keines. Fenster über Mitternacht sind möglich.":
+    "Time window per meal. Left empty, a default window applies (breakfast, lunch and dinner); snacks have none. Windows over midnight are possible.",
+  "Benachrichtigen, wenn eine Mahlzeit ansteht und noch leer ist": "Notify when a meal is due and still empty", "Nutzt den Benachrichtigungsdienst aus „Erinnerung“ weiter unten.": "Uses the notification service from “Reminder” below.",
+  "Zwischenspeicher der Online-Suche": "Cache of the online search", "Zwischenspeicher leeren": "Clear cache",
+  "Abfragen bei Open Food Facts und USDA merkt sich das Add-on lokal (Barcodes 60 Tage, Suchbegriffe 14 Tage). Wiederholte Suchen gehen so nicht mehr ins Internet. Es werden nur Produktdaten gespeichert, keine Angaben zu Deinem Tagebuch.":
+    "The add-on remembers lookups at Open Food Facts and USDA locally (barcodes 60 days, search terms 14 days), so repeated searches no longer go to the internet. Only product data is stored, nothing about your diary.",
+  "{} gespeicherte Abfragen ({} KB)": "{} stored lookups ({} KB)",
+  "Barcode scannen": "Scan barcode", "Der Barcode-Leser konnte nicht geladen werden. Bitte die Nummer eintippen.": "The barcode reader could not be loaded. Please type the number.",
+  "Mehr laden": "Load more", "Tabelle importieren …": "Import table …", "Werte online prüfen": "Check values online", "Prüfen": "Check", "Anhalten": "Stop", "Ignorieren": "Ignore",
+  "Prüfe {} von {} …": "Checking {} of {} …", "Nur Lebensmittel mit Barcode ({} von {})": "Only foods with a barcode ({} of {})",
+  "Auch USDA abfragen (strenges Abfragelimit ohne eigenen Schlüssel)": "Also query USDA (strict request limit without your own key)",
+  "Online-Abfrage nicht möglich: {}": "Online lookup not possible: {}", "Dein Wert: {} kcal · KH {} · Fett {} · Eiweiß {}": "Your value: {} kcal · carbs {} · fat {} · protein {}",
+  "Vergleicht Deine Lebensmittel mit Open Food Facts (Barcode, sonst Name) und zeigt Abweichungen bei Kalorien und Makros. Es wird nichts geändert, bevor Du „Übernehmen“ wählst. Abfragen werden lokal zwischengespeichert; dabei gehen Barcodes bzw. Namen an den Dienst.":
+    "Compares your foods with Open Food Facts (by barcode, otherwise by name) and shows deviations in calories and macros. Nothing is changed until you choose “Apply”. Lookups are cached locally; barcodes or names are sent to the service.",
+  "Lebensmittel-Tabelle importieren": "Import food table", "Lebensmittel-Tabelle": "Food table", "Energie (kJ)": "Energy (kJ)", "Kalorien (kcal)": "Calories (kcal)",
+  "Bitte die Spalten für Name und Kalorien zuordnen.": "Please assign the columns for name and calories.",
+  "{} Lebensmittel erkannt ({} Zeilen ohne Name oder Kalorien werden übersprungen). Werte gelten pro 100 g.": "{} foods recognised ({} rows without a name or calories are skipped). Values are per 100 g.",
+  "Kategorie für die importierten Lebensmittel": "Category for the imported foods", "Vorhandene Lebensmittel mit gleichem Namen und gleicher Marke bleiben unverändert.": "Existing foods with the same name and brand stay unchanged.",
+  "Importiert: {} neu, {} schon vorhanden, {} übersprungen.": "Imported: {} new, {} already there, {} skipped.",
+  "Eine Nährwerttabelle (zum Beispiel BLS, Open-Food-Facts-Export oder eigene Liste) als CSV oder Excel-Datei: Lebensmittel mit Werten pro 100 g werden in Deine Bibliothek aufgenommen.":
+    "A nutrition table (for example BLS, an Open Food Facts export or your own list) as a CSV or Excel file: foods with values per 100 g are added to your library.",
+  "Mit dem Haushalt teilen": "Share with the household", "Teilen": "Share", "{} kopiert, {} übersprungen.": "{} copied, {} skipped.",
+  "Die gewählten Personen bekommen eine eigene Kopie in ihrer Bibliothek. Gleichnamige Einträge bei ihnen bleiben unverändert, spätere Änderungen werden nicht abgeglichen.":
+    "The chosen people get their own copy in their library. Entries with the same name stay unchanged, later changes are not synchronised.",
+  "Einträge, Lebensmittel und Mahlzeiten mit anderen Benutzern teilen, jeder mit eigener Portion (z. B. ein Gericht für die Familie). Beide Seiten müssen die Funktion einschalten.":
+    "Share entries, foods and meals with other users, each with their own portion (e.g. one dish for the family). Both sides must switch the feature on.",
+  "Lebensmittelmengen": "Food amounts", "Gramm": "Grams", "Unzen (oz)": "Ounces (oz)", "Menge (oz)": "Amount (oz)", "Portion (oz)": "Serving (oz)", "Gewicht fertig (oz, optional)": "Cooked weight (oz, optional)",
+  "Menge für jede Person in Unzen. Der Eintrag erscheint am selben Tag im Tagebuch der anderen.": "Amount for each person in ounces. The entry appears in the others' diary on the same day.",
+  "Gesamt: {}": "Total: {}", "pro Portion ({})": "per portion ({})",
+  "Pro Portion ({}): {} kcal · KH {} g · Fett {} g · Eiweiß {} g · {} Portionen": "Per portion ({}): {} kcal · carbs {} g · fat {} g · protein {} g · {} portions",
+  // v1.0 server messages
+  "Ungültige Entität": "Invalid entity", "Wert außerhalb des Bereichs": "Value out of range", "Nur im Home-Assistant-Add-on möglich": "Only possible inside the Home Assistant add-on",
+  "Leere Datei": "Empty file", "Die Datei konnte nicht gelesen werden.": "The file could not be read.", "Die Excel-Datei enthält kein Tabellenblatt.": "The Excel file contains no worksheet.",
+  "Zu viele Zeilen (höchstens 50 000)": "Too many rows (50,000 at most)", "Spalten für Name und Kalorien (kcal oder kJ) zuordnen": "Assign columns for name and calories (kcal or kJ)",
+
   // default meals
   "Frühstück": "Breakfast", "Mittagessen": "Lunch", "Abendessen": "Dinner", "Snacks": "Snacks",
 };
@@ -278,7 +330,7 @@ const I18N = (() => {
   }
   pats.sort((a, b) => b.weight - a.weight);
 
-  const api = { lang: "de", locale: "de-DE", units: "metric" };
+  const api = { lang: "de", locale: "de-DE", units: "metric", mass: "g" };
   const find = s => {
     if (exact.has(s)) return exact.get(s);
     const q = /^„([\s\S]*)“$/.exec(s);          // quoted names, e.g. a meal name
@@ -310,11 +362,12 @@ const I18N = (() => {
     node.childNodes.forEach(walk);
   };
   let obs = null;
-  api.setLang = (lang, units) => {
+  api.setLang = (lang, units, mass) => {
     if (lang === "auto" || !lang) lang = (navigator.language || "de").toLowerCase().startsWith("en") ? "en" : "de";
     api.lang = lang === "en" ? "en" : "de";
     api.locale = api.lang === "en" ? "en-US" : "de-DE";
     if (units) api.units = units;
+    if (mass) api.mass = mass;
     document.documentElement.lang = api.lang;
     if (api.lang === "en" && !obs) {
       obs = new MutationObserver(muts => {
@@ -369,6 +422,15 @@ const imperial = () => I18N.units === "imperial";
 const wUnit = () => (imperial() ? "lb" : "kg");
 const wConv = kg => (imperial() ? kg * KG_LB : kg);
 const wIn = v => (imperial() ? v / KG_LB : v);
+// Food amounts are stored in grams; with the setting "Unzen" they are shown and typed in oz.
+const OZ = 28.349523125;
+const ozMode = () => I18N.mass === "oz";
+const mUnit = () => (ozMode() ? "oz" : "g");
+const gShow = g => (ozMode() ? Math.round(g / OZ * 100) / 100 : Math.round(g * 10) / 10);   // grams -> value for an amount field
+const gRead = v => { const x = num(v); return x == null ? null : ozMode() ? x * OZ : x; };     // amount field -> grams
+const gText = g => (ozMode() ? n1(g / OZ) : n0(g)) + " " + mUnit();
+const gMin = () => (ozMode() ? "0.05" : "1");
+const amtLabel = () => (ozMode() ? "Menge (oz)" : "Menge (g)");
 const n0 = n => Math.round(n).toLocaleString(I18N.locale);
 const n1 = n => (Math.round(n * 10) / 10).toLocaleString(I18N.locale, { minimumFractionDigits: 1 });
 const iso = d => d.toLocaleDateString("sv");
@@ -490,10 +552,13 @@ function catChips(onchange) {
 
 // ---------------------------------------------------------------- diary
 const timeNow = () => new Date().toTimeString().slice(0, 5);
-const entryLabel = e => (e.grams > 0 ? `${e.name}, ${n0(e.grams)} g` : e.name);
+const entryLabel = e => (e.grams > 0 ? `${e.name}, ${gText(e.grams)}` : e.name);
 
 async function renderDiary() {
-  const [d, trackers] = await Promise.all([api("day/" + state.day), state.features.trackers ? api("trackers?day=" + state.day) : [], loadCats()]);
+  const isToday = state.day === iso(new Date());
+  const [d, trackers, sched, act] = await Promise.all([api("day/" + state.day), state.features.trackers ? api("trackers?day=" + state.day) : [],
+    state.features.schedule && isToday ? api("schedule").catch(() => null) : null,
+    state.features.activity ? api("activity?day=" + state.day).catch(() => null) : null, loadCats()]);
   state.data = d;
   const times = d.mode === "times";
   const root = $("#diary");
@@ -509,6 +574,17 @@ async function renderDiary() {
     h("div", { class: "date" }, label, picker),
     h("button", { class: "step", onclick: () => shiftDay(1), "aria-label": "Folgetag" }, "›")));
 
+  // meal schedule (optional): which meal is due now
+  if (sched && !times) {
+    const info = id => sched.meals.find(x => x.id === id);
+    const cur = d.meals.find(m => m.id === sched.current), nxt = d.meals.find(m => m.id === sched.next);
+    if (cur) root.append(h("div", { class: "card now-banner" },
+      h("div", { class: "grow" }, h("b", {}, `Jetzt: ${cur.name}`), " ", h("span", { class: "muted" }, `(${info(cur.id).window.join("–")} Uhr)`),
+        info(cur.id).logged ? h("span", { class: "tag" }, "schon eingetragen") : null),
+      h("button", { onclick: () => openAdd(cur) }, "+ Hinzufügen")));
+    else if (nxt) root.append(h("div", { class: "card now-banner" }, h("div", { class: "muted" }, `Als Nächstes: ${nxt.name} ab ${info(nxt.id).window[0]} Uhr`)));
+  }
+
   // one card per meal, or a single chronological card in time mode
   const section = (title, items, meal) => {
     const sum = k => items.reduce((a, e) => a + e[k], 0);
@@ -521,7 +597,7 @@ async function renderDiary() {
         renderDiary();
       } }, "✕"))));
     const note = d.notes[meal ? meal.id : 0];
-    return h("div", { class: "card" }, h("table", { class: "diary" },
+    return h("div", { class: "card" + (meal && sched && meal.id === sched.current ? " now" : "") }, h("table", { class: "diary" },
       h("thead", {}, h("tr", {},
         h("th", { class: "title" }, title),
         h("th", {}, "Kalorien", h("small", {}, "kcal")),
@@ -576,10 +652,11 @@ async function renderDiary() {
       h("thead", {}, h("tr", {}, h("th"),
         h("th", {}, "Kalorien"), h("th", {}, "Kohlenhydrate"), h("th", {}, "Fette"), h("th", {}, "Eiweiß"), h("th"))),
       h("tbody", {},
-        h("tr", {}, h("th", {}, d.profile ? `Tagesziel (${d.profile})` : "Dein Tagesziel"), goalCell(g.kcal), goalCell(g.carbs), goalCell(g.fat), goalCell(g.protein), h("td")),
+        h("tr", {}, h("th", {}, (d.profile ? `Tagesziel (${d.profile})` : "Dein Tagesziel") + (g.activity_bonus ? ` (+${n0(g.activity_bonus)} kcal Aktivität)` : "")), goalCell(g.kcal), goalCell(g.carbs), goalCell(g.fat), goalCell(g.protein), h("td")),
         h("tr", {}, h("th", {}, "Gesamt"), h("td", {}, n0(t.kcal)), h("td", {}, n0(t.carbs)), h("td", {}, n0(t.fat)), h("td", {}, n0(t.protein)), h("td")),
         h("tr", {}, h("th", {}, "Verbleibend"), rem(g.kcal, t.kcal), rem(g.carbs, t.carbs), rem(g.fat, t.fat), rem(g.protein, t.protein), h("td"))))));
 
+  if (act) root.append(activityCard(act));
   if (state.features.micros) root.append(h("div", { class: "card micros" }, h("h2", {}, "Weitere Nährwerte"),
     h("div", { class: "stat-tiles" }, MICROS.map(([k, label, u]) => h("div", { class: "tile" }, h("span", { class: "muted" }, label), h("b", {}, `${n1(t[k] || 0)} ${u}`))))));
   root.append(h("div", { class: "hint" },
@@ -587,6 +664,39 @@ async function renderDiary() {
       : h("button", { class: "flat", onclick: () => noteDialog(0, "Tag") }, "Notiz zum Tag"),
     d.entries.length ? h("button", { class: "flat", onclick: () => dayCopyDialog() }, "Ganzen Tag kopieren") : null));
   if (state.features.trackers && trackers.length) root.append(trackerCard(trackers));
+}
+
+// Steps and burned calories of the day (optional feature): a share of them raises the day's calorie goal.
+function activityCard(a) {
+  const hasSensor = !!(a.config.steps_entity || a.config.kcal_entity);
+  const tile = (label, value, hint) => h("div", { class: "tile" }, h("span", { class: "muted" }, label), h("b", {}, value), hint ? h("span", { class: "muted" }, hint) : null);
+  return h("div", { class: "card" }, h("h2", {}, "Aktivität"),
+    h("div", { class: "stat-tiles" },
+      tile("Schritte", n0(a.steps)),
+      tile("Verbrannt", `${n0(a.kcal)} kcal`, a.estimated ? "aus Schritten geschätzt" : ""),
+      tile("Zum Tagesziel", `+${n0(a.bonus)} kcal`, `${n0(a.config.share)} % der verbrannten Kalorien`)),
+    h("div", { class: "actions", style: "justify-content:flex-start" },
+      h("button", { class: "flat", onclick: () => activityDialog(a) }, "Eintragen"),
+      hasSensor && state.day === iso(new Date()) ? h("button", { class: "flat", onclick: async () => {
+        try { await send("POST", "activity/sync", {}); } catch (e) { alert(e.message); }
+        renderDiary();
+      } }, "Aus Home Assistant lesen") : null,
+      a.manual ? h("button", { class: "flat", onclick: async () => { await api("activity/" + state.day, { method: "DELETE" }); renderDiary(); } }, "Handeingabe verwerfen") : null));
+}
+
+function activityDialog(a) {
+  const steps = h("input", { type: "number", step: "1", min: "0", value: a.steps || "" });
+  const kcal = h("input", { type: "number", step: "1", min: "0", value: a.estimated ? "" : a.kcal || "", placeholder: "leer = aus Schritten schätzen" });
+  const msg = h("div", { class: "err" });
+  setDlg(h("h2", {}, "Aktivität eintragen"),
+    h("div", { class: "muted" }, "Von Hand eingetragene Werte werden für diesen Tag nicht mehr von den Sensoren überschrieben."),
+    h("label", {}, "Schritte"), steps, h("label", {}, "Verbrannte Kalorien (kcal)"), kcal, msg,
+    h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
+      h("button", { onclick: async () => {
+        try { await send("PUT", "activity/" + state.day, { steps: num(steps.value) || 0, kcal: num(kcal.value) || 0 }); dlg.close(); renderDiary(); }
+        catch (e) { msg.textContent = e.message; }
+      } }, "Speichern")));
+  dlg.showModal();
 }
 
 // Free-text note for a meal or (meal_id 0) the whole day: hunger, training, mood ...
@@ -656,34 +766,49 @@ function shiftDay(n) {
   renderDiary();
 }
 
+// The first 200 foods are loaded up front; a longer library is searched on the server once two letters are typed.
+function remoteFoods(input, onHits) {
+  let timer = null;
+  return () => {
+    clearTimeout(timer);
+    const q = input.value.trim();
+    if (q.length < 2) return onHits(null);
+    timer = setTimeout(async () => {
+      try { const r = await api("foods?limit=50&q=" + encodeURIComponent(q)); if (input.value.trim() === q) onHits(r); }
+      catch { /* the local list stays */ }
+    }, 250);
+  };
+}
+
 // Pick a food and an amount (used to swap a component of an entry or a saved meal).
 function foodSwapDialog({ title, grams, confirm, onDone, onCancel }) {
-  const search = h("input", { type: "search", placeholder: "Lebensmittel suchen…", oninput: draw });
+  const search = h("input", { type: "search", placeholder: "Lebensmittel suchen…", oninput: () => { draw(); more(); } });
   const results = h("div", { class: "results" });
   const detail = h("div");
   const body = h("div", {}, search, results,
     h("div", { class: "actions" }, h("button", { class: "flat", onclick: onCancel }, "Zurück")));
-  let foods = [];
+  let foods = [], remote = null;
+  const more = remoteFoods(search, r => { remote = r; draw(); });
   function draw() {
     const q = search.value.toLowerCase();
-    results.replaceChildren(...foods.filter(isVisible)
-      .filter(f => ((f.name || "") + " " + (f.brand || "")).toLowerCase().includes(q)).slice(0, 50)
+    const base = remote && search.value.trim().length >= 2 ? remote : foods.filter(f => ((f.name || "") + " " + (f.brand || "")).toLowerCase().includes(q));
+    results.replaceChildren(...base.filter(isVisible).slice(0, 50)
       .map(f => h("button", { class: "food", onclick: () => choose(f) },
         h("span", {}, f.name, f.brand ? ` (${f.brand})` : ""), h("span", { class: "muted" }, `${n0(f.kcal)} kcal/100 g`))));
   }
   function choose(f) {
-    const g = h("input", { type: "number", step: "any", min: "1", value: grams || f.serving_g || 100, oninput: preview });
+    const g = h("input", { type: "number", step: "any", min: gMin(), value: gShow(grams || f.serving_g || 100), oninput: preview });
     const pv = h("div", { class: "preview" });
     function preview() {
-      const k = (num(g.value) || 0) / 100;
+      const k = (gRead(g.value) || 0) / 100;
       pv.replaceChildren(h("span", {}, h("b", {}, n0(f.kcal * k)), " kcal"), h("span", {}, h("b", {}, n0(f.carbs * k)), " g KH"),
         h("span", {}, h("b", {}, n0(f.fat * k)), " g Fett"), h("span", {}, h("b", {}, n0(f.protein * k)), " g Eiweiß"));
     }
     preview();
-    detail.replaceChildren(h("h3", {}, f.name), portionPicker(f, g), h("label", {}, "Menge (g)"), g, pv,
+    detail.replaceChildren(h("h3", {}, f.name), portionPicker(f, g) || "", h("label", {}, amtLabel()), g, pv,
       h("div", { class: "actions" },
         h("button", { class: "flat", onclick: () => { detail.replaceChildren(); body.hidden = false; } }, "Zurück"),
-        h("button", { onclick: () => { if (num(g.value) > 0) onDone(f, num(g.value)); } }, confirm)));
+        h("button", { onclick: () => { if (gRead(g.value) > 0) onDone(f, gRead(g.value)); } }, confirm)));
     body.hidden = true;
     g.select();
   }
@@ -704,11 +829,11 @@ const foodItem = (f, grams) => {
 function portionPicker(f, gramsInput) {
   if (!f.portions || !f.portions.length) return null;
   const pick = h("select", {}, h("option", { value: "" }, "Portion wählen …"),
-    f.portions.map((p, i) => h("option", { value: i }, `${p.name} (${n0(p.grams)} g)`)));
+    f.portions.map((p, i) => h("option", { value: i }, `${p.name} (${gText(p.grams)})`)));
   const count = h("input", { type: "number", step: "any", min: "0.1", value: "1", style: "width:70px;flex:none" });
   const apply = () => {
     if (pick.value === "") return;
-    gramsInput.value = Math.round(f.portions[Number(pick.value)].grams * (num(count.value) || 1) * 10) / 10;
+    gramsInput.value = gShow(f.portions[Number(pick.value)].grams * (num(count.value) || 1));
     gramsInput.dispatchEvent(new Event("input"));
   };
   pick.onchange = apply;
@@ -718,7 +843,7 @@ function portionPicker(f, gramsInput) {
 
 function editEntry(e, times) {
   const quick = !(e.grams > 0);
-  const grams = h("input", { type: "number", step: "any", min: "1", value: e.grams || "" });
+  const grams = h("input", { type: "number", step: "any", min: gMin(), value: e.grams ? gShow(e.grams) : "" });
   const time = h("input", { type: "time", value: e.time || "" });
   const q = {};
   const qfield = (key, label) => {
@@ -730,11 +855,11 @@ function editEntry(e, times) {
     h("h2", {}, e.name),
     quick ? [qfield("name", "Bezeichnung"),
       h("div", { class: "grid", style: "margin-top:12px" }, qfield("kcal", "kcal"), qfield("carbs", "KH (g)"), qfield("fat", "Fett (g)"), qfield("protein", "Eiweiß (g)"))]
-      : [h("label", {}, "Menge (g)"), grams],
+      : [h("label", {}, amtLabel()), grams],
     times ? [h("label", {}, "Uhrzeit"), time] : null,
     msg,
     h("div", { class: "actions" },
-      h("button", { class: "flat", onclick: () => swapEntry(e, times, quick ? null : num(grams.value)) }, "Lebensmittel tauschen"),
+      h("button", { class: "flat", onclick: () => swapEntry(e, times, quick ? null : gRead(grams.value)) }, "Lebensmittel tauschen"),
       state.features.household ? h("button", { class: "flat", onclick: () => shareDialog(e) }, "Teilen …") : null,
       h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
       h("button", { onclick: async () => {
@@ -744,8 +869,8 @@ function editEntry(e, times) {
           Object.assign(body, { name: q.name.value, kcal: num(q.kcal.value), carbs: num(q.carbs.value) || 0,
             fat: num(q.fat.value) || 0, protein: num(q.protein.value) || 0 });
         } else {
-          if (!(num(grams.value) > 0)) return;
-          body.grams = num(grams.value);
+          if (!(gRead(grams.value) > 0)) return;
+          body.grams = gRead(grams.value);
         }
         if (times) body.time = time.value || null;
         await send("PUT", "entries/" + e.id, body);
@@ -865,30 +990,57 @@ function saveMealDialog(meal, items, times) {
 
 
 // ---------------------------------------------------------------- barcode scanner
-// Uses the browser's BarcodeDetector (Chrome / Android WebView). Two ways in: live camera (needs HTTPS) or a photo.
-const scanSupported = () => "BarcodeDetector" in window;
+// The browser's BarcodeDetector where there is one (Chrome, Android), otherwise the bundled ZXing library (iPhone, Firefox, Safari).
+// Two ways in: live camera (needs HTTPS) or a photo.
+const SCAN_FORMATS = ["ean_13", "ean_8", "upc_a", "upc_e"];
+let zxingLoading = null;
+const loadZXing = () => zxingLoading || (zxingLoading = new Promise((resolve, reject) => {
+  const el = h("script", { src: "static/vendor/zxing.min.js" });
+  el.onload = () => resolve(window.ZXing);
+  el.onerror = () => { zxingLoading = null; reject(new Error("Der Barcode-Leser konnte nicht geladen werden. Bitte die Nummer eintippen.")); };
+  document.head.append(el);
+}));
+
+// An async function that reads a barcode from a <video>, canvas or ImageBitmap: the text, or null when none is visible.
+async function barcodeReader() {
+  if ("BarcodeDetector" in window) {
+    const det = new BarcodeDetector({ formats: SCAN_FORMATS });
+    return async src => { const r = await det.detect(src); return r.length ? r[0].rawValue : null; };
+  }
+  const Z = await loadZXing();
+  const reader = new Z.MultiFormatReader();
+  const F = Z.BarcodeFormat;
+  reader.setHints(new Map([[Z.DecodeHintType.POSSIBLE_FORMATS, [F.EAN_13, F.EAN_8, F.UPC_A, F.UPC_E]], [Z.DecodeHintType.TRY_HARDER, true]]));
+  const cv = document.createElement("canvas"), ctx = cv.getContext("2d", { willReadFrequently: true });
+  return async src => {
+    const w = src.videoWidth || src.width, ht = src.videoHeight || src.height;
+    if (!w || !ht) return null;
+    const k = Math.min(1, 1280 / Math.max(w, ht));
+    cv.width = Math.round(w * k); cv.height = Math.round(ht * k);
+    ctx.drawImage(src, 0, 0, cv.width, cv.height);
+    try { return reader.decode(new Z.BinaryBitmap(new Z.HybridBinarizer(new Z.HTMLCanvasElementLuminanceSource(cv)))).getText(); }
+    catch { return null; }   // nothing readable in this frame
+  };
+}
 
 // Resolves with the barcode text, rejects with a readable Error. `box` receives the video preview and a cancel button.
-function scanBarcode(box) {
+async function scanBarcode(box) {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error("Kein Kamerazugriff (die Seite braucht HTTPS). Nutze „Foto“ oder tippe die Nummer ein.");
+  const read = await barcodeReader();
   return new Promise((resolve, reject) => {
-    if (!scanSupported()) return reject(new Error("Dieser Browser kann keine Barcodes lesen (BarcodeDetector fehlt). Bitte die Nummer eintippen."));
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return reject(new Error("Kein Kamerazugriff (die Seite braucht HTTPS). Nutze „Foto“ oder tippe die Nummer ein."));
-    const det = new BarcodeDetector({ formats: ["ean_13", "ean_8", "upc_a", "upc_e"] });
     const video = h("video", { class: "scan-video", autoplay: true, playsinline: true, muted: true });
-    let stream = null, timer = null, done = false;
+    let stream = null, timer = null, done = false, busy = false;
     const stop = () => { done = true; clearInterval(timer); if (stream) stream.getTracks().forEach(t => t.stop()); box.replaceChildren(); dlg.removeEventListener("close", stop); };
     const cancel = h("button", { class: "flat", onclick: () => { stop(); reject(new Error("Abgebrochen")); } }, "Scan abbrechen");
     dlg.addEventListener("close", stop);
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(s => {
-      if (done) { s.getTracks().forEach(t => t.stop()); return; }
-      stream = s; video.srcObject = s;
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(st => {
+      if (done) { st.getTracks().forEach(t => t.stop()); return; }
+      stream = st; video.srcObject = st;
       box.replaceChildren(video, h("div", { class: "muted" }, "Halte den Barcode ins Bild."), cancel);
       timer = setInterval(async () => {
-        if (done || video.readyState < 2) return;
-        try {
-          const r = await det.detect(video);
-          if (r.length) { const v = r[0].rawValue; stop(); resolve(v); }
-        } catch { /* keep trying */ }
+        if (done || busy || video.readyState < 2) return;
+        busy = true;
+        try { const v = await read(video); if (v && !done) { stop(); resolve(v); } } catch { /* keep trying */ } finally { busy = false; }
       }, 300);
     }).catch(e => { stop(); reject(new Error(e.name === "NotAllowedError" ? "Kamerazugriff wurde nicht erlaubt." : "Kamera nicht verfügbar: " + (e.message || e.name))); });
   });
@@ -896,17 +1048,16 @@ function scanBarcode(box) {
 
 // Barcode from a photo (works without HTTPS, e.g. through the phone's camera app).
 async function scanPhoto(file) {
-  if (!scanSupported()) throw new Error("Dieser Browser kann keine Barcodes lesen (BarcodeDetector fehlt). Bitte die Nummer eintippen.");
-  const det = new BarcodeDetector({ formats: ["ean_13", "ean_8", "upc_a", "upc_e"] });
-  const r = await det.detect(await createImageBitmap(file));
-  if (!r.length) throw new Error("Auf dem Foto wurde kein Barcode erkannt.");
-  return r[0].rawValue;
+  const read = await barcodeReader();
+  const v = await read(await createImageBitmap(file));
+  if (!v) throw new Error("Auf dem Foto wurde kein Barcode erkannt.");
+  return v;
 }
 
 // ---------------------------------------------------------------- food form (shared)
 // Create (food == null) or edit a food; onSave receives the food id.
-function foodForm({ food = null, onSave, onCancel }) {
-  const f = { barcode: h("input", { inputmode: "numeric", placeholder: "Barcode" }) };
+function foodForm({ food = null, prefill = {}, onSave, onCancel }) {
+  const f = { barcode: h("input", { inputmode: "numeric", placeholder: "Barcode", value: food ? food.barcode || "" : "" }) };
   const field = (key, label, attrs = {}) => {
     f[key] = h("input", { id: "nf-" + key, ...attrs, value: food ? food[key] : attrs.value });
     return h("div", {}, h("label", { for: "nf-" + key }, label), f[key]);
@@ -917,7 +1068,7 @@ function foodForm({ food = null, onSave, onCancel }) {
   const pbox = h("div", { class: "list" });
   const drawPortions = () => pbox.replaceChildren(...portions.map((p, i) => h("div", {},
     h("input", { value: p.name, placeholder: "z. B. 1 Scheibe", oninput: e => { p.name = e.target.value; } }),
-    h("input", { type: "number", step: "any", min: "0", value: p.grams || "", placeholder: "g", style: "max-width:90px", oninput: e => { p.grams = num(e.target.value) || 0; } }), "g",
+    h("input", { type: "number", step: "any", min: "0", value: p.grams ? gShow(p.grams) : "", placeholder: mUnit(), style: "max-width:90px", oninput: e => { p.grams = gRead(e.target.value) || 0; } }), mUnit(),
     h("button", { class: "icon", title: "Entfernen", "aria-label": "Entfernen", onclick: () => { portions.splice(i, 1); drawPortions(); } }, "✕"))));
   drawPortions();
   const scanBox = h("div", { class: "scan-box" });
@@ -948,6 +1099,7 @@ function foodForm({ food = null, onSave, onCancel }) {
     const apply = items => {
       const avg = k => items.reduce((a, i) => a + (i[k] || 0), 0) / items.length;
       f.name.value = items[0].name; f.brand.value = items[0].brand || "";
+      if (/^\d{6,}$/.test(items[0].code || "") && !f.barcode.value.trim()) f.barcode.value = items[0].code;
       for (const k of ["kcal", "protein", "carbs", "fat", "fiber", "sugar", "salt", "sat_fat"]) setField(k, avg(k));
       check();
     };
@@ -1005,7 +1157,7 @@ function foodForm({ food = null, onSave, onCancel }) {
     h("div", { class: "grid", style: "margin-top:12px" },
       field("brand", "Marke"),
       field("category", "Kategorie", { list: "cat-list", placeholder: "z. B. Diät, Bulk" }),
-      field("serving_g", "Portion (g)", { type: "number", step: "any", value: 100 })),
+      field("serving_g", ozMode() ? "Portion (oz)" : "Portion (g)", { type: "number", step: "any", value: 100 })),
     h("div", { class: "grid", style: "margin-top:12px" },
       field("kcal", "kcal / 100 g", { type: "number", step: "any" }),
       field("carbs", "KH / 100 g", { type: "number", step: "any" }),
@@ -1025,14 +1177,16 @@ function foodForm({ food = null, onSave, onCancel }) {
           protein: num(f.protein.value) || 0, carbs: num(f.carbs.value) || 0, fat: num(f.fat.value) || 0,
           ...Object.fromEntries(MICROS.map(([k]) => [k, f[k] ? num(f[k].value) || 0 : (food ? food[k] || 0 : 0)])),
           portions: portions.filter(p => p.name.trim() && p.grams > 0),
-          serving_g: num(f.serving_g.value) || 100, category: f.category.value };
+          serving_g: gRead(f.serving_g.value) || 100, category: f.category.value, barcode: f.barcode.value.trim() };
         const id = food ? food.id : (await send("POST", "foods", body)).id;
         if (food) await send("PUT", "foods/" + food.id, body);
         onSave(id);
       } }, food ? "Speichern" : "Speichern & wählen")));
   for (const k of ["kcal", "carbs", "fat", "protein"]) f[k].addEventListener("input", check);
+  f.serving_g.value = gShow(food ? food.serving_g : 100);
   check();
   setTimeout(() => f.name.focus());
+  if (prefill.barcode) { f.barcode.value = prefill.barcode; lookup(); }
   return form;
 }
 
@@ -1041,9 +1195,10 @@ async function openAdd(meal) {
   const times = state.data.mode === "times";
   let [foods, saved, sugg] = await Promise.all([api("foods"), api("saved-meals"),
     api("suggestions" + (meal ? "?meal_id=" + meal.id : "")), loadCats()]);
-  let tab = "foods";
+  let tab = "foods", remote = null, favs = null;
   const time = h("input", { type: "time", value: timeNow() });
-  const search = h("input", { type: "search", placeholder: "Suchen…", oninput: draw });
+  const search = h("input", { type: "search", placeholder: "Suchen…", oninput: () => { draw(); more(); } });
+  const more = remoteFoods(search, r => { remote = r; draw(); });
   const results = h("div", { class: "results" });
   const detail = h("div");
   const body = h("div");
@@ -1051,7 +1206,10 @@ async function openAdd(meal) {
   const sug = h("div", { class: "results suggest" });
   const tabs = h("div", { class: "range" },
     ["foods", "Lebensmittel", "fav", "★ Favoriten", "saved", "Meine Mahlzeiten"].flatMap((v, i, a) => i % 2 ? [] : [
-      h("button", { class: v === tab ? "active" : "", "data-t": v, onclick: () => { tab = v; draw(); } }, a[i + 1])]));
+      h("button", { class: v === tab ? "active" : "", "data-t": v, onclick: () => {
+        tab = v; draw();
+        if (v === "fav" && !favs) api("foods?favorite=1&limit=200").then(x => { favs = x; draw(); });
+      } }, a[i + 1])]));
 
   function drawChips() {
     chips.replaceChildren(...[catChips(draw)].filter(Boolean));
@@ -1060,13 +1218,14 @@ async function openAdd(meal) {
   function draw() {
     for (const b of tabs.children) b.classList.toggle("active", b.dataset.t === tab);
     const q = search.value.toLowerCase();
-    const list = tab === "foods" ? foods : tab === "fav" ? foods.filter(f => f.favorite) : saved;
+    const list = tab === "foods" ? foods : tab === "fav" ? (favs || foods.filter(f => f.favorite)) : saved;
     const frequent = tab === "foods" ? sugg.items : tab === "saved" ? sugg.saved.filter(isVisible) : [];
     sug.replaceChildren(...(!q && frequent.length ? [h("div", { class: "muted sect" }, "Häufig verwendet"),
       ...frequent.map(x => h("button", { class: "food", onclick: () => (tab === "foods" ? selectEntry(x) : selectSaved(x)) },
-        h("span", {}, x.name), h("span", { class: "muted" }, `${n0(x.kcal)} kcal${x.grams ? " · " + n0(x.grams) + " g" : ""}`))),
+        h("span", {}, x.name), h("span", { class: "muted" }, `${n0(x.kcal)} kcal${x.grams ? " · " + gText(x.grams) : ""}`))),
       h("div", { class: "muted sect" }, "Alle")] : []));
-    const rows = list.filter(isVisible).filter(x => ((x.name || "") + " " + (x.brand || "")).toLowerCase().includes(q)).slice(0, 50);
+    const hits = remote && tab === "foods" && search.value.trim().length >= 2;
+    const rows = (hits ? remote : list.filter(x => ((x.name || "") + " " + (x.brand || "")).toLowerCase().includes(q))).filter(isVisible).slice(0, 50);
     results.replaceChildren(...rows.map(x => h("button", { class: "food", onclick: () => (tab !== "saved" ? select(x) : selectSaved(x)) },
       h("span", {}, x.favorite ? "★ " : "", x.name, x.brand ? ` (${x.brand})` : "", x.category ? h("span", { class: "tag" }, x.category) : null),
       h("span", { class: "muted" }, tab !== "saved" ? `${n0(x.kcal)} kcal/100 g` : `${n0(x.kcal)} kcal`))));
@@ -1081,21 +1240,21 @@ async function openAdd(meal) {
   const back = () => { detail.replaceChildren(); body.hidden = false; };
 
   function select(f) {
-    const grams = h("input", { type: "number", step: "any", min: "1", value: f.serving_g || 100, oninput: preview });
+    const grams = h("input", { type: "number", step: "any", min: gMin(), value: gShow(f.serving_g || 100), oninput: preview });
     const pv = h("div", { class: "preview" });
     function preview() {
-      const k = (num(grams.value) || 0) / 100;
+      const k = (gRead(grams.value) || 0) / 100;
       pv.replaceChildren(
         h("span", {}, h("b", {}, n0(f.kcal * k)), " kcal"), h("span", {}, h("b", {}, n0(f.carbs * k)), " g KH"),
         h("span", {}, h("b", {}, n0(f.fat * k)), " g Fett"), h("span", {}, h("b", {}, n0(f.protein * k)), " g Eiweiß"));
     }
     preview();
-    detail.replaceChildren(h("h3", {}, f.name), portionPicker(f, grams), h("label", {}, "Menge (g)"), grams, pv,
+    detail.replaceChildren(h("h3", {}, f.name), portionPicker(f, grams) || "", h("label", {}, amtLabel()), grams, pv,
       h("div", { class: "actions" },
         h("button", { class: "flat", onclick: back }, "Zurück"),
         h("button", { onclick: async () => {
-          if (!(num(grams.value) > 0)) return;
-          await send("POST", "entries", { ...target(), food_id: f.id, grams: num(grams.value) });
+          if (!(gRead(grams.value) > 0)) return;
+          await send("POST", "entries", { ...target(), food_id: f.id, grams: gRead(grams.value) });
           dlg.close(); renderDiary();
         } }, "Hinzufügen")));
     body.hidden = true;
@@ -1104,22 +1263,22 @@ async function openAdd(meal) {
 
   // a frequently used diary entry: re-add it with the last amount (scaled from the stored snapshot)
   function selectEntry(it) {
-    const grams = h("input", { type: "number", step: "any", min: "1", value: it.grams, oninput: preview });
+    const grams = h("input", { type: "number", step: "any", min: gMin(), value: gShow(it.grams), oninput: preview });
     const pv = h("div", { class: "preview" });
     function preview() {
-      const k = (num(grams.value) || 0) / it.grams;
+      const k = (gRead(grams.value) || 0) / it.grams;
       pv.replaceChildren(
         h("span", {}, h("b", {}, n0(it.kcal * k)), " kcal"), h("span", {}, h("b", {}, n0(it.carbs * k)), " g KH"),
         h("span", {}, h("b", {}, n0(it.fat * k)), " g Fett"), h("span", {}, h("b", {}, n0(it.protein * k)), " g Eiweiß"));
     }
     preview();
-    detail.replaceChildren(h("h3", {}, it.name), h("label", {}, "Menge (g)"), grams, pv,
+    detail.replaceChildren(h("h3", {}, it.name), h("label", {}, amtLabel()), grams, pv,
       h("div", { class: "actions" },
         h("button", { class: "flat", onclick: back }, "Zurück"),
         h("button", { onclick: async () => {
-          if (!(num(grams.value) > 0)) return;
+          if (!(gRead(grams.value) > 0)) return;
           const { day, meal_id, time: t } = target();
-          await send("POST", "entries/copy", { ids: [it.entry_id], day, meal_id, time: t, factor: num(grams.value) / it.grams });
+          await send("POST", "entries/copy", { ids: [it.entry_id], day, meal_id, time: t, factor: gRead(grams.value) / it.grams });
           dlg.close(); renderDiary();
         } }, "Hinzufügen")));
     body.hidden = true;
@@ -1151,8 +1310,9 @@ async function openAdd(meal) {
     factor.select();
   }
 
-  function newFood() {
+  function newFood(prefill = {}) {
     const form = foodForm({
+      prefill,
       onCancel: () => { form.remove(); body.hidden = false; },
       onSave: async id => {
         foods = await api("foods");
@@ -1165,9 +1325,25 @@ async function openAdd(meal) {
     (dlg.querySelector(".dlg-body") || dlg).append(form);
   }
 
-  body.append(tabs, search, chips, sug, results,
+  // scan a barcode: an own food with this barcode is picked straight away, otherwise a new food is looked up
+  const scanBox = h("div", { class: "scan-box" });
+  const photoIn = h("input", { type: "file", accept: "image/*", capture: "environment", hidden: true, onchange: async () => {
+    scanBox.replaceChildren();
+    try { await found(await scanPhoto(photoIn.files[0])); } catch (e) { scanBox.replaceChildren(h("div", { class: "err" }, e.message)); }
+    photoIn.value = "";
+  } });
+  async function found(code) {
+    const own = await api("foods?barcode=" + encodeURIComponent(code));
+    if (own.length) select(own[0]); else newFood({ barcode: code });
+  }
+  body.append(tabs, search, scanBox, chips, sug, results,
     h("div", { class: "actions" },
-      h("button", { class: "flat", onclick: newFood }, "+ Neues Lebensmittel"),
+      h("button", { class: "flat", onclick: () => newFood() }, "+ Neues Lebensmittel"),
+      h("button", { class: "flat", onclick: async () => {
+        scanBox.replaceChildren();
+        try { await found(await scanBarcode(scanBox)); } catch (e) { if (e.message !== "Abgebrochen") scanBox.replaceChildren(h("div", { class: "err" }, e.message)); }
+      } }, "Barcode scannen"),
+      h("button", { class: "flat", onclick: () => photoIn.click() }, "Foto vom Barcode"), photoIn,
       h("button", { class: "flat", onclick: () => quickDialog(meal) }, "Schnelleingabe (nur kcal)"),
       h("button", { class: "flat", onclick: () => dlg.close() }, "Schließen")));
   setDlg(h("h2", {}, meal ? "Zu „" + meal.name + "“ hinzufügen" : "Eintrag hinzufügen"),
@@ -1332,7 +1508,9 @@ function rangeButtons(options, current, onpick) {
 const tag = c => (c ? h("span", { class: "tag" }, c) : null);
 
 async function renderFoods() {
-  const [foods] = await Promise.all([api("foods"), loadCats()]);
+  const PAGE = 200;
+  let [foods] = await Promise.all([api("foods?limit=" + PAGE), loadCats()]);
+  let more = foods.length === PAGE, query = "", timer = null;
   const root = $("#foods");
   root.replaceChildren();
   const list = h("div", { class: "list" });
@@ -1348,35 +1526,49 @@ async function renderFoods() {
     dlg.showModal();
   };
 
+  // the library can hold thousands of foods (e.g. after a BLS import): search and paging happen on the server
+  const load = async append => {
+    const rows = await api(`foods?limit=${PAGE}&offset=${append ? foods.length : 0}&q=${encodeURIComponent(query)}`);
+    foods = append ? foods.concat(rows) : rows;
+    more = rows.length === PAGE;
+    draw();
+  };
+
   const draw = () => {
     chips.replaceChildren(...[catChips(draw)].filter(Boolean));
-    const q = search.value.toLowerCase();
-    const shown = foods.filter(isVisible).filter(f => (f.name + " " + f.brand).toLowerCase().includes(q));
-    const hiddenN = foods.length - foods.filter(isVisible).length;
+    const shown = foods.filter(isVisible);
+    const hiddenN = foods.length - shown.length;
     list.replaceChildren(...(shown.length ? shown.map(f => h("div", {},
       h("div", { class: "grow" }, h("div", {}, f.name, f.brand ? ` (${f.brand})` : "", tag(f.category),
         plausibility(f) ? h("span", { class: "warn-mark", title: plausibility(f) }, "⚠") : null),
-        h("div", { class: "muted" }, `${n0(f.kcal)} kcal · KH ${n1(f.carbs)} g · Fett ${n1(f.fat)} g · Eiweiß ${n1(f.protein)} g (pro 100 g)`)),
+        h("div", { class: "muted" }, `${n0(f.kcal)} kcal · KH ${n1(f.carbs)} g · Fett ${n1(f.fat)} g · Eiweiß ${n1(f.protein)} g (pro 100 g)`, f.barcode ? ` · ${f.barcode}` : "")),
       h("button", { class: "icon fav" + (f.favorite ? " on" : ""), title: f.favorite ? "Favorit entfernen" : "Als Favorit markieren", "aria-label": "Favorit", onclick: async () => {
         f.favorite = f.favorite ? 0 : 1;
         await send("PUT", `foods/${f.id}/favorite`, { favorite: !!f.favorite });
         draw();
       } }, f.favorite ? "★" : "☆"),
       h("button", { class: "icon", title: "Trigger anlegen", "aria-label": "Trigger anlegen", onclick: () => triggerDialog({ item: "f:" + f.id }) }, "⚡"),
+      state.features.household ? h("button", { class: "icon", title: "Mit dem Haushalt teilen", "aria-label": "Teilen", onclick: () => shareLibrary("foods", f) }, "⇪") : null,
       h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => openForm(f) }, "✎"),
       h("button", { class: "icon", title: "Löschen", "aria-label": "Löschen", onclick: async () => {
         if (!confirm(`„${f.name}“ löschen? Bereits eingetragene Mahlzeiten bleiben erhalten.`)) return;
         await api("foods/" + f.id, { method: "DELETE" }); renderFoods();
       } }, "✕")))
-      : [h("div", { class: "muted", style: "padding:8px 0" }, foods.length ? "Nichts gefunden." : "Noch keine Lebensmittel angelegt.")]),
-      ...(hiddenN ? [h("div", { class: "muted", style: "padding:8px 0" }, `${hiddenN} Lebensmittel durch ausgeblendete Kategorien versteckt.`)] : []));
+      : [h("div", { class: "muted", style: "padding:8px 0" }, query ? "Nichts gefunden." : "Noch keine Lebensmittel angelegt.")]),
+      ...(hiddenN ? [h("div", { class: "muted", style: "padding:8px 0" }, `${hiddenN} Lebensmittel durch ausgeblendete Kategorien versteckt.`)] : []),
+      ...(more ? [h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => load(true) }, "Mehr laden"))] : []));
   };
 
-  const search = h("input", { type: "search", placeholder: "Lebensmittel suchen…", oninput: draw });
-  root.append(h("div", { class: "card" },
-    h("div", { class: "grid", style: "grid-template-columns:1fr auto auto" }, search,
+  const search = h("input", { type: "search", placeholder: "Lebensmittel suchen…", oninput: () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { query = search.value.trim(); load(false); }, 250);
+  } });
+  root.append(h("div", { class: "card" }, search,
+    h("div", { class: "actions", style: "justify-content:flex-start;flex-wrap:wrap" },
+      h("button", { onclick: () => openForm(null) }, "+ Neues Lebensmittel"),
       h("button", { class: "flat", onclick: () => dupDialog(renderFoods) }, "Duplikate suchen"),
-      h("button", { onclick: () => openForm(null) }, "+ Neues Lebensmittel")),
+      state.features.sources ? h("button", { class: "flat", onclick: foodCheckDialog }, "Werte online prüfen") : null,
+      h("button", { class: "flat", onclick: () => pickFile(".csv,.txt,.xlsx,text/csv", foodImportDialog) }, "Tabelle importieren …")),
     chips, list));
   draw();
 }
@@ -1402,6 +1594,127 @@ async function dupDialog(onChange) {
     }), msg,
     h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Schließen")));
   if (!dlg.open) dlg.showModal();
+}
+
+// Compare the own foods with Open Food Facts (by barcode where there is one, else by name) and offer to take over the online values.
+async function foodCheckDialog() {
+  const foods = await api("foods?limit=1000");
+  const coded = foods.filter(f => f.barcode).length;
+  const onlyCoded = h("input", { type: "checkbox", checked: coded > 0 });
+  const usda = h("input", { type: "checkbox" });
+  const prog = h("div", { class: "muted" }), out = h("div", { class: "list" }), msg = h("div", { class: "err" });
+  let running = false, stopFlag = false;
+  const go = h("button", { onclick: run }, "Prüfen");
+  const stopBtn = h("button", { class: "flat", onclick: () => { stopFlag = true; } }, "Anhalten");
+  stopBtn.hidden = true;
+  const take = async (f, m, row) => {
+    const keep = k => (m[k] ? m[k] : f[k] || 0);
+    await send("PUT", "foods/" + f.id, { name: f.name, brand: f.brand, kcal: m.kcal, protein: m.protein, carbs: m.carbs, fat: m.fat,
+      fiber: keep("fiber"), sugar: keep("sugar"), salt: keep("salt"), sat_fat: keep("sat_fat"), serving_g: f.serving_g, category: f.category,
+      barcode: f.barcode || (/^\d{6,}$/.test(m.code || "") ? m.code : "") });
+    row.replaceChildren(h("div", { class: "grow muted" }, `${f.name}: Werte übernommen ✓`));
+  };
+  async function run() {
+    if (running) return;
+    running = true; stopFlag = false; go.disabled = true; stopBtn.hidden = false; out.replaceChildren(); msg.textContent = "";
+    const todo = foods.filter(f => !onlyCoded.checked || f.barcode);
+    const sources = usda.checked ? "off,usda" : "off";
+    let diff = 0, none = 0, ok = 0, i = 0;
+    for (const f of todo) {
+      if (stopFlag) break;
+      prog.textContent = `Prüfe ${++i} von ${todo.length} …`;
+      let r;
+      try { r = await api(`foods/${f.id}/check?sources=${sources}`); } catch (e) { msg.textContent = e.message; break; }
+      if (r.level === "error") { msg.textContent = `Online-Abfrage nicht möglich: ${r.error}`; break; }
+      if (r.level === "ok") ok++;
+      else if (r.level === "none") none++;
+      else {
+        diff++;
+        const m = r.match, row = h("div", {});
+        row.append(h("div", { class: "grow" }, h("b", {}, f.name + (f.brand ? ` (${f.brand})` : "")),
+          h("div", { class: "muted" }, `Dein Wert: ${n0(f.kcal)} kcal · KH ${n1(f.carbs)} · Fett ${n1(f.fat)} · Eiweiß ${n1(f.protein)}`),
+          h("div", { class: "muted" }, `${m.source === "usda" ? "USDA" : "Open Food Facts"}: ${n0(m.kcal)} kcal · KH ${n1(m.carbs)} · Fett ${n1(m.fat)} · Eiweiß ${n1(m.protein)} (${m.name})`)),
+          h("button", { class: "flat", onclick: () => take(f, m, row).catch(e => { msg.textContent = e.message; }) }, "Übernehmen"),
+          h("button", { class: "icon", title: "Ignorieren", "aria-label": "Ignorieren", onclick: () => row.remove() }, "✕"));
+        out.append(row);
+      }
+    }
+    prog.textContent = `${i} geprüft: ${ok} stimmen überein, ${diff} weichen ab, ${none} ohne Treffer.`;
+    running = false; go.disabled = false; stopBtn.hidden = true;
+  }
+  setDlg(h("h2", {}, "Werte online prüfen"),
+    h("div", { class: "muted" }, "Vergleicht Deine Lebensmittel mit Open Food Facts (Barcode, sonst Name) und zeigt Abweichungen bei Kalorien und Makros. Es wird nichts geändert, bevor Du „Übernehmen“ wählst. Abfragen werden lokal zwischengespeichert; dabei gehen Barcodes bzw. Namen an den Dienst."),
+    h("label", { class: "pick" }, onlyCoded, `Nur Lebensmittel mit Barcode (${coded} von ${foods.length})`),
+    h("label", { class: "pick" }, usda, "Auch USDA abfragen (strenges Abfragelimit ohne eigenen Schlüssel)"),
+    h("div", { class: "actions", style: "justify-content:flex-start" }, go, stopBtn), prog, msg, out,
+    h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => { stopFlag = true; dlg.close(); renderFoods(); } }, "Schließen")));
+  dlg.showModal();
+}
+
+// Food table (BLS, Open Food Facts export, own list as CSV or Excel): the server guesses the columns, the user can correct them.
+const FOOD_FIELDS = [["name", "Name"], ["brand", "Marke"], ["barcode", "Barcode"], ["kcal", "Kalorien (kcal)"], ["kj", "Energie (kJ)"], ["protein", "Eiweiß"],
+  ["carbs", "Kohlenhydrate"], ["fat", "Fett"], ["fiber", "Ballaststoffe"], ["sugar", "Zucker"], ["salt", "Salz"], ["sodium", "Natrium"], ["sat_fat", "ges. Fettsäuren"]];
+
+async function foodImportDialog(file) {
+  const post = async (path, qs = "") => {
+    const r = await fetch("api/" + path + qs, { method: "POST", body: file });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.detail || r.status);
+    return j;
+  };
+  let p;
+  try { p = await post("import/foods/preview"); } catch (e) { alert(e.message); return; }
+  const selects = {};
+  const mapping = () => Object.fromEntries(FOOD_FIELDS.map(([k]) => [k, selects[k].value === "" ? null : Number(selects[k].value)]));
+  const info = h("div", { class: "muted" }), sample = h("div", { class: "lk-wrap" }), msg = h("div", { class: "err" });
+  const category = h("input", { value: p.preset || file.name.replace(/\.[^.]+$/, ""), maxlength: 60 });
+  const redraw = q => {
+    info.textContent = q.items ? `${q.items} Lebensmittel erkannt (${q.skipped} Zeilen ohne Name oder Kalorien werden übersprungen). Werte gelten pro 100 g.` : "Bitte die Spalten für Name und Kalorien zuordnen.";
+    sample.replaceChildren(q.sample.length ? h("table", { class: "lk" }, h("thead", {}, h("tr", {}, ["Name", "kcal", "KH", "Fett", "Eiweiß"].map(x => h("th", {}, x)))),
+      h("tbody", {}, q.sample.map(r => h("tr", {}, h("td", {}, r.name), h("td", {}, n0(r.kcal)), h("td", {}, n1(r.carbs)), h("td", {}, n1(r.fat)), h("td", {}, n1(r.protein)))))) : "");
+  };
+  for (const [k] of FOOD_FIELDS) {
+    selects[k] = h("select", { onchange: async () => {
+      try { p = { ...p, ...(await post("import/foods/preview", "?mapping=" + encodeURIComponent(JSON.stringify(mapping())))) }; redraw(p); } catch (e) { msg.textContent = e.message; }
+    } }, h("option", { value: "" }, "– nicht vorhanden –"), p.headers.map((hd, i) => h("option", { value: i }, hd)));
+    if (p.mapping[k] != null) selects[k].value = p.mapping[k];
+  }
+  setDlg(h("h2", {}, "Lebensmittel-Tabelle importieren"),
+    p.preset ? h("div", {}, `Erkannt: ${p.preset}`) : null, info,
+    h("details", {}, h("summary", {}, "Zuordnung der Spalten"), h("div", { class: "grid" }, FOOD_FIELDS.map(([k, label]) => h("div", {}, h("label", {}, label), selects[k])))),
+    sample, h("label", {}, "Kategorie für die importierten Lebensmittel"), category,
+    h("div", { class: "muted" }, "Vorhandene Lebensmittel mit gleichem Namen und gleicher Marke bleiben unverändert."), msg,
+    h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
+      h("button", { onclick: async () => {
+        try {
+          const r = await post("import/foods", `?category=${encodeURIComponent(category.value)}&mapping=${encodeURIComponent(JSON.stringify(mapping()))}`);
+          dlg.close();
+          alert(`Importiert: ${r.added} neu, ${r.duplicates} schon vorhanden, ${r.skipped} übersprungen.`);
+          loadCats().then(() => { if (state.tab === "foods") renderFoods(); });
+        } catch (e) { msg.textContent = e.message; }
+      } }, "Importieren")));
+  redraw(p);
+  dlg.showModal();
+}
+
+// Copy a food or saved meal into other household members' libraries.
+async function shareLibrary(kind, item) {
+  const users = await api("household/users");
+  const rows = users.map(u => ({ u, on: h("input", { type: "checkbox" }) }));
+  const msg = h("div", { class: "err" });
+  setDlg(h("h2", {}, `„${item.name}“ teilen`),
+    h("div", { class: "muted" }, "Die gewählten Personen bekommen eine eigene Kopie in ihrer Bibliothek. Gleichnamige Einträge bei ihnen bleiben unverändert, spätere Änderungen werden nicht abgeglichen."),
+    rows.length ? h("div", { class: "list" }, rows.map(r => h("div", {}, h("label", { class: "pick grow" }, r.on, r.u.name))))
+      : h("div", { class: "muted", style: "padding:8px 0" }, "Noch niemand sonst nimmt am Haushalt teil. Jeder Benutzer schaltet dafür unter Einstellungen → Zusatzfunktionen „Haushalt“ ein."),
+    msg,
+    h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
+      h("button", { disabled: !rows.length, onclick: async () => {
+        const ids = rows.filter(r => r.on.checked).map(r => r.u.id);
+        if (!ids.length) { msg.textContent = "Bitte mindestens eine Person wählen."; return; }
+        try { const r = await send("POST", kind + "/share", { ids: [item.id], users: ids }); dlg.close(); alert(`${r.copied} kopiert, ${r.skipped} übersprungen.`); }
+        catch (e) { msg.textContent = e.message; }
+      } }, "Teilen")));
+  dlg.showModal();
 }
 
 // ---------------------------------------------------------------- saved meals page
@@ -1433,9 +1746,9 @@ async function renderMeals() {
       }));
     };
     const rows = draft.items.map((it, idx) => {
-      const g = it.grams > 0 ? h("input", { type: "number", step: "any", min: "1", style: "width:80px;flex:none", value: Math.round(it.grams * 10) / 10, onchange: () => {
-        const ng = num(g.value);
-        if (!(ng > 0)) { g.value = Math.round(it.grams * 10) / 10; return; }
+      const g = it.grams > 0 ? h("input", { type: "number", step: "any", min: gMin(), style: "width:80px;flex:none", value: gShow(it.grams), onchange: () => {
+        const ng = gRead(g.value);
+        if (!(ng > 0)) { g.value = gShow(it.grams); return; }
         const k = ng / it.grams;
         for (const key of ["kcal", "protein", "carbs", "fat", "fiber", "sugar", "salt", "sat_fat"]) it[key] = (it[key] || 0) * k;
         it.grams = ng;
@@ -1443,7 +1756,7 @@ async function renderMeals() {
         kc.textContent = `${n0(it.kcal)} kcal`;
       } }) : null;
       const kc = h("span", { class: "muted" }, `${n0(it.kcal)} kcal`);
-      return h("div", {}, h("div", { class: "grow" }, it.name, " ", kc), g, g ? "g" : null,
+      return h("div", {}, h("div", { class: "grow" }, it.name, " ", kc), g, g ? mUnit() : null,
         h("button", { class: "icon edit", title: "Durch anderes Lebensmittel tauschen", "aria-label": "Tauschen", onclick: () => swap(idx, `„${it.name}“ tauschen`) }, "⇄"),
         h("button", { class: "icon", title: "Entfernen", "aria-label": "Entfernen", disabled: draft.items.length < 2, onclick: () => {
           draft.items.splice(idx, 1); editSaved(s, draft);
@@ -1478,6 +1791,7 @@ async function renderMeals() {
         h("div", { class: "muted" }, `${n0(s.kcal)} kcal · KH ${n1(s.carbs)} g · Fett ${n1(s.fat)} g · Eiweiß ${n1(s.protein)} g`),
         h("div", { class: "muted" }, s.items.map(entryLabel).join(" · "))),
       h("button", { class: "icon", title: "Trigger anlegen", "aria-label": "Trigger anlegen", onclick: () => triggerDialog({ item: "s:" + s.id }) }, "⚡"),
+      state.features.household ? h("button", { class: "icon", title: "Mit dem Haushalt teilen", "aria-label": "Teilen", onclick: () => shareLibrary("saved-meals", s) }, "⇪") : null,
       h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => editSaved(s) }, "✎"),
       h("button", { class: "icon", title: "Kopie anlegen", "aria-label": "Kopieren", onclick: async () => {
         const { id } = await send("POST", `saved-meals/${s.id}/copy`);
@@ -1511,18 +1825,18 @@ async function renderRecipes() {
     const name = h("input", { value: draft.name, oninput: () => { draft.name = name.value; } });
     const category = h("input", { list: "cat-list", value: draft.category, oninput: () => { draft.category = category.value; } });
     const portions = h("input", { type: "number", step: "any", min: "0.1", value: draft.portions, oninput: () => { draft.portions = num(portions.value); drawTotal(); } });
-    const cooked = h("input", { type: "number", step: "any", min: "1", placeholder: "wie Summe der Zutaten", value: draft.cooked_g || "",
-      oninput: () => { draft.cooked_g = num(cooked.value); drawTotal(); } });
+    const cooked = h("input", { type: "number", step: "any", min: gMin(), placeholder: "wie Summe der Zutaten", value: draft.cooked_g ? gShow(draft.cooked_g) : "",
+      oninput: () => { draft.cooked_g = gRead(cooked.value); drawTotal(); } });
     const msg = h("div", { class: "err" });
     const total = h("div", { class: "preview" });
     const sum = k => draft.items.reduce((a, i) => a + (i[k] || 0), 0);
     function drawTotal() {
       const p = draft.portions > 0 ? draft.portions : 1;
       const g = draft.cooked_g > 0 ? draft.cooked_g : sum("grams");
-      total.replaceChildren(h("div", { class: "muted" }, `Gesamt: ${n0(g)} g`),
+      total.replaceChildren(h("div", { class: "muted" }, `Gesamt: ${gText(g)}`),
         h("span", {}, h("b", {}, n0(sum("kcal") / p)), " kcal"), h("span", {}, h("b", {}, n0(sum("carbs") / p)), " g KH"),
         h("span", {}, h("b", {}, n0(sum("fat") / p)), " g Fett"), h("span", {}, h("b", {}, n0(sum("protein") / p)), " g Eiweiß"),
-        h("div", { class: "muted" }, `pro Portion (${n0(g / p)} g)`));
+        h("div", { class: "muted" }, `pro Portion (${gText(g / p)})`));
     }
     drawTotal();
     const swap = (idx, title) => setDlg(foodSwapDialog({
@@ -1532,20 +1846,20 @@ async function renderRecipes() {
     }));
     const rows = draft.items.map((it, idx) => {
       const kc = h("span", { class: "muted" }, `${n0(it.kcal)} kcal`);
-      const g = h("input", { type: "number", step: "any", min: "1", style: "width:80px;flex:none", value: Math.round(it.grams * 10) / 10, onchange: () => {
-        const ng = num(g.value);
-        if (!(ng > 0)) { g.value = Math.round(it.grams * 10) / 10; return; }
+      const g = h("input", { type: "number", step: "any", min: gMin(), style: "width:80px;flex:none", value: gShow(it.grams), onchange: () => {
+        const ng = gRead(g.value);
+        if (!(ng > 0)) { g.value = gShow(it.grams); return; }
         const k = ng / it.grams;
         for (const key of ["kcal", "protein", "carbs", "fat", "fiber", "sugar", "salt", "sat_fat"]) it[key] = (it[key] || 0) * k;
         it.grams = ng; kc.textContent = `${n0(it.kcal)} kcal`; drawTotal();
       } });
-      return h("div", {}, h("div", { class: "grow" }, it.name, " ", kc), g, "g",
+      return h("div", {}, h("div", { class: "grow" }, it.name, " ", kc), g, mUnit(),
         h("button", { class: "icon edit", title: "Durch anderes Lebensmittel tauschen", "aria-label": "Tauschen", onclick: () => swap(idx, `„${it.name}“ tauschen`) }, "⇄"),
         h("button", { class: "icon", title: "Entfernen", "aria-label": "Entfernen", onclick: () => { draft.items.splice(idx, 1); editRecipe(r, draft); } }, "✕"));
     });
     setDlg(h("h2", {}, r ? "Rezept bearbeiten" : "Neues Rezept"),
       h("label", {}, "Name"), name, h("label", {}, "Kategorie"), category, catList(),
-      h("div", { class: "grid" }, h("div", {}, h("label", {}, "Portionen"), portions), h("div", {}, h("label", {}, "Gewicht fertig (g, optional)"), cooked)),
+      h("div", { class: "grid" }, h("div", {}, h("label", {}, "Portionen"), portions), h("div", {}, h("label", {}, ozMode() ? "Gewicht fertig (oz, optional)" : "Gewicht fertig (g, optional)"), cooked)),
       h("label", { style: "margin-top:12px" }, "Zutaten"),
       h("div", { class: "list" }, rows.length ? rows : [h("div", { class: "muted" }, "Noch keine Zutaten.")]),
       h("button", { class: "flat", onclick: () => swap(null, "Zutat hinzufügen") }, "+ Zutat"),
@@ -1568,8 +1882,8 @@ async function renderRecipes() {
     const shown = recipes.filter(isVisible).filter(r => r.name.toLowerCase().includes(q));
     list.replaceChildren(...(shown.length ? shown.map(r => h("div", {},
       h("div", { class: "grow" }, h("div", {}, r.name, tag(r.category)),
-        h("div", { class: "muted" }, `Pro Portion (${n0(r.portion_g)} g): ${n0(r.portion.kcal)} kcal · KH ${n1(r.portion.carbs)} g · Fett ${n1(r.portion.fat)} g · Eiweiß ${n1(r.portion.protein)} g · ${n1(r.portions)} Portionen`),
-        h("div", { class: "muted" }, r.items.map(i => `${i.name} ${n0(i.grams)} g`).join(" · "))),
+        h("div", { class: "muted" }, `Pro Portion (${gText(r.portion_g)}): ${n0(r.portion.kcal)} kcal · KH ${n1(r.portion.carbs)} g · Fett ${n1(r.portion.fat)} g · Eiweiß ${n1(r.portion.protein)} g · ${n1(r.portions)} Portionen`),
+        h("div", { class: "muted" }, r.items.map(i => `${i.name} ${gText(i.grams)}`).join(" · "))),
       h("button", { class: "icon", title: "Trigger anlegen", "aria-label": "Trigger anlegen", disabled: !r.food_id, onclick: () => triggerDialog({ item: "f:" + r.food_id }) }, "⚡"),
       h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => editRecipe(r) }, "✎"),
       h("button", { class: "icon", title: "Kopie anlegen", "aria-label": "Kopieren", onclick: async () => {
@@ -2126,6 +2440,8 @@ function importMenu() {
     h("div", { class: "list" },
       h("div", {}, h("div", { class: "grow" }, h("b", {}, "CSV aus einer anderen App"), h("div", { class: "muted" }, "Cronometer (servings.csv, biometrics.csv), FDDB, Yazio, Google Fit (Takeout) und ähnliche Tabellen. Die Spalten werden erkannt und lassen sich korrigieren.")),
         h("button", { onclick: () => pickFile(".csv,.txt,text/csv", tableDialog) }, "Datei wählen")),
+      h("div", {}, h("div", { class: "grow" }, h("b", {}, "Lebensmittel-Tabelle"), h("div", { class: "muted" }, "Eine Nährwerttabelle (zum Beispiel BLS, Open-Food-Facts-Export oder eigene Liste) als CSV oder Excel-Datei: Lebensmittel mit Werten pro 100 g werden in Deine Bibliothek aufgenommen.")),
+        h("button", { onclick: () => pickFile(".csv,.txt,.xlsx,text/csv", foodImportDialog) }, "Datei wählen")),
       h("div", {}, h("div", { class: "grow" }, h("b", {}, "Apple Health"), h("div", { class: "muted" }, "export.zip oder export.xml aus der Health-App (Profil → Gesundheitsdaten exportieren). Gelesen wird direkt im Browser, nichts wird hochgeladen außer den Tageswerten.")),
         h("button", { onclick: () => pickFile(".zip,.xml,application/zip,text/xml", healthDialog) }, "Datei wählen"))),
     h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Schließen")));
@@ -2380,10 +2696,11 @@ async function renderSettings() {
 
   const langSel = h("select", {}, h("option", { value: "auto" }, "Automatisch (Browser)"), h("option", { value: "de" }, "Deutsch"), h("option", { value: "en" }, "English"));
   const unitSel = h("select", {}, h("option", { value: "metric" }, "Metrisch (kg, cm)"), h("option", { value: "imperial" }, "Imperial (lb, in)"));
-  langSel.value = state.langPref || "auto"; unitSel.value = I18N.units;
-  const savePref = async () => { await send("PUT", "settings", { lang: langSel.value, units: unitSel.value }); location.reload(); };
+  const massSel = h("select", {}, h("option", { value: "g" }, "Gramm"), h("option", { value: "oz" }, "Unzen (oz)"));
+  langSel.value = state.langPref || "auto"; unitSel.value = I18N.units; massSel.value = I18N.mass;
+  const savePref = async () => { await send("PUT", "settings", { lang: langSel.value, units: unitSel.value, mass: massSel.value }); location.reload(); };
   root.append(h("div", { class: "card" }, h("h2", {}, "Sprache und Einheiten"),
-    h("div", { class: "grid" }, h("div", {}, h("label", {}, "Sprache"), langSel), h("div", {}, h("label", {}, "Einheiten"), unitSel)),
+    h("div", { class: "grid" }, h("div", {}, h("label", {}, "Sprache"), langSel), h("div", {}, h("label", {}, "Einheiten"), unitSel), h("div", {}, h("label", {}, "Lebensmittelmengen"), massSel)),
     h("div", { class: "actions" }, h("button", { onclick: savePref }, "Speichern"))));
 
   // optional features
@@ -2403,7 +2720,9 @@ async function renderSettings() {
       feat("trackers", "Wasser und Nahrungsergänzung", "Schnell-Eintrag für Wasser, Koffein, Kreatin usw. mit eigenem Tagesziel."),
       feat("recipes", "Rezepte", "Zutaten zu einem Rezept bündeln, durch Portionen teilen und wie ein Lebensmittel eintragen (eigener Reiter)."),
       feat("sources", "Weitere Datenquellen", "Online-Suche in Open Food Facts und USDA mit Abgleich der Werte untereinander und mit Deinen eigenen (Suchbegriffe werden an diese Dienste gesendet)."),
-      feat("household", "Haushalt", "Einträge mit anderen Benutzern teilen, jeder mit eigener Portion (z. B. ein Gericht für die Familie). Beide Seiten müssen die Funktion einschalten."),
+      feat("activity", "Aktivität", "Schritte und verbrannte Kalorien (aus Home-Assistant-Sensoren oder von Hand) erhöhen das Tagesziel des jeweiligen Tages."),
+      feat("schedule", "Mahlzeiten-Zeitplan", "Zeitfenster pro Mahlzeit: das Tagebuch zeigt, welche Mahlzeit gerade ansteht, und erinnert auf Wunsch per Benachrichtigung."),
+      feat("household", "Haushalt", "Einträge, Lebensmittel und Mahlzeiten mit anderen Benutzern teilen, jeder mit eigener Portion (z. B. ein Gericht für die Familie). Beide Seiten müssen die Funktion einschalten."),
       feat("notes", "Notizen", "Freitext zu Mahlzeiten und Tagen (Hunger, Training, Stimmung). Vorhandene Notizen bleiben beim Ausschalten erhalten."),
       feat("body", "Körpermaße und Fortschrittsfotos", "Umfänge (Taille, Brust, Arm …) mit Verlauf und Fotos mit Vergleich im Reiter Gewicht."),
       feat("micros", "Weitere Nährwerte", "Ballaststoffe, Zucker, Salz und gesättigte Fettsäuren bei Lebensmitteln erfassen und auswerten (Open Food Facts liefert sie mit)."))));
@@ -2495,6 +2814,34 @@ async function renderSettings() {
         } }, "+")))));
   }
 
+  if (state.features.activity) {
+    const cfg = (await api("activity?day=" + iso(new Date()))).config;
+    const ents = await api("ha/entities").catch(() => []);
+    const sensors = h("datalist", { id: "sensor-list" }, ents.filter(e => e.id.startsWith("sensor.")).map(e => h("option", { value: e.id }, e.name || e.id)));
+    const steps = h("input", { list: "sensor-list", placeholder: "z. B. sensor.handy_schritte", value: cfg.steps_entity });
+    const kc = h("input", { list: "sensor-list", placeholder: "z. B. sensor.handy_aktive_kalorien", value: cfg.kcal_entity });
+    const share = h("input", { type: "number", min: "0", max: "100", step: "5", value: cfg.share });
+    const stride = h("input", { type: "number", min: "0.0001", max: "0.002", step: "0.0001", value: cfg.stride_kcal });
+    const asaved = h("span", { class: "muted" });
+    root.append(h("div", { class: "card" }, h("h2", {}, "Aktivität"),
+      h("div", { class: "muted" }, "Sensoren aus Home Assistant, die über den Tag hochzählen und um Mitternacht auf 0 springen (ein dauerhaft steigender Zähler lässt sich mit dem Helfer „Verbrauchszähler“ auf täglich umstellen). Das Add-on liest sie alle fünf Minuten. Ohne Kalorien-Sensor werden Kalorien aus Schritten, Körpergewicht und dem Faktor unten geschätzt; Werte lassen sich auch von Hand eintragen."),
+      h("div", { class: "grid" }, h("div", {}, h("label", {}, "Sensor für Schritte"), steps), h("div", {}, h("label", {}, "Sensor für aktive Kalorien (kcal)"), kc)),
+      h("div", { class: "grid" }, h("div", {}, h("label", {}, "Anteil, der das Tagesziel erhöht (%)"), share), h("div", {}, h("label", {}, "kcal je Schritt und kg Körpergewicht"), stride)),
+      h("div", { class: "muted" }, "Viele Apps rechnen nur einen Teil der verbrannten Kalorien an (50 % ist ein vorsichtiger Wert), weil Aktivitätswerte oft zu hoch geschätzt sind."), sensors,
+      h("div", { class: "actions" }, asaved, h("button", { onclick: async () => {
+        try { await send("PUT", "activity/config", { steps_entity: steps.value.trim(), kcal_entity: kc.value.trim(), share: num(share.value) ?? 50, stride_kcal: num(stride.value) || 0.0005 }); asaved.className = "muted"; asaved.textContent = "Gespeichert ✓"; }
+        catch (e) { asaved.className = "err"; asaved.textContent = e.message; }
+      } }, "Speichern"))));
+  }
+
+  const cache = await api("lookup/cache").catch(() => ({ entries: 0, bytes: 0 }));
+  if (state.features.sources || cache.entries) root.append(h("div", { class: "card" }, h("h2", {}, "Zwischenspeicher der Online-Suche"),
+    h("div", { class: "muted" }, "Abfragen bei Open Food Facts und USDA merkt sich das Add-on lokal (Barcodes 60 Tage, Suchbegriffe 14 Tage). Wiederholte Suchen gehen so nicht mehr ins Internet. Es werden nur Produktdaten gespeichert, keine Angaben zu Deinem Tagebuch."),
+    h("div", {}, `${n0(cache.entries)} gespeicherte Abfragen (${n0(Math.max(1, cache.bytes / 1024))} KB)`),
+    h("div", { class: "actions", style: "justify-content:flex-start" }, h("button", { class: "flat", disabled: !cache.entries, onclick: async () => {
+      await api("lookup/cache", { method: "DELETE" }); renderSettings();
+    } }, "Zwischenspeicher leeren"))));
+
   // diary layout
   const mode = h("select", { onchange: async () => { await send("PUT", "settings", { diary_mode: mode.value }); renderSettings(); } },
     h("option", { value: "meals" }, "Feste Mahlzeiten (Frühstück, Mittagessen, …)"),
@@ -2515,6 +2862,7 @@ async function renderSettings() {
 
   // meals
   const meals = day.meals;
+  const sched = state.features.schedule ? await api("schedule").catch(() => null) : null;
   const mealMsg = h("div", { class: "err" });
   const mealList = h("div", { class: "list" }, meals.map((m, i) => {
     const name = h("input", { value: m.name, onchange: async () => {
@@ -2526,7 +2874,13 @@ async function renderSettings() {
       await send("PUT", "meals/order", { ids });
       renderSettings();
     };
+    const slot = sched ? (sched.meals.find(x => x.id === m.id) || {}) : null;
+    const from = h("input", { type: "time", value: m.from_time || "", title: "Von (leer = Standardfenster)", style: "width:auto;flex:none" });
+    const to = h("input", { type: "time", value: m.to_time || "", title: "Bis (leer = Standardfenster)", style: "width:auto;flex:none" });
+    const saveWindow = async () => { await send("PUT", "meals/" + m.id, { name: name.value || m.name, from_time: from.value, to_time: to.value }); };
+    from.onchange = to.onchange = saveWindow;
     return h("div", { class: m.archived ? "archived" : "" }, name,
+      sched ? [from, "–", to, !m.from_time && slot && slot.window ? h("span", { class: "muted", title: "Standardfenster" }, `(${slot.window.join("–")})`) : null] : null,
       h("button", { class: "icon", disabled: i === 0, title: "Nach oben", onclick: () => move(-1) }, "↑"),
       h("button", { class: "icon", disabled: i === meals.length - 1, title: "Nach unten", onclick: () => move(1) }, "↓"),
       h("button", { class: "icon", title: "Nur an bestimmten Tagen anzeigen", onclick: () => mealRuleDialog(m) }, "⚡"),
@@ -2548,7 +2902,10 @@ async function renderSettings() {
     } }, "✕")))) : null;
   root.append(h("div", { class: "card" }, h("h2", {}, "Mahlzeiten"),
     h("div", { class: "muted" }, "Mit ⚡ blendest du eine Mahlzeit nur an Tagen ein, an denen z. B. dein Kalender einen bestimmten Termin hat. Mit ⊘ blendest du sie dauerhaft aus (sichtbar bleibt sie nur an Tagen mit Einträgen), gelöscht werden kann nur eine leere Mahlzeit."),
+    sched ? h("div", { class: "muted" }, "Zeitfenster: Von–Bis pro Mahlzeit. Leer gelassen gilt ein Standardfenster (Frühstück, Mittag- und Abendessen), Snacks haben keines. Fenster über Mitternacht sind möglich.") : null,
     mealList, ruleList, mealMsg,
+    sched ? h("label", { class: "pick" }, h("input", { type: "checkbox", checked: !!sched.nudge, onchange: async e => { await send("PUT", "schedule/nudge", { nudge: e.target.checked }); } }),
+      h("span", {}, "Benachrichtigen, wenn eine Mahlzeit ansteht und noch leer ist", h("div", { class: "muted" }, "Nutzt den Benachrichtigungsdienst aus „Erinnerung“ weiter unten."))) : null,
     h("div", { class: "actions" }, newMeal, h("button", { onclick: async () => {
       if (!newMeal.value.trim()) return;
       await send("POST", "meals", { name: newMeal.value });
@@ -2675,16 +3032,16 @@ async function shareDialog(e) {
   const users = await api("household/users");
   const quick = !(e.grams > 0);
   const msg = h("div", { class: "err" });
-  const rows = users.map(u => ({ u, on: h("input", { type: "checkbox" }), amt: h("input", { type: "number", step: "any", min: "0.1", value: quick ? 1 : Math.round(e.grams), style: "width:90px;flex:none" }) }));
+  const rows = users.map(u => ({ u, on: h("input", { type: "checkbox" }), amt: h("input", { type: "number", step: "any", min: "0.1", value: quick ? 1 : gShow(e.grams), min: "0.05", style: "width:90px;flex:none" }) }));
   setDlg(h("h2", {}, `„${e.name}“ teilen`),
     h("div", { class: "muted" }, quick ? "Portion als Vielfaches des Eintrags (1 = gleich viel). Der Eintrag erscheint am selben Tag im Tagebuch der anderen."
-      : "Menge für jede Person in Gramm. Der Eintrag erscheint am selben Tag im Tagebuch der anderen."),
-    rows.length ? h("div", { class: "list" }, rows.map(r => h("div", {}, h("label", { class: "pick grow" }, r.on, r.u.name), r.amt, quick ? "×" : "g")))
+      : ozMode() ? "Menge für jede Person in Unzen. Der Eintrag erscheint am selben Tag im Tagebuch der anderen." : "Menge für jede Person in Gramm. Der Eintrag erscheint am selben Tag im Tagebuch der anderen."),
+    rows.length ? h("div", { class: "list" }, rows.map(r => h("div", {}, h("label", { class: "pick grow" }, r.on, r.u.name), r.amt, quick ? "×" : mUnit())))
       : h("div", { class: "muted", style: "padding:8px 0" }, "Noch niemand sonst nimmt am Haushalt teil. Jeder Benutzer schaltet dafür unter Einstellungen → Zusatzfunktionen „Haushalt“ ein."),
     msg,
     h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
       h("button", { disabled: !rows.length, onclick: async () => {
-        const targets = rows.filter(r => r.on.checked && num(r.amt.value) > 0).map(r => ({ user: r.u.id, factor: quick ? num(r.amt.value) : num(r.amt.value) / e.grams }));
+        const targets = rows.filter(r => r.on.checked && num(r.amt.value) > 0).map(r => ({ user: r.u.id, factor: quick ? num(r.amt.value) : gRead(r.amt.value) / e.grams }));
         if (!targets.length) { msg.textContent = "Bitte mindestens eine Person wählen."; return; }
         try { const r = await send("POST", `entries/${e.id}/share`, { targets }); dlg.close(); alert(`Eingetragen bei ${r.shared} Person(en).`); }
         catch (err) { msg.textContent = err.message; }
@@ -2771,7 +3128,7 @@ api("me").then(m => { $("#who").textContent = m.name; state.admin = !!m.admin; }
     state.skin = st.skin;
     state.features = st.features || {};
     state.langPref = st.lang || "auto";
-    I18N.setLang(st.lang, st.units);
+    I18N.setLang(st.lang, st.units, st.mass);
     state.goalMode = st.goal_mode || "lose";
     state.goalRate = st.goal_rate ?? 0.5;
   } catch { /* keep auto */ }

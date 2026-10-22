@@ -272,10 +272,13 @@ def sync_timezone():
         print(f"[tz] Zeitzone aus Home Assistant: {zone}", flush=True)
 
 
+EXTRA_JOBS = []   # later modules (extras9) add background jobs here
+
+
 def maintenance_loop():
     time.sleep(8)
     while True:
-        for job in (sync_timezone, auto_backup, send_reminders):
+        for job in (sync_timezone, auto_backup, send_reminders, *EXTRA_JOBS):
             try:
                 job()
             except Exception as e:

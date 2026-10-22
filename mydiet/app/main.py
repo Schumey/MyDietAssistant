@@ -61,6 +61,7 @@ class FoodIn(BaseModel):
     sat_fat: float = 0
     serving_g: float = 100
     category: str = ""
+    barcode: str = ""
     portions: list[PortionIn] | None = None   # named portion sizes ("1 slice" = 30 g)
 
 
@@ -104,6 +105,8 @@ class GoalIn(BaseModel):
 
 class MealIn(BaseModel):
     name: str
+    from_time: str | None = None   # optional meal schedule window (HH:MM); "" clears it
+    to_time: str | None = None
 
 
 class OrderIn(BaseModel):
@@ -127,6 +130,9 @@ def check_time(t: str | None) -> str | None:
     return t
 
 
+GOAL_HOOKS = []   # extras may adjust the goal of a day (activity bonus): hook(c, owner, day, goal)
+
+
 def get_goal(c, owner: str, day: str | None = None) -> dict:
     r = c.execute("SELECT * FROM goals WHERE owner=?", (owner,)).fetchone()
     if r:
@@ -142,6 +148,9 @@ def get_goal(c, owner: str, day: str | None = None) -> dict:
         p = day_profile(c, owner, day)
         if p:  # a trigger switched this day to a goal profile
             g.update({k: p[k] for k in ("kcal", "protein", "carbs", "fat")})
+    if day:
+        for hook in GOAL_HOOKS:
+            hook(c, owner, day, g)
     return g
 
 
@@ -203,7 +212,7 @@ def get_day(day: str, x_remote_user_id: str | None = Header(None)):
     with db.conn() as c:
         db.ensure_meals(c, owner)
         meals = [dict(r) for r in c.execute(
-            "SELECT id, name, archived FROM meals WHERE owner=? ORDER BY position", (owner,))]
+            "SELECT id, name, archived, from_time, to_time FROM meals WHERE owner=? ORDER BY position", (owner,))]
         entries = [dict(r) for r in c.execute(
             "SELECT * FROM entries WHERE owner=? AND day=? ORDER BY id", (owner, day))]
         hidden = hidden_meals(c, owner, day, meals, {e["meal_id"] for e in entries})
@@ -313,20 +322,32 @@ def del_entry(entry_id: int, x_remote_user_id: str | None = Header(None),
 # --- foods -----------------------------------------------------------------
 
 @app.get("/api/foods")
-def list_foods(q: str = "", x_remote_user_id: str | None = Header(None)):
+def list_foods(q: str = "", barcode: str = "", favorite: int = 0, limit: int = 200, offset: int = 0, x_remote_user_id: str | None = Header(None)):
     owner = user_from(x_remote_user_id)
+    limit, offset = max(1, min(limit, 1000)), max(0, offset)
     with db.conn() as c:
-        rows = c.execute(
-            "SELECT * FROM foods WHERE owner=? AND (name LIKE ? OR brand LIKE ?)"
-            " ORDER BY id DESC LIMIT 200", (owner, f"%{q}%", f"%{q}%"))
+        if barcode:
+            rows = c.execute("SELECT * FROM foods WHERE owner=? AND barcode=? ORDER BY id DESC LIMIT ? OFFSET ?",
+                             (owner, barcode.strip(), limit, offset))
+        else:
+            rows = c.execute(
+                "SELECT * FROM foods WHERE owner=? AND (name LIKE ? OR brand LIKE ? OR barcode=?)" + (" AND favorite=1" if favorite else "")
+                + " ORDER BY id DESC LIMIT ? OFFSET ?", (owner, f"%{q}%", f"%{q}%", q.strip(), limit, offset))
         foods = [dict(r) for r in rows]
         ports = {}
-        for p in c.execute("SELECT food_id, name, grams FROM food_portions WHERE food_id IN"
-                           " (SELECT id FROM foods WHERE owner=?) ORDER BY id", (owner,)):
-            ports.setdefault(p["food_id"], []).append({"name": p["name"], "grams": p["grams"]})
+        ids = [f["id"] for f in foods]
+        for i in range(0, len(ids), 500):   # stay below SQLite's variable limit
+            part = ids[i:i + 500]
+            for p in c.execute(f"SELECT food_id, name, grams FROM food_portions WHERE food_id IN ({','.join('?' * len(part))}) ORDER BY id", part):
+                ports.setdefault(p["food_id"], []).append({"name": p["name"], "grams": p["grams"]})
         for f in foods:
             f["portions"] = ports.get(f["id"], [])
         return foods
+
+
+def clean_barcode(b: str) -> str:
+    b = (b or "").strip()
+    return b if b.isdigit() and len(b) <= 20 else ""
 
 
 def save_portions(c, food_id: int, portions):
@@ -340,10 +361,10 @@ def add_food(f: FoodIn, x_remote_user_id: str | None = Header(None)):
     owner = user_from(x_remote_user_id)
     with db.conn() as c:
         cur = c.execute(
-            "INSERT INTO foods(owner,name,brand,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,serving_g,category)"
-            " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO foods(owner,name,brand,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,serving_g,category,barcode)"
+            " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (owner, f.name.strip(), f.brand.strip(), f.kcal, f.protein, f.carbs, f.fat, f.fiber, f.sugar, f.salt,
-             f.sat_fat, f.serving_g, f.category.strip()))
+             f.sat_fat, f.serving_g, f.category.strip(), clean_barcode(f.barcode)))
         save_portions(c, cur.lastrowid, f.portions)
         return {"id": cur.lastrowid}
 
@@ -354,9 +375,9 @@ def edit_food(food_id: int, f: FoodIn, x_remote_user_id: str | None = Header(Non
     with db.conn() as c:
         c.execute(
             "UPDATE foods SET name=?,brand=?,kcal=?,protein=?,carbs=?,fat=?,fiber=?,sugar=?,salt=?,sat_fat=?,"
-            "serving_g=?,category=? WHERE id=? AND owner=?",
+            "serving_g=?,category=?,barcode=? WHERE id=? AND owner=?",
             (f.name.strip(), f.brand.strip(), f.kcal, f.protein, f.carbs, f.fat, f.fiber, f.sugar, f.salt,
-             f.sat_fat, f.serving_g, f.category.strip(), food_id, owner))
+             f.sat_fat, f.serving_g, f.category.strip(), clean_barcode(f.barcode), food_id, owner))
         if f.portions is not None and c.execute("SELECT 1 FROM foods WHERE id=? AND owner=?", (food_id, owner)).fetchone():
             save_portions(c, food_id, f.portions)
     return {"ok": True}
@@ -414,16 +435,29 @@ def del_food(food_id: int, x_remote_user_id: str | None = Header(None)):
     return {"ok": True}
 
 
+OFF_UA = {"User-Agent": "MyDietAssistant/1.0 (Home Assistant add-on; github.com/Schumey/MyDietAssistant)"}
+CACHE_DAYS = 60   # product data hardly changes; cached answers also spare Open Food Facts and keep queries local
+
+
+def off_product(code: str) -> dict | None:
+    """Product by barcode from the local cache or Open Food Facts (None = unknown product)."""
+    cached = db.cache_get(f"off:{code}", CACHE_DAYS)
+    if cached is not None:
+        return cached or None
+    r = httpx.get(f"https://world.openfoodfacts.org/api/v2/product/{code}.json",
+                  params={"fields": "code,product_name,brands,nutriments"}, timeout=10, headers=OFF_UA)
+    p = r.json().get("product")
+    db.cache_put(f"off:{code}", p or {})
+    return p or None
+
+
 @app.get("/api/off/barcode/{code}")
 def off_barcode(code: str):
-    """Look up a product on Open Food Facts (only call that needs internet)."""
+    """Look up a product on Open Food Facts (answers are cached locally)."""
     if not code.isdigit():
         raise HTTPException(400, "bad barcode")
     try:
-        r = httpx.get(f"https://world.openfoodfacts.org/api/v2/product/{code}.json",
-                      params={"fields": "product_name,brands,nutriments"}, timeout=10,
-                      headers={"User-Agent": "MyDietAssistant/1.0 (Home Assistant add-on; github.com/Schumey/MyDietAssistant)"})
-        p = r.json().get("product")
+        p = off_product(code)
     except (httpx.HTTPError, ValueError):
         raise HTTPException(502, "Open Food Facts nicht erreichbar")
     if not p:
@@ -445,8 +479,8 @@ def add_meal(m: MealIn, x_remote_user_id: str | None = Header(None)):
         db.ensure_meals(c, owner)
         pos = c.execute("SELECT COALESCE(MAX(position),-1)+1 FROM meals WHERE owner=?",
                         (owner,)).fetchone()[0]
-        cur = c.execute("INSERT INTO meals(owner,name,position) VALUES(?,?,?)",
-                        (owner, m.name.strip(), pos))
+        cur = c.execute("INSERT INTO meals(owner,name,position,from_time,to_time) VALUES(?,?,?,?,?)",
+                        (owner, m.name.strip(), pos, check_time(m.from_time) or "", check_time(m.to_time) or ""))
         return {"id": cur.lastrowid}
 
 
@@ -464,6 +498,9 @@ def rename_meal(meal_id: int, m: MealIn, x_remote_user_id: str | None = Header(N
     owner = user_from(x_remote_user_id)
     with db.conn() as c:
         c.execute("UPDATE meals SET name=? WHERE id=? AND owner=?", (m.name.strip(), meal_id, owner))
+        if m.from_time is not None or m.to_time is not None:
+            c.execute("UPDATE meals SET from_time=?, to_time=? WHERE id=? AND owner=?",
+                      (check_time(m.from_time) or "", check_time(m.to_time) or "", meal_id, owner))
     return {"ok": True}
 
 
@@ -537,10 +574,11 @@ def stats(days: int = 30, x_remote_user_id: str | None = Header(None)):
             " SUM(sugar) sugar, SUM(salt) salt, SUM(sat_fat) sat_fat"
             " FROM entries WHERE owner=? AND day>=? GROUP BY day", (owner, start.isoformat()))}
         goal = get_goal(c, owner)
-        day_goals = {}   # weekday goals and day profiles can differ per day
-        for i in range(days):
-            d = (start + timedelta(days=i)).isoformat()
-            day_goals[d] = get_goal(c, owner, d)
+        day_goals = {}   # weekday goals, day profiles and activity can differ per day
+        with pref_cache():
+            for i in range(days):
+                d = (start + timedelta(days=i)).isoformat()
+                day_goals[d] = get_goal(c, owner, d)
     out = []
     for i in range(days):
         d = (start + timedelta(days=i)).isoformat()
@@ -560,6 +598,8 @@ from extras5 import *  # noqa: E402,F401,F403  (more data sources)
 from extras6 import *  # noqa: E402,F401,F403  (export for third parties)
 from extras7 import *  # noqa: E402,F401,F403  (table import, bulk records)
 from extras8 import *  # noqa: E402,F401,F403  (users, admin view, household meals)
+from extras9 import *  # noqa: E402,F401,F403  (activity, meal schedule, lookup cache)
+from extras10 import *  # noqa: E402,F401,F403  (sharing foods/meals, food table import, food check)
 
 
 @app.get("/")
