@@ -6,7 +6,6 @@ description: Lokales Ernährungstagebuch (Kalorien & Makros) mit HA-Sensoren
 arch: [amd64, aarch64]
 init: false
 ingress: true
-ingress_port: 8099
 panel_icon: mdi:food-apple
 panel_title: Ernährung
 homeassistant_api: true
@@ -30,5 +29,7 @@ schema:
     - str
   mqtt_discovery: bool
 map:
-  - data:rw
-  - backup:rw
+  - type: data
+    read_only: false
+  - type: backup
+    read_only: false
