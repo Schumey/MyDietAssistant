@@ -59,6 +59,7 @@ def set_pref(owner: str, key: str, value):
 
 # --- settings -------------------------------------------------------------
 
+LANGS = ("auto", "de", "en", "fr", "es")   # interface languages (dictionaries in static/app.js)
 FEATURES = ("weekday_goals", "trackers", "micros", "notes", "body", "recipes", "sources", "household", "activity", "schedule")   # optional features, off by default
 
 
@@ -86,7 +87,7 @@ def goal_hit(mode: str, kcal: float, goal: float) -> bool:
 class SettingsIn(BaseModel):
     diary_mode: str | None = None   # 'meals' | 'times'
     goal_mode: str | None = None    # 'lose' | 'maintain' | 'gain'
-    lang: str | None = None         # 'auto' | 'de' | 'en'
+    lang: str | None = None         # 'auto' | 'de' | 'en' | 'fr' | 'es'
     units: str | None = None        # 'metric' | 'imperial'
     mass: str | None = None         # food amounts: 'g' | 'oz'
     goal_rate: float | None = None  # intended kg per week (positive)
@@ -111,8 +112,8 @@ def write_settings(s: SettingsIn, x_remote_user_id: str | None = Header(None)):
             raise HTTPException(400, "diary_mode must be meals or times")
         set_pref(owner, "diary_mode", s.diary_mode)
     if s.lang is not None:
-        if s.lang not in ("auto", "de", "en"):
-            raise HTTPException(400, "lang must be auto, de or en")
+        if s.lang not in LANGS:
+            raise HTTPException(400, "lang must be one of " + ", ".join(LANGS))
         set_pref(owner, "lang", s.lang)
     if s.units is not None:
         if s.units not in ("metric", "imperial"):
@@ -529,7 +530,7 @@ def dump(owner: str) -> dict:
         return {
             "app": "MyDietAssistant", "version": 1,
             "foods": [{**f, "portions": q("SELECT name,grams FROM food_portions WHERE food_id=? ORDER BY id", f["id"])}
-                      for f in q("SELECT id,name,brand,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,serving_g,category,favorite,barcode FROM foods WHERE owner=?", owner)],
+                      for f in q("SELECT id,name,brand,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,serving_g,category,favorite,barcode,shared FROM foods WHERE owner=?", owner)],
             "meals": q("SELECT id,name,position,archived,from_time,to_time FROM meals WHERE owner=? ORDER BY position", owner),
             "activity": get_pref(owner, "activity", {}),
             "activity_days": q("SELECT day,steps,kcal,manual FROM activity_days WHERE owner=? ORDER BY day", owner),
@@ -546,7 +547,7 @@ def dump(owner: str) -> dict:
             "goal_weekdays": q("SELECT wd,kcal,protein,carbs,fat FROM goal_weekdays WHERE owner=?", owner),
             "notes": q("SELECT day,meal_id,text FROM day_notes WHERE owner=?", owner),
             "recipes": [{**r, "items": q("SELECT name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat FROM recipe_items WHERE recipe_id=?", r["id"])}
-                        for r in q("SELECT id,name,portions,cooked_g,category,food_id FROM recipes WHERE owner=?", owner)],
+                        for r in q("SELECT id,name,portions,cooked_g,category,food_id,source,instructions FROM recipes WHERE owner=?", owner)],
             "body_measures": q("SELECT day,name,value FROM body_measures WHERE owner=? ORDER BY day,name", owner),
             "goal_profiles": q("SELECT id,name,kcal,protein,carbs,fat FROM goal_profiles WHERE owner=?", owner),
             "day_profile": q("SELECT day,profile_id FROM day_profile WHERE owner=?", owner),
@@ -628,16 +629,17 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
                 c.execute("INSERT INTO tracker_log(tracker_id,day,amount) VALUES(?,?,?)", (tid, l["day"], l["amount"]))
         fmap = {}
         for f in d.get("foods", []):
-            fid = fmap[f.get("id")] = c.execute("INSERT INTO foods(owner,name,brand,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,serving_g,category,favorite,barcode)"
-                            " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            fid = fmap[f.get("id")] = c.execute("INSERT INTO foods(owner,name,brand,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,serving_g,category,favorite,barcode,shared)"
+                            " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                             (owner, f["name"], f.get("brand", ""), f["kcal"], f.get("protein", 0),
                              f.get("carbs", 0), f.get("fat", 0), *(f.get(m, 0) for m in db.MICROS),
-                             f.get("serving_g", 100), f.get("category", ""), f.get("favorite", 0), f.get("barcode", ""))).lastrowid
+                             f.get("serving_g", 100), f.get("category", ""), f.get("favorite", 0), f.get("barcode", ""), f.get("shared", 0))).lastrowid
             for p in f.get("portions", []):
                 c.execute("INSERT INTO food_portions(food_id,name,grams) VALUES(?,?,?)", (fid, p["name"], p["grams"]))
         for r in d.get("recipes", []):
-            rid = c.execute("INSERT INTO recipes(owner,name,portions,cooked_g,category,food_id) VALUES(?,?,?,?,?,?)",
-                            (owner, r["name"], r["portions"], r.get("cooked_g"), r.get("category", ""), fmap.get(r.get("food_id")))).lastrowid
+            rid = c.execute("INSERT INTO recipes(owner,name,portions,cooked_g,category,food_id,source,instructions) VALUES(?,?,?,?,?,?,?,?)",
+                            (owner, r["name"], r["portions"], r.get("cooked_g"), r.get("category", ""), fmap.get(r.get("food_id")),
+                             r.get("source", ""), r.get("instructions", ""))).lastrowid
             for i in r.get("items", []):
                 c.execute("INSERT INTO recipe_items(recipe_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
                           (rid, i["name"], i["grams"], i["kcal"], i.get("protein", 0), i.get("carbs", 0), i.get("fat", 0), *(i.get(m, 0) for m in db.MICROS)))
@@ -678,7 +680,7 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
                           (owner, n["day"], mid, n["text"]))
     set_pref(owner, "hidden_categories", d.get("hidden_categories", []))
     set_pref(owner, "diary_mode", d.get("settings", {}).get("diary_mode", "meals"))
-    if d.get("settings", {}).get("lang") in ("auto", "de", "en"):
+    if d.get("settings", {}).get("lang") in LANGS:
         set_pref(owner, "lang", d["settings"]["lang"])
     if d.get("settings", {}).get("units") in ("metric", "imperial"):
         set_pref(owner, "units", d["settings"]["units"])

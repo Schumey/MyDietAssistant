@@ -153,7 +153,9 @@ CREATE TABLE IF NOT EXISTS recipes (          -- optional: ingredients + portion
   portions REAL NOT NULL DEFAULT 1,
   cooked_g REAL,
   category TEXT NOT NULL DEFAULT '',
-  food_id INTEGER
+  food_id INTEGER,
+  source TEXT NOT NULL DEFAULT '',          -- v1.1: page the recipe was imported from
+  instructions TEXT NOT NULL DEFAULT ''     -- v1.1: preparation steps, one per line
 );
 CREATE TABLE IF NOT EXISTS recipe_items (
   id INTEGER PRIMARY KEY,
@@ -295,7 +297,15 @@ def _m2_v1(c):
 
 
 # Append new migrations here; never edit or reorder old ones. The database stores how many have run (PRAGMA user_version).
-MIGRATIONS = (_m1_legacy, _m2_v1)
+def _m3_v11(c):
+    """v1.1: recipe source and instructions (website import), foods shared live within the household."""
+    _add(c, "recipes", "source", "TEXT NOT NULL DEFAULT ''")
+    _add(c, "recipes", "instructions", "TEXT NOT NULL DEFAULT ''")
+    _add(c, "foods", "shared", "INTEGER NOT NULL DEFAULT 0")
+    c.execute("CREATE INDEX IF NOT EXISTS foods_shared ON foods(shared)")
+
+
+MIGRATIONS = (_m1_legacy, _m2_v1, _m3_v11)
 
 
 def init():

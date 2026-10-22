@@ -88,19 +88,21 @@ FOOD_FIELDS = ("name", "brand", "barcode", "kcal", "kj", "protein", "carbs", "fa
 # normalised header (lower case, brackets and "_100g" removed) or its first word -> field. BLS codes (GCAL, ZE, ...) and
 # Open Food Facts column names are included next to plain German and English headings.
 FOOD_SYNONYMS = [
-    ("name", ("name", "lebensmittel", "lebensmittelbezeichnung", "bezeichnung", "st", "food", "food name", "description", "produkt", "product", "product name")),
+    ("name", ("name", "lebensmittel", "lebensmittelbezeichnung", "bezeichnung", "st", "food", "food name", "description", "produkt", "product", "product name",
+              "alim nom fr", "alim nom eng", "alim nom")),   # CIQUAL
     ("brand", ("brand", "brands", "marke", "hersteller")),
     ("barcode", ("barcode", "ean", "gtin", "upc")),
     ("kcal", ("kcal", "gcal", "enercc", "energie kcal", "energy kcal", "energy-kcal", "kalorien", "calories")),
     ("kj", ("kj", "gj", "enercj", "energie kj", "energy kj", "energy-kj")),
-    ("protein", ("protein", "proteins", "eiweiß", "eiweiss", "ze", "prot625", "proteine")),
-    ("carbs", ("carbs", "carbohydrates", "kohlenhydrate", "zk", "cho", "chavl", "carbohydrate")),
-    ("fat", ("fat", "fett", "zf", "fat total")),
-    ("fiber", ("fiber", "fibre", "ballaststoffe", "zb", "fibt")),
-    ("sugar", ("sugar", "sugars", "zucker")),
-    ("salt", ("salt", "salz", "nacl")),
+    ("protein", ("protein", "proteins", "eiweiß", "eiweiss", "ze", "prot625", "proteine", "protéines", "proteínas")),
+    ("carbs", ("carbs", "carbohydrates", "kohlenhydrate", "zk", "cho", "chavl", "carbohydrate", "glucides", "kohlenhydrate verfügbar")),
+    ("fat", ("fat", "fett", "zf", "fat total", "lipides")),
+    ("fiber", ("fiber", "fibre", "ballaststoffe", "zb", "fibt", "fibres", "nahrungsfasern", "fibre total")),
+    ("sugar", ("sugar", "sugars", "zucker", "sucres")),
+    ("salt", ("salt", "salz", "nacl", "sel", "salz nacl")),
     ("sodium", ("sodium", "natrium", "na")),
-    ("sat_fat", ("saturated fat", "saturated-fat", "gesättigte fettsäuren", "fasat", "saturated", "gesättigte")),
+    ("sat_fat", ("saturated fat", "saturated-fat", "gesättigte fettsäuren", "fasat", "saturated", "gesättigte", "ag saturés", "acides gras saturés",
+                "fettsäuren gesättigt", "fettsäuren, gesättigt", "fatty acids saturated", "fatty acids, saturated")),
 ]
 
 
@@ -111,7 +113,7 @@ def norm_head(h: str) -> str:
 
 def guess_food_mapping(headers: list[str]) -> dict:
     norm = [norm_head(h) for h in headers]
-    first = [n.split(" ")[0] if n else "" for n in norm]
+    first = [re.split(r"[ ,;:]", n)[0] if n else "" for n in norm]   # "Protéines, N x 6.25" -> "protéines"
     mapping, used = {f: None for f in FOOD_FIELDS}, set()
     for field, names in FOOD_SYNONYMS:
         hit = next((i for i, n in enumerate(norm) if i not in used and n in names), None)

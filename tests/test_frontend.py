@@ -46,7 +46,7 @@ def test_app_js_has_valid_syntax():
 
 def test_english_dictionary_has_no_duplicate_keys():
     js = read("mydiet", "app", "static", "app.js")
-    body = js[js.index("const EN = {"):js.index("const I18N")]
+    body = js[js.index("const EN = {"):js.index("// Languages: German is the source text")]
     keys = re.findall(r'^\s*"((?:[^"\\]|\\.)*)"\s*:', body, flags=re.M)
     dup = {k for k in keys if keys.count(k) > 1}
     assert not dup, sorted(dup)[:10]
@@ -66,3 +66,35 @@ def test_every_add_on_option_is_translated_and_documented():
         tr = read("mydiet", "translations", f"{lang}.yaml")
         for o in options:
             assert f"  {o}:" in tr, (lang, o)
+
+
+@pytest.mark.skipif(not shutil.which("node"), reason="node not installed")
+def test_every_language_covers_the_english_dictionary_with_the_same_placeholders(tmp_path):
+    """EN is the reference: FR and ES must translate every key and keep the {} placeholders (a missing entry shows German text)."""
+    js = read("mydiet", "app", "static", "app.js")
+    script = tmp_path / "dump.js"
+    script.write_text(js[:js.index("const I18N")] + ";process.stdout.write(JSON.stringify({en: EN, langs: LANGS}))", encoding="utf-8")
+    import json
+    out = json.loads(subprocess.run(["node", str(script)], check=True, capture_output=True, encoding="utf-8").stdout)
+    assert set(out["langs"]) == {"en", "fr", "es"}
+    for lang, table in out["langs"].items():
+        assert set(table) == set(out["en"]), (lang, sorted(set(out["en"]) ^ set(table))[:5])
+        for key, text in table.items():
+            assert key.count("{}") == text.count("{}"), (lang, key)
+            assert text.strip(), (lang, key)
+
+
+def test_language_dictionaries_have_no_duplicate_keys():
+    js = read("mydiet", "app", "static", "app.js")
+    body = js[js.index("Object.assign(LANGS"):js.index("const I18N")]
+    for block in re.split(r"^  (?:fr|es): [{]", body, flags=re.M)[1:]:
+        keys = re.findall(r'^    "((?:[^"\\]|\\.)*)":', block, flags=re.M)
+        assert len(keys) == len(set(keys)) > 600
+
+
+def test_server_accepts_exactly_the_languages_the_front_end_offers():
+    import extras
+    js = read("mydiet", "app", "static", "app.js")
+    select = re.search(r"const langSel = .*?Español.*?\n", js, flags=re.S)[0]
+    offered = set(re.findall(r'value: "(\w+)"', select)) - {"auto"}
+    assert offered == {lang for lang in extras.LANGS if lang != "auto"}

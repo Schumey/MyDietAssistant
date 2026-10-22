@@ -1,9 +1,11 @@
 """Recipes (optional feature "recipes"): ingredients + portions, kept in sync with a food that can be logged like any other."""
+import httpx
 from fastapi import Header, HTTPException
 from pydantic import BaseModel
 
 import db
-from main import app, user_from
+import recipe_import
+from main import app, food_scope, user_from
 
 NUTR = ("kcal", "protein", "carbs", "fat", *db.MICROS)
 
@@ -26,6 +28,8 @@ class RecipeIn(BaseModel):
     portions: float = 1
     cooked_g: float | None = None       # weight after cooking; default = sum of the raw ingredients
     category: str = ""
+    source: str = ""            # page the recipe came from
+    instructions: str = ""      # preparation steps, one per line
     items: list[IngredientIn]
 
 
@@ -98,8 +102,8 @@ def add_recipe(r: RecipeIn, x_remote_user_id: str | None = Header(None)):
     check_recipe(r)
     owner = user_from(x_remote_user_id)
     with db.conn() as c:
-        rid = c.execute("INSERT INTO recipes(owner,name,portions,cooked_g,category) VALUES(?,?,?,?,?)",
-                        (owner, r.name.strip(), r.portions, r.cooked_g, r.category.strip())).lastrowid
+        rid = c.execute("INSERT INTO recipes(owner,name,portions,cooked_g,category,source,instructions) VALUES(?,?,?,?,?,?,?)",
+                        (owner, r.name.strip(), r.portions, r.cooked_g, r.category.strip(), r.source.strip()[:500], r.instructions.strip()[:20000])).lastrowid
         write_items(c, rid, r.items)
         sync_food(c, owner, rid)
     return {"id": rid}
@@ -112,8 +116,8 @@ def edit_recipe(rid: int, r: RecipeIn, x_remote_user_id: str | None = Header(Non
     with db.conn() as c:
         if not c.execute("SELECT 1 FROM recipes WHERE id=? AND owner=?", (rid, owner)).fetchone():
             raise HTTPException(404, "Rezept nicht gefunden")
-        c.execute("UPDATE recipes SET name=?,portions=?,cooked_g=?,category=? WHERE id=?",
-                  (r.name.strip(), r.portions, r.cooked_g, r.category.strip(), rid))
+        c.execute("UPDATE recipes SET name=?,portions=?,cooked_g=?,category=?,source=?,instructions=? WHERE id=?",
+                  (r.name.strip(), r.portions, r.cooked_g, r.category.strip(), r.source.strip()[:500], r.instructions.strip()[:20000], rid))
         write_items(c, rid, r.items)
         sync_food(c, owner, rid)
     return {"ok": True}
@@ -126,8 +130,8 @@ def copy_recipe(rid: int, x_remote_user_id: str | None = Header(None)):
         src = c.execute("SELECT * FROM recipes WHERE id=? AND owner=?", (rid, owner)).fetchone()
         if not src:
             raise HTTPException(404, "Rezept nicht gefunden")
-        new = c.execute("INSERT INTO recipes(owner,name,portions,cooked_g,category) VALUES(?,?,?,?,?)",
-                        (owner, f"{src['name']} (Kopie)", src["portions"], src["cooked_g"], src["category"])).lastrowid
+        new = c.execute("INSERT INTO recipes(owner,name,portions,cooked_g,category,source,instructions) VALUES(?,?,?,?,?,?,?)",
+                        (owner, f"{src['name']} (Kopie)", src["portions"], src["cooked_g"], src["category"], src["source"], src["instructions"])).lastrowid
         c.execute("INSERT INTO recipe_items(recipe_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat)"
                   " SELECT ?,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat FROM recipe_items WHERE recipe_id=?", (new, rid))
         sync_food(c, owner, new)
@@ -148,3 +152,29 @@ def del_recipe(rid: int, keep_food: bool = False, x_remote_user_id: str | None =
             c.execute("DELETE FROM food_portions WHERE food_id=?", (r["food_id"],))
             c.execute("DELETE FROM foods WHERE id=? AND owner=?", (r["food_id"], owner))
     return {"ok": True}
+
+
+class ImportUrlIn(BaseModel):
+    url: str
+
+
+@app.post("/api/recipes/import-url")
+def import_recipe_url(b: ImportUrlIn, x_remote_user_id: str | None = Header(None)):
+    """Read a recipe from a web page (schema.org data) and return a draft for the recipe editor; nothing is saved."""
+    owner = user_from(x_remote_user_id)
+    from extras import feature_on
+    if not feature_on(owner, "recipes"):
+        raise HTTPException(403, "Rezepte sind nicht aktiviert")
+    url = b.url.strip()
+    if "://" not in url:
+        url = "https://" + url
+    try:
+        page = recipe_import.fetch_page(url)
+        with db.conn() as c:
+            scope, sp = food_scope(c, owner)
+            foods = [dict(r) for r in c.execute(f"SELECT * FROM foods WHERE {scope}", sp)]
+        return recipe_import.to_draft(page, url, foods)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    except httpx.HTTPError:
+        raise HTTPException(502, "Die Seite konnte nicht geladen werden.")

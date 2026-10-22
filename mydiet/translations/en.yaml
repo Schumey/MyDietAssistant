@@ -20,3 +20,6 @@ configuration:
   api_key:
     name: API key
     description: Key for the external interface (header X-MDA-Key). Empty = interface off.
+  mqtt_discovery:
+    name: MQTT discovery
+    description: Create sensors via MQTT discovery (unique IDs, kept after an HA restart). Needs the MQTT integration; without it plain states are sent.

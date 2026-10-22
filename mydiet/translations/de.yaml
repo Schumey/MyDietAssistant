@@ -20,3 +20,6 @@ configuration:
   api_key:
     name: API-Schlüssel
     description: Schlüssel für die externe Schnittstelle (Header X-MDA-Key). Leer = Schnittstelle aus.
+  mqtt_discovery:
+    name: MQTT Discovery
+    description: Sensoren per MQTT Discovery anlegen (eindeutige IDs, bleiben nach einem HA-Neustart erhalten). Braucht die MQTT-Integration; ohne sie werden normale Zustände gesendet.

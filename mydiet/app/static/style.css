@@ -392,6 +392,12 @@ html[data-skin="win"] #tip { border-radius: 0; background: #ffffe1; color: #000;
 .warn { color: var(--warning-color); margin-top: 8px; }
 .warn:empty { display: none; }
 .warn-mark { margin-left: 6px; color: var(--warning-color); cursor: help; }
+.list > div.unmatched { border-left: 3px solid var(--error-color); padding-left: 6px; }
+.warn-note { color: var(--warning-color); margin: 6px 0; }
+ol.steps { margin: 4px 0 0; padding-left: 20px; }
+#dlg textarea { width: 100%; margin-top: 2px; }
+#dlg .preview + label { display: block; margin-top: 12px; }
+.shared-tag { margin-left: 6px; font-size: .8em; opacity: .75; }
 .tracker { padding: 8px 0; border-bottom: 1px solid var(--divider-color); }
 .tracker:last-child { border-bottom: 0; }
 .tracker-head { display: flex; justify-content: space-between; margin-bottom: 4px; }

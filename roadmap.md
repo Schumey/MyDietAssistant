@@ -6,18 +6,18 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 ## Home Assistant
 
-- **Sensor für die aktuelle Mahlzeit** (S): `sensor.mydiet_<name>_current_meal` aus dem Mahlzeiten-Zeitplan, damit Automationen darauf reagieren können.
-- **Aktivität aus der Verlaufsdatenbank nachladen** (M): Schritte und Kalorien vergangener Tage aus der HA-Historie holen, statt nur ab dem Einschalten zu sammeln.
-- **MQTT Discovery** (M): Sensoren mit eindeutiger ID, damit sie nach einem HA-Neustart nicht fehlen und sich Entitäten verwalten lassen.
+- **Sensor „nächste Mahlzeit“** (S): `sensor.mydiet_<name>_next_meal` mit Beginn des nächsten Fensters als Attribut, damit Automationen vorher erinnern können.
+- **Add-on-Optionstexte auf Französisch und Spanisch** (S): `translations/fr.yaml` und `es.yaml` (die Oberfläche selbst gibt es schon).
 
 ## Lebensmittel und Eingabe
 
-- **Live geteilte Bibliothek im Haushalt** (M): Statt Kopien eine gemeinsame Bibliothek, in der Änderungen sofort für alle gelten (die Kopie-Variante gibt es seit 1.0).
-- **Weitere Sprachen** (S je Sprache): Der Übersetzungsmechanismus (Anfang von `static/app.js`) nimmt zusätzliche Wörterbücher auf.
-- **Weitere Datenquellen** (M): zum Beispiel Swiss Food Composition Database oder CIQUAL als Dateiimport über die Lebensmittel-Tabelle (Spaltenkürzel ergänzen).
+- **Rezept-Import: Zutaten online zuordnen** (M): Nicht zugeordnete Zutaten bei Open Food Facts oder USDA suchen und zur Auswahl anbieten, statt nur in der eigenen Bibliothek.
+- **Rezept-Import aus Text und Foto** (L): Rezepte aus eingefügtem Text oder einem Foto lesen, wenn die Seite keine Rezeptdaten mitliefert.
+- **Gemeinsame Bibliothek auch für Rezepte und gespeicherte Mahlzeiten** (M): bisher gilt sie für Lebensmittel, Rezepte und Mahlzeiten lassen sich nur kopieren.
+- **Weitere Sprachen** (S je Sprache): zum Beispiel Italienisch oder Niederländisch; ein Wörterbuch in `static/app.js` und ein Eintrag in `LANGS` (`extras.py`) genügen.
+- **Weitere Datenquellen** (M): zum Beispiel die Österreichische Nährwerttabelle oder USDA-Dateiexporte über den Tabellen-Import (Spaltenkürzel ergänzen). CIQUAL und die Schweizer Datenbank sind seit 1.1 erkannt, bisher nur gegen Beispielzeilen geprüft.
 
 ## Technik und Qualität
 
-- **Browser-Tests** (M): Ende-zu-Ende-Tests der Oberfläche (Playwright) zusätzlich zu den API-Tests.
-- **Add-on-Linter in CI** (S): Prüfung der Add-on-Konfiguration über den Linter der Home-Assistant-Community.
-- **Veröffentlichung als Add-on-Repository mit fertigen Images** (M): Container-Images über GitHub Actions bauen, damit die Installation nicht lokal baut.
+- **Mehr Browser-Tests** (M): Barcode-Dialog, Haushaltsansicht mit zwei Benutzern, Handy-Ansicht und Windows-Look ergänzen.
+- **Mehrere Wörterbücher prüfen lassen** (S): Muttersprachler für die Übersetzungen, bisher maschinell erstellt und nur formal geprüft.

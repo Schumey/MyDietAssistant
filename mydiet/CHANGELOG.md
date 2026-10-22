@@ -2,6 +2,28 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.1.0
+
+### Neu
+- **Rezepte von Webseiten importieren** (Zusatzfunktion „Rezepte“): „Von Webseite …“ liest Name, Portionen, Zutaten, Zubereitung und Quelle aus den Rezeptdaten (schema.org) einer Kochseite. Die Zutatenzeilen werden in Gramm umgerechnet (g, kg, ml, EL, TL, Prise, Tasse, Stückangaben, Brüche und Bereiche) und Deinen Lebensmitteln zugeordnet, auch über Wortbestandteile („Weizenmehl“ → „Mehl“). Nicht zugeordnete Zutaten stehen rot im Editor, die Nährwertangabe der Seite dient als Vergleich. Rezepte haben jetzt ein Feld „Zubereitung“ und „Quelle“ (Link). Abgerufen werden nur öffentliche Adressen.
+- **Gemeinsame Haushaltsbibliothek:** Ein Lebensmittel lässt sich für alle im Haushalt freigeben; sie sehen es mit „von <Name>“, tragen es ein und ändern es, die Änderung gilt sofort für alle. Löschen, Favorit und Freigabe bleiben beim Besitzer.
+- **Sensor „aktuelle Mahlzeit“** (`sensor.mydiet_<name>_current_meal`) aus dem Mahlzeiten-Zeitplan; wechselt zur vollen Minute, `none` außerhalb aller Fenster.
+- **Aktivität aus dem Verlauf nachladen:** „Verlauf nachladen“ im Tagebuch holt Schritte und Kalorien der letzten 30 Tage aus der Home-Assistant-Verlaufsdatenbank (Tage mit Handeingabe bleiben unberührt).
+- **MQTT Discovery** (Add-on-Option `mqtt_discovery`): Sensoren mit eindeutiger ID an einem Gerät, bleiben nach einem HA-Neustart erhalten und lassen sich in Home Assistant verwalten. Gesendet wird über den Dienst `mqtt.publish`, ohne eigene Zugangsdaten; ohne MQTT-Integration gibt es weiter normale Zustände.
+- **Französisch und Spanisch** als Oberflächensprachen (Einstellungen → Sprache). Der Mechanismus nimmt weitere Wörterbücher auf.
+- **Weitere Datenquellen für den Tabellen-Import:** Die Spalten der französischen CIQUAL und der Schweizer Nährwertdatenbank werden erkannt.
+- **my.home-assistant.io-Knopf** im README zum Hinzufügen des Repositories mit einem Klick.
+
+### Technik
+- **Browser-Tests** mit Playwright (`tests/e2e`): Start, Lebensmittel anlegen, Tagebuch, Rezept-Import-Dialog, Sprachwechsel; laufen in GitHub Actions.
+- **Add-on-Linter** (`lint.yml`) prüft die Konfiguration bei jedem Push.
+- **Fertige Images:** `build.yml` baut amd64 und aarch64 und legt sie in die GitHub Container Registry (bei Versions-Tags oder von Hand); aktiviert wird das durch die Zeile `image:` in der `config.yaml` (siehe README).
+- Migration 3: Spalten `recipes.source`, `recipes.instructions`, `foods.shared`; Export und Import tragen sie mit.
+- Die Tests prüfen jetzt, dass Französisch und Spanisch jeden englischen Schlüssel samt Platzhaltern abdecken.
+
+### Geändert
+- Die Online-Prüfung eigener Lebensmittel berücksichtigt nur noch die eigenen, nicht die freigegebenen anderer.
+
 ## 1.0.0
 
 Erste veröffentlichte Version. Außer den neuen Funktionen unten steht jetzt eine automatische Test-Suite hinter dem Add-on (siehe „Technik“).

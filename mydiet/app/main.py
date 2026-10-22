@@ -62,6 +62,7 @@ class FoodIn(BaseModel):
     serving_g: float = 100
     category: str = ""
     barcode: str = ""
+    shared: bool | None = None                # household: visible to (and editable by) the other members; owner only
     portions: list[PortionIn] | None = None   # named portion sizes ("1 slice" = 30 g)
 
 
@@ -168,8 +169,47 @@ def day_totals(c, owner: str, day: str) -> dict:
     return {k: round(r[k], 1) for k in r.keys()}
 
 
+SENSOR_HOOKS = []   # later modules add callables (owner -> [(key, value, unit)]) for more sensors
+_discovered = set()   # MQTT discovery topics already announced in this process
+
+
+def sensor_suffix(key: str) -> str:
+    return "_today" if key in ("kcal", "protein", "carbs", "fat", "kcal_remaining") else ""
+
+
+def _ha_post(path: str, body: dict):
+    r = httpx.post(f"http://supervisor/core/api/{path}", json=body, timeout=5,
+                   headers={"Authorization": f"Bearer {SUPERVISOR_TOKEN}"})
+    r.raise_for_status()
+
+
+def sensor_attrs(display: str, key: str, unit: str) -> dict:
+    attrs = {"friendly_name": f"{display} {key}"}
+    if unit:   # text sensors (current meal) have neither unit nor state class
+        attrs["unit_of_measurement"] = unit
+        attrs["state_class"] = "total" if key in ("kcal", "protein", "carbs", "fat") else "measurement"
+    return attrs
+
+
+def mqtt_publish(slug: str, display: str, key: str, val, unit: str):
+    """Announce the sensor via MQTT discovery (once per process, retained) and send its state through HA's mqtt.publish
+    service, so the add-on needs no broker credentials. Entities get a unique id and survive HA restarts."""
+    entity = f"mydiet_{slug}_{key}{sensor_suffix(key)}"
+    topic = f"mydiet/{slug}/{key}"
+    if entity not in _discovered:
+        cfg = {"name": sensor_attrs(display, key, unit)["friendly_name"], "unique_id": entity,
+               "default_entity_id": f"sensor.{entity}", "state_topic": topic,
+               "device": {"identifiers": [f"mydiet_{slug}"], "name": f"MyDietAssistant {display}", "manufacturer": "MyDietAssistant"}}
+        if unit:
+            cfg["unit_of_measurement"] = unit
+            cfg["state_class"] = sensor_attrs(display, key, unit)["state_class"]
+        _ha_post("services/mqtt/publish", {"topic": f"homeassistant/sensor/{entity}/config", "payload": json.dumps(cfg), "retain": True})
+        _discovered.add(entity)
+    _ha_post("services/mqtt/publish", {"topic": topic, "payload": str(val), "retain": True})
+
+
 def publish(owner: str, display: str):
-    """Push today's totals and latest weight into HA as sensor states."""
+    """Push today's totals and latest weight into HA as sensor states (REST, or MQTT discovery when enabled)."""
     if not SUPERVISOR_TOKEN or not OPTIONS.get("publish_sensors", True):
         return
     slug = re.sub(r"[^a-z0-9]+", "_", display.lower()).strip("_") or "default"
@@ -185,17 +225,22 @@ def publish(owner: str, display: str):
         states += sensor_extras(owner)
     except Exception:  # extra sensors must never break the basic ones
         pass
-    for key, val, unit in states:
-        suffix = "_today" if key in ("kcal", "protein", "carbs", "fat", "kcal_remaining") else ""
+    for hook in SENSOR_HOOKS:
         try:
-            httpx.post(
-                f"http://supervisor/core/api/states/sensor.mydiet_{slug}_{key}{suffix}",
-                headers={"Authorization": f"Bearer {SUPERVISOR_TOKEN}"},
-                json={"state": val, "attributes": {
-                    "unit_of_measurement": unit,
-                    "friendly_name": f"{display} {key}",
-                    "state_class": "total" if key in ("kcal", "protein", "carbs", "fat") else "measurement",
-                }}, timeout=5)
+            states += hook(owner)
+        except Exception:
+            pass
+    use_mqtt = bool(OPTIONS.get("mqtt_discovery"))
+    for key, val, unit in states:
+        try:
+            if use_mqtt:
+                try:
+                    mqtt_publish(slug, display, key, val, unit)
+                    continue
+                except httpx.HTTPError:   # no MQTT integration: fall back to a plain state for this sensor
+                    _discovered.discard(f"mydiet_{slug}_{key}{sensor_suffix(key)}")
+            _ha_post(f"states/sensor.mydiet_{slug}_{key}{sensor_suffix(key)}",
+                     {"state": val, "attributes": sensor_attrs(display, key, unit)})
         except httpx.HTTPError:
             pass
 
@@ -233,7 +278,8 @@ def add_entry(e: EntryIn, x_remote_user_id: str | None = Header(None),
         raise HTTPException(400, "grams must be > 0")
     owner = user_from(x_remote_user_id)
     with db.conn() as c:
-        f = c.execute("SELECT * FROM foods WHERE id=? AND owner=?", (e.food_id, owner)).fetchone()
+        scope, sp = food_scope(c, owner)
+        f = c.execute(f"SELECT * FROM foods WHERE id=? AND {scope}", (e.food_id, *sp)).fetchone()
         if not f:
             raise HTTPException(404, "food not found")
         db.ensure_meals(c, owner)
@@ -285,7 +331,8 @@ def edit_entry(entry_id: int, g: EntryEdit, x_remote_user_id: str | None = Heade
             raise HTTPException(404, "entry not found")
         time_ = check_time(g.time) if g.time is not None else r["time"]
         if g.food_id is not None:  # swap the component for another food
-            f = c.execute("SELECT * FROM foods WHERE id=? AND owner=?", (g.food_id, owner)).fetchone()
+            scope, sp = food_scope(c, owner)
+            f = c.execute(f"SELECT * FROM foods WHERE id=? AND {scope}", (g.food_id, *sp)).fetchone()
             if not f:
                 raise HTTPException(404, "food not found")
             grams = g.grams if g.grams is not None else (r["grams"] or f["serving_g"])
@@ -321,19 +368,39 @@ def del_entry(entry_id: int, x_remote_user_id: str | None = Header(None),
 
 # --- foods -----------------------------------------------------------------
 
+def food_scope(c, owner: str) -> tuple[str, list]:
+    """SQL condition and parameters for the foods a user may use: their own plus those other household members shared."""
+    others = []
+    if feature_on(owner, "household"):
+        others = [r["id"] for r in c.execute("SELECT id FROM users WHERE id<>?", (owner,)) if feature_on(r["id"], "household")]
+    if not others:
+        return "owner=?", [owner]
+    return f"(owner=? OR (shared=1 AND owner IN ({','.join('?' * len(others))})))", [owner, *others]
+
+
 @app.get("/api/foods")
 def list_foods(q: str = "", barcode: str = "", favorite: int = 0, limit: int = 200, offset: int = 0, x_remote_user_id: str | None = Header(None)):
     owner = user_from(x_remote_user_id)
     limit, offset = max(1, min(limit, 1000)), max(0, offset)
     with db.conn() as c:
+        scope, sp = food_scope(c, owner)
         if barcode:
-            rows = c.execute("SELECT * FROM foods WHERE owner=? AND barcode=? ORDER BY id DESC LIMIT ? OFFSET ?",
-                             (owner, barcode.strip(), limit, offset))
+            rows = c.execute(f"SELECT * FROM foods WHERE {scope} AND barcode=? ORDER BY id DESC LIMIT ? OFFSET ?",
+                             (*sp, barcode.strip(), limit, offset))
         else:
             rows = c.execute(
-                "SELECT * FROM foods WHERE owner=? AND (name LIKE ? OR brand LIKE ? OR barcode=?)" + (" AND favorite=1" if favorite else "")
-                + " ORDER BY id DESC LIMIT ? OFFSET ?", (owner, f"%{q}%", f"%{q}%", q.strip(), limit, offset))
+                f"SELECT * FROM foods WHERE {scope} AND (name LIKE ? OR brand LIKE ? OR barcode=?)" + (" AND favorite=1 AND owner=?" if favorite else "")
+                + " ORDER BY id DESC LIMIT ? OFFSET ?", (*sp, f"%{q}%", f"%{q}%", q.strip(), *([owner] if favorite else []), limit, offset))
         foods = [dict(r) for r in rows]
+        names = {}
+        for f in foods:
+            f["mine"] = f["owner"] == owner
+            if not f["mine"]:
+                if f["owner"] not in names:
+                    u = c.execute("SELECT name FROM users WHERE id=?", (f["owner"],)).fetchone()
+                    names[f["owner"]] = (u["name"] if u and u["name"] else f["owner"])
+                f["owner_name"] = names[f["owner"]]
+                f["favorite"] = 0
         ports = {}
         ids = [f["id"] for f in foods]
         for i in range(0, len(ids), 500):   # stay below SQLite's variable limit
@@ -373,12 +440,18 @@ def add_food(f: FoodIn, x_remote_user_id: str | None = Header(None)):
 def edit_food(food_id: int, f: FoodIn, x_remote_user_id: str | None = Header(None)):
     owner = user_from(x_remote_user_id)
     with db.conn() as c:
+        scope, sp = food_scope(c, owner)
+        row = c.execute(f"SELECT owner FROM foods WHERE id=? AND {scope}", (food_id, *sp)).fetchone()
+        if not row:
+            return {"ok": True}
         c.execute(
             "UPDATE foods SET name=?,brand=?,kcal=?,protein=?,carbs=?,fat=?,fiber=?,sugar=?,salt=?,sat_fat=?,"
-            "serving_g=?,category=?,barcode=? WHERE id=? AND owner=?",
+            "serving_g=?,category=?,barcode=? WHERE id=?",
             (f.name.strip(), f.brand.strip(), f.kcal, f.protein, f.carbs, f.fat, f.fiber, f.sugar, f.salt,
-             f.sat_fat, f.serving_g, f.category.strip(), clean_barcode(f.barcode), food_id, owner))
-        if f.portions is not None and c.execute("SELECT 1 FROM foods WHERE id=? AND owner=?", (food_id, owner)).fetchone():
+             f.sat_fat, f.serving_g, f.category.strip(), clean_barcode(f.barcode), food_id))
+        if f.shared is not None and row["owner"] == owner:
+            c.execute("UPDATE foods SET shared=? WHERE id=?", (int(f.shared), food_id))
+        if f.portions is not None:
             save_portions(c, food_id, f.portions)
     return {"ok": True}
 

@@ -16,6 +16,8 @@ jobs:
         with:
           node-version: "20"
       - name: Install dependencies
-        run: pip install fastapi httpx pydantic uvicorn pytest
+        run: pip install fastapi httpx pydantic uvicorn pytest playwright
+      - name: Install browser for the end-to-end tests
+        run: python -m playwright install --with-deps chromium
       - name: Run tests
         run: python -m pytest

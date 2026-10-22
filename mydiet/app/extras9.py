@@ -10,7 +10,7 @@ from pydantic import BaseModel
 import db
 from extras import feature_on, get_pref, ha_get, set_pref
 from extras2 import owners
-from main import GOAL_HOOKS, SUPERVISOR_TOKEN, app, check_day, check_time, user_from
+from main import GOAL_HOOKS, SENSOR_HOOKS, SUPERVISOR_TOKEN, app, check_day, check_time, publish, user_from
 
 
 # --- activity ------------------------------------------------------------------
@@ -146,6 +146,61 @@ def sync_activity_now(x_remote_user_id: str | None = Header(None)):
     return sync_activity_for(owner)
 
 
+def daily_max(history: list) -> dict[str, float]:
+    """Highest value per local day from a HA history response (list of state changes of one daily sensor)."""
+    out = {}
+    for row in history:
+        try:
+            v = float(row["state"])
+            day = datetime.fromisoformat(row["last_changed"].replace("Z", "+00:00")).astimezone().date().isoformat()
+        except (KeyError, ValueError, TypeError):
+            continue   # "unavailable", "unknown", malformed rows
+        if v >= 0:
+            out[day] = max(out.get(day, 0), v)
+    return out
+
+
+def backfill_activity_for(owner: str, days: int) -> int:
+    """Fill past days from the HA history database (the sensors only get collected from switching the feature on otherwise).
+    Days with manual values stay untouched; returns the number of days written."""
+    cfg = activity_config(owner)
+    start = datetime.now().astimezone() - timedelta(days=days)
+    per_day: dict[str, dict] = {}
+    for key, entity in (("steps", cfg["steps_entity"]), ("kcal", cfg["kcal_entity"])):
+        if not entity:
+            continue
+        data = ha_get(f"history/period/{start.isoformat()}", filter_entity_id=entity, minimal_response="", no_attributes="")
+        for day, v in daily_max(data[0] if data else []).items():
+            per_day.setdefault(day, {})[key] = v
+    n = 0
+    with db.conn() as c:
+        for day, got in per_day.items():
+            r = c.execute("SELECT steps, kcal, manual FROM activity_days WHERE owner=? AND day=?", (owner, day)).fetchone()
+            if r and r["manual"]:
+                continue
+            steps = max(got.get("steps", 0), r["steps"] if r else 0)
+            kcal = max(got.get("kcal", 0), r["kcal"] if r else 0)
+            c.execute("INSERT OR REPLACE INTO activity_days(owner,day,steps,kcal,manual) VALUES(?,?,?,?,0)", (owner, day, steps, kcal))
+            n += 1
+    return n
+
+
+@app.post("/api/activity/backfill")
+def backfill_activity(days: int = 30, x_remote_user_id: str | None = Header(None)):
+    owner = user_from(x_remote_user_id)
+    if not SUPERVISOR_TOKEN:
+        raise HTTPException(503, "Nur im Home-Assistant-Add-on möglich")
+    if not 1 <= days <= 365:
+        raise HTTPException(400, "Zeitraum: 1 bis 365 Tage")
+    cfg = activity_config(owner)
+    if not (cfg["steps_entity"] or cfg["kcal_entity"]):
+        raise HTTPException(400, "Zuerst einen Sensor für Schritte oder Kalorien wählen")
+    try:
+        return {"days": backfill_activity_for(owner, days)}
+    except httpx.HTTPError:
+        raise HTTPException(502, "Home Assistant hat den Verlauf nicht geliefert (Recorder aktiv?)")
+
+
 tick = {"n": 0}
 
 
@@ -246,6 +301,32 @@ def send_meal_nudges():
             print(f"[nudge] {o}: {e!r}", flush=True)
 
 
+def current_meal_sensor(owner: str) -> list:
+    """sensor.mydiet_<name>_current_meal: the meal whose window is open now, "none" otherwise."""
+    if not feature_on(owner, "schedule"):
+        return []
+    s = schedule(owner)
+    m = next((x for x in s["meals"] if x["id"] == s["current"]), None)
+    return [("current_meal", m["name"] if m else "none", "")]
+
+
+SENSOR_HOOKS.append(current_meal_sensor)
+last_meal = {}
+
+
+def publish_meal_changes():
+    """Update the current-meal sensor when a window opens or closes (the other sensors only change on edits)."""
+    if not SUPERVISOR_TOKEN:
+        return
+    for o in owners():
+        if not feature_on(o, "schedule"):
+            continue
+        cur = current_meal_sensor(o)[0][1]
+        if last_meal.get(o) != cur:
+            last_meal[o] = cur
+            publish(o, get_pref(o, "display", o))
+
+
 # --- lookup cache --------------------------------------------------------------
 
 @app.get("/api/lookup/cache")
@@ -262,4 +343,4 @@ def lookup_cache_clear():
 # the maintenance loop (extras2) picks the jobs up from here
 import extras2  # noqa: E402
 
-extras2.EXTRA_JOBS.extend([sync_activity, send_meal_nudges])
+extras2.EXTRA_JOBS.extend([sync_activity, send_meal_nudges, publish_meal_changes])

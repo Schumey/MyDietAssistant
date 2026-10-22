@@ -15,6 +15,13 @@ Weitere Sensoren (gleiches Namensschema):
 | `sensor.mydiet_<name>_weight` | letzter Gewichtswert |
 | `sensor.mydiet_<name>_weight_trend` | geglätteter Gewichtstrend |
 | `sensor.mydiet_<name>_energy_balance` | geschätzte Kalorienbilanz pro Tag (30 Tage, aus Gewichtstrend und Aufnahme; + Überschuss, − Defizit) |
+| `sensor.mydiet_<name>_current_meal` | Name der Mahlzeit, deren Zeitfenster jetzt offen ist, sonst `none` (nur mit der Zusatzfunktion „Mahlzeiten-Zeitplan“; wechselt zur vollen Minute) |
+
+Ein Beispiel für eine Automation, die um die Mittagszeit erinnert, wenn noch nichts eingetragen ist: Auslöser „Zustand“ von `sensor.mydiet_<name>_current_meal` nach `Mittagessen`, Bedingung `sensor.mydiet_<name>_kcal_today` unter 300.
+
+### MQTT Discovery
+
+Mit der Option `mqtt_discovery` legt das Add-on die Sensoren über MQTT Discovery an, statt nur Zustände zu setzen. Die Entitäten haben dann eine eindeutige ID (lassen sich in Home Assistant umbenennen, einem Bereich zuordnen und bleiben nach einem Neustart erhalten) und hängen an einem Gerät „MyDietAssistant <Name>“. Die Entitäts-IDs bleiben dieselben wie oben. Voraussetzung ist die MQTT-Integration (zum Beispiel mit dem Mosquitto-Add-on); das Add-on sendet über den Dienst `mqtt.publish` von Home Assistant und braucht keine eigenen Zugangsdaten. Ist MQTT nicht eingerichtet, werden die Sensoren wie bisher als Zustände gesetzt. Beim Umstellen kann ein alter Zustandssensor bis zum nächsten HA-Neustart neben dem neuen stehen bleiben.
 
 Beispiel für eine Dashboard-Karte (`<name>` anpassen):
 
@@ -46,6 +53,7 @@ Hinweis: Sie werden über die States-API gesetzt (keine Unique-ID, nach einem HA
 | `auto_backup` | täglich eine JSON-Sicherung je Benutzer nach `/backup/mydiet/` (im Samba-Share „backup“ sichtbar) |
 | `backup_keep_days` | wie lange Sicherungen aufbewahrt werden (Standard 14 Tage) |
 | `api_key` | Schlüssel für die Schnittstelle unten; leer = Schnittstelle aus |
+| `mqtt_discovery` | Sensoren über MQTT Discovery anlegen (siehe oben); Standard aus |
 
 Das Add-on ist zusätzlich in jedem normalen Home-Assistant-Backup enthalten (Datenbank in `/data`). Die JSON-Sicherung ist unabhängig davon lesbar und lässt sich unter Einstellungen → Automatische Sicherung mit Vorschau wiederherstellen.
 
@@ -83,11 +91,13 @@ Im Tagebuch: ← / → Tag wechseln, T heute, N Nahrungsmittel hinzufügen; / sp
 
 ## Mehrere Benutzer
 
-Jeder Home-Assistant-Benutzer hat ein eigenes Tagebuch. Die Option `admin_users` (Liste von Benutzer-IDs oder Namen) bestimmt, wer die Benutzerverwaltung unter Einstellungen sieht; leer bedeutet: der erste Benutzer, der das Add-on geöffnet hat. Mit der Zusatzfunktion „Haushalt“ können Benutzer Einträge, Lebensmittel und gespeicherte Mahlzeiten mit anderen teilen, die diese Funktion ebenfalls eingeschaltet haben. Ein Tagebucheintrag erscheint am selben Tag im Tagebuch der anderen (jeder mit eigener Menge). Lebensmittel und Mahlzeiten werden als Kopie in deren Bibliothek gelegt; gleichnamige Einträge dort bleiben unverändert, und spätere Änderungen werden nicht abgeglichen.
+Jeder Home-Assistant-Benutzer hat ein eigenes Tagebuch. Die Option `admin_users` (Liste von Benutzer-IDs oder Namen) bestimmt, wer die Benutzerverwaltung unter Einstellungen sieht; leer bedeutet: der erste Benutzer, der das Add-on geöffnet hat. Mit der Zusatzfunktion „Haushalt“ können Benutzer Einträge, Lebensmittel und gespeicherte Mahlzeiten mit anderen teilen, die diese Funktion ebenfalls eingeschaltet haben. Ein Tagebucheintrag erscheint am selben Tag im Tagebuch der anderen (jeder mit eigener Menge). Lebensmittel und Mahlzeiten lassen sich als Kopie in die Bibliothek anderer legen (⇪); gleichnamige Einträge dort bleiben unverändert, und spätere Änderungen werden nicht abgeglichen.
+
+**Gemeinsame Bibliothek:** Im Formular eines Lebensmittels bietet „In der gemeinsamen Haushaltsbibliothek anbieten“ das Lebensmittel allen an, die „Haushalt“ eingeschaltet haben. Sie sehen es mit dem Vermerk „von <Name>“ in ihrer Liste und im Hinzufügen-Dialog, dürfen es eintragen und ändern (die Änderung gilt sofort für alle, bereits eingetragene Mengen bleiben Schnappschüsse); Löschen, Favorit, Trigger und das Freigeben selbst bleiben beim Besitzer. Wer „Haushalt“ ausschaltet, sieht keine fremden Lebensmittel mehr.
 
 ## Sprache und Einheiten
 
-Einstellungen → Sprache und Einheiten: Deutsch, English oder automatisch nach Browser; metrisch (kg, cm) oder imperial (lb, in). Gewicht und Körpermaße werden intern immer in kg und cm gespeichert, nur Anzeige und Eingabe wechseln. Die Texte des Add-ons selbst (Optionen in Home Assistant) gibt es ebenfalls auf Deutsch und Englisch. Die Mengen von Lebensmitteln lassen sich getrennt davon auf Unzen (oz) umstellen („Lebensmittelmengen“). Gespeichert wird immer in Gramm, die Nährwerte bleiben „pro 100 g“.
+Einstellungen → Sprache und Einheiten: Deutsch, English, Français, Español oder automatisch nach Browser; metrisch (kg, cm) oder imperial (lb, in). Gewicht und Körpermaße werden intern immer in kg und cm gespeichert, nur Anzeige und Eingabe wechseln. Die Texte des Add-ons selbst (Optionen in Home Assistant) gibt es ebenfalls auf Deutsch und Englisch. Die Mengen von Lebensmitteln lassen sich getrennt davon auf Unzen (oz) umstellen („Lebensmittelmengen“). Gespeichert wird immer in Gramm, die Nährwerte bleiben „pro 100 g“.
 
 ## Weitere Datenquellen
 
@@ -106,7 +116,7 @@ Der Barcode wird am Lebensmittel gespeichert. Im Hinzufügen-Dialog findet „Ba
 
 ## Aktivität (Zusatzfunktion)
 
-Schritte und verbrannte Kalorien erhöhen das Tagesziel des jeweiligen Tages. Unter Einstellungen → Aktivität wählst Du Sensoren aus Home Assistant (Schritte, aktive Kalorien) und den Anteil, der angerechnet wird (Standard 50 %). Die Sensoren müssen Tageszähler sein, die um Mitternacht auf 0 springen; ein dauerhaft steigender Zähler lässt sich mit dem Helfer „Verbrauchszähler“ (`utility_meter`) auf täglich umstellen. Das Add-on liest sie alle fünf Minuten und behält den höchsten Wert des Tages. Ohne Kalorien-Sensor werden die Kalorien aus Schritten × Körpergewicht × Faktor geschätzt (Standard 0,0005 kcal je Schritt und kg). Im Tagebuch lassen sich die Werte jedes Tages auch von Hand eintragen; solche Tage überschreiben die Sensoren nicht mehr. Die Statistik und der Sensor „verbleibende kcal“ rechnen mit dem erhöhten Ziel.
+Schritte und verbrannte Kalorien erhöhen das Tagesziel des jeweiligen Tages. Unter Einstellungen → Aktivität wählst Du Sensoren aus Home Assistant (Schritte, aktive Kalorien) und den Anteil, der angerechnet wird (Standard 50 %). Die Sensoren müssen Tageszähler sein, die um Mitternacht auf 0 springen; ein dauerhaft steigender Zähler lässt sich mit dem Helfer „Verbrauchszähler“ (`utility_meter`) auf täglich umstellen. Das Add-on liest sie alle fünf Minuten und behält den höchsten Wert des Tages. „Verlauf nachladen“ im Tagebuch holt die letzten 30 Tage aus der Verlaufsdatenbank von Home Assistant (der Recorder muss die Sensoren aufzeichnen); Tage mit Handeingabe bleiben unberührt. Ohne Kalorien-Sensor werden die Kalorien aus Schritten × Körpergewicht × Faktor geschätzt (Standard 0,0005 kcal je Schritt und kg). Im Tagebuch lassen sich die Werte jedes Tages auch von Hand eintragen; solche Tage überschreiben die Sensoren nicht mehr. Die Statistik und der Sensor „verbleibende kcal“ rechnen mit dem erhöhten Ziel.
 
 ## Mahlzeiten-Zeitplan (Zusatzfunktion)
 
@@ -114,7 +124,11 @@ Jede Mahlzeit bekommt unter Einstellungen → Mahlzeiten ein Zeitfenster (Von–
 
 ## Lebensmittel-Tabelle importieren
 
-Seite „Lebensmittel“ → „Tabelle importieren …“ (auch unter Einstellungen → Weitere Importe): CSV, TXT oder Excel (`.xlsx`) mit Nährwerten pro 100 g. Spalten werden anhand der Überschriften erkannt, auch die Kürzel der **BLS** (`ST`, `GCAL`, `GJ`, `ZE`, `ZF`, `ZK`, `ZB`) und die Spalten eines Open-Food-Facts-Exports; in der Vorschau lässt sich die Zuordnung korrigieren. Energie in kJ wird umgerechnet, Natrium in Salz. Lebensmittel mit gleichem Namen und gleicher Marke bleiben unverändert, alle neuen bekommen die gewählte Kategorie. Die BLS selbst gibt es beim Max Rubner-Institut als Datei (die Nutzungsbedingungen dort gelten für die Daten); das Add-on bringt sie nicht mit.
+Seite „Lebensmittel“ → „Tabelle importieren …“ (auch unter Einstellungen → Weitere Importe): CSV, TXT oder Excel (`.xlsx`) mit Nährwerten pro 100 g. Spalten werden anhand der Überschriften erkannt, auch die Kürzel der **BLS** (`ST`, `GCAL`, `GJ`, `ZE`, `ZF`, `ZK`, `ZB`) und die Spalten eines Open-Food-Facts-Exports, der französischen **CIQUAL** (`alim_nom_fr`, „Protéines“, „Glucides“, „Lipides“ …) und der **Schweizer Nährwertdatenbank** (Energie in kcal, Protein, Kohlenhydrate verfügbar, Fett total, Nahrungsfasern …); in der Vorschau lässt sich die Zuordnung korrigieren. Energie in kJ wird umgerechnet, Natrium in Salz. Lebensmittel mit gleichem Namen und gleicher Marke bleiben unverändert, alle neuen bekommen die gewählte Kategorie. Die BLS selbst gibt es beim Max Rubner-Institut als Datei (die Nutzungsbedingungen dort gelten für die Daten); das Add-on bringt sie nicht mit.
+
+## Rezepte von Webseiten importieren
+
+Unter „Rezepte“ (Zusatzfunktion) ruft „Von Webseite …“ eine Rezeptseite ab und liest die darin eingebetteten Rezeptdaten (schema.org, wie sie die meisten Kochseiten für Suchmaschinen mitliefern): Name, Portionen, Zutaten, Zubereitung und Quelle. Die Zutatenzeilen („200 g Weizenmehl“, „1 1/2 EL Öl“, „2 Eier“) werden in Gramm umgerechnet (Löffel, Tassen, Prisen und Milliliter nach Faustwerten, Stückangaben mit der Portionsgröße des Lebensmittels) und Deinen Lebensmitteln zugeordnet, auch über Wortbestandteile („Weizenmehl“ → „Mehl“). Nicht zugeordnete Zutaten stehen rot im Editor; mit ⇄ wählst Du ein Lebensmittel, sonst zählen sie mit 0 kcal. Gibt die Seite Nährwerte an, zeigt der Editor sie zum Vergleich mit der berechneten Portion. Gespeichert wird erst nach Deiner Prüfung; die Quelle bleibt als Link am Rezept, die Zubereitung klappt in der Liste auf. Abgerufen werden nur öffentliche http(s)-Adressen (Adressen im lokalen Netz sind gesperrt, höchstens 3 MB). Seiten ohne Rezeptdaten oder hinter einem Login lassen sich nicht lesen.
 
 ## Datenbank und Updates
 
