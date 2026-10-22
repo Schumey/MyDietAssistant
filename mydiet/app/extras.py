@@ -1048,6 +1048,58 @@ else:
     note("Kein SUPERVISOR_TOKEN: Trigger-Prüfung inaktiv")
 
 
+# --- period report / comparison ----------------------------------------------
+
+def period_report(c, owner: str, start: date, end: date) -> dict:
+    """Averages, goal hits, best/worst day and weight change for the days start..end (inclusive)."""
+    n = (end - start).days + 1
+    rows = {r["day"]: dict(r) for r in c.execute(
+        "SELECT day, SUM(kcal) kcal, SUM(protein) protein, SUM(carbs) carbs, SUM(fat) fat FROM entries"
+        " WHERE owner=? AND day BETWEEN ? AND ? GROUP BY day", (owner, start.isoformat(), end.isoformat()))}
+    logged = []
+    for d, r in sorted(rows.items()):
+        g = get_goal(c, owner, d)
+        logged.append({**r, "goal_kcal": g["kcal"], "goal_protein": g["protein"]})
+    avg = lambda k: round(sum(r[k] for r in logged) / len(logged), 1) if logged else 0
+    with_goal = [r for r in logged if r["goal_kcal"]]
+    best = min(with_goal, key=lambda r: abs(r["kcal"] - r["goal_kcal"]), default=None)
+    worst = max(with_goal, key=lambda r: abs(r["kcal"] - r["goal_kcal"]), default=None)
+    w = c.execute("SELECT day, kg FROM weights WHERE owner=? AND day BETWEEN ? AND ? ORDER BY day",
+                  (owner, start.isoformat(), end.isoformat())).fetchall()
+    pick = lambda r: {"day": r["day"], "kcal": round(r["kcal"]), "goal": round(r["goal_kcal"])} if r else None
+    return {
+        "from": start.isoformat(), "to": end.isoformat(), "days": n, "logged": len(logged),
+        "kcal": avg("kcal"), "protein": avg("protein"), "carbs": avg("carbs"), "fat": avg("fat"),
+        "goal_kcal": round(sum(r["goal_kcal"] for r in logged) / len(logged)) if logged else 0,
+        "protein_days": sum(1 for r in logged if r["goal_protein"] and r["protein"] >= r["goal_protein"]),
+        "protein_goal_days": sum(1 for r in logged if r["goal_protein"]),
+        "kcal_days": sum(1 for r in with_goal if r["kcal"] <= r["goal_kcal"]),
+        "kcal_goal_days": len(with_goal),
+        "best": pick(best), "worst": pick(worst),
+        "weight_change": round(w[-1]["kg"] - w[0]["kg"], 1) if len(w) > 1 else None,
+        "weights": len(w),
+    }
+
+
+@app.get("/api/report")
+def report(a_from: str, a_to: str, b_from: str | None = None, b_to: str | None = None,
+           x_remote_user_id: str | None = Header(None)):
+    """Report for period A and, if given, period B (for comparison)."""
+    for d in (a_from, a_to, b_from, b_to):
+        if d:
+            check_day(d)
+    owner = user_from(x_remote_user_id)
+    spans = [(a_from, a_to)] + ([(b_from, b_to)] if b_from and b_to else [])
+    out = []
+    for f, t in spans:
+        s, e = date.fromisoformat(f), date.fromisoformat(t)
+        if e < s or (e - s).days > 3650:
+            raise HTTPException(400, "ungültiger Zeitraum")
+        with db.conn() as c:
+            out.append(period_report(c, owner, s, e))
+    return out
+
+
 # --- copy / clear / suggestions ---------------------------------------------
 
 class CopyIn(BaseModel):

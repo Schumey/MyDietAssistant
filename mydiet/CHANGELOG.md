@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.13.0
+
+### Neu
+- **Bericht & Zeitraum-Vergleich** (Statistik): Durchschnitt, Eiweißziel- und Kalorienziel-Tage, bester/schwächster Tag und Gewichtsänderung für einen Zeitraum, auf Wunsch neben einem zweiten Zeitraum mit Differenz. Schnellwahl „7 Tage vs. davor“ (Wochenbericht) und „30 Tage vs. davor“, Zeiträume frei wählbar (z. B. Diätphase 1 gegen 2).
+
 ## 0.12.1
 
 ### Geändert

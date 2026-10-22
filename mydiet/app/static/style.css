@@ -391,3 +391,9 @@ html[data-skin="win"] .tracker { border-bottom: 1px solid #808080; }
 button.icon.fav.on { color: var(--warning-color); }
 button.icon.fav:hover { color: var(--warning-color); }
 .pick input[type="radio"] { width: auto; }
+
+.cmp-range { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0; }
+.cmp-range input { width: auto; flex: none; }
+table.cmp th:first-child { text-align: left; }
+table.cmp th:nth-child(n+2), table.cmp td:nth-child(n+2) { width: auto; }
+table.cmp th:last-child, table.cmp td:last-child { width: auto; padding: 6px 10px; }

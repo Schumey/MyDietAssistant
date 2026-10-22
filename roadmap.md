@@ -7,7 +7,6 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 ## Als Nächstes (hoher Nutzen im Alltag)
 
 - **Wochentagsziele automatisch per Trigger** (S): Tageszielprofil (Training/Ruhe) zusätzlich über Kalender oder HA-Zustand (Fitnessstudio-Tag) umschalten. Die manuelle Zuordnung je Wochentag gibt es bereits.
-- **Rezepte mit Portionen** (M): Zutaten zu einem Rezept bündeln, Gesamtmakros durch Portionen teilen, als Lebensmittel nutzen. Baut auf der Komponenten-Bearbeitung der gespeicherten Mahlzeiten auf.
 - **Mikronährstoffe** (M): Ballaststoffe, Zucker, Salz, gesättigte Fette als optionale Spalten (Open Food Facts liefert sie bereits).
 
 ## Trigger und Home Assistant
@@ -18,13 +17,12 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 ## Auswertung
 
-- **Wochenbericht** (M): Durchschnitt, Eiweiß-Ziel getroffen an wie vielen Tagen, bester/schlechtester Tag, als Karte und optional als HA-Benachrichtigung.
 - **Körpermaße und Fotos** (M): Umfänge (Taille, Brust, Arm) neben dem Gewicht, optional Fortschrittsfotos nur lokal.
 - **Bilanz je Kategorie** (S): Statistik getrennt nach Diät-/Bulk-Phasen anhand der Kategorien.
-- **Zeitraum-Vergleich** (M): Zwei Zeiträume nebeneinander (z. B. Diätphase 1 gegen 2).
 
 ## Lebensmittel und Eingabe
 
+- **Rezepte mit Portionen** (M): Zutaten zu einem Rezept bündeln, Gesamtmakros durch Portionen teilen, als Lebensmittel nutzen. Baut auf der Komponenten-Bearbeitung der gespeicherten Mahlzeiten auf.
 - **Barcode-Scan per Kamera** (M): Im Browser/der HA-App scannen statt Nummer tippen (Open Food Facts ist angebunden).
 - **Mehrere Portionsgrößen** (M): „1 Scheibe = 30 g“, „1 Dose = 330 ml“ pro Lebensmittel hinterlegen.
 - **Einheiten und Sprache** (M): Anzeige in oz/lb sowie englische Oberfläche.

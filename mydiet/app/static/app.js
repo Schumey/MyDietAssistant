@@ -1039,6 +1039,7 @@ async function renderStats() {
         h("span", { style: "--c:var(--info-color)" }, `Eiweiß ${logged.length ? pct(kc.p) : 0} %`),
         h("span", { style: "--c:var(--warning-color)" }, `Kohlenhydrate ${logged.length ? pct(kc.c) : 0} %`),
         h("span", { style: "--c:var(--error-color)" }, `Fett ${logged.length ? pct(kc.f) : 0} %`))));
+  root.append(compareCard());
   if (trk.some(t => t.logged)) {
     const fmt = v => (Math.round(v * 10) / 10).toLocaleString("de-DE");
     root.append(h("div", { class: "card" }, h("h2", {}, "Wasser & Ergänzungen"),
@@ -1048,6 +1049,59 @@ async function renderStats() {
           h("td", {}, `${fmt(t.avg)} ${t.unit}`), h("td", {}, `${t.logged} / ${t.days} Tage`),
           h("td", {}, t.goal ? `${t.reached} / ${t.days} Tage` : "–")))))));
   }
+}
+
+// Report for one period, or two periods side by side with the difference (week report, diet phase 1 vs 2, ...).
+function compareCard() {
+  const span = n => { const t = new Date(); const f = new Date(); f.setDate(t.getDate() - n + 1); return [iso(f), iso(t)]; };
+  const before = (f, n) => { const e = parse(f); e.setDate(e.getDate() - 1); const s = new Date(e); s.setDate(e.getDate() - n + 1); return [iso(s), iso(e)]; };
+  const preset = n => { const [f, t] = span(n); const [bf, bt] = before(f, n); return { a_from: f, a_to: t, b_from: bf, b_to: bt }; };
+  state.cmp = state.cmp || preset(7);
+  const body = h("div");
+  const field = (key) => h("input", { type: "date", value: state.cmp[key], onchange: e => { if (e.target.value) { state.cmp[key] = e.target.value; load(); } } });
+  const inputsNew = () => h("div", { class: "cmp-range" }, ...[["A", "a_from", "a_to"], ["B", "b_from", "b_to"]].flatMap(([l, f, t]) =>
+    [h("span", { class: "muted" }, l), field(f), "–", field(t)]));
+  const wrap = h("div", { class: "card" }, h("h2", {}, "Bericht & Zeitraum-Vergleich"),
+    h("div", { class: "range" },
+      h("button", { onclick: () => { state.cmp = preset(7); card(); } }, "7 Tage vs. davor"),
+      h("button", { onclick: () => { state.cmp = preset(30); card(); } }, "30 Tage vs. davor")),
+    h("div", { class: "cmp-inputs" }), body);
+  const card = () => {
+    wrap.querySelector(".cmp-inputs").replaceChildren(inputsNew());
+    load();
+  };
+  const load = async () => {
+    const q = new URLSearchParams(state.cmp);
+    let r;
+    try { r = await api("report?" + q); } catch (e) { body.textContent = e.message; return; }
+    const [A, B] = r;
+    const fmtD = d => parse(d).toLocaleDateString("de-DE", { day: "numeric", month: "short" });
+    const rows = [
+      ["Ø Kalorien", p => n0(p.kcal) + " kcal", p => p.kcal, true],
+      ["Ø Eiweiß", p => n0(p.protein) + " g", p => p.protein, false],
+      ["Ø Kohlenhydrate", p => n0(p.carbs) + " g", p => p.carbs, true],
+      ["Ø Fett", p => n0(p.fat) + " g", p => p.fat, true],
+      ["Eiweißziel erreicht", p => p.protein_goal_days ? `${p.protein_days} / ${p.protein_goal_days} Tage` : "–", p => p.protein_goal_days ? p.protein_days / p.protein_goal_days * 100 : null, false, "pp"],
+      ["Kalorien im Ziel", p => p.kcal_goal_days ? `${p.kcal_days} / ${p.kcal_goal_days} Tage` : "–", p => p.kcal_goal_days ? p.kcal_days / p.kcal_goal_days * 100 : null, false, "pp"],
+      ["Erfasste Tage", p => `${p.logged} / ${p.days}`, p => p.logged, false],
+      ["Gewichtsänderung", p => p.weight_change == null ? "–" : (p.weight_change > 0 ? "+" : "") + n1(p.weight_change) + " kg", p => p.weight_change, true, "kg"],
+    ];
+    const diff = (row, a, b) => {
+      const x = row[2](a), y = row[2](b);
+      if (x == null || y == null) return "";
+      const d = x - y;
+      return (d > 0 ? "+" : "") + (row[4] === "kg" ? n1(d) + " kg" : row[4] === "pp" ? n0(d) + " %-Pkt." : n0(d));
+    };
+    const day = (p, k) => p[k] ? `${fmtD(p[k].day)} (${n0(p[k].kcal)} / ${n0(p[k].goal)} kcal)` : "–";
+    body.replaceChildren(
+      h("table", { class: "summary cmp" },
+        h("thead", {}, h("tr", {}, h("th"), h("th", {}, `${fmtD(A.from)} – ${fmtD(A.to)}`), B ? h("th", {}, `${fmtD(B.from)} – ${fmtD(B.to)}`) : null, B ? h("th", {}, "Differenz") : null)),
+        h("tbody", {}, rows.map(row => h("tr", {}, h("th", {}, row[0]), h("td", {}, row[1](A)),
+          B ? h("td", {}, row[1](B)) : null, B ? h("td", {}, diff(row, A, B)) : null)))),
+      h("div", { class: "muted", style: "margin-top:8px" }, `Bester Tag (A): ${day(A, "best")} · Schwächster Tag (A): ${day(A, "worst")}`));
+  };
+  queueMicrotask(card);
+  return wrap;
 }
 
 // ---------------------------------------------------------------- triggers
