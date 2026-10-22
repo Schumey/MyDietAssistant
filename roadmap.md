@@ -6,11 +6,9 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 ## Als Nächstes (hoher Nutzen im Alltag)
 
-- **Wochentagsziele automatisch per Trigger** (S): Tageszielprofil (Training/Ruhe) zusätzlich über Kalender oder HA-Zustand (Fitnessstudio-Tag) umschalten. Die manuelle Zuordnung je Wochentag gibt es bereits.
 
 ## Trigger und Home Assistant
 
-- **Mehrere Bedingungen** (M): UND/ODER-Verknüpfung, z. B. Kalender „Nachtschicht“ UND Person zu Hause.
 
 ## Auswertung
 

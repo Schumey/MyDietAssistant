@@ -139,7 +139,15 @@ def get_goal(c, owner: str, day: str | None = None) -> dict:
                       (owner, date.fromisoformat(day).weekday())).fetchone()
         if w:
             g.update({k: w[k] for k in ("kcal", "protein", "carbs", "fat")})
+        p = day_profile(c, owner, day)
+        if p:  # a trigger switched this day to a goal profile
+            g.update({k: p[k] for k in ("kcal", "protein", "carbs", "fat")})
     return g
+
+
+def day_profile(c, owner: str, day: str):
+    return c.execute("SELECT g.* FROM day_profile d JOIN goal_profiles g ON g.id=d.profile_id"
+                     " WHERE d.owner=? AND d.day=?", (owner, day)).fetchone()
 
 
 def day_totals(c, owner: str, day: str) -> dict:
@@ -208,6 +216,7 @@ def get_day(day: str, x_remote_user_id: str | None = Header(None)):
             m["hidden"] = m["id"] in hidden
         return {"meals": meals, "entries": entries, "mode": get_pref(owner, "diary_mode", "meals"),
                 "totals": day_totals(c, owner, day), "goal": get_goal(c, owner, day),
+                "profile": (day_profile(c, owner, day) or {"name": None})["name"] if feature_on(owner, "weekday_goals") else None,
                 "notes": {str(r["meal_id"]): r["text"] for r in c.execute(
                     "SELECT meal_id, text FROM day_notes WHERE owner=? AND day=?", (owner, day))}}
 

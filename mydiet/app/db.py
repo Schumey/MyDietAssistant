@@ -124,6 +124,21 @@ CREATE TABLE IF NOT EXISTS food_portions (    -- "1 slice = 30 g", "1 can = 330 
   name TEXT NOT NULL,
   grams REAL NOT NULL
 );
+CREATE TABLE IF NOT EXISTS goal_profiles (    -- named goal sets (training day, rest day ...), switched by triggers
+  id INTEGER PRIMARY KEY,
+  owner TEXT NOT NULL,
+  name TEXT NOT NULL,
+  kcal REAL NOT NULL,
+  protein REAL NOT NULL DEFAULT 0,
+  carbs REAL NOT NULL DEFAULT 0,
+  fat REAL NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS day_profile (      -- which profile applies on a day
+  owner TEXT NOT NULL,
+  day TEXT NOT NULL,
+  profile_id INTEGER NOT NULL,
+  PRIMARY KEY (owner, day)
+);
 CREATE TABLE IF NOT EXISTS day_notes (        -- free text per day (meal_id 0) or per meal
   owner TEXT NOT NULL,
   day TEXT NOT NULL,
@@ -197,6 +212,12 @@ def init():
                          ("win_to", "TEXT NOT NULL DEFAULT ''")):  # v0.11: hold time and time window
             if col not in {r["name"] for r in c.execute("PRAGMA table_info(triggers)")}:
                 c.execute(f"ALTER TABLE triggers ADD COLUMN {col} {ddl}")
+        for col, ddl in (("extra", "TEXT NOT NULL DEFAULT '[]'"), ("combine", "TEXT NOT NULL DEFAULT 'and'"),
+                         ("profile_id", "INTEGER")):  # v0.16: several conditions, goal-profile action
+            if col not in {r["name"] for r in c.execute("PRAGMA table_info(triggers)")}:
+                c.execute(f"ALTER TABLE triggers ADD COLUMN {col} {ddl}")
+        if "profile_id" not in {r["name"] for r in c.execute("PRAGMA table_info(trigger_runs)")}:
+            c.execute("ALTER TABLE trigger_runs ADD COLUMN profile_id INTEGER")
         if "paused_until" not in {r["name"] for r in c.execute("PRAGMA table_info(triggers)")}:  # v0.15: pause a trigger
             c.execute("ALTER TABLE triggers ADD COLUMN paused_until TEXT NOT NULL DEFAULT ''")
         if "favorite" not in cols:  # v0.11: favourite foods

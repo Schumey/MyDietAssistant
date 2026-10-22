@@ -418,3 +418,8 @@ html[data-skin="win"] .note { border-left-color: #000080; background: var(--w-fi
 html[data-skin="win"] textarea { border-radius: 0; background: var(--w-field); color: #000; }
 .portion-pick { margin-top: 8px; }
 .card.micros h2 { font-size: 15px; }
+
+.extra-cond { margin: 8px 0; padding: 8px; border: 1px dashed var(--divider-color); border-radius: 8px; display: grid; gap: 6px; }
+.prof-grid { display: grid; grid-template-columns: minmax(100px, 1.5fr) repeat(4, minmax(56px, 1fr)) 36px; gap: 6px; align-items: center; margin-top: 8px; }
+.prof-grid input { min-width: 0; }
+html[data-skin="win"] .extra-cond { border: 1px solid #808080; border-radius: 0; }

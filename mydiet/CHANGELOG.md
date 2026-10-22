@@ -2,6 +2,13 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.16.0
+
+### Neu
+- **Mehrere Bedingungen pro Trigger:** Im Trigger-Dialog „+ Weitere Bedingung“ (Zustand oder Kalender, auch „ist NICHT“). Verknüpfung wahlweise UND (alle müssen zutreffen, z. B. Kalender „Nachtschicht“ UND Person zu Hause) oder ODER. Zeitfenster gilt für den ganzen Trigger. Für im Voraus geplante Kalendertage zählen nur Kalender-Bedingungen.
+- **Tagesziel-Profile** (Zusatzfunktion „Tagesziele pro Wochentag“): Profile wie „Training“ und „Ruhetag“ mit eigenen kcal/Makros (inkl. Kalorienrechner). Ein Trigger kann mit „Dann: Tagesziel wechseln“ den Tag auf ein Profil schalten, z. B. wenn die Person im Fitnessstudio ist. Das Profil geht vor dem Wochentagsziel, Tagebuch und Statistik zeigen es an; der Verlauf bietet „Rückgängig“.
+- Sicherung enthält Tagesziel-Profile und deren Zuordnung zu Tagen.
+
 ## 0.15.0
 
 ### Neu

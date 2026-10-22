@@ -478,6 +478,8 @@ def dump(owner: str) -> dict:
             "features": features(owner),
             "goal_weekdays": q("SELECT wd,kcal,protein,carbs,fat FROM goal_weekdays WHERE owner=?", owner),
             "notes": q("SELECT day,meal_id,text FROM day_notes WHERE owner=?", owner),
+            "goal_profiles": q("SELECT id,name,kcal,protein,carbs,fat FROM goal_profiles WHERE owner=?", owner),
+            "day_profile": q("SELECT day,profile_id FROM day_profile WHERE owner=?", owner),
             "trackers": [{**t, "log": q("SELECT day,amount FROM tracker_log WHERE tracker_id=?", t["id"])}
                          for t in q("SELECT id,name,unit,goal,step,position FROM trackers WHERE owner=?", owner)],
         }
@@ -532,6 +534,8 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
         c.execute("DELETE FROM triggers WHERE owner=?", (owner,))
         c.execute("DELETE FROM goal_weekdays WHERE owner=?", (owner,))
         c.execute("DELETE FROM day_notes WHERE owner=?", (owner,))
+        c.execute("DELETE FROM goal_profiles WHERE owner=?", (owner,))
+        c.execute("DELETE FROM day_profile WHERE owner=?", (owner,))
         c.execute("DELETE FROM tracker_log WHERE tracker_id IN (SELECT id FROM trackers WHERE owner=?)", (owner,))
         c.execute("DELETE FROM trackers WHERE owner=?", (owner,))
         for g in d.get("goal_weekdays", []):
@@ -574,6 +578,13 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
                           " VALUES(?,?,?,?,?,?,?,?,?,?,?)",
                           (sid, i["name"], i["grams"], i["kcal"], i["protein"], i["carbs"], i["fat"],
                            *(i.get(m, 0) for m in db.MICROS)))
+        pmap = {}
+        for p in d.get("goal_profiles", []):
+            pmap[p["id"]] = c.execute("INSERT INTO goal_profiles(owner,name,kcal,protein,carbs,fat) VALUES(?,?,?,?,?,?)",
+                                      (owner, p["name"], p["kcal"], p.get("protein", 0), p.get("carbs", 0), p.get("fat", 0))).lastrowid
+        for dp in d.get("day_profile", []):
+            if dp["profile_id"] in pmap:
+                c.execute("INSERT OR REPLACE INTO day_profile(owner,day,profile_id) VALUES(?,?,?)", (owner, dp["day"], pmap[dp["profile_id"]]))
         for n in d.get("notes", []):
             mid = 0 if not n["meal_id"] else mmap.get(n["meal_id"])
             if mid is not None:
@@ -752,13 +763,23 @@ def mfp_import(p: MfpImportIn, x_remote_user_id: str | None = Header(None),
 
 # --- triggers ---------------------------------------------------------------
 
+class ExtraCond(BaseModel):
+    kind: str = "state"             # 'state' | 'calendar'
+    entity: str
+    match: str = ""
+    negate: bool = False
+
+
 class TriggerIn(BaseModel):
     kind: str                       # 'state' | 'calendar' | 'time'
     entity: str = ""
     match: str = ""
-    meal_id: int
+    meal_id: int | None = None
     saved_meal_id: int | None = None
     food_id: int | None = None
+    profile_id: int | None = None   # action: switch the day to a goal profile instead of adding food
+    extra: list[ExtraCond] = []     # further conditions, combined with the main one
+    combine: str = "and"            # 'and' | 'or'
     grams: float | None = None
     enabled: bool = True
     negate: bool = False
@@ -802,9 +823,12 @@ def trigger_rows(c, owner: str):
         elif t["food_id"]:
             r = c.execute("SELECT name FROM foods WHERE id=?", (t["food_id"],)).fetchone()
             label = r["name"] if r else None
+        elif t["profile_id"]:
+            r = c.execute("SELECT name FROM goal_profiles WHERE id=?", (t["profile_id"],)).fetchone()
+            label = f"Tagesziel „{r['name']}“" if r else None
         m = c.execute("SELECT name FROM meals WHERE id=?", (t["meal_id"],)).fetchone()
         last = c.execute("SELECT MAX(day) d FROM trigger_log WHERE trigger_id=?", (t["id"],)).fetchone()["d"]
-        rows.append({**dict(t), "enabled": bool(t["enabled"]), "item": label,
+        rows.append({**dict(t), "enabled": bool(t["enabled"]), "item": label, "extra": json.loads(t["extra"] or "[]"),
                      "meal": m["name"] if m else None, "last_run": last})
     return rows
 
@@ -823,10 +847,18 @@ def check_trigger_body(c, owner: str, t: TriggerIn):
     check_time(t.win_to.strip())
     if t.hold_min < 0:
         raise HTTPException(400, "hold_min must be >= 0")
-    if bool(t.saved_meal_id) == bool(t.food_id):
-        raise HTTPException(400, "genau eines von Mahlzeit/Lebensmittel angeben")
-    if not c.execute("SELECT 1 FROM meals WHERE id=? AND owner=?", (t.meal_id, owner)).fetchone():
+    if sum(bool(x) for x in (t.saved_meal_id, t.food_id, t.profile_id)) != 1:
+        raise HTTPException(400, "genau eines von Mahlzeit/Lebensmittel/Zielprofil angeben")
+    if t.profile_id:
+        if not c.execute("SELECT 1 FROM goal_profiles WHERE id=? AND owner=?", (t.profile_id, owner)).fetchone():
+            raise HTTPException(404, "profile not found")
+    elif not c.execute("SELECT 1 FROM meals WHERE id=? AND owner=?", (t.meal_id, owner)).fetchone():
         raise HTTPException(404, "meal not found")
+    if t.combine not in ("and", "or"):
+        raise HTTPException(400, "combine must be and or or")
+    for x in t.extra:
+        if x.kind not in ("state", "calendar") or not x.entity.strip():
+            raise HTTPException(400, "weitere Bedingung: Art und Entität erforderlich")
 
 
 @app.get("/api/triggers")
@@ -842,10 +874,11 @@ def add_trigger(t: TriggerIn, x_remote_user_id: str | None = Header(None)):
         check_trigger_body(c, owner, t)
         cur = c.execute(
             "INSERT INTO triggers(owner,kind,entity,match,meal_id,saved_meal_id,food_id,grams,enabled,negate,days_ahead,part,"
-            "hold_min,win_from,win_to) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-            (owner, t.kind, t.entity.strip(), t.match.strip(), t.meal_id, t.saved_meal_id, t.food_id,
+            "hold_min,win_from,win_to,profile_id,extra,combine) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (owner, t.kind, t.entity.strip(), t.match.strip(), t.meal_id or 0, t.saved_meal_id, t.food_id,
              t.grams, int(t.enabled), int(t.negate), 0 if t.kind != "calendar" else max(0, min(t.days_ahead, 60)), t.part,
-             t.hold_min if t.kind == "state" else 0, t.win_from.strip(), t.win_to.strip()))
+             t.hold_min if t.kind == "state" else 0, t.win_from.strip(), t.win_to.strip(),
+             t.profile_id, json.dumps([x.model_dump() for x in t.extra]), t.combine))
         return {"id": cur.lastrowid}
 
 
@@ -855,10 +888,12 @@ def edit_trigger(tid: int, t: TriggerIn, x_remote_user_id: str | None = Header(N
     with db.conn() as c:
         check_trigger_body(c, owner, t)
         c.execute("UPDATE triggers SET kind=?,entity=?,match=?,meal_id=?,saved_meal_id=?,food_id=?,"
-                  "grams=?,enabled=?,negate=?,days_ahead=?,part=?,hold_min=?,win_from=?,win_to=? WHERE id=? AND owner=?",
-                  (t.kind, t.entity.strip(), t.match.strip(), t.meal_id, t.saved_meal_id, t.food_id,
+                  "grams=?,enabled=?,negate=?,days_ahead=?,part=?,hold_min=?,win_from=?,win_to=?,profile_id=?,extra=?,"
+                  "combine=? WHERE id=? AND owner=?",
+                  (t.kind, t.entity.strip(), t.match.strip(), t.meal_id or 0, t.saved_meal_id, t.food_id,
                    t.grams, int(t.enabled), int(t.negate), 0 if t.kind != "calendar" else max(0, min(t.days_ahead, 60)), t.part,
-                   t.hold_min if t.kind == "state" else 0, t.win_from.strip(), t.win_to.strip(), tid, owner))
+                   t.hold_min if t.kind == "state" else 0, t.win_from.strip(), t.win_to.strip(),
+                   t.profile_id, json.dumps([x.model_dump() for x in t.extra]), t.combine, tid, owner))
     return {"ok": True}
 
 
@@ -892,9 +927,15 @@ def fire(c, t, day: str):
                              (owner, day, t["meal_id"], f["name"], g, f["kcal"] * k, f["protein"] * k,
                               f["carbs"] * k, f["fat"] * k, *(f[m] * k for m in db.MICROS), stamp)).lastrowid)
         label = f["name"]
+    elif t["profile_id"]:
+        p = c.execute("SELECT name FROM goal_profiles WHERE id=? AND owner=?", (t["profile_id"], owner)).fetchone()
+        if not p:
+            return
+        c.execute("INSERT OR REPLACE INTO day_profile(owner,day,profile_id) VALUES(?,?,?)", (owner, day, t["profile_id"]))
+        label = f"Tagesziel „{p['name']}“"
     c.execute("INSERT OR IGNORE INTO trigger_log(trigger_id, day) VALUES(?,?)", (t["id"], day))
-    c.execute("INSERT INTO trigger_runs(owner,trigger_id,label,day,ts,entry_ids) VALUES(?,?,?,?,?,?)",
-              (owner, t["id"], label, day, datetime.now().strftime("%Y-%m-%d %H:%M"), json.dumps(ids)))
+    c.execute("INSERT INTO trigger_runs(owner,trigger_id,label,day,ts,entry_ids,profile_id) VALUES(?,?,?,?,?,?,?)",
+              (owner, t["id"], label, day, datetime.now().strftime("%Y-%m-%d %H:%M"), json.dumps(ids), t["profile_id"]))
     c.execute("DELETE FROM trigger_runs WHERE owner=? AND id NOT IN"
               " (SELECT id FROM trigger_runs WHERE owner=? ORDER BY id DESC LIMIT 200)", (owner, owner))
 
@@ -912,6 +953,9 @@ def trigger_runs(limit: int = 30, x_remote_user_id: str | None = Header(None)):
         for r in rows:
             ids = json.loads(r["entry_ids"])
             alive = [i for i in ids if c.execute("SELECT 1 FROM entries WHERE id=? AND owner=?", (i, owner)).fetchone()]
+            if r["profile_id"] and c.execute("SELECT 1 FROM day_profile WHERE owner=? AND day=? AND profile_id=?",
+                                             (owner, r["day"], r["profile_id"])).fetchone():
+                alive = [0]
             out.append({**{k: r[k] for k in ("id", "label", "day", "ts", "kind", "entity", "match", "negate")},
                         "undone": bool(r["undone"]), "entries": len(alive)})
         return out
@@ -928,6 +972,8 @@ def undo_trigger_run(rid: int, x_remote_user_id: str | None = Header(None),
             raise HTTPException(404, "run not found")
         for i in json.loads(r["entry_ids"]):
             c.execute("DELETE FROM entries WHERE id=? AND owner=?", (i, owner))
+        if r["profile_id"]:
+            c.execute("DELETE FROM day_profile WHERE owner=? AND day=? AND profile_id=?", (owner, r["day"], r["profile_id"]))
         c.execute("UPDATE trigger_runs SET undone=1 WHERE id=?", (rid,))
     publish(owner, x_remote_user_display_name or owner)
     return {"ok": True}
@@ -997,6 +1043,23 @@ def condition_met(t, now: datetime, day: str | None = None) -> bool:
     return False
 
 
+def trigger_met(t, now: datetime, day: str | None = None) -> bool:
+    """Main condition plus optional extra conditions (all must hold with combine 'and', one suffices with 'or')."""
+    extra = json.loads(t["extra"] or "[]")
+    base = {**dict(t), "win_from": "", "win_to": ""}
+    if not extra:
+        return condition_met(t, now, day)
+    if (day is None or day == now.date().isoformat()) and not in_window(t, now):
+        return False
+    future = bool(day) and day != now.date().isoformat()
+    results = []
+    for c in [base] + [{**base, "kind": x["kind"], "entity": x["entity"], "match": x.get("match", ""),
+                        "negate": int(x.get("negate", False)), "part": "any", "hold_min": 0} for x in extra]:
+        # for a day ahead only calendar conditions can be judged
+        results.append(False if future and c["kind"] != "calendar" else condition_met(c, now, day))
+    return any(results) if t["combine"] == "or" else all(results)
+
+
 poll_state = {"token": bool(SUPERVISOR_TOKEN), "last": None, "log": [], "error": None}
 
 
@@ -1026,7 +1089,7 @@ def poll_triggers():
             meal_rule_active(c, t, day)  # logs the day once the state was seen
     for t, d in pending:
         try:
-            if not condition_met(t, now, d):
+            if not trigger_met(t, now, d):
                 continue
         except (httpx.HTTPError, ValueError, KeyError) as e:
             note(f"Trigger {t['id']} ({t['entity']}, {d}): Fehler {e!r}")
@@ -1053,6 +1116,51 @@ def trigger_loop():
 @app.get("/api/triggers/status")
 def trigger_status():
     return poll_state
+
+
+class ProfileIn(BaseModel):
+    name: str
+    kcal: float
+    protein: float = 0
+    carbs: float = 0
+    fat: float = 0
+
+
+@app.get("/api/goal-profiles")
+def list_profiles(x_remote_user_id: str | None = Header(None)):
+    with db.conn() as c:
+        return [dict(r) for r in c.execute("SELECT id,name,kcal,protein,carbs,fat FROM goal_profiles WHERE owner=? ORDER BY id",
+                                           (user_from(x_remote_user_id),))]
+
+
+@app.post("/api/goal-profiles")
+def add_profile(p: ProfileIn, x_remote_user_id: str | None = Header(None)):
+    if not p.name.strip() or p.kcal <= 0:
+        raise HTTPException(400, "Name und Kalorien erforderlich")
+    with db.conn() as c:
+        return {"id": c.execute("INSERT INTO goal_profiles(owner,name,kcal,protein,carbs,fat) VALUES(?,?,?,?,?,?)",
+                                (user_from(x_remote_user_id), p.name.strip(), p.kcal, p.protein, p.carbs, p.fat)).lastrowid}
+
+
+@app.put("/api/goal-profiles/{pid}")
+def edit_profile(pid: int, p: ProfileIn, x_remote_user_id: str | None = Header(None)):
+    if not p.name.strip() or p.kcal <= 0:
+        raise HTTPException(400, "Name und Kalorien erforderlich")
+    with db.conn() as c:
+        c.execute("UPDATE goal_profiles SET name=?,kcal=?,protein=?,carbs=?,fat=? WHERE id=? AND owner=?",
+                  (p.name.strip(), p.kcal, p.protein, p.carbs, p.fat, pid, user_from(x_remote_user_id)))
+    return {"ok": True}
+
+
+@app.delete("/api/goal-profiles/{pid}")
+def del_profile(pid: int, x_remote_user_id: str | None = Header(None)):
+    owner = user_from(x_remote_user_id)
+    with db.conn() as c:
+        if c.execute("SELECT 1 FROM goal_profiles WHERE id=? AND owner=?", (pid, owner)).fetchone():
+            c.execute("DELETE FROM triggers WHERE profile_id=? AND owner=?", (pid, owner))
+            c.execute("DELETE FROM day_profile WHERE profile_id=? AND owner=?", (pid, owner))
+            c.execute("DELETE FROM goal_profiles WHERE id=?", (pid,))
+    return {"ok": True}
 
 
 class PauseIn(BaseModel):
