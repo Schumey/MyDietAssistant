@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.9.2
+
+### Behoben
+- Windows-Look: gleichmäßige Abstände zwischen den Reitern.
+
 ## 0.9.1
 
 ### Behoben
