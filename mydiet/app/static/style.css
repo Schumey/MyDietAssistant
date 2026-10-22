@@ -233,3 +233,4 @@ dialog h2 { margin-bottom: 12px; font-size: 18px; }
 .hint { text-align: center; margin: -4px 0 12px; }
 .sect { padding: 6px 8px 0; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
 button.flat.danger { color: var(--error-color); }
+.list > .archived { opacity: .55; }

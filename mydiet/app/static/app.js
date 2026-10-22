@@ -104,12 +104,7 @@ async function renderDiary() {
         h("th", {}, "Kohlenhydrate", h("small", {}, "g")),
         h("th", {}, "Fette", h("small", {}, "g")),
         h("th", {}, "Eiweiß", h("small", {}, "g")),
-        h("th", {}, items.length ? h("button", { class: "icon", title: meal ? "Mahlzeit leeren" : "Tag leeren",
-          "aria-label": "Mahlzeit leeren", onclick: async () => {
-            if (!confirm(meal ? `Alle Einträge von „${meal.name}“ löschen?` : "Alle Einträge dieses Tages löschen?")) return;
-            await api(`day/${state.day}/entries` + (meal ? "?meal_id=" + meal.id : ""), { method: "DELETE" });
-            renderDiary();
-          } }, "✕") : null))),
+        h("th", {}))),
       h("tbody", {}, rows, h("tr", { class: "foot" },
         h("td", {},
           h("button", { class: "flat", onclick: () => openAdd(meal) }, "+ Nahrungsmittel hinzufügen"),
@@ -117,7 +112,12 @@ async function renderDiary() {
             h("button", { class: "flat", onclick: () => copyDialog(meal, items, times) }, "Speichern / Kopieren")] : null),
         h("td", {}, items.length ? n0(sum("kcal")) : ""), h("td", {}, items.length ? n0(sum("carbs")) : ""),
         h("td", {}, items.length ? n0(sum("fat")) : ""), h("td", {}, items.length ? n0(sum("protein")) : ""),
-        h("td", {})))));
+        h("td", {}, items.length ? h("button", { class: "icon", title: meal ? "Mahlzeit leeren" : "Tag leeren",
+          "aria-label": "Mahlzeit leeren", onclick: async () => {
+            if (!confirm(meal ? `Alle Einträge von „${meal.name}“ löschen?` : "Alle Einträge dieses Tages löschen?")) return;
+            await api(`day/${state.day}/entries` + (meal ? "?meal_id=" + meal.id : ""), { method: "DELETE" });
+            renderDiary();
+          } }, "✕") : null)))));
   };
 
   if (times) {
@@ -185,7 +185,7 @@ const modeTabs = (active, meal, items, times) => h("div", { class: "range" },
   h("button", { class: active === "save" ? "active" : "", onclick: () => saveMealDialog(meal, items, times) }, "Als Mahlzeit speichern"));
 
 function copyDialog(meal, items, times) {
-  const meals = state.data.meals;
+  const meals = state.data.meals.filter(m => !m.archived || (meal && m.id === meal.id));
   const day = h("input", { type: "date", value: state.day });
   const target = h("select", {}, meals.map(m => h("option", { value: m.id, selected: meal && m.id === meal.id }, m.name)));
   const time = h("input", { type: "time" });
@@ -709,9 +709,13 @@ function triggerFields(ents) {
 }
 
 // Show a diary meal only on days where a rule applies (e.g. calendar has "Nachtschicht").
-async function mealRuleDialog(meal) {
+async function mealRuleDialog(meal, rule = null) {
   const ents = await api("ha/entities").catch(() => []);
   const tf = triggerFields(ents);
+  if (rule) {
+    tf.kind.value = rule.kind; tf.kind.dispatchEvent(new Event("change"));
+    tf.entity.value = rule.entity; tf.match.value = rule.match; tf.negate.value = rule.negate ? "1" : "0";
+  }
   const msg = h("div", { class: "err" });
   setDlg(h("h2", {}, `„${meal.name}“ nur an bestimmten Tagen anzeigen`), tf.nodes,
     h("div", { class: "muted", style: "margin-top:8px" }, "Tage mit Einträgen bleiben immer sichtbar. Ohne Regel wird die Mahlzeit immer angezeigt."),
@@ -721,8 +725,9 @@ async function mealRuleDialog(meal) {
       h("button", { onclick: async () => {
         if (!tf.entity.value.trim()) { msg.textContent = "Bitte eine Entität angeben."; return; }
         try {
-          await send("POST", "meal-triggers", { meal_id: meal.id, kind: tf.kind.value, entity: tf.entity.value, match: tf.match.value,
-            negate: tf.negate.value === "1" });
+          await send(rule ? "PUT" : "POST", "meal-triggers" + (rule ? "/" + rule.id : ""),
+            { meal_id: meal.id, kind: tf.kind.value, entity: tf.entity.value, match: tf.match.value,
+              negate: tf.negate.value === "1" });
           dlg.close(); renderSettings();
         } catch (e) { msg.textContent = e.message; }
       } }, "Speichern")));
@@ -740,6 +745,7 @@ async function triggerDialog(preset = {}, onDone = () => {}) {
   const item = h("select", {},
     h("optgroup", { label: "Gespeicherte Mahlzeiten" }, saved.map(s => h("option", { value: "s:" + s.id }, s.name))),
     h("optgroup", { label: "Lebensmittel" }, foods.map(f => h("option", { value: "f:" + f.id }, f.name))));
+  const ed = preset.edit;
   if (preset.item) item.value = preset.item;
   const meal = h("select", {}, day.meals.map(m => h("option", { value: m.id }, m.name)));
   const grams = h("input", { type: "number", step: "any", min: "1", placeholder: "Standardportion" });
@@ -750,8 +756,14 @@ async function triggerDialog(preset = {}, onDone = () => {}) {
   const syncAhead = () => { aheadRow.hidden = kind.value !== "calendar"; };
   kind.addEventListener("change", syncAhead);
   syncAhead();
+  if (ed) {
+    kind.value = ed.kind; kind.dispatchEvent(new Event("change"));
+    entity.value = ed.entity; match.value = ed.match; tf.negate.value = ed.negate ? "1" : "0";
+    item.value = (ed.saved_meal_id ? "s:" + ed.saved_meal_id : "f:" + ed.food_id);
+    meal.value = ed.meal_id; grams.value = ed.grams ?? ""; ahead.value = ed.days_ahead || 0;
+  }
 
-  setDlg(h("h2", {}, "Neuer Trigger"),
+  setDlg(h("h2", {}, ed ? "Trigger bearbeiten" : "Neuer Trigger"),
     tf.nodes,
     h("label", {}, "Hinzufügen"), item,
     h("div", { class: "muted" }, "Bei Lebensmitteln optional mit Menge:"), grams, aheadRow,
@@ -764,7 +776,8 @@ async function triggerDialog(preset = {}, onDone = () => {}) {
         const [t, id] = item.value.split(":");
         if (!id) { msg.textContent = "Bitte ein Lebensmittel oder eine Mahlzeit wählen."; return; }
         try {
-          await send("POST", "triggers", { kind: kind.value, entity: entity.value, match: match.value,
+          await send(ed ? "PUT" : "POST", "triggers" + (ed ? "/" + ed.id : ""), { kind: kind.value, entity: entity.value, match: match.value,
+            enabled: ed ? !!ed.enabled : true,
             meal_id: Number(meal.value || day.meals[0].id),
             saved_meal_id: t === "s" ? Number(id) : null, food_id: t === "f" ? Number(id) : null,
             grams: t === "f" ? num(grams.value) : null, negate: tf.negate.value === "1",
@@ -869,23 +882,28 @@ async function renderSettings() {
       await send("PUT", "meals/order", { ids });
       renderSettings();
     };
-    return h("div", {}, name,
+    return h("div", { class: m.archived ? "archived" : "" }, name,
       h("button", { class: "icon", disabled: i === 0, title: "Nach oben", onclick: () => move(-1) }, "↑"),
       h("button", { class: "icon", disabled: i === meals.length - 1, title: "Nach unten", onclick: () => move(1) }, "↓"),
       h("button", { class: "icon", title: "Nur an bestimmten Tagen anzeigen", onclick: () => mealRuleDialog(m) }, "⚡"),
+      h("button", { class: "icon", title: m.archived ? "Wieder einblenden" : "Ausblenden (nur noch an Tagen mit Einträgen sichtbar)",
+        "aria-label": m.archived ? "Wieder einblenden" : "Ausblenden", onclick: async () => {
+          await send("PUT", `meals/${m.id}/archived`, { archived: !m.archived }); renderSettings();
+        } }, m.archived ? "◉" : "⊘"),
       h("button", { class: "icon", title: "Löschen", onclick: async () => {
         try { await api("meals/" + m.id, { method: "DELETE" }); renderSettings(); }
-        catch (e) { mealMsg.textContent = e.message; }
+        catch (e) { mealMsg.textContent = e.message + " – blende sie stattdessen mit ⊘ aus."; }
       } }, "✕"));
   }));
   const newMeal = h("input", { placeholder: "Neue Mahlzeit, z. B. Nachtschicht" });
   const ruleList = rules.length ? h("div", { class: "list" }, rules.map(r => h("div", {},
     h("div", { class: "grow" }, h("b", {}, r.meal), ` nur an Tagen: ${condText(r)}`),
+    h("button", { class: "icon edit", title: "Regel bearbeiten", "aria-label": "Regel bearbeiten", onclick: () => mealRuleDialog({ id: r.meal_id, name: r.meal }, r) }, "✎"),
     h("button", { class: "icon", title: "Regel löschen", onclick: async () => {
       await api("meal-triggers/" + r.id, { method: "DELETE" }); renderSettings();
     } }, "✕")))) : null;
   root.append(h("div", { class: "card" }, h("h2", {}, "Mahlzeiten"),
-    h("div", { class: "muted" }, "Mit ⚡ blendest du eine Mahlzeit nur an Tagen ein, an denen z. B. dein Kalender einen bestimmten Termin hat."),
+    h("div", { class: "muted" }, "Mit ⚡ blendest du eine Mahlzeit nur an Tagen ein, an denen z. B. dein Kalender einen bestimmten Termin hat. Mit ⊘ blendest du sie dauerhaft aus (sichtbar bleibt sie nur an Tagen mit Einträgen), gelöscht werden kann nur eine leere Mahlzeit."),
     mealList, ruleList, mealMsg,
     h("div", { class: "actions" }, newMeal, h("button", { onclick: async () => {
       if (!newMeal.value.trim()) return;
@@ -909,6 +927,7 @@ async function renderSettings() {
           h("div", { class: "muted" }, `→ ${t.item || "(gelöscht)"}${day.mode === "meals" && t.meal ? " zu " + t.meal : ""}`
             + (t.days_ahead ? ` · ${t.days_ahead} Tage im Voraus` : "")
             + (t.last_run ? ` · zuletzt ${parse(t.last_run).toLocaleDateString("de-DE")}` : ""))),
+        h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => triggerDialog({ edit: t }) }, "✎"),
         h("button", { class: "icon", title: "Jetzt testen (trägt heute ein)", onclick: async () => {
           try { await send("POST", `triggers/${t.id}/run`, {}); trigMsg.textContent = ""; alert("Eingetragen."); }
           catch (e) { trigMsg.textContent = e.message; }

@@ -146,7 +146,7 @@ def get_day(day: str, x_remote_user_id: str | None = Header(None)):
     with db.conn() as c:
         db.ensure_meals(c, owner)
         meals = [dict(r) for r in c.execute(
-            "SELECT id, name FROM meals WHERE owner=? ORDER BY position", (owner,))]
+            "SELECT id, name, archived FROM meals WHERE owner=? ORDER BY position", (owner,))]
         entries = [dict(r) for r in c.execute(
             "SELECT * FROM entries WHERE owner=? AND day=? ORDER BY id", (owner, day))]
         hidden = hidden_meals(c, owner, day, meals, {e["meal_id"] for e in entries})

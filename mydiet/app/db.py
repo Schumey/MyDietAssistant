@@ -23,7 +23,8 @@ CREATE TABLE IF NOT EXISTS meals (
   id INTEGER PRIMARY KEY,
   owner TEXT NOT NULL,
   name TEXT NOT NULL,
-  position INTEGER NOT NULL
+  position INTEGER NOT NULL,
+  archived INTEGER NOT NULL DEFAULT 0   -- hidden on days without entries
 );
 CREATE TABLE IF NOT EXISTS entries (
   id INTEGER PRIMARY KEY,
@@ -132,6 +133,8 @@ def init():
     with conn() as c:
         c.executescript(SCHEMA)
         cols = {r["name"] for r in c.execute("PRAGMA table_info(foods)")}
+        if "archived" not in {r["name"] for r in c.execute("PRAGMA table_info(meals)")}:
+            c.execute("ALTER TABLE meals ADD COLUMN archived INTEGER NOT NULL DEFAULT 0")
         if "days_ahead" not in {r["name"] for r in c.execute("PRAGMA table_info(triggers)")}:
             c.execute("ALTER TABLE triggers ADD COLUMN days_ahead INTEGER NOT NULL DEFAULT 0")
         for t in ("triggers", "meal_triggers"):  # v0.5: "does NOT match" conditions

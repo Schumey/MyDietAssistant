@@ -2,6 +2,15 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.7.0
+
+### Neu
+- **Trigger bearbeiten:** Trigger und Einblend-Regeln lassen sich per ✎ ändern.
+- **Mahlzeiten ausblenden (⊘):** Mahlzeiten erscheinen dann nur noch an Tagen mit Einträgen und werden nicht mehr als Kopierziel angeboten – z. B. für „MyFitnessPal (Tagessumme)“ aus dem Import. Die durch einen Tageswerte-Import angelegte Mahlzeit wird automatisch ausgeblendet.
+
+### Geändert
+- Das ✕ zum Leeren einer Mahlzeit sitzt wieder in der Summenzeile (bei den Makros der Mahlzeit) statt in der Titelzeile.
+
 ## 0.6.0
 
 ### Neu

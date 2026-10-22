@@ -232,7 +232,7 @@ def dump(owner: str) -> dict:
         return {
             "app": "MyDietAssistant", "version": 1,
             "foods": q("SELECT id,name,brand,kcal,protein,carbs,fat,serving_g,category FROM foods WHERE owner=?", owner),
-            "meals": q("SELECT id,name,position FROM meals WHERE owner=? ORDER BY position", owner),
+            "meals": q("SELECT id,name,position,archived FROM meals WHERE owner=? ORDER BY position", owner),
             "settings": {"diary_mode": get_pref(owner, "diary_mode", "meals")},
             "entries": q("SELECT day,time,meal_id,name,grams,kcal,protein,carbs,fat FROM entries WHERE owner=? ORDER BY day,id", owner),
             "goal": q("SELECT kcal,protein,carbs,fat,target_weight FROM goals WHERE owner=?", owner),
@@ -295,8 +295,8 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
                        f.get("carbs", 0), f.get("fat", 0), f.get("serving_g", 100), f.get("category", "")))
         mmap = {}
         for m in d.get("meals", []):
-            mmap[m["id"]] = c.execute("INSERT INTO meals(owner,name,position) VALUES(?,?,?)",
-                                      (owner, m["name"], m["position"])).lastrowid
+            mmap[m["id"]] = c.execute("INSERT INTO meals(owner,name,position,archived) VALUES(?,?,?,?)",
+                                      (owner, m["name"], m["position"], m.get("archived", 0))).lastrowid
         for e in d.get("entries", []):
             if e["meal_id"] in mmap:
                 c.execute("INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,time)"
@@ -466,6 +466,7 @@ def mfp_import(p: MfpImportIn, x_remote_user_id: str | None = Header(None),
                            it["protein"], it["carbs"], it["fat"]))
         else:
             mid = meal_id("MyFitnessPal (Tagessumme)")
+            c.execute("UPDATE meals SET archived=1 WHERE id=?", (mid,))
             if p.hide_empty:
                 c.executemany("INSERT OR IGNORE INTO day_flags(owner,day) VALUES(?,?)",
                               [(owner, x) for x in days])
@@ -813,7 +814,7 @@ def hidden_meals(c, owner: str, day: str, meals: list[dict], with_entries: set[i
     active = {t["meal_id"] for t in rules if meal_rule_active(c, t, day)}
     flagged = c.execute("SELECT 1 FROM day_flags WHERE owner=? AND day=?", (owner, day)).fetchone()
     return {m["id"] for m in meals if m["id"] not in with_entries
-            and (flagged or (m["id"] in gated and m["id"] not in active))}
+            and (m["archived"] or flagged or (m["id"] in gated and m["id"] not in active))}
 
 
 class MealRuleIn(BaseModel):
@@ -843,6 +844,31 @@ def add_meal_trigger(r: MealRuleIn, x_remote_user_id: str | None = Header(None))
         cur = c.execute("INSERT INTO meal_triggers(owner,meal_id,kind,entity,match,negate) VALUES(?,?,?,?,?,?)",
                         (owner, r.meal_id, r.kind, r.entity.strip(), r.match.strip(), int(r.negate)))
         return {"id": cur.lastrowid}
+
+
+@app.put("/api/meal-triggers/{rid}")
+def edit_meal_trigger(rid: int, r: MealRuleIn, x_remote_user_id: str | None = Header(None)):
+    owner = user_from(x_remote_user_id)
+    if r.kind not in ("state", "calendar") or not r.entity.strip():
+        raise HTTPException(400, "kind/entity invalid")
+    with db.conn() as c:
+        c.execute("UPDATE meal_triggers SET meal_id=?,kind=?,entity=?,match=?,negate=? WHERE id=? AND owner=?",
+                  (r.meal_id, r.kind, r.entity.strip(), r.match.strip(), int(r.negate), rid, owner))
+        c.execute("DELETE FROM meal_trigger_log WHERE meal_trigger_id=?", (rid,))
+    return {"ok": True}
+
+
+class ArchiveIn(BaseModel):
+    archived: bool
+
+
+@app.put("/api/meals/{meal_id}/archived")
+def archive_meal(meal_id: int, a: ArchiveIn, x_remote_user_id: str | None = Header(None)):
+    """Hide a meal on days without entries (e.g. the one created by a totals-only import)."""
+    with db.conn() as c:
+        c.execute("UPDATE meals SET archived=? WHERE id=? AND owner=?",
+                  (int(a.archived), meal_id, user_from(x_remote_user_id)))
+    return {"ok": True}
 
 
 @app.delete("/api/meal-triggers/{rid}")
