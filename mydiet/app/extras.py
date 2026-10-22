@@ -506,6 +506,7 @@ class TriggerIn(BaseModel):
     enabled: bool = True
     negate: bool = False
     days_ahead: int = 0             # calendar triggers: also fill the next N days
+    part: str = "any"               # calendar triggers: 'any' day of the event | 'start' day | 'end' day
 
 
 def ha_get(path: str, **params):
@@ -551,6 +552,8 @@ def trigger_rows(c, owner: str):
 def check_trigger_body(c, owner: str, t: TriggerIn):
     if t.kind not in ("state", "calendar"):
         raise HTTPException(400, "kind must be state or calendar")
+    if t.part not in ("any", "start", "end"):
+        raise HTTPException(400, "part must be any, start or end")
     if not t.entity.strip():
         raise HTTPException(400, "entity required")
     if bool(t.saved_meal_id) == bool(t.food_id):
@@ -571,10 +574,10 @@ def add_trigger(t: TriggerIn, x_remote_user_id: str | None = Header(None)):
     with db.conn() as c:
         check_trigger_body(c, owner, t)
         cur = c.execute(
-            "INSERT INTO triggers(owner,kind,entity,match,meal_id,saved_meal_id,food_id,grams,enabled,negate,days_ahead)"
-            " VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO triggers(owner,kind,entity,match,meal_id,saved_meal_id,food_id,grams,enabled,negate,days_ahead,part)"
+            " VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
             (owner, t.kind, t.entity.strip(), t.match.strip(), t.meal_id, t.saved_meal_id, t.food_id,
-             t.grams, int(t.enabled), int(t.negate), max(0, min(t.days_ahead, 60))))
+             t.grams, int(t.enabled), int(t.negate), max(0, min(t.days_ahead, 60)), t.part))
         return {"id": cur.lastrowid}
 
 
@@ -584,9 +587,9 @@ def edit_trigger(tid: int, t: TriggerIn, x_remote_user_id: str | None = Header(N
     with db.conn() as c:
         check_trigger_body(c, owner, t)
         c.execute("UPDATE triggers SET kind=?,entity=?,match=?,meal_id=?,saved_meal_id=?,food_id=?,"
-                  "grams=?,enabled=?,negate=?,days_ahead=? WHERE id=? AND owner=?",
+                  "grams=?,enabled=?,negate=?,days_ahead=?,part=? WHERE id=? AND owner=?",
                   (t.kind, t.entity.strip(), t.match.strip(), t.meal_id, t.saved_meal_id, t.food_id,
-                   t.grams, int(t.enabled), int(t.negate), max(0, min(t.days_ahead, 60)), tid, owner))
+                   t.grams, int(t.enabled), int(t.negate), max(0, min(t.days_ahead, 60)), t.part, tid, owner))
     return {"ok": True}
 
 
@@ -636,14 +639,15 @@ def run_trigger(tid: int, x_remote_user_id: str | None = Header(None),
 def condition_met(t, now: datetime, day: str | None = None) -> bool:
     """Does the rule apply (now, or for the given day)? With t['negate'] the condition is inverted."""
     neg = bool(t["negate"])
+    part = t["part"] if t["kind"] == "calendar" else "any"
     if day and day != now.date().isoformat():  # calendar day in the future: any matching event counts
-        return calendar_has_event(t["entity"], t["match"], day) != neg
+        return calendar_has_event(t["entity"], t["match"], day, part) != neg
     if t["kind"] == "state":
         st = ha_get(f"states/{t['entity']}")["state"]
         want = t["match"].strip().lower()
         return (st.lower() == want if want else st.lower() in ("on", "home", "true")) != neg
-    if neg:  # "calendar has no event containing ...": judged for the whole day
-        return not calendar_has_event(t["entity"], t["match"], now.date().isoformat())
+    if neg or part != "any":  # "has no event ...", or only the start/end day of an event: judged for the whole day
+        return calendar_has_event(t["entity"], t["match"], now.date().isoformat(), part) != neg
     start = now.strftime("%Y-%m-%dT00:00:00")
     end = (now + timedelta(days=1)).strftime("%Y-%m-%dT00:00:00")
     for ev in ha_get(f"calendars/{t['entity']}", start=start, end=end):
@@ -813,15 +817,39 @@ def suggestions(meal_id: int | None = None, limit: int = 6, x_remote_user_id: st
 _cal_cache: dict[tuple, tuple[float, bool]] = {}
 
 
-def calendar_has_event(entity: str, match: str, day: str) -> bool:
-    key = (entity, match, day)
+def _event_day(v, last: bool):
+    """Local date of an event boundary from HA's calendar API (all-day ends are exclusive)."""
+    v = v.get("dateTime") or v.get("date") if isinstance(v, dict) else v
+    if not v:
+        return None
+    if len(v) <= 10:
+        d = date.fromisoformat(v)
+        return d - timedelta(days=1) if last else d
+    dt = datetime.fromisoformat(v.replace("Z", "+00:00"))
+    if dt.tzinfo:
+        dt = dt.astimezone().replace(tzinfo=None)
+    return (dt - timedelta(microseconds=1) if last else dt).date()
+
+
+def _event_on(ev, day: str, part: str) -> bool:
+    if part == "any":
+        return True
+    try:
+        d = _event_day(ev.get("start") if part == "start" else ev.get("end"), part == "end")
+    except ValueError:
+        return True
+    return d is None or d.isoformat() == day
+
+
+def calendar_has_event(entity: str, match: str, day: str, part: str = "any") -> bool:
+    key = (entity, match, day, part)
     hit = _cal_cache.get(key)
     now = datetime.now().timestamp()
     if hit and now - hit[0] < 60:
         return hit[1]
     nxt = (date.fromisoformat(day) + timedelta(days=1)).isoformat()
     events = ha_get(f"calendars/{entity}", start=f"{day}T00:00:00", end=f"{nxt}T00:00:00")
-    res = any(match.strip().lower() in str(ev.get("summary", "")).lower() for ev in events)
+    res = any(match.strip().lower() in str(ev.get("summary", "")).lower() and _event_on(ev, day, part) for ev in events)
     _cal_cache[key] = (now, res)
     return res
 
@@ -833,7 +861,7 @@ def meal_rule_active(c, t, day: str) -> bool:
         return True  # no HA (local dev): don't hide anything
     try:
         if t["kind"] == "calendar":
-            return calendar_has_event(t["entity"], t["match"], day) != bool(t["negate"])
+            return calendar_has_event(t["entity"], t["match"], day, t["part"]) != bool(t["negate"])
         if day == date.today().isoformat() and condition_met(t, datetime.now()):
             c.execute("INSERT OR IGNORE INTO meal_trigger_log VALUES(?,?)", (t["id"], day))
             return True
@@ -858,6 +886,7 @@ class MealRuleIn(BaseModel):
     entity: str
     match: str = ""
     negate: bool = False
+    part: str = "any"
 
 
 @app.get("/api/meal-triggers")
@@ -876,8 +905,9 @@ def add_meal_trigger(r: MealRuleIn, x_remote_user_id: str | None = Header(None))
     with db.conn() as c:
         if not c.execute("SELECT 1 FROM meals WHERE id=? AND owner=?", (r.meal_id, owner)).fetchone():
             raise HTTPException(404, "meal not found")
-        cur = c.execute("INSERT INTO meal_triggers(owner,meal_id,kind,entity,match,negate) VALUES(?,?,?,?,?,?)",
-                        (owner, r.meal_id, r.kind, r.entity.strip(), r.match.strip(), int(r.negate)))
+        cur = c.execute("INSERT INTO meal_triggers(owner,meal_id,kind,entity,match,negate,part) VALUES(?,?,?,?,?,?,?)",
+                        (owner, r.meal_id, r.kind, r.entity.strip(), r.match.strip(), int(r.negate),
+                         r.part if r.part in ("any", "start", "end") else "any"))
         return {"id": cur.lastrowid}
 
 
@@ -887,8 +917,9 @@ def edit_meal_trigger(rid: int, r: MealRuleIn, x_remote_user_id: str | None = He
     if r.kind not in ("state", "calendar") or not r.entity.strip():
         raise HTTPException(400, "kind/entity invalid")
     with db.conn() as c:
-        c.execute("UPDATE meal_triggers SET meal_id=?,kind=?,entity=?,match=?,negate=? WHERE id=? AND owner=?",
-                  (r.meal_id, r.kind, r.entity.strip(), r.match.strip(), int(r.negate), rid, owner))
+        c.execute("UPDATE meal_triggers SET meal_id=?,kind=?,entity=?,match=?,negate=?,part=? WHERE id=? AND owner=?",
+                  (r.meal_id, r.kind, r.entity.strip(), r.match.strip(), int(r.negate),
+                   r.part if r.part in ("any", "start", "end") else "any", rid, owner))
         c.execute("DELETE FROM meal_trigger_log WHERE meal_trigger_id=?", (rid,))
     return {"ok": True}
 

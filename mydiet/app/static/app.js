@@ -695,7 +695,8 @@ async function renderStats() {
 
 // ---------------------------------------------------------------- triggers
 const KIND = { state: "Zustand", calendar: "Kalender" };
-const condText = t => `${KIND[t.kind]} ${t.entity} ${t.negate ? (t.kind === "calendar" ? "enthält nicht" : "≠") : (t.kind === "calendar" ? "enthält" : "=")} ${t.match || "(an)"}`;
+const PART = { start: " (am Starttag)", end: " (am Endtag)" };
+const condText = t => `${KIND[t.kind]} ${t.entity} ${t.negate ? (t.kind === "calendar" ? "enthält nicht" : "≠") : (t.kind === "calendar" ? "enthält" : "=")} ${t.match || "(an)"}${t.kind === "calendar" ? PART[t.part] || "" : ""}`;
 
 // Shared form part: trigger kind (state / calendar), entity with suggestions, condition text.
 function triggerFields(ents) {
@@ -707,6 +708,11 @@ function triggerFields(ents) {
   const negate = h("select", {},
     h("option", { value: "0" }, "ist / enthält"), h("option", { value: "1" }, "ist NICHT / enthält NICHT"));
   const match = h("input");
+  const part = h("select", {},
+    h("option", { value: "any" }, "an jedem Tag des Termins"),
+    h("option", { value: "start" }, "nur am Starttag (z. B. Donnerstag 22 Uhr)"),
+    h("option", { value: "end" }, "nur am Endtag (z. B. Freitag 6 Uhr)"));
+  const partRow = h("div", {}, h("label", {}, "Termin zählt"), part);
   const hint = h("div", { class: "muted" });
   function sync() {
     const cal = kind.value === "calendar";
@@ -714,12 +720,13 @@ function triggerFields(ents) {
       .map(e => h("option", { value: e.id }, e.name || e.state)));
     entity.placeholder = cal ? "z. B. calendar.arbeit" : "z. B. person.max";
     match.placeholder = cal ? "Titel enthält, z. B. Nachtschicht" : "Zustand, z. B. Fitnessstudio (Zonenname) oder on";
+    partRow.hidden = !cal;
     hint.textContent = cal ? "Gilt für Tage mit (bzw. ohne) Termin, dessen Titel diesen Text enthält."
       : "Gilt, sobald die Entität diesen Zustand hat (bzw. nicht hat).";
   }
   sync();
-  return { kind, entity, match, negate, nodes: [h("label", {}, "Auslöser"), kind, h("label", {}, "Entität"), entity, entList,
-    h("label", {}, "Bedingung"), negate, match, hint] };
+  return { kind, entity, match, negate, part, nodes: [h("label", {}, "Auslöser"), kind, h("label", {}, "Entität"), entity, entList,
+    h("label", {}, "Bedingung"), negate, match, partRow, hint] };
 }
 
 // Show a diary meal only on days where a rule applies (e.g. calendar has "Nachtschicht").
@@ -728,7 +735,7 @@ async function mealRuleDialog(meal, rule = null) {
   const tf = triggerFields(ents);
   if (rule) {
     tf.kind.value = rule.kind; tf.kind.dispatchEvent(new Event("change"));
-    tf.entity.value = rule.entity; tf.match.value = rule.match; tf.negate.value = rule.negate ? "1" : "0";
+    tf.entity.value = rule.entity; tf.match.value = rule.match; tf.negate.value = rule.negate ? "1" : "0"; tf.part.value = rule.part || "any";
   }
   const msg = h("div", { class: "err" });
   setDlg(h("h2", {}, `„${meal.name}“ nur an bestimmten Tagen anzeigen`), tf.nodes,
@@ -741,7 +748,7 @@ async function mealRuleDialog(meal, rule = null) {
         try {
           await send(rule ? "PUT" : "POST", "meal-triggers" + (rule ? "/" + rule.id : ""),
             { meal_id: meal.id, kind: tf.kind.value, entity: tf.entity.value, match: tf.match.value,
-              negate: tf.negate.value === "1" });
+              negate: tf.negate.value === "1", part: tf.kind.value === "calendar" ? tf.part.value : "any" });
           dlg.close(); renderSettings();
         } catch (e) { msg.textContent = e.message; }
       } }, "Speichern")));
@@ -772,7 +779,7 @@ async function triggerDialog(preset = {}, onDone = () => {}) {
   syncAhead();
   if (ed) {
     kind.value = ed.kind; kind.dispatchEvent(new Event("change"));
-    entity.value = ed.entity; match.value = ed.match; tf.negate.value = ed.negate ? "1" : "0";
+    entity.value = ed.entity; match.value = ed.match; tf.negate.value = ed.negate ? "1" : "0"; tf.part.value = ed.part || "any";
     item.value = (ed.saved_meal_id ? "s:" + ed.saved_meal_id : "f:" + ed.food_id);
     meal.value = ed.meal_id; grams.value = ed.grams ?? ""; ahead.value = ed.days_ahead || 0;
   }
@@ -795,7 +802,8 @@ async function triggerDialog(preset = {}, onDone = () => {}) {
             meal_id: Number(meal.value || day.meals[0].id),
             saved_meal_id: t === "s" ? Number(id) : null, food_id: t === "f" ? Number(id) : null,
             grams: t === "f" ? num(grams.value) : null, negate: tf.negate.value === "1",
-            days_ahead: kind.value === "calendar" ? Number(ahead.value) || 0 : 0 });
+            days_ahead: kind.value === "calendar" ? Number(ahead.value) || 0 : 0,
+            part: kind.value === "calendar" ? tf.part.value : "any" });
           dlg.close(); onDone(); if (state.tab === "settings") renderSettings();
         } catch (e) { msg.textContent = e.message; }
       } }, "Speichern")));
@@ -941,7 +949,7 @@ async function renderSettings() {
       const on = h("input", { type: "checkbox", checked: t.enabled, title: "Aktiv", onchange: async () => {
         await send("PUT", "triggers/" + t.id, { kind: t.kind, entity: t.entity, match: t.match, meal_id: t.meal_id,
           saved_meal_id: t.saved_meal_id, food_id: t.food_id, grams: t.grams, enabled: on.checked,
-          negate: !!t.negate, days_ahead: t.days_ahead || 0 });
+          negate: !!t.negate, days_ahead: t.days_ahead || 0, part: t.part || "any" });
       } });
       return h("div", {}, on,
         h("div", { class: "grow" },

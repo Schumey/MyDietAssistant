@@ -2,6 +2,15 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.9.0
+
+### Neu
+- **Kalender-Trigger mit Termin-Zeitraum:** Eintrag wahlweise an jedem Tag des Termins, nur am Starttag oder nur am Endtag (z. B. Nachtschicht Do 22 Uhr bis Fr 6 Uhr nur am Freitag). Gilt auch für die Einblend-Regeln von Mahlzeiten.
+- Windows-Look: Benutzer-Icon in der Titelleiste, Fortschrittsbalken als Ladebalken aus Blöcken, rote/grüne Schrift bei den verbleibenden Werten, türkiser Desktop-Hintergrund.
+
+### Behoben
+- Windows-Look: doppelter Rahmen um den Reiterbereich entfernt.
+
 ## 0.8.1
 
 ### Behoben

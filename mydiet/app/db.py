@@ -140,6 +140,9 @@ def init():
         for t in ("triggers", "meal_triggers"):  # v0.5: "does NOT match" conditions
             if "negate" not in {r["name"] for r in c.execute(f"PRAGMA table_info({t})")}:
                 c.execute(f"ALTER TABLE {t} ADD COLUMN negate INTEGER NOT NULL DEFAULT 0")
+        for t in ("triggers", "meal_triggers"):  # v0.9: calendar triggers on the start/end day of an event only
+            if "part" not in {r["name"] for r in c.execute(f"PRAGMA table_info({t})")}:
+                c.execute(f"ALTER TABLE {t} ADD COLUMN part TEXT NOT NULL DEFAULT 'any'")
         if "time" not in {r["name"] for r in c.execute("PRAGMA table_info(entries)")}:
             c.execute("ALTER TABLE entries ADD COLUMN time TEXT")  # HH:MM, time-based diary
         if "category" not in cols:  # database from v0.2
