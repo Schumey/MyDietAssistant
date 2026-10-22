@@ -45,3 +45,7 @@ Danach `http://localhost:8099/` öffnen. Ohne Home Assistant gibt es keine Senso
 Struktur: `mydiet/app/main.py` (Kern-API) und `extras*.py` (je ein Funktionsbereich), `db.py` (Schema und Migrationen), `static/` (Oberfläche ohne Build-Schritt), `tests/` (pytest). Hinweise für die Weiterentwicklung stehen in [CLAUDE.md](CLAUDE.md).
 
 Der Barcode-Rückfall nutzt [ZXing](https://github.com/zxing-js/library) (Apache-2.0, Lizenz in `mydiet/app/static/vendor/ZXING-LICENSE.txt`).
+
+## Lizenz
+
+MIT, siehe [LICENSE](LICENSE). Die mitgelieferte Bibliothek ZXing steht unter Apache-2.0.
