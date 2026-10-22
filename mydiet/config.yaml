@@ -1,5 +1,5 @@
 name: MyDietAssistant
-version: "0.21.0"
+version: "0.22.0"
 slug: mydiet
 description: Lokales Ernährungstagebuch (Kalorien & Makros) mit HA-Sensoren
 arch: [amd64, aarch64]
@@ -15,12 +15,14 @@ options:
   auto_backup: true
   backup_keep_days: 14
   api_key: ""
+  usda_api_key: ""
 schema:
   default_kcal_goal: int(500,10000)
   publish_sensors: bool
   auto_backup: bool
   backup_keep_days: int(1,365)
   api_key: str?
+  usda_api_key: str?
 map:
   - data:rw
   - backup:rw

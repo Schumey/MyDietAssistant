@@ -426,7 +426,8 @@ def off_barcode(code: str):
         raise HTTPException(400, "bad barcode")
     try:
         r = httpx.get(f"https://world.openfoodfacts.org/api/v2/product/{code}.json",
-                      params={"fields": "product_name,brands,nutriments"}, timeout=10)
+                      params={"fields": "product_name,brands,nutriments"}, timeout=10,
+                      headers={"User-Agent": "MyDietAssistant/1.0 (Home Assistant add-on; github.com/Schumey/MyDietAssistant)"})
         p = r.json().get("product")
     except (httpx.HTTPError, ValueError):
         raise HTTPException(502, "Open Food Facts nicht erreichbar")
@@ -560,6 +561,7 @@ from extras import *  # noqa: E402,F401,F403  (routes for v0.3 features)
 from extras2 import *  # noqa: E402,F401,F403  (notes, backups, external API, reminders)
 from extras3 import *  # noqa: E402,F401,F403  (body measurements, photos)
 from extras4 import *  # noqa: E402,F401,F403  (recipes)
+from extras5 import *  # noqa: E402,F401,F403  (more data sources)
 
 
 @app.get("/")

@@ -195,6 +195,16 @@ const EN = {
   "Sprache und Einheiten": "Language and units", "Sprache": "Language", "Einheiten": "Units", "Automatisch (Browser)": "Automatic (browser)",
   "Metrisch (kg, cm)": "Metric (kg, cm)", "Imperial (lb, in)": "Imperial (lb, in)",
 
+  // data sources
+  "Online suchen & vergleichen": "Search online & compare", "Name oder Barcode": "Name or barcode", "Quelle": "Source", "KH": "Carbs", "Fett": "Fat", "Abweichung": "Deviation",
+  "Abweichung der kcal von dem Wert im Formular": "Deviation of the kcal from the value in the form", "Übernehmen": "Apply",
+  "Mittelwert der gewählten übernehmen": "Apply average of selected", "Suche …": "Searching …", "Alle Werte pro 100 g.": "All values per 100 g.",
+  "Die Quellen weichen bei kcal um bis zu {} % voneinander ab – bitte prüfen.": "The sources differ by up to {} % in kcal – please check.",
+  "nicht erreichbar": "not reachable", "Weitere Datenquellen": "More data sources",
+  "Online-Suche in Open Food Facts und USDA mit Abgleich der Werte untereinander und mit Deinen eigenen (Suchbegriffe werden an diese Dienste gesendet).": "Online search in Open Food Facts and USDA, comparing the values with each other and with your own (search terms are sent to these services).",
+  "Weitere Datenquellen sind nicht aktiviert": "More data sources are not enabled", "Suchbegriff oder Barcode angeben": "Enter a search term or barcode",
+  "USDA-Limit erreicht (eigenen api.data.gov-Schlüssel in den Add-on-Optionen setzen)": "USDA limit reached (set your own api.data.gov key in the add-on options)",
+
   // server messages (shown in the UI)
   "Open Food Facts nicht erreichbar": "Open Food Facts not reachable", "Mahlzeit enthält noch Einträge": "Meal still contains entries", "Mahlzeit ist leer": "Meal is empty",
   "Mahlzeit braucht mindestens eine Komponente": "Meal needs at least one component", "Keine MyDietAssistant-Sicherung": "Not a MyDietAssistant backup",

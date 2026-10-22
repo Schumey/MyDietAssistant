@@ -11,6 +11,9 @@ configuration:
   backup_keep_days:
     name: Keep backups (days)
     description: Older automatic backups are deleted.
+  usda_api_key:
+    name: USDA API key
+    description: Optional key from api.data.gov for the USDA data source (without a key the shared DEMO_KEY with a low request limit is used).
   api_key:
     name: API key
     description: Key for the external interface (header X-MDA-Key). Empty = interface off.

@@ -439,3 +439,9 @@ html[data-skin="win"] .advice { border-radius: 0; border: 2px solid; border-colo
 .scan-box:empty { display: none; }
 .scan-box { margin-top: 8px; display: grid; gap: 6px; }
 html[data-skin="win"] .scan-video { border-radius: 0; }
+
+.lookup { margin-top: 12px; padding: 10px; border: 1px dashed var(--divider-color); border-radius: 8px; display: grid; gap: 8px; }
+.lk-wrap { overflow-x: auto; }
+table.lk { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.lk th, table.lk td { padding: 4px 6px; text-align: left; border-bottom: 1px solid var(--divider-color); vertical-align: top; }
+html[data-skin="win"] .lookup { border: 1px solid #808080; border-radius: 0; }

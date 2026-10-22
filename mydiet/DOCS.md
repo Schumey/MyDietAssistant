@@ -85,6 +85,10 @@ Im Tagebuch: ← / → Tag wechseln, T heute, N Nahrungsmittel hinzufügen; / sp
 
 Einstellungen → Sprache und Einheiten: Deutsch, English oder automatisch nach Browser; metrisch (kg, cm) oder imperial (lb, in). Gewicht und Körpermaße werden intern immer in kg und cm gespeichert, nur Anzeige und Eingabe wechseln. Die Texte des Add-ons selbst (Optionen in Home Assistant) gibt es ebenfalls auf Deutsch und Englisch. Mengen von Lebensmitteln bleiben in Gramm.
 
+## Weitere Datenquellen
+
+Optional unter Einstellungen → Zusatzfunktionen. Im Formular „Neues Lebensmittel“ kannst Du dann in Open Food Facts und USDA FoodData Central suchen und die Werte vergleichen. Für USDA kann in den Add-on-Optionen ein eigener Schlüssel (`usda_api_key`, kostenlos auf api.data.gov) gesetzt werden; ohne Schlüssel gilt ein gemeinsamer Demo-Schlüssel mit niedrigem Limit.
+
 ## Open Food Facts
 Die Barcode-Suche ist die einzige Funktion, die Internet braucht. Den Barcode kannst Du eintippen, mit der Kamera scannen oder aus einem Foto lesen lassen (benötigt die Barcode-Erkennung des Browsers, z. B. Chrome/Android).
 

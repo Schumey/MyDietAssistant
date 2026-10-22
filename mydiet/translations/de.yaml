@@ -11,6 +11,9 @@ configuration:
   backup_keep_days:
     name: Sicherungen aufbewahren (Tage)
     description: Ältere automatische Sicherungen werden gelöscht.
+  usda_api_key:
+    name: USDA-API-Schlüssel
+    description: Optionaler Schlüssel von api.data.gov für die Datenquelle USDA (ohne Schlüssel gilt der gemeinsame DEMO_KEY mit niedrigem Limit).
   api_key:
     name: API-Schlüssel
     description: Schlüssel für die externe Schnittstelle (Header X-MDA-Key). Leer = Schnittstelle aus.

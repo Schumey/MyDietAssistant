@@ -2,6 +2,18 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.22.0
+
+### Neu
+- **Weitere Datenquellen** als Zusatzfunktion (Einstellungen → Zusatzfunktionen → „Weitere Datenquellen“, standardmäßig aus, da Suchbegriffe ins Internet gehen): Im Formular für Lebensmittel erscheint „Online suchen & vergleichen“.
+  - Suche nach Name oder Barcode in **Open Food Facts** und **USDA FoodData Central** (englische Namen, viele Grundnahrungsmittel).
+  - **Abgleich:** Alle Treffer pro 100 g nebeneinander, mit Abweichung der kcal zu den Werten im Formular (über 15 % rot) und Warnhinweis, wenn die Quellen untereinander stark abweichen.
+  - „Übernehmen“ füllt das Formular, „Mittelwert der gewählten übernehmen“ mittelt mehrere Treffer.
+- Neue Add-on-Option `usda_api_key` (optional, Schlüssel von api.data.gov); ohne Schlüssel gilt der gemeinsame DEMO_KEY mit niedrigem Limit.
+
+### Geändert
+- Anfragen an Open Food Facts senden jetzt einen eigenen User-Agent, wie von Open Food Facts gewünscht.
+
 ## 0.21.0
 
 ### Neu

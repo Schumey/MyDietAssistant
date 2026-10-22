@@ -583,6 +583,55 @@ function foodForm({ food = null, onSave, onCancel }) {
       check();
     } catch (e) { msg.textContent = "Produkt nicht gefunden (" + e.message + ")"; }
   }
+
+  // Online search in several databases with a comparison of the sources among each other and with the form (optional feature)
+  const SRC = { off: "Open Food Facts", usda: "USDA FoodData Central" };
+  function lookupPanel() {
+    const q = h("input", { type: "search", placeholder: "Name oder Barcode", onkeydown: e => { if (e.key === "Enter") run(); } });
+    const use = Object.fromEntries(Object.keys(SRC).map(k => [k, h("input", { type: "checkbox", checked: true })]));
+    const out = h("div", {});
+    const own = () => num(f.kcal.value);
+    const setField = (k, v) => { if (f[k]) f[k].value = Math.round(v * 100) / 100; };
+    const apply = items => {
+      const avg = k => items.reduce((a, i) => a + (i[k] || 0), 0) / items.length;
+      f.name.value = items[0].name; f.brand.value = items[0].brand || "";
+      for (const k of ["kcal", "protein", "carbs", "fat", "fiber", "sugar", "salt", "sat_fat"]) setField(k, avg(k));
+      check();
+    };
+    async function run() {
+      const text = q.value.trim();
+      if (!text) return;
+      out.replaceChildren(h("div", { class: "muted" }, "Suche …"));
+      const params = new URLSearchParams(/^\d{6,}$/.test(text) ? { barcode: text } : { q: text });
+      params.set("sources", Object.keys(SRC).filter(k => use[k].checked).join(","));
+      let res;
+      try { res = await api("lookup?" + params); } catch (e) { out.replaceChildren(h("div", { class: "err" }, e.message)); return; }
+      const rows = res.results.map(r => ({ r, box: h("input", { type: "checkbox" }) }));
+      // compare the best match (first hit) of each source with the others
+      const kc = Object.keys(SRC).map(k => res.results.find(r => r.source === k)).filter(Boolean).map(r => r.kcal);
+      const spread = kc.length > 1 ? (Math.max(...kc) - Math.min(...kc)) / (kc.reduce((a, b) => a + b, 0) / kc.length) * 100 : 0;
+      const dev = r => { const o = own(); if (!o || !r.kcal) return h("td", {}); const d = (r.kcal - o) / o * 100;
+        return h("td", { class: Math.abs(d) > 15 ? "over" : "muted" }, `${d > 0 ? "+" : ""}${n0(d)} %`); };
+      out.replaceChildren(
+        Object.entries(res.errors || {}).map(([s, m]) => h("div", { class: "muted" }, `${SRC[s] || s}: ${m}`)),
+        rows.length ? h("div", { class: "lk-wrap" }, h("table", { class: "lk" },
+          h("thead", {}, h("tr", {}, h("th"), h("th", {}, "Quelle"), h("th", {}, "Name"), h("th", {}, "kcal"), h("th", {}, "KH"), h("th", {}, "Fett"),
+            h("th", {}, "Eiweiß"), h("th", { title: "Abweichung der kcal von dem Wert im Formular" }, "Abweichung"), h("th"))),
+          h("tbody", {}, rows.map(({ r, box }) => h("tr", {}, h("td", {}, box), h("td", {}, SRC[r.source] || r.source),
+            h("td", {}, r.name, r.brand ? h("div", { class: "muted" }, r.brand) : null),
+            h("td", {}, n0(r.kcal)), h("td", {}, n1(r.carbs)), h("td", {}, n1(r.fat)), h("td", {}, n1(r.protein)), dev(r),
+            h("td", {}, h("button", { class: "flat", onclick: () => apply([r]) }, "Übernehmen"))))))) : h("div", { class: "muted" }, "Nichts gefunden."),
+        rows.length ? h("div", { class: "muted" }, "Alle Werte pro 100 g.") : null,
+        spread > 15 ? h("div", { class: "warn" }, `Die Quellen weichen bei kcal um bis zu ${n0(spread)} % voneinander ab – bitte prüfen.`) : null,
+        rows.length > 1 ? h("div", { class: "actions", style: "justify-content:flex-start" }, h("button", { class: "flat", onclick: () => {
+          const sel = rows.filter(x => x.box.checked).map(x => x.r);
+          if (sel.length) apply(sel);
+        } }, "Mittelwert der gewählten übernehmen")) : null);
+    }
+    return h("div", { class: "lookup" }, h("label", {}, "Online suchen & vergleichen"),
+      h("div", { class: "grid", style: "grid-template-columns:1fr auto" }, q, h("button", { class: "flat", onclick: run }, "Suchen")),
+      h("div", { class: "range" }, Object.entries(SRC).map(([k, l]) => h("label", { class: "pick" }, use[k], l))), out);
+  }
   const check = () => {
     const v = { kcal: num(f.kcal.value), carbs: num(f.carbs.value) || 0, fat: num(f.fat.value) || 0, protein: num(f.protein.value) || 0 };
     warn.textContent = v.kcal == null ? "" : plausibility(v) || "";
@@ -598,6 +647,7 @@ function foodForm({ food = null, onSave, onCancel }) {
       } }, "Scannen (Kamera)"),
       h("button", { class: "flat", onclick: () => photoIn.click() }, "Foto vom Barcode"), photoIn),
     scanBox,
+    state.features.sources ? lookupPanel() : null,
     h("div", { style: "margin-top:12px" }, field("name", "Name")),
     h("div", { class: "grid", style: "margin-top:12px" },
       field("brand", "Marke"),
@@ -1799,6 +1849,7 @@ async function renderSettings() {
       feat("weekday_goals", "Tagesziele pro Wochentag", "z. B. Trainingstage mit mehr Kalorien, Ruhetage mit weniger."),
       feat("trackers", "Wasser und Nahrungsergänzung", "Schnell-Eintrag für Wasser, Koffein, Kreatin usw. mit eigenem Tagesziel."),
       feat("recipes", "Rezepte", "Zutaten zu einem Rezept bündeln, durch Portionen teilen und wie ein Lebensmittel eintragen (eigener Reiter)."),
+      feat("sources", "Weitere Datenquellen", "Online-Suche in Open Food Facts und USDA mit Abgleich der Werte untereinander und mit Deinen eigenen (Suchbegriffe werden an diese Dienste gesendet)."),
       feat("notes", "Notizen", "Freitext zu Mahlzeiten und Tagen (Hunger, Training, Stimmung). Vorhandene Notizen bleiben beim Ausschalten erhalten."),
       feat("body", "Körpermaße und Fortschrittsfotos", "Umfänge (Taille, Brust, Arm …) mit Verlauf und Fotos mit Vergleich im Reiter Gewicht."),
       feat("micros", "Weitere Nährwerte", "Ballaststoffe, Zucker, Salz und gesättigte Fettsäuren bei Lebensmitteln erfassen und auswerten (Open Food Facts liefert sie mit)."))));
