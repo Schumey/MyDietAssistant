@@ -678,12 +678,14 @@ async function openAdd(meal) {
 function barChart(days, goal) {
   const W = 600, H = 220, L = 40, B = 24, T = 10, R = 8;
   const goals = days.map(d => d.goal_kcal ?? goal);
-  const max = Math.max(...goals, ...days.map(d => d.kcal), 100) * 1.1;
+  // y axis on round values (100, 250, 500 … kcal), top tick above the highest bar or goal
+  const top = Math.max(...goals, ...days.map(d => d.kcal), 100);
+  const step = [50, 100, 200, 250, 500, 1000, 2000, 5000].find(st => top / st <= 6) || 10000;
+  const max = Math.ceil(top / step) * step * 1.04;
   const y = v => T + (H - T - B) * (1 - v / max);
   const bw = (W - L - R) / days.length;
   let s = "";
-  for (let i = 0; i <= 4; i++) {
-    const v = max / 1.1 * i / 4;
+  for (let v = 0; v <= max / 1.04 + 1e-6; v += step) {
     s += `<line class="grid-line" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${n0(v)}</text>`;
   }
   const ticks = new Map(niceTicks(days[0].day, days[days.length - 1].day).map(t => [t.day, t.label]));
@@ -1310,6 +1312,32 @@ async function mfpDialog(file) {
 }
 
 // ---------------------------------------------------------------- settings
+// Goal calculator: with "auto" on, calories follow the macros (4 kcal/g carbs and protein, 9 kcal/g fat).
+const calcAuto = {
+  get: () => { try { return localStorage.getItem("mda-calc") !== "0"; } catch { return true; } },
+  set: v => { try { localStorage.setItem("mda-calc", v ? "1" : "0"); } catch { /* ignore */ } },
+};
+const macroKcal = f => 4 * (num(f.protein.value) || 0) + 4 * (num(f.carbs.value) || 0) + 9 * (num(f.fat.value) || 0);
+
+// Wire the inputs of one goal row; boxes are the shared "auto" checkboxes. Returns a refresh function.
+function wireCalc(f, boxes, info) {
+  const refresh = (apply = true) => {
+    const auto = calcAuto.get(), mk = macroKcal(f);
+    f.kcal.readOnly = auto && mk > 0;
+    if (apply === true && auto && mk > 0) f.kcal.value = Math.round(mk);
+    if (info) {
+      const k = num(f.kcal.value) || 0;
+      info.textContent = mk > 0 && k > 0
+        ? `Eiweiß ${Math.round(num(f.protein.value) * 4 / (mk || 1) * 100)} % · Kohlenhydrate ${Math.round(num(f.carbs.value) * 4 / (mk || 1) * 100)} % · Fett ${Math.round(num(f.fat.value) * 9 / (mk || 1) * 100)} %`
+          + (!auto && Math.abs(mk - k) > Math.max(30, k * 0.03) ? ` · Makros ergeben ${n0(mk)} kcal` : "") : "";
+    }
+  };
+  for (const k of ["protein", "carbs", "fat"]) f[k].addEventListener("input", () => refresh());
+  f.kcal.addEventListener("input", () => refresh(false));
+  boxes.push(() => refresh());
+  return refresh;
+}
+
 async function renderSettings() {
   const [goal, day, triggers, rules, runs, tstat, bk, rem, ext] = await Promise.all([api("goal"), api("day/" + state.day), api("triggers"), api("meal-triggers"), api("trigger-runs?limit=15"),
     api("triggers/status"), api("backups"), api("reminder"), api("ext/info")]);
@@ -1322,10 +1350,16 @@ async function renderSettings() {
     return h("div", {}, h("label", {}, label), gf[key]);
   };
   const saved = h("span", { class: "muted" });
+  const refreshers = [];
+  const info = h("div", { class: "muted" });
+  const autoBox = h("input", { type: "checkbox", checked: calcAuto.get(), onchange: () => { calcAuto.set(autoBox.checked); refreshers.forEach(r => r()); } });
+  setTimeout(() => wireCalc(gf, refreshers, info)(false), 0);
   root.append(h("div", { class: "card" }, h("h2", {}, "Tagesziele"),
+    h("label", { class: "pick" }, autoBox, h("span", {}, "Kalorien aus Makros berechnen", h("div", { class: "muted" }, "Ändern sich Eiweiß, Kohlenhydrate oder Fett, passen sich die Kalorien an (4/4/9 kcal pro g)."))),
     h("div", { class: "grid" },
       gfield("kcal", "Kalorien (kcal)"), gfield("carbs", "Kohlenhydrate (g)"),
       gfield("fat", "Fett (g)"), gfield("protein", "Eiweiß (g)"), gfield("target_weight", "Zielgewicht (kg)", "0.1")),
+    info,
     h("div", { class: "actions" }, saved, h("button", { onclick: async () => {
       await send("PUT", "goal", { kcal: num(gf.kcal.value) || 0, carbs: num(gf.carbs.value) || 0,
         fat: num(gf.fat.value) || 0, protein: num(gf.protein.value) || 0, target_weight: num(gf.target_weight.value) });
@@ -1356,8 +1390,9 @@ async function renderSettings() {
       return { i, n, kcal: inp("kcal"), carbs: inp("carbs"), fat: inp("fat"), protein: inp("protein") };
     });
     const wsaved = h("span", { class: "muted" });
+    wf.forEach(r => wireCalc(r, refreshers, null)(false));
     root.append(h("div", { class: "card" }, h("h2", {}, "Tagesziele pro Wochentag"),
-      h("div", { class: "muted" }, "Leere Kalorien = es gilt das Standard-Tagesziel oben. Leere Makros zeigen „–“."),
+      h("div", { class: "muted" }, "Leere Kalorien = es gilt das Standard-Tagesziel oben. Leere Makros zeigen „–“. Mit „Kalorien aus Makros berechnen“ (oben) folgen die Kalorien den Makros."),
       h("div", { class: "wd-grid" },
         h("span"), h("label", {}, "kcal"), h("label", {}, "KH (g)"), h("label", {}, "Fett (g)"), h("label", {}, "Eiweiß (g)"),
         wf.flatMap(r => [h("b", {}, r.n), r.kcal, r.carbs, r.fat, r.protein])),

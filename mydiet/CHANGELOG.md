@@ -2,6 +2,14 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.14.1
+
+### Neu
+- **Tagesziele als Rechner:** Mit „Kalorien aus Makros berechnen“ (Einstellungen → Tagesziele) ändern sich die Kalorien, sobald Eiweiß, Kohlenhydrate oder Fett geändert werden (4/4/9 kcal pro g). Dazu die prozentuale Verteilung. Gilt auch für die Wochentagsziele. Ausgeschaltet zeigt ein Hinweis, wenn die Makros nicht zu den Kalorien passen.
+
+### Behoben
+- Statistik: Die Kalorien-Achse (Y) zeigt jetzt runde Werte (z. B. 0, 500, 1.000 …) statt krummer Zwischenwerte.
+
 ## 0.14.0
 
 ### Neu
