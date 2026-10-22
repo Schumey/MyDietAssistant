@@ -14,7 +14,7 @@ Die Oberfläche läuft per Ingress im HA-Seitenmenü, übernimmt das aktive HA-T
 - **Import/Export:** JSON-Sicherung, CSV-Export, MyFitnessPal-CSV-Import
 - **HA-Sensoren** für Kalorien/Makros des Tages und das aktuelle Gewicht
 
-Details zu Sensoren und Bedienung: [mydiet/DOCS.md](mydiet/DOCS.md). Änderungen: [mydiet/CHANGELOG.md](mydiet/CHANGELOG.md).
+Details zu Sensoren und Bedienung: [mydiet/DOCS.md](mydiet/DOCS.md). Änderungen: [mydiet/CHANGELOG.md](mydiet/CHANGELOG.md). Geplantes und Ideen: [roadmap.md](roadmap.md).
 
 ## Installation
 
