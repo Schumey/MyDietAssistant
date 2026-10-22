@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.9.1
+
+### Behoben
+- Windows-Look: Rot/Grün bei „Verbleibend“ wurde überdeckt; feststehende Leiste mit grauem Streifen unter den Reitern, damit Inhalt nicht darunter hervorschaut.
+- Einstellungen → Darstellung: Hinweistext stand unter „Optik“ statt unter „Tagebuch“.
+
 ## 0.9.0
 
 ### Neu

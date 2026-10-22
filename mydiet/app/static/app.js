@@ -895,9 +895,10 @@ async function renderSettings() {
     h("option", { value: "win" }, "Windows-Look"));
   skin.value = state.skin;
   root.append(h("div", { class: "card" }, h("h2", {}, "Darstellung"),
-    h("label", {}, "Tagebuch"), mode, h("label", { style: "margin-top:12px" }, "Optik"), skin,
+    h("label", {}, "Tagebuch"), mode,
     h("div", { class: "muted", style: "margin-top:8px" },
-      "Bestehende Einträge bleiben erhalten; ohne Uhrzeit erscheinen sie in der Zeitansicht am Ende.")));
+      "Bestehende Einträge bleiben erhalten; ohne Uhrzeit erscheinen sie in der Zeitansicht am Ende."),
+    h("label", { style: "margin-top:12px" }, "Optik"), skin));
 
   // meals
   const meals = day.meals;
