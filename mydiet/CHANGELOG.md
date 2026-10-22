@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 0.26.1
+
+### Behoben
+- Tagebuch und Einstellungen blieben nach einem Update leer. Ursache: Browser und HA-App hatten eine ältere `index.html` zwischengespeichert, die das neue Skript `i18n.js` (seit 0.21.0) nicht kannte; das Programm brach beim Start ab, nur die Reiter blieben sichtbar. Die Übersetzung steckt jetzt direkt in `app.js`, und die Startseite wird mit `Cache-Control: no-cache` ausgeliefert, damit so etwas bei künftigen Updates nicht mehr passiert.
+
 ## 0.26.0
 
 ### Neu

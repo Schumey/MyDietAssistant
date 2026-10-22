@@ -16,7 +16,7 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 ## Lebensmittel und Eingabe
 
 - **Barcode-Scan ohne Browser-Unterstützung** (S): Für iPhone/Firefox eine mitgelieferte Scan-Bibliothek (ZXing) als Rückfall, da dort `BarcodeDetector` fehlt.
-- **Nahrungsmengen in oz** (M): Mengenfelder und Anzeige in Unzen für Lebensmittel (Gewicht lb und Maße in sind schon umschaltbar). Weitere Sprachen: der Übersetzungsmechanismus (`static/i18n.js`) nimmt zusätzliche Wörterbücher auf.
+- **Nahrungsmengen in oz** (M): Mengenfelder und Anzeige in Unzen für Lebensmittel (Gewicht lb und Maße in sind schon umschaltbar). Weitere Sprachen: der Übersetzungsmechanismus (Anfang von `static/app.js`) nimmt zusätzliche Wörterbücher auf.
 - **Datenquellen ausbauen** (M): BLS (Deutschland) und weitere Datenbanken ergänzen (BLS bietet keine freie API, daher als Datei-Import), alle eigenen Lebensmittel in einem Durchgang gegen Online-Quellen prüfen, Barcode als Feld am Lebensmittel speichern.
 
 ## Import und Export

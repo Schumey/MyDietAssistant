@@ -564,7 +564,8 @@ from extras8 import *  # noqa: E402,F401,F403  (users, admin view, household mea
 
 @app.get("/")
 def index():
-    return FileResponse(os.path.join(STATIC, "index.html"))
+    # no-cache: a cached index.html must not outlive the scripts it references
+    return FileResponse(os.path.join(STATIC, "index.html"), headers={"Cache-Control": "no-cache"})
 
 
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
