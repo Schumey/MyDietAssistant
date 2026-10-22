@@ -4,7 +4,7 @@ Home-Assistant-Add-on: lokales Ernährungstagebuch (Kalorien, Makros, Gewicht) m
 
 ## Aufbau
 
-- `mydiet/` ist das Add-on (`config.yaml`, `CHANGELOG.md`, `DOCS.md`, `Dockerfile`, `run.sh`).
+- `mydiet/` ist das Add-on (`config.yaml`, `CHANGELOG.md`, `DOCS.md`, `Dockerfile`).
 - `mydiet/app/main.py`: FastAPI, Tagebuch, Lebensmittel, Gewicht, Statistik, HA-Sensoren (`publish`). Importiert am Ende `extras` und `extras2` (Sternimport).
 - `mydiet/app/extras.py`: Einstellungen/Zusatzfunktionen, Wochentagsziele, Tracker, gespeicherte Mahlzeiten, Export/Import, Trigger, Bericht, Kopieren.
 - `mydiet/app/extras2.py`: Notizen, automatische Sicherung, Wiederherstellungs-Vorschau, externe API (`/api/ext/*`), Erinnerung, Zeitzone, Hintergrundschleife.
