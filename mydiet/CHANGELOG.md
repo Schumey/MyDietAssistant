@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.5.2
+
+### Behoben
+- **Weitere Einstellungen in der Sicherung:** Export, Sicherungen und Import enthalten jetzt auch die Erinnerung, den Zeitplan-Hinweis, die Optik (Standard/Windows 95), die Mealie-Adresse und die Tage mit ausgeblendeten leeren Mahlzeiten (Tagessummen-Import). Der Mealie-Token wird weiterhin nicht exportiert; nach dem Einspielen auf einer frischen Installation musst Du ihn neu eintragen. Fortschrittsfotos liegen als Dateien im Add-on und sind nicht Teil der JSON-Sicherung.
+
 ## 1.5.1
 
 ### Behoben

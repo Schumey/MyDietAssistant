@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.5.2
+
+### Fixed
+- **More settings in the backup:** export, backups and import now also include the reminder, the schedule nudge, the look (default/Windows 95), the Mealie address and the days with hidden empty meals (daily-totals import). The Mealie token is still not exported; after restoring on a fresh install you have to enter it again. Progress photos are files inside the add-on and are not part of the JSON backup.
+
 ## 1.5.1
 
 ### Fixed

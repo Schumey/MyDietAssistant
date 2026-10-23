@@ -538,7 +538,11 @@ def dump(owner: str) -> dict:
             "settings": {"diary_mode": get_pref(owner, "diary_mode", "meals"),
                          "goal_mode": get_pref(owner, "goal_mode", "lose"), "goal_rate": get_pref(owner, "goal_rate", 0.5),
                          "lang": get_pref(owner, "lang", "auto"), "units": get_pref(owner, "units", "metric"),
-                         "mass": get_pref(owner, "mass", "g")},
+                         "mass": get_pref(owner, "mass", "g"), "skin": get_pref(owner, "skin", "auto")},
+            "reminder": get_pref(owner, "reminder", None),
+            "schedule_nudge": bool(get_pref(owner, "schedule_nudge", False)),
+            "mealie_url": (get_pref(owner, "mealie", {}) or {}).get("url", ""),   # the API token is never exported
+            "day_flags": [r["day"] for r in q("SELECT day FROM day_flags WHERE owner=? ORDER BY day", owner)],
             "entries": q("SELECT day,time,meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat FROM entries WHERE owner=? ORDER BY day,id", owner),
             "goal": q("SELECT kcal,protein,carbs,fat,target_weight FROM goals WHERE owner=?", owner),
             "weights": q("SELECT day,kg FROM weights WHERE owner=? ORDER BY day", owner),
@@ -709,6 +713,20 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
     if d.get("settings", {}).get("goal_mode") in GOAL_MODES:
         set_pref(owner, "goal_mode", d["settings"]["goal_mode"])
         set_pref(owner, "goal_rate", d["settings"].get("goal_rate", 0.5))
+    if d.get("settings", {}).get("skin") in ("auto", "default", "win"):
+        set_pref(owner, "skin", d["settings"]["skin"])
+    if isinstance(d.get("reminder"), dict):
+        set_pref(owner, "reminder", d["reminder"])
+    if "schedule_nudge" in d:
+        set_pref(owner, "schedule_nudge", bool(d["schedule_nudge"]))
+    if isinstance(d.get("mealie_url"), str):
+        old = get_pref(owner, "mealie", {}) or {}
+        url = d["mealie_url"]
+        set_pref(owner, "mealie", {"url": url, "token": old.get("token", "") if old.get("url") == url else ""})
+    with db.conn() as c:
+        c.execute("DELETE FROM day_flags WHERE owner=?", (owner,))
+        c.executemany("INSERT OR IGNORE INTO day_flags(owner,day) VALUES(?,?)",
+                      [(owner, x) for x in d.get("day_flags", []) if isinstance(x, str)])
     if "features" in d:
         set_pref(owner, "features", d["features"])
     if isinstance(d.get("activity"), dict):

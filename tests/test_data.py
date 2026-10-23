@@ -125,6 +125,19 @@ def test_backup_roundtrip_keeps_triggers(user):
     assert b.get("/api/triggers").json() == []
 
 
+def test_backup_roundtrip_keeps_reminder_skin_and_mealie_url(user):
+    a, b = user(), user()
+    a.put("/api/settings", json={"skin": "win"})
+    a.put("/api/reminder", json={"enabled": True, "time": "19:30", "notify": "notify.mobile_app_x"})
+    a.put("/api/mealie", json={"url": "http://mealie:9000", "token": "secret"})
+    dump = a.get("/api/export/json").json()
+    assert "secret" not in json.dumps(dump)
+    assert b.post("/api/import/json", json={"data": dump}).status_code == 200
+    assert b.get("/api/settings").json()["skin"] == "win"
+    assert b.get("/api/reminder").json() == {"enabled": True, "time": "19:30", "notify": "notify.mobile_app_x"}
+    assert b.get("/api/mealie").json() == {"url": "http://mealie:9000", "token_set": False}
+
+
 def test_import_rejects_foreign_json(me):
     assert me.post("/api/import/json", json={"data": {"app": "other"}}).status_code == 400
 
