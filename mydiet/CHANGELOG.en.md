@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.5.1
+
+### Fixed
+- **Triggers in backups:** export, automatic backups and import now include triggers (actions and meal rules). Previously they were missing from the backup, and restoring deleted the existing triggers. The trigger history is still not included. Older backups can still be restored (without triggers).
+
 ## 1.5.0
 
 ### New

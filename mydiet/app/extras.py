@@ -554,6 +554,9 @@ def dump(owner: str) -> dict:
             "day_profile": q("SELECT day,profile_id FROM day_profile WHERE owner=?", owner),
             "trackers": [{**t, "log": q("SELECT day,amount FROM tracker_log WHERE tracker_id=?", t["id"])}
                          for t in q("SELECT id,name,unit,goal,step,position FROM trackers WHERE owner=?", owner)],
+            "triggers": q("SELECT kind,entity,match,meal_id,saved_meal_id,food_id,grams,enabled,negate,days_ahead,part,hold_min,"
+                          "win_from,win_to,profile_id,extra,combine,paused_until FROM triggers WHERE owner=? ORDER BY id", owner),
+            "meal_triggers": q("SELECT meal_id,kind,entity,match,enabled,negate,part FROM meal_triggers WHERE owner=? ORDER BY id", owner),
         }
 
 
@@ -659,9 +662,10 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
                       (owner, g["kcal"], g["protein"], g["carbs"], g["fat"], g.get("target_weight")))
         for w in d.get("weights", []):
             c.execute("INSERT INTO weights(owner,day,kg) VALUES(?,?,?)", (owner, w["day"], w["kg"]))
+        smap = {}
         for s in d.get("saved_meals", []):
-            sid = c.execute("INSERT INTO saved_meals(owner,name,category) VALUES(?,?,?)",
-                            (owner, s["name"], s.get("category", ""))).lastrowid
+            sid = smap[s.get("id")] = c.execute("INSERT INTO saved_meals(owner,name,category) VALUES(?,?,?)",
+                                                (owner, s["name"], s.get("category", ""))).lastrowid
             for i in s.get("items", []):
                 c.execute("INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat)"
                           " VALUES(?,?,?,?,?,?,?,?,?,?,?)",
@@ -679,6 +683,21 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
             if mid is not None:
                 c.execute("INSERT OR REPLACE INTO day_notes(owner,day,meal_id,text) VALUES(?,?,?,?)",
                           (owner, n["day"], mid, n["text"]))
+        # triggers refer to meals, saved meals, foods and goal profiles by their old ids: map them to the new rows
+        for t in d.get("triggers", []):
+            c.execute("INSERT INTO triggers(owner,kind,entity,match,meal_id,saved_meal_id,food_id,grams,enabled,negate,days_ahead,"
+                      "part,hold_min,win_from,win_to,profile_id,extra,combine,paused_until) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                      (owner, t["kind"], t.get("entity", ""), t.get("match", ""), mmap.get(t.get("meal_id"), 0),
+                       smap.get(t.get("saved_meal_id")), fmap.get(t.get("food_id")), t.get("grams"), t.get("enabled", 1),
+                       t.get("negate", 0), t.get("days_ahead", 0), t.get("part", "any"), t.get("hold_min", 0),
+                       t.get("win_from", ""), t.get("win_to", ""), pmap.get(t.get("profile_id")),
+                       t.get("extra") or "[]", t.get("combine", "and"), t.get("paused_until", "")))
+        c.execute("DELETE FROM meal_triggers WHERE owner=?", (owner,))
+        for t in d.get("meal_triggers", []):
+            if t.get("meal_id") in mmap:
+                c.execute("INSERT INTO meal_triggers(owner,meal_id,kind,entity,match,enabled,negate,part) VALUES(?,?,?,?,?,?,?,?)",
+                          (owner, mmap[t["meal_id"]], t["kind"], t["entity"], t.get("match", ""), t.get("enabled", 1),
+                           t.get("negate", 0), t.get("part", "any")))
     set_pref(owner, "hidden_categories", d.get("hidden_categories", []))
     set_pref(owner, "diary_mode", d.get("settings", {}).get("diary_mode", "meals"))
     if d.get("settings", {}).get("lang") in LANGS:

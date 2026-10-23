@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.5.1
+
+### Behoben
+- **Trigger in der Sicherung:** Export, automatische Sicherungen und Import enthalten jetzt die Trigger (Aktionen und Mahlzeiten-Regeln). Bisher fehlten sie in der Sicherung, und das Einspielen löschte die vorhandenen Trigger. Der Verlauf der Trigger gehört weiterhin nicht dazu. Ältere Sicherungen lassen sich weiter einspielen (ohne Trigger).
+
 ## 1.5.0
 
 ### Neu

@@ -100,6 +100,31 @@ def test_backup_roundtrip_keeps_everything(user):
     assert (act["steps"], act["kcal"], act["config"]["share"]) == (9000, 300, 40)
 
 
+def test_backup_roundtrip_keeps_triggers(user):
+    a, b = user(), user()
+    fid = add_food(a, name="Skyr")
+    mid = a.post("/api/meals", json={"name": "Spät"}).json()["id"]
+    a.post("/api/triggers", json={"kind": "state", "entity": "input_boolean.x", "match": "on", "meal_id": mid,
+                                  "food_id": fid, "grams": 150, "hold_min": 5, "win_from": "20:00", "win_to": "23:00",
+                                  "extra": [{"kind": "state", "entity": "sensor.y", "match": "home"}], "combine": "or"})
+    a.post("/api/meal-triggers", json={"meal_id": mid, "kind": "state", "entity": "input_boolean.z", "match": "on"})
+    dump = a.get("/api/export/json").json()
+    assert len(dump["triggers"]) == 1 and len(dump["meal_triggers"]) == 1
+    # restoring twice must not duplicate, and ids must point at the new rows
+    for _ in range(2):
+        assert b.post("/api/import/json", json={"data": dump}).status_code == 200
+    t = b.get("/api/triggers").json()
+    assert len(t) == 1
+    assert (t[0]["item"], t[0]["meal"], t[0]["grams"], t[0]["hold_min"], t[0]["combine"]) == ("Skyr", "Spät", 150, 5, "or")
+    assert t[0]["extra"][0]["entity"] == "sensor.y"
+    mt = b.get("/api/meal-triggers").json()
+    assert len(mt) == 1 and mt[0]["meal"] == "Spät"
+    # an old backup without trigger keys still imports
+    old = {k: v for k, v in dump.items() if k not in ("triggers", "meal_triggers")}
+    assert b.post("/api/import/json", json={"data": old}).status_code == 200
+    assert b.get("/api/triggers").json() == []
+
+
 def test_import_rejects_foreign_json(me):
     assert me.post("/api/import/json", json={"data": {"app": "other"}}).status_code == 400
 
