@@ -83,6 +83,7 @@ const EN = {
   "z. B. 78,5": "e.g. 78.5", "Gewicht eintragen": "Log weight", "Datum": "Date", "Gewicht ({})": "Weight ({})", "Zielgewicht ({})": "Target weight ({})", "Gewünschte Änderung ({} pro Woche)": "Desired change ({} per week)", "Noch keine Gewichtswerte.": "No weight values yet.",
   "Aktuell": "Current", "Trend": "Trend", "Veränderung": "Change", "Ziel": "Goal", "Prognose Ziel": "Goal forecast",
   "30 Tage": "30 days", "90 Tage": "90 days", "1 Jahr": "1 year", "7 Tage": "7 days", "180 Tage": "180 days",
+  "14 Tage": "14 days", "Kalorien und Gewicht": "Calories and weight", "Kalorien (linke Achse)": "Calories (left axis)", "Gewicht und Trend (rechte Achse)": "Weight and trend (right axis)", "Noch keine Gewichtswerte im Zeitraum.": "No weight entries in this period yet.",
   "Dünne Linie und Punkte: Messwerte. Dicke Linie: geglätteter Trend (Tagesschwankungen ausgeblendet).": "Thin line and dots: measurements. Thick line: smoothed trend (daily fluctuations filtered out).",
   "Trend aktuell {}{} {}/Woche.": "Current trend {}{} {}/week.", "Mehr anzeigen": "Show more", "Alle {}": "All {}", "Weniger": "Less",
   "Taille": "Waist", "Brust": "Chest", "Hüfte": "Hips", "Oberarm": "Upper arm", "Oberschenkel": "Thigh", "Körperfett %": "Body fat %",
@@ -604,6 +605,7 @@ Object.assign(LANGS, {
     "Ø Kohlenhydrate": "Ø glucides",
     "Ø Fett": "Ø lipides",
     "Kalorien pro Tag": "Calories par jour",
+    "14 Tage": "14 jours", "Kalorien und Gewicht": "Calories et poids", "Kalorien (linke Achse)": "Calories (axe de gauche)", "Gewicht und Trend (rechte Achse)": "Poids et tendance (axe de droite)", "Noch keine Gewichtswerte im Zeitraum.": "Pas encore de pesées sur cette période.",
     "Gestrichelt: Tagesziel je Wochentag": "En pointillés : objectif du jour par jour de la semaine",
     "Gestrichelt: Tagesziel {} kcal": "En pointillés : objectif du jour {} kcal",
     "Nährwertverteilung (Ø)": "Répartition des macros (Ø)",
@@ -1312,6 +1314,7 @@ Object.assign(LANGS, {
     "Ø Kohlenhydrate": "Ø carbohidratos",
     "Ø Fett": "Ø grasas",
     "Kalorien pro Tag": "Calorías por día",
+    "14 Tage": "14 días", "Kalorien und Gewicht": "Calorías y peso", "Kalorien (linke Achse)": "Calorías (eje izquierdo)", "Gewicht und Trend (rechte Achse)": "Peso y tendencia (eje derecho)", "Noch keine Gewichtswerte im Zeitraum.": "Aún no hay pesos en este periodo.",
     "Gestrichelt: Tagesziel je Wochentag": "Discontinua: objetivo diario por día de la semana",
     "Gestrichelt: Tagesziel {} kcal": "Discontinua: objetivo diario {} kcal",
     "Nährwertverteilung (Ø)": "Reparto de macros (Ø)",
@@ -2933,6 +2936,47 @@ function lineChart(points, target, unit = "kg") {
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${isWeight ? "Gewichtsverlauf" : "Verlauf"}">${s}</svg>`;
 }
 
+// Calories (bars, left axis) and weight (raw dots + smoothed trend, right axis) over the same days.
+function comboChart(days, weights) {
+  const W = 600, H = 220, L = 40, B = 24, T = 10, R = 44;
+  const first = days[0].day;
+  const pts = withTrend(weights).filter(p => p.day >= first).map(p => ({ ...p, v: wConv(p.kg), t: wConv(p.trend) }));
+  const top = Math.max(...days.map(d => d.kcal), 100);
+  const step = [50, 100, 200, 250, 500, 1000, 2000, 5000].find(st => top / st <= 6) || 10000;
+  const max = Math.ceil(top / step) * step;
+  const y = v => T + (H - T - B) * (1 - v / max);
+  const bw = (W - L - R) / days.length;
+  let s = "";
+  for (let v = 0; v <= max + 1e-6; v += step) s += `<line class="grid-line" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${n0(v)}</text>`;
+  const ticks = new Map(niceTicks(days[0].day, days[days.length - 1].day).map(t => [t.day, t.label]));
+  days.forEach((d, i) => {
+    const x = L + i * bw;
+    if (d.logged) s += `<rect class="bar-k soft" x="${x + bw * 0.15}" y="${y(d.kcal)}" width="${bw * 0.7}" height="${H - B - y(d.kcal)}" rx="2"/>`;
+    if (ticks.has(d.day)) s += `<line class="grid-line" x1="${x + bw / 2}" x2="${x + bw / 2}" y1="${H - B}" y2="${H - B + 4}"/><text x="${x + bw / 2}" y="${H - 6}" text-anchor="middle">${ticks.get(d.day)}</text>`;
+  });
+  if (pts.length) {
+    let lo = Math.min(...pts.flatMap(p => [p.v, p.t])), hi = Math.max(...pts.flatMap(p => [p.v, p.t]));
+    const pad = Math.max((hi - lo) * 0.15, 0.5);
+    lo -= pad; hi += pad;
+    const wstep = [0.5, 1, 2, 5, 10, 20, 50].find(st => (hi - lo) / st <= 5) || 100;
+    const yw = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+    const px = p => L + (days.findIndex(d => d.day === p.day) + 0.5) * bw;
+    const on = pts.filter(p => days.some(d => d.day === p.day));
+    for (let v = Math.ceil(lo / wstep) * wstep; v <= hi + 1e-9; v += wstep) s += `<text class="w-axis" x="${W - R + 6}" y="${yw(v) + 4}">${wstep < 1 ? n1(v) : n0(v)}</text>`;
+    if (on.length > 1) s += `<polyline class="line weight raw" points="${on.map(p => `${px(p)},${yw(p.v)}`).join(" ")}"/>`;
+    s += on.map(p => `<circle class="dot weight" cx="${px(p)}" cy="${yw(p.v)}" r="2.5"/>`).join("");
+    if (on.length > 1) s += `<polyline class="line weight" points="${on.map(p => `${px(p)},${yw(p.t)}`).join(" ")}"/>`;
+    s += `<text class="w-axis" x="${W - R + 6}" y="${T - 1}">${wUnit()}</text>`;
+  }
+  const byDay = new Map(pts.map(p => [p.day, p]));
+  days.forEach((d, i) => {
+    const p = byDay.get(d.day);
+    const text = `${longDate(d.day)}\n${d.logged ? n0(d.kcal) + " kcal" : "nicht erfasst"}` + (p ? `\n${n1(p.v)} ${wUnit()} · Trend ${n1(p.t)} ${wUnit()}` : "");
+    s += `<rect class="hit" x="${L + i * bw}" y="${T}" width="${bw}" height="${H - T - B}" data-tip="${esc(text)}"/>`;
+  });
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Kalorien und Gewicht">${s}</svg>`;
+}
+
 // Exponentially smoothed trend (10 % per day, gap-aware) so daily fluctuations fade out.
 function withTrend(all) {
   let tr = null, prev = null;
@@ -3642,8 +3686,11 @@ async function renderStats() {
   const chart = h("div");
   chart.innerHTML = barChart(days, goal.kcal);
   tipHandlers(chart);
+  const combo = h("div");
+  combo.innerHTML = comboChart(days, weights);
+  tipHandlers(combo);
   root.append(
-    rangeButtons([[7, "7 Tage"], [30, "30 Tage"], [90, "90 Tage"], [180, "180 Tage"], [365, "1 Jahr"]], state.range, v => { state.range = v; renderStats(); }),
+    rangeButtons([[7, "7 Tage"], [14, "14 Tage"], [30, "30 Tage"], [90, "90 Tage"], [180, "180 Tage"], [365, "1 Jahr"]], state.range, v => { state.range = v; renderStats(); }),
     h("div", { class: "stat-tiles" },
       tile("Ø Kalorien", logged.length ? n0(avg("kcal")) + " kcal" : "–"),
       tile("Erfasste Tage", `${logged.length} / ${days.length}`),
@@ -3654,6 +3701,10 @@ async function renderStats() {
         ? ((d => (d > 0 ? "+" : "") + n1(wConv(d)) + " " + wUnit())(weights[weights.length - 1].kg - weights[0].kg)) : "–")),
     h("div", { class: "card" }, h("h2", {}, "Kalorien pro Tag"), chart,
       goal.kcal ? h("div", { class: "muted" }, days.some(d => d.goal_kcal !== goal.kcal) ? "Gestrichelt: Tagesziel je Wochentag" : `Gestrichelt: Tagesziel ${n0(goal.kcal)} kcal`) : null),
+    h("div", { class: "card" }, h("h2", {}, "Kalorien und Gewicht"),
+      weights.some(w => w.day >= days[0].day) ? [combo, h("div", { class: "legend" },
+        h("span", { style: "--c:var(--primary-color)" }, "Kalorien (linke Achse)"), h("span", { style: "--c:var(--info-color)" }, "Gewicht und Trend (rechte Achse)"))]
+        : h("div", { class: "muted" }, "Noch keine Gewichtswerte im Zeitraum.")),
     balanceCard(balance, goal),
     macroCard(days),
     h("div", { class: "card" }, h("h2", {}, "Nährwertverteilung (Ø)"),

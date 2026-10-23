@@ -2,6 +2,12 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.3.0
+
+### New
+- **Statistics: calories and weight in one chart.** Bars for calories (left axis), weight values and smoothed trend as a line (right axis); the tooltip shows both per day.
+- **Statistics: 14-day range** in addition to 7, 30, 90, 180 days and 1 year.
+
 ## 1.2.0
 
 ### New

@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.3.0
+
+### Neu
+- **Statistik: Kalorien und Gewicht in einem Diagramm.** Balken für die Kalorien (linke Achse), Gewichtswerte und geglätteter Trend als Linie (rechte Achse); der Tooltip zeigt beides je Tag.
+- **Statistik: Zeitraum 14 Tage** zusätzlich zu 7, 30, 90, 180 Tagen und 1 Jahr.
+
 ## 1.2.0
 
 ### Neu
