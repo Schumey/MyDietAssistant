@@ -335,7 +335,12 @@ const EN = {
   "Gemeinsame Haushaltsbibliothek": "Shared household library", "Für den Haushalt freigegeben": "Shared with the household", "geteilt": "shared", "von {}": "from {}",
   "Gehört {}. Änderungen gelten für alle im Haushalt.": "Belongs to {}. Changes apply to everyone in the household.",
   "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und ändern)": "Offer in the shared household library (others may use and edit it)",
-  "Von Webseite …": "From web page …", "Rezept von Webseite": "Recipe from web page", "Lade …": "Loading …",
+  "Aus Mealie …": "From Mealie …", "Rezept aus Mealie": "Recipe from Mealie", "In Mealie suchen…": "Search in Mealie…", "Weitere laden": "Load more",
+  "{} Portionen": "{} servings", "Mealie": "Mealie", "Adresse": "Address", "API-Token": "API token",
+  "Gespeichert (leer lassen = unverändert)": "Saved (leave empty to keep)",
+  "Das Rezept wird aus Deinem Mealie-Server gelesen, die Zutaten werden Deinen Lebensmitteln zugeordnet; Du prüfst alles, bevor es gespeichert wird. In Mealie wird nichts verändert.": "The recipe is read from your Mealie server and its ingredients are matched against your foods; you check everything before it is saved. Nothing is changed in Mealie.",
+  "Rezepte aus einem Mealie-Server übernehmen. Adresse des Servers (im Heimnetz oder als Add-on) und ein API-Token aus Mealie (Profil → API-Tokens). Das Add-on liest nur Rezepte und verändert in Mealie nichts. Der Token bleibt im Add-on gespeichert und erscheint nicht im Export. Zum Entfernen die Adresse leeren.": "Take over recipes from a Mealie server. Enter the server's address (home network or add-on) and an API token from Mealie (profile → API tokens). The add-on only reads recipes and changes nothing in Mealie. The token stays inside the add-on and is not part of the export. Clear the address to remove it.",
+  "Von Webseite …": "From web page …","Rezept von Webseite": "Recipe from web page", "Lade …": "Loading …",
   "Adresse der Rezeptseite": "Address of the recipe page",
   "Die Seite wird vom Add-on abgerufen und nach Rezeptdaten durchsucht (Zutaten, Portionen, Zubereitung). Die Zutaten werden Deinen Lebensmitteln zugeordnet; Du prüfst alles, bevor es gespeichert wird.":
     "The add-on fetches the page and looks for recipe data (ingredients, servings, instructions). The ingredients are matched with your foods; you review everything before it is saved.",
@@ -1058,6 +1063,11 @@ Object.assign(LANGS, {
     "von {}": "de {}",
     "Gehört {}. Änderungen gelten für alle im Haushalt.": "Appartient à {}. Les modifications s’appliquent à tout le foyer.",
     "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und ändern)": "Proposer dans la bibliothèque partagée du foyer (les autres peuvent l’utiliser et la modifier)",
+    "Aus Mealie …": "Depuis Mealie …", "Rezept aus Mealie": "Recette depuis Mealie", "In Mealie suchen…": "Rechercher dans Mealie…", "Weitere laden": "Charger plus",
+    "{} Portionen": "{} portions", "Mealie": "Mealie", "Adresse": "Adresse", "API-Token": "Jeton d'API",
+    "Gespeichert (leer lassen = unverändert)": "Enregistré (laisser vide = inchangé)",
+    "Das Rezept wird aus Deinem Mealie-Server gelesen, die Zutaten werden Deinen Lebensmitteln zugeordnet; Du prüfst alles, bevor es gespeichert wird. In Mealie wird nichts verändert.": "La recette est lue depuis ton serveur Mealie et ses ingrédients sont associés à tes aliments ; tu vérifies tout avant l'enregistrement. Rien n'est modifié dans Mealie.",
+    "Rezepte aus einem Mealie-Server übernehmen. Adresse des Servers (im Heimnetz oder als Add-on) und ein API-Token aus Mealie (Profil → API-Tokens). Das Add-on liest nur Rezepte und verändert in Mealie nichts. Der Token bleibt im Add-on gespeichert und erscheint nicht im Export. Zum Entfernen die Adresse leeren.": "Reprendre des recettes d'un serveur Mealie. Indique l'adresse du serveur (réseau local ou add-on) et un jeton d'API de Mealie (profil → jetons d'API). L'add-on ne fait que lire les recettes et ne modifie rien dans Mealie. Le jeton reste dans l'add-on et n'apparaît pas dans l'export. Vide l'adresse pour le retirer.",
     "Von Webseite …": "Depuis une page web …",
     "Rezept von Webseite": "Recette depuis une page web",
     "Lade …": "Chargement …",
@@ -1786,6 +1796,11 @@ Object.assign(LANGS, {
     "von {}": "de {}",
     "Gehört {}. Änderungen gelten für alle im Haushalt.": "Pertenece a {}. Los cambios se aplican a todo el hogar.",
     "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und ändern)": "Ofrecer en la biblioteca compartida del hogar (los demás pueden usarlo y editarlo)",
+    "Aus Mealie …": "Desde Mealie …", "Rezept aus Mealie": "Receta desde Mealie", "In Mealie suchen…": "Buscar en Mealie…", "Weitere laden": "Cargar más",
+    "{} Portionen": "{} raciones", "Mealie": "Mealie", "Adresse": "Dirección", "API-Token": "Token de API",
+    "Gespeichert (leer lassen = unverändert)": "Guardado (vacío = sin cambios)",
+    "Das Rezept wird aus Deinem Mealie-Server gelesen, die Zutaten werden Deinen Lebensmitteln zugeordnet; Du prüfst alles, bevor es gespeichert wird. In Mealie wird nichts verändert.": "La receta se lee de tu servidor Mealie y sus ingredientes se asignan a tus alimentos; compruebas todo antes de guardar. No se cambia nada en Mealie.",
+    "Rezepte aus einem Mealie-Server übernehmen. Adresse des Servers (im Heimnetz oder als Add-on) und ein API-Token aus Mealie (Profil → API-Tokens). Das Add-on liest nur Rezepte und verändert in Mealie nichts. Der Token bleibt im Add-on gespeichert und erscheint nicht im Export. Zum Entfernen die Adresse leeren.": "Importa recetas de un servidor Mealie. Indica la dirección del servidor (red local o add-on) y un token de API de Mealie (perfil → tokens de API). El add-on solo lee recetas y no cambia nada en Mealie. El token se queda en el add-on y no aparece en la exportación. Vacía la dirección para quitarlo.",
     "Von Webseite …": "Desde una página web …",
     "Rezept von Webseite": "Receta desde una página web",
     "Lade …": "Cargando …",
@@ -3378,7 +3393,7 @@ async function renderMeals() {
 
 // ---------------------------------------------------------------- recipes page (optional)
 async function renderRecipes() {
-  const [recipes] = await Promise.all([api("recipes"), loadCats()]);
+  const [recipes, mealieCfg] = await Promise.all([api("recipes"), api("mealie").catch(() => null), loadCats()]);
   const root = $("#recipes");
   root.replaceChildren();
   const list = h("div", { class: "list" });
@@ -3468,6 +3483,40 @@ async function renderRecipes() {
     dlg.showModal();
   };
 
+  // Pick a recipe from the user's Mealie server (searchable list); the chosen one opens in the editor as a draft.
+  const mealieDialog = () => {
+    const q = h("input", { type: "search", placeholder: "In Mealie suchen…", autofocus: true });
+    const msg = h("div", { class: "err" });
+    const list = h("div", { class: "list" });
+    const more = h("button", { class: "flat", style: "display:none" }, "Weitere laden");
+    let page = 1, timer = null, seq = 0;
+    const pick = async (it, btn) => {
+      msg.textContent = ""; btn.disabled = true;
+      try { editRecipe(null, await send("POST", "mealie/import", { slug: it.slug })); }
+      catch (e) { msg.textContent = e.message; btn.disabled = false; }
+    };
+    const load = async (append) => {
+      const my = ++seq;
+      msg.textContent = "";
+      try {
+        const res = await api(`mealie/recipes?q=${encodeURIComponent(q.value.trim())}&page=${page}`);
+        if (my !== seq) return;
+        const rows = res.items.map(it => { const b = h("button", { class: "flat", onclick: () => pick(it, b) }, "Übernehmen");
+          return h("div", {}, h("div", { class: "grow" }, it.name, it.servings ? h("div", { class: "muted" }, `${n1(it.servings)} Portionen`) : null), b); });
+        if (append) list.append(...rows); else list.replaceChildren(...(rows.length ? rows : [h("div", { class: "muted" }, "Nichts gefunden.")]));
+        more.style.display = res.page * res.per_page < res.total ? "" : "none";
+      } catch (e) { if (my === seq) msg.textContent = e.message; }
+    };
+    q.oninput = () => { clearTimeout(timer); timer = setTimeout(() => { page = 1; load(false); }, 300); };
+    more.onclick = () => { page++; load(true); };
+    setDlg(h("h2", {}, "Rezept aus Mealie"),
+      h("div", { class: "muted" }, "Das Rezept wird aus Deinem Mealie-Server gelesen, die Zutaten werden Deinen Lebensmitteln zugeordnet; Du prüfst alles, bevor es gespeichert wird. In Mealie wird nichts verändert."),
+      q, msg, list, more,
+      h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Schließen")));
+    dlg.showModal();
+    load(false);
+  };
+
   const draw = () => {
     chips.replaceChildren(...[catChips(draw)].filter(Boolean));
     const q = search.value.toLowerCase();
@@ -3495,8 +3544,9 @@ async function renderRecipes() {
 
   const search = h("input", { type: "search", placeholder: "Rezepte suchen…", oninput: draw });
   root.append(h("div", { class: "card" },
-    h("div", { class: "grid", style: "grid-template-columns:1fr auto auto" }, search, h("button", { onclick: () => editRecipe(null) }, "+ Neues Rezept"),
-      h("button", { class: "flat", onclick: importDialog }, "Von Webseite …")),
+    h("div", { class: "grid", style: `grid-template-columns:1fr auto auto${mealieCfg?.token_set ? " auto" : ""}` }, search, h("button", { onclick: () => editRecipe(null) }, "+ Neues Rezept"),
+      h("button", { class: "flat", onclick: importDialog }, "Von Webseite …"),
+      mealieCfg?.token_set ? h("button", { class: "flat", onclick: mealieDialog }, "Aus Mealie …") : null),
     h("div", { class: "muted", style: "margin-top:8px" }, "Jedes Rezept erscheint auch unter Lebensmittel (pro 100 g, mit „1 Portion“) und lässt sich überall eintragen. Änderungen am Rezept aktualisieren dieses Lebensmittel."),
     chips, list));
   draw();
@@ -4466,6 +4516,24 @@ async function renderSettings() {
           try { await send("PUT", "scale", { entity: ent.value.trim(), unit: unit.value }); say("Gespeichert ✓"); }
           catch (e) { say(e.message, "err"); }
         } }, "Speichern"))));
+  }
+
+  if (state.features.recipes) {
+    const ml = await api("mealie").catch(() => null);
+    if (ml) {
+      const murl = h("input", { type: "url", placeholder: "http://mealie:9000", value: ml.url });
+      const mtok = h("input", { type: "password", autocomplete: "off", placeholder: ml.token_set ? "Gespeichert (leer lassen = unverändert)" : "API-Token" });
+      const msaved = h("span", { class: "muted" });
+      root.append(h("div", { class: "card" }, h("h2", {}, "Mealie"),
+        h("div", { class: "muted" }, "Rezepte aus einem Mealie-Server übernehmen. Adresse des Servers (im Heimnetz oder als Add-on) und ein API-Token aus Mealie (Profil → API-Tokens). Das Add-on liest nur Rezepte und verändert in Mealie nichts. Der Token bleibt im Add-on gespeichert und erscheint nicht im Export. Zum Entfernen die Adresse leeren."),
+        h("div", { class: "grid" }, h("div", {}, h("label", {}, "Adresse"), murl), h("div", {}, h("label", {}, "API-Token"), mtok)),
+        h("div", { class: "actions" }, msaved, h("button", { onclick: async () => {
+          try {
+            const r = await send("PUT", "mealie", { url: murl.value.trim(), token: mtok.value.trim() || null });
+            murl.value = r.url; mtok.value = ""; msaved.className = "muted"; msaved.textContent = "Gespeichert ✓";
+          } catch (e) { msaved.className = "err"; msaved.textContent = e.message; }
+        } }, "Speichern"))));
+    }
   }
 
   const cache = await api("lookup/cache").catch(() => ({ entries: 0, bytes: 0 }));

@@ -353,6 +353,11 @@ def to_draft(page: str, url: str, foods: list[dict]) -> dict:
     n = find_recipe(page)
     if not n:
         raise ValueError("Auf dieser Seite wurde kein Rezept gefunden (es fehlen strukturierte Rezeptdaten).")
+    return draft_from_node(n, url, foods)
+
+
+def draft_from_node(n: dict, url: str, foods: list[dict]) -> dict:
+    """Draft from a schema.org-shaped recipe dict (also used for recipes that come from Mealie)."""
     ings = n.get("recipeIngredient") or n.get("ingredients") or []
     if isinstance(ings, str):
         ings = [ings]

@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.5.0
+
+### Neu
+- **Rezept-Import aus Mealie:** Unter Einstellungen → Mealie (sichtbar mit der Zusatzfunktion „Rezepte“) trägst Du Adresse und API-Token Deines Mealie-Servers ein (Heimnetz oder Add-on, z. B. `http://mealie:9000`). Danach zeigt „Rezepte“ den Button „Aus Mealie …“ mit durchsuchbarer Rezeptliste; das gewählte Rezept öffnet sich wie beim Web-Import als Entwurf im Editor (Zutaten in Gramm und Deinen Lebensmitteln zugeordnet, bei „Weitere Datenquellen“ fehlende aus Online-Datenbanken, Portionen, Zubereitung, Nährwerte zum Vergleich, Quelle = Original-Link). Das Add-on liest nur und verändert in Mealie nichts. Der Token wird nicht exportiert und nie zurückgegeben.
+
 ## 1.4.0
 
 ### Neu

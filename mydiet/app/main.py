@@ -674,6 +674,7 @@ from extras8 import *  # noqa: E402,F401,F403  (users, admin view, household mea
 from extras9 import *  # noqa: E402,F401,F403  (activity, meal schedule, lookup cache)
 from extras10 import *  # noqa: E402,F401,F403  (sharing foods/meals, food table import, food check)
 from extras11 import *  # noqa: E402,F401,F403  (weight from a Home Assistant sensor)
+from extras12 import *  # noqa: E402,F401,F403  (recipe import from Mealie)
 
 
 @app.get("/")
