@@ -23,7 +23,7 @@ The interface runs through ingress in the HA sidebar, adopts the active HA theme
 - **Recipes** with preparation steps; **import from web pages** (schema.org data, ingredients converted to grams and matched to your foods)
 - **HA sensors** for calories, macros, remaining, weekly average, weight, balance and the current meal (plain states or MQTT discovery); an interface for automations (scale, voice assistant)
 - **Import/export:** JSON backup, CSV, MyFitnessPal, Cronometer, FDDB, Yazio, Apple Health, Google Fit; report and table for advisors and trainers
-- **Optional features** (off by default): weekday goals, water and supplements, recipes, more nutrients, notes, body measurements and progress photos, online databases with comparison, activity, meal schedule, household (several users share entries, foods and meals)
+- **Optional features** (off by default): weekday goals, water and supplements, recipes, more nutrients, notes, body measurements and progress photos, online databases with comparison, activity, scale (weight from an HA sensor), meal schedule, household (several users share entries, foods and meals)
 - **User administration** for administrators, automatic backups, reminder by notification
 
 <p align="center">

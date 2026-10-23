@@ -70,6 +70,25 @@ const EN = {
   "wie Summe der Zutaten": "same as sum of ingredients", "Gesamt: {} g": "Total: {} g", "pro Portion ({} g)": "per portion ({} g)",
   "Rezept bearbeiten": "Edit recipe", "Neues Rezept": "New recipe", "Gewicht fertig (g, optional)": "Cooked weight (g, optional)", "Zutaten": "Ingredients",
   "Noch keine Zutaten.": "No ingredients yet.", "Zutat hinzufügen": "Add ingredient", "+ Zutat": "+ Ingredient",
+  "Ungültige Einheit": "Invalid unit",
+  "Speichern und jetzt lesen": "Save and read now",
+  "Der Wert im Sensor ist älter als 30 Tage und wurde nicht übernommen.": "The sensor's value is older than 30 days and was not taken over.",
+  "Der Wert liegt außerhalb von 20 bis 500 kg (Einheit prüfen).": "The value is outside 20 to 500 kg (check the unit).",
+  "Der Sensor liefert gerade keinen Zahlenwert.": "The sensor does not provide a number right now.",
+  "Home Assistant nicht erreichbar.": "Home Assistant is not reachable.",
+  "Zuerst einen Sensor wählen.": "Choose a sensor first.",
+  "Neuer Wert gesehen, wird übernommen, sobald er stabil ist.": "New value seen, it is taken over once it is stable.",
+  "Der aktuelle Wert ist schon übernommen.": "The current value has already been taken over.",
+  "Übernommen: {} am {}": "Taken over: {} on {}",
+  "Zuletzt übernommen: {} am {}": "Last taken over: {} on {}",
+  "z. B. sensor.waage_gewicht": "e.g. sensor.scale_weight",
+  "Automatisch (Einheit des Sensors)": "Automatic (the sensor's unit)",
+  "Einheit des Sensors": "Sensor unit",
+  "Sensor": "Sensor",
+  "Sensor aus Home Assistant mit dem Körpergewicht, z. B. von einer smarten Waage. Das Add-on schaut jede Minute nach; ein neuer Wert wird übernommen, sobald er sich eine Minute nicht mehr ändert, und für den Tag der Messung gespeichert (ein Wert vom selben Tag wird ersetzt). Sinnvoll sind Werte von 20 bis 500 kg.": "A Home Assistant sensor with body weight, e.g. from a smart scale. The add-on checks every minute; a new value is taken over once it has not changed for a minute and is stored for the day of the measurement (a value from the same day is replaced). Sensible values are 20 to 500 kg.",
+  "Waage": "Scale",
+  "Körpergewicht automatisch aus einem Home-Assistant-Sensor übernehmen, z. B. von einer smarten Waage (mit Einheitenumrechnung).": "Take body weight from a Home Assistant sensor automatically, e.g. from a smart scale (with unit conversion).",
+  "Waage (Sensor)": "Scale (sensor)",
   "Orange Zutaten fehlten in Deinen Lebensmitteln und wurden aus Online-Datenbanken ergänzt (Richtwerte, bitte prüfen).": "Orange ingredients were missing from your foods and were filled in from online databases (estimates, please check).", "aus Open Food Facts": "from Open Food Facts", "aus USDA": "from USDA",
   "Pro Portion ({} g): {} kcal · KH {} g · Fett {} g · Eiweiß {} g · {} Portionen": "Per portion ({} g): {} kcal · carbs {} g · fat {} g · protein {} g · {} portions",
   "Rezept „{}“ löschen? Das zugehörige Lebensmittel wird ebenfalls gelöscht, bereits eingetragene Mahlzeiten bleiben erhalten.": "Delete recipe “{}”? The matching food is deleted too; meals already logged are kept.",
@@ -513,6 +532,25 @@ Object.assign(LANGS, {
     "Gewicht fertig (g, optional)": "Poids cuit (g, facultatif)",
     "Zutaten": "Ingrédients",
     "Noch keine Zutaten.": "Pas encore d’ingrédients.",
+    "Ungültige Einheit": "Unité non valide",
+    "Speichern und jetzt lesen": "Enregistrer et lire maintenant",
+    "Der Wert im Sensor ist älter als 30 Tage und wurde nicht übernommen.": "La valeur du capteur date de plus de 30 jours et n’a pas été reprise.",
+    "Der Wert liegt außerhalb von 20 bis 500 kg (Einheit prüfen).": "La valeur est en dehors de 20 à 500 kg (vérifiez l’unité).",
+    "Der Sensor liefert gerade keinen Zahlenwert.": "Le capteur ne fournit pas de nombre pour le moment.",
+    "Home Assistant nicht erreichbar.": "Home Assistant est injoignable.",
+    "Zuerst einen Sensor wählen.": "Choisissez d’abord un capteur.",
+    "Neuer Wert gesehen, wird übernommen, sobald er stabil ist.": "Nouvelle valeur vue, elle sera reprise dès qu’elle est stable.",
+    "Der aktuelle Wert ist schon übernommen.": "La valeur actuelle a déjà été reprise.",
+    "Übernommen: {} am {}": "Repris : {} le {}",
+    "Zuletzt übernommen: {} am {}": "Dernière reprise : {} le {}",
+    "z. B. sensor.waage_gewicht": "p. ex. sensor.balance_poids",
+    "Automatisch (Einheit des Sensors)": "Automatique (unité du capteur)",
+    "Einheit des Sensors": "Unité du capteur",
+    "Sensor": "Capteur",
+    "Sensor aus Home Assistant mit dem Körpergewicht, z. B. von einer smarten Waage. Das Add-on schaut jede Minute nach; ein neuer Wert wird übernommen, sobald er sich eine Minute nicht mehr ändert, und für den Tag der Messung gespeichert (ein Wert vom selben Tag wird ersetzt). Sinnvoll sind Werte von 20 bis 500 kg.": "Un capteur Home Assistant avec le poids corporel, p. ex. d’une balance connectée. Le module vérifie chaque minute ; une nouvelle valeur est reprise lorsqu’elle reste inchangée pendant une minute et enregistrée pour le jour de la mesure (une valeur du même jour est remplacée). Des valeurs de 20 à 500 kg sont plausibles.",
+    "Waage": "Balance",
+    "Körpergewicht automatisch aus einem Home-Assistant-Sensor übernehmen, z. B. von einer smarten Waage (mit Einheitenumrechnung).": "Reprendre automatiquement le poids d’un capteur Home Assistant, p. ex. d’une balance connectée (avec conversion d’unités).",
+    "Waage (Sensor)": "Balance (capteur)",
     "Orange Zutaten fehlten in Deinen Lebensmitteln und wurden aus Online-Datenbanken ergänzt (Richtwerte, bitte prüfen).": "Les ingrédients orange manquaient dans vos aliments et ont été complétés depuis des bases de données en ligne (valeurs indicatives, à vérifier).", "aus Open Food Facts": "d’après Open Food Facts", "aus USDA": "d’après USDA",
     "Zutat hinzufügen": "Ajouter un ingrédient",
     "+ Zutat": "+ Ingrédient",
@@ -1222,6 +1260,25 @@ Object.assign(LANGS, {
     "Gewicht fertig (g, optional)": "Peso cocinado (g, opcional)",
     "Zutaten": "Ingredientes",
     "Noch keine Zutaten.": "Aún no hay ingredientes.",
+    "Ungültige Einheit": "Unidad no válida",
+    "Speichern und jetzt lesen": "Guardar y leer ahora",
+    "Der Wert im Sensor ist älter als 30 Tage und wurde nicht übernommen.": "El valor del sensor tiene más de 30 días y no se tomó.",
+    "Der Wert liegt außerhalb von 20 bis 500 kg (Einheit prüfen).": "El valor está fuera de 20 a 500 kg (revisa la unidad).",
+    "Der Sensor liefert gerade keinen Zahlenwert.": "El sensor no proporciona un número en este momento.",
+    "Home Assistant nicht erreichbar.": "Home Assistant no está accesible.",
+    "Zuerst einen Sensor wählen.": "Primero elige un sensor.",
+    "Neuer Wert gesehen, wird übernommen, sobald er stabil ist.": "Valor nuevo detectado, se tomará cuando sea estable.",
+    "Der aktuelle Wert ist schon übernommen.": "El valor actual ya se ha tomado.",
+    "Übernommen: {} am {}": "Tomado: {} el {}",
+    "Zuletzt übernommen: {} am {}": "Último valor tomado: {} el {}",
+    "z. B. sensor.waage_gewicht": "p. ej. sensor.bascula_peso",
+    "Automatisch (Einheit des Sensors)": "Automática (unidad del sensor)",
+    "Einheit des Sensors": "Unidad del sensor",
+    "Sensor": "Sensor",
+    "Sensor aus Home Assistant mit dem Körpergewicht, z. B. von einer smarten Waage. Das Add-on schaut jede Minute nach; ein neuer Wert wird übernommen, sobald er sich eine Minute nicht mehr ändert, und für den Tag der Messung gespeichert (ein Wert vom selben Tag wird ersetzt). Sinnvoll sind Werte von 20 bis 500 kg.": "Un sensor de Home Assistant con el peso corporal, p. ej. de una báscula inteligente. El complemento lo consulta cada minuto; un valor nuevo se toma cuando no cambia durante un minuto y se guarda para el día de la medición (un valor del mismo día se reemplaza). Son razonables valores de 20 a 500 kg.",
+    "Waage": "Báscula",
+    "Körpergewicht automatisch aus einem Home-Assistant-Sensor übernehmen, z. B. von einer smarten Waage (mit Einheitenumrechnung).": "Tomar el peso corporal automáticamente de un sensor de Home Assistant, p. ej. de una báscula inteligente (con conversión de unidades).",
+    "Waage (Sensor)": "Báscula (sensor)",
     "Orange Zutaten fehlten in Deinen Lebensmitteln und wurden aus Online-Datenbanken ergänzt (Richtwerte, bitte prüfen).": "Los ingredientes naranjas faltaban en tus alimentos y se completaron con bases de datos en línea (valores orientativos, revísalos).", "aus Open Food Facts": "de Open Food Facts", "aus USDA": "de USDA",
     "Zutat hinzufügen": "Añadir ingrediente",
     "+ Zutat": "+ Ingrediente",
@@ -4267,6 +4324,7 @@ async function renderSettings() {
       feat("recipes", "Rezepte", "Zutaten zu einem Rezept bündeln, durch Portionen teilen und wie ein Lebensmittel eintragen (eigener Reiter)."),
       feat("sources", "Weitere Datenquellen", "Online-Suche in Open Food Facts und USDA mit Abgleich der Werte untereinander und mit Deinen eigenen (Suchbegriffe werden an diese Dienste gesendet)."),
       feat("activity", "Aktivität", "Schritte und verbrannte Kalorien (aus Home-Assistant-Sensoren oder von Hand) erhöhen das Tagesziel des jeweiligen Tages."),
+      feat("scale", "Waage (Sensor)", "Körpergewicht automatisch aus einem Home-Assistant-Sensor übernehmen, z. B. von einer smarten Waage (mit Einheitenumrechnung)."),
       feat("schedule", "Mahlzeiten-Zeitplan", "Zeitfenster pro Mahlzeit: das Tagebuch zeigt, welche Mahlzeit gerade ansteht, und erinnert auf Wunsch per Benachrichtigung."),
       feat("household", "Haushalt", "Einträge, Lebensmittel und Mahlzeiten mit anderen Benutzern teilen, jeder mit eigener Portion (z. B. ein Gericht für die Familie). Beide Seiten müssen die Funktion einschalten."),
       feat("notes", "Notizen", "Freitext zu Mahlzeiten und Tagen (Hunger, Training, Stimmung). Vorhandene Notizen bleiben beim Ausschalten erhalten."),
@@ -4378,6 +4436,36 @@ async function renderSettings() {
         try { await send("PUT", "activity/config", { steps_entity: steps.value.trim(), kcal_entity: kc.value.trim(), share: num(share.value) ?? 50, stride_kcal: num(stride.value) || 0.0005 }); asaved.className = "muted"; asaved.textContent = "Gespeichert ✓"; }
         catch (e) { asaved.className = "err"; asaved.textContent = e.message; }
       } }, "Speichern"))));
+  }
+
+  if (state.features.scale) {
+    const sc = await api("scale");
+    const ents = await api("ha/entities").catch(() => []);
+    const sensors = h("datalist", { id: "scale-list" }, ents.filter(e => e.id.startsWith("sensor.")).map(e => h("option", { value: e.id }, e.name || e.id)));
+    const ent = h("input", { list: "scale-list", placeholder: "z. B. sensor.waage_gewicht", value: sc.config.entity });
+    const unit = h("select", {}, h("option", { value: "auto" }, "Automatisch (Einheit des Sensors)"), ["kg", "g", "lb", "st"].map(u => h("option", { value: u }, u)));
+    unit.value = sc.config.unit;
+    const wTxt = kg => `${n1(wConv(kg))} ${wUnit()}`;
+    const ssaved = h("span", { class: "muted" });
+    const say = (text, cls = "muted") => { ssaved.className = cls; ssaved.textContent = text; };
+    const verdict = { saved: r => `Übernommen: ${wTxt(r.last.kg)} am ${longDate(r.last.day)}`, up_to_date: () => "Der aktuelle Wert ist schon übernommen.",
+      waiting: () => "Neuer Wert gesehen, wird übernommen, sobald er stabil ist.", no_sensor: () => "Zuerst einen Sensor wählen.",
+      unreachable: () => "Home Assistant nicht erreichbar.", unavailable: () => "Der Sensor liefert gerade keinen Zahlenwert.",
+      out_of_range: () => "Der Wert liegt außerhalb von 20 bis 500 kg (Einheit prüfen).", too_old: () => "Der Wert im Sensor ist älter als 30 Tage und wurde nicht übernommen." };
+    root.append(h("div", { class: "card" }, h("h2", {}, "Waage"),
+      h("div", { class: "muted" }, "Sensor aus Home Assistant mit dem Körpergewicht, z. B. von einer smarten Waage. Das Add-on schaut jede Minute nach; ein neuer Wert wird übernommen, sobald er sich eine Minute nicht mehr ändert, und für den Tag der Messung gespeichert (ein Wert vom selben Tag wird ersetzt). Sinnvoll sind Werte von 20 bis 500 kg."),
+      h("div", { class: "grid" }, h("div", {}, h("label", {}, "Sensor"), ent), h("div", {}, h("label", {}, "Einheit des Sensors"), unit)),
+      sensors,
+      sc.last ? h("div", { class: "muted" }, `Zuletzt übernommen: ${wTxt(sc.last.kg)} am ${longDate(sc.last.day)}`) : null,
+      h("div", { class: "actions" }, ssaved,
+        h("button", { class: "flat", onclick: async () => {
+          try { await send("PUT", "scale", { entity: ent.value.trim(), unit: unit.value }); const r = await send("POST", "scale/read", {}); say(verdict[r.status](r), r.status === "saved" ? "muted" : "warn-note"); }
+          catch (e) { say(e.message, "err"); }
+        } }, "Speichern und jetzt lesen"),
+        h("button", { onclick: async () => {
+          try { await send("PUT", "scale", { entity: ent.value.trim(), unit: unit.value }); say("Gespeichert ✓"); }
+          catch (e) { say(e.message, "err"); }
+        } }, "Speichern"))));
   }
 
   const cache = await api("lookup/cache").catch(() => ({ entries: 0, bytes: 0 }));

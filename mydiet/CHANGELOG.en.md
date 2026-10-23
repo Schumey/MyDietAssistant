@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.4.0
+
+### New
+- **Scale as a sensor** (feature "Scale (sensor)"): body weight is taken over automatically from a Home Assistant sensor, e.g. a smart scale. Unit automatic (from the sensor) or kg, g, lb, st with conversion. The add-on checks every minute, takes a new value over once it has not changed for a minute, and stores it for the day of the measurement. Implausible values (outside 20 to 500 kg), "unavailable" and measurements older than 30 days are ignored. A "Scale" card in the settings has "Save and read now"; the setting is part of export and import.
+
 ## 1.3.1
 
 ### Fixed

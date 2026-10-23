@@ -60,7 +60,7 @@ def set_pref(owner: str, key: str, value):
 # --- settings -------------------------------------------------------------
 
 LANGS = ("auto", "de", "en", "fr", "es")   # interface languages (dictionaries in static/app.js)
-FEATURES = ("weekday_goals", "trackers", "micros", "notes", "body", "recipes", "sources", "household", "activity", "schedule")   # optional features, off by default
+FEATURES = ("weekday_goals", "trackers", "micros", "notes", "body", "recipes", "sources", "household", "activity", "schedule", "scale")   # optional features, off by default
 
 
 def features(owner: str) -> dict:
@@ -533,6 +533,7 @@ def dump(owner: str) -> dict:
                       for f in q("SELECT id,name,brand,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,serving_g,category,favorite,barcode,shared FROM foods WHERE owner=?", owner)],
             "meals": q("SELECT id,name,position,archived,from_time,to_time FROM meals WHERE owner=? ORDER BY position", owner),
             "activity": get_pref(owner, "activity", {}),
+            "scale": get_pref(owner, "scale", {}),
             "activity_days": q("SELECT day,steps,kcal,manual FROM activity_days WHERE owner=? ORDER BY day", owner),
             "settings": {"diary_mode": get_pref(owner, "diary_mode", "meals"),
                          "goal_mode": get_pref(owner, "goal_mode", "lose"), "goal_rate": get_pref(owner, "goal_rate", 0.5),
@@ -693,6 +694,8 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
         set_pref(owner, "features", d["features"])
     if isinstance(d.get("activity"), dict):
         set_pref(owner, "activity", d["activity"])
+    if isinstance(d.get("scale"), dict):
+        set_pref(owner, "scale", d["scale"])
     return {"ok": True}
 
 

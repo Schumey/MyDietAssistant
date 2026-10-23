@@ -673,6 +673,7 @@ from extras7 import *  # noqa: E402,F401,F403  (table import, bulk records)
 from extras8 import *  # noqa: E402,F401,F403  (users, admin view, household meals)
 from extras9 import *  # noqa: E402,F401,F403  (activity, meal schedule, lookup cache)
 from extras10 import *  # noqa: E402,F401,F403  (sharing foods/meals, food table import, food check)
+from extras11 import *  # noqa: E402,F401,F403  (weight from a Home Assistant sensor)
 
 
 @app.get("/")

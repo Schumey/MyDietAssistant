@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.4.0
+
+### Neu
+- **Waage als Sensor** (Zusatzfunktion „Waage (Sensor)“): Das Körpergewicht wird automatisch aus einem Home-Assistant-Sensor übernommen, z. B. von einer smarten Waage. Einheit automatisch (aus dem Sensor) oder kg, g, lb, st mit Umrechnung. Das Add-on prüft jede Minute, übernimmt einen neuen Wert, sobald er sich eine Minute nicht mehr ändert, und speichert ihn für den Tag der Messung. Unplausible Werte (außerhalb 20 bis 500 kg), „unavailable“ und Messungen älter als 30 Tage werden ignoriert. Karte „Waage“ in den Einstellungen mit „Speichern und jetzt lesen“; die Einstellung ist Teil von Export und Import.
+
 ## 1.3.1
 
 ### Behoben
