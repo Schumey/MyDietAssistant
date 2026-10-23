@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.3.1
+
+### Behoben
+- **Rezept-Import mit Online-Datenbanken:** Zutaten ohne Grammangabe („1 Blumenkohl“, „1 Limette (Saft davon)“, „1,5 Bund Koriander“, Zimtstange, Kardamomkapsel …) bekommen ein typisches Stückgewicht und werden nachgeschlagen. Treffer müssen die Zutat selbst sein (kein „Madras Curry Sauce“ für Currypulver) und werden nach Nähe zum Namen sortiert. USDA wird nur noch gefragt, wenn Open Food Facts nichts Passendes liefert (schont das Tageslimit des Demo-Schlüssels).
+
 ## 1.3.0
 
 ### Neu

@@ -177,15 +177,9 @@ def import_recipe_url(b: ImportUrlIn, x_remote_user_id: str | None = Header(None
         if feature_on(owner, "sources"):   # staples missing from the library come from the online databases (needs the feature: queries leave the device)
             import extras5
 
-            def search(name):
-                hits = []
-                for s in ("off", "usda"):
-                    try:
-                        hits += extras5.cached_search(s, name, "")[0]
-                    except (HTTPException, httpx.HTTPError, ValueError, KeyError):
-                        pass
-                return hits
-            recipe_import.fill_missing(draft["items"], search)
+            def source(name):
+                return lambda term: extras5.cached_search(name, term, "")[0]
+            recipe_import.fill_missing(draft["items"], [source("off"), source("usda")])
         return draft
     except ValueError as e:
         raise HTTPException(400, str(e))

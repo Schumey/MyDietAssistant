@@ -315,3 +315,29 @@ def test_import_endpoint_uses_databases_only_with_the_sources_feature(user, monk
     d = c.post("/api/recipes/import-url", json={"url": "x.test/p"}).json()
     assert calls and [i["name"] for i in d["items"] if i.get("source")]
     assert all(i["kcal"] > 0 for i in d["items"] if i.get("source"))
+
+
+def test_database_hits_must_be_the_ingredient_not_a_dish_with_it():
+    hits = [_hit("Madras curry simmer sauce", 117, "usda"), _hit("Päckchen Currypulver", 356), _hit("Curry Currypulver mild", 340)]
+    assert ri.consensus("Madras-Currypulver", hits)["kcal"] == 356
+    assert ri.consensus("Madras-Currypulver", hits[:1]) is None
+
+
+def test_counted_staples_get_a_typical_piece_weight():
+    items = ri.build_items(["1 Blumenkohl", "1 Limette (Saft davon)", "1,5 Bund Koriander", "Salz"], [])
+    seen = []
+    def search(term):
+        seen.append(term)
+        return [_hit(term, 100)]
+    ri.fill_missing(items, search)
+    assert [i["grams"] for i in items[:3]] == [600, 31.5, 75] and [i["kcal"] for i in items[:3]] == [600, 31.5, 75]
+    assert items[3]["matched"] is False and items[3]["grams"] == 0      # no amount at all: left to the user
+
+
+def test_second_database_is_only_asked_when_the_first_has_nothing():
+    items = ri.build_items(["100 g Flour", "100 g Butter"], [])
+    asked = []
+    off = lambda t: (asked.append(("off", t)), [_hit("Butter", 740)] if t == "Butter" else [])[1]
+    usda = lambda t: (asked.append(("usda", t)), [_hit("Flour", 364, "usda")])[1]
+    ri.fill_missing(items, [off, usda])
+    assert [i["source"] for i in items] == ["usda", "off"] and ("usda", "Butter") not in asked

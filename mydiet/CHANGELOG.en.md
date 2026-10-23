@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.3.1
+
+### Fixed
+- **Recipe import with online databases:** ingredients without a gram amount ("1 cauliflower", "1 lime (juice)", "1.5 bunch coriander", cinnamon stick, cardamom pod …) get a typical piece weight and are looked up. Hits must be the ingredient itself (no "Madras curry sauce" for curry powder) and are ordered by closeness to the name. USDA is only asked when Open Food Facts has nothing fitting (saves the demo key's daily limit).
+
 ## 1.3.0
 
 ### New

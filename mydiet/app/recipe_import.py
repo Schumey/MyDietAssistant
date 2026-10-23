@@ -257,7 +257,8 @@ def build_items(lines: list[str], foods: list[dict]) -> list[dict]:
         if grams is None and p["qty"] is not None and f:   # pieces: use the food's serving size
             piece = PIECE_G.get(p["unit"]) if p["unit"] else None
             grams = p["qty"] * (piece or f.get("serving_g") or 0) or None
-        item = {"name": f["name"] if f else p["name"] or p["text"], "grams": round(grams, 1) if grams else 0, "text": p["text"], "matched": bool(f)}
+        item = {"name": f["name"] if f else p["name"] or p["text"], "grams": round(grams, 1) if grams else 0, "text": p["text"], "matched": bool(f),
+                "qty": p["qty"], "unit": p["unit"]}
         k = (grams or 0) / 100
         for key in NUTR:
             item[key] = round((f.get(key) or 0) * k, 2) if f else 0
@@ -266,14 +267,48 @@ def build_items(lines: list[str], foods: list[dict]) -> list[dict]:
 
 
 MAX_LOOKUPS = 25
-SOURCE_LABELS = {"off": "Open Food Facts", "usda": "USDA"}
+# typical weight of one piece (or one bunch, stick, capsule …) for staples without a gram amount, and the database search term where
+# it differs from the ingredient name; only used for ingredients the library does not know
+STAPLE_PIECE = {"blumenkohl": (600, ""), "brokkoli": (400, ""), "zwiebel": (80, ""), "schalotte": (30, ""), "knoblauch": (4, ""),
+                "kartoffel": (100, ""), "süßkartoffel": (250, ""), "tomate": (100, ""), "paprika": (150, ""), "karotte": (80, ""),
+                "möhre": (80, ""), "gurke": (400, ""), "zucchini": (250, ""), "aubergine": (300, ""), "lauch": (200, ""), "porree": (200, ""),
+                "apfel": (150, ""), "banane": (120, ""), "orange": (200, ""), "avocado": (150, ""), "zitrone": (80, ""), "limette": (70, ""),
+                "chili": (10, ""), "ei": (60, ""), "zimtstange": (3, "zimt"), "kardamomkapsel": (0.3, "kardamom"), "lorbeerblatt": (0.2, "lorbeer"),
+                "nelke": (0.1, "gewürznelken"), "sternanis": (1, "anis"), "vanilleschote": (3, "vanille")}
+JUICE_SHARE = {"zitrone": 0.5, "limette": 0.45}   # "(Saft davon)": about half the fruit's weight
+
+
+def staple_piece(item: dict) -> tuple[float, str] | None:
+    """(grams of the whole amount, search term) for a counted ingredient like "1 Blumenkohl" or "1,5 Bund Koriander"."""
+    qty = item.get("qty")
+    if not qty:
+        return None
+    name = item["name"].lower()
+    key = next((k for k in STAPLE_PIECE if k in name), None)
+    per, query = STAPLE_PIECE[key] if key else (None, "")
+    if item.get("unit") in PIECE_G:   # bunch, clove, slice, can …: the unit decides the weight
+        per = PIECE_G[item["unit"]]
+    if per is None:
+        return None
+    if key in JUICE_SHARE and "saft" in item["text"].lower():
+        per *= JUICE_SHARE[key]
+    return qty * per, query or item["name"]
+
+
+def _qualifies(hit_name: str, head: str) -> bool:
+    """The database product is the ingredient itself or a compound ending in it (Weizenmehl for Mehl), not a dish that merely
+    mentions it (curry simmer sauce for Currypulver)."""
+    return any(t == head or t.endswith(head) for t in tokens(hit_name))
 
 
 def consensus(name: str, hits: list[dict]) -> dict | None:
-    """Per-100 g values for a staple from database hits: only hits whose name shares a word with the ingredient count,
-    and the median of up to five of them smooths out odd branded products."""
+    """Per-100 g values for a staple from database hits: only hits that are the ingredient itself count, the ones with the
+    shortest names (closest to the plain ingredient) come first, and the median of up to five of them smooths out odd products."""
     want = tokens(name)
-    ok = [h for h in hits if want and any(_hit(t, w) for t in tokens(h["name"]) for w in want)][:5]
+    if not want:
+        return None
+    ok = [h for h in hits if _qualifies(h["name"], want[-1])]
+    ok = sorted(ok, key=lambda h: len(tokens(h["name"])))[:5]
     if not ok:
         return None
     mid = lambda key: sorted(h.get(key) or 0 for h in ok)[len(ok) // 2]
@@ -281,23 +316,36 @@ def consensus(name: str, hits: list[dict]) -> dict | None:
 
 
 def fill_missing(items: list[dict], search) -> None:
-    """Complete unmatched ingredients that have an amount from nutrition databases (`search(name)` -> list of hits).
-    They keep matched=False semantics out of the way: matched becomes True and `source` names the database, so the editor
-    shows them as a database guess to review. Failing lookups leave the item as it was."""
-    todo = [i for i in items if not i["matched"] and i["grams"] > 0 and i["name"]][:MAX_LOOKUPS]
-    if not todo:
-        return
+    """Complete unmatched ingredients from nutrition databases (`search` is a function term -> hits, or a list of them tried in
+    order: the first database with a fitting product wins, so a rate-limited one is only asked when needed). Counted ingredients without
+    grams get a typical piece weight first. Filled items become matched=True and carry `source`, so the editor shows them as a
+    database guess to review. Failing lookups leave the item as it was."""
+    plan = []
+    for i in items:
+        if i["matched"] or not i["name"]:
+            continue
+        if i["grams"] > 0:
+            plan.append((i, i["grams"], i["name"]))
+        elif (g := staple_piece(i)):
+            plan.append((i, g[0], g[1]))
+    plan = plan[:MAX_LOOKUPS]
 
-    def one(item):
-        try:
-            return consensus(item["name"], search(item["name"]))
-        except Exception:   # offline, rate limit, odd payload: the ingredient just stays unmatched
-            return None
-    with ThreadPoolExecutor(max_workers=6) as pool:
-        for item, per100 in zip(todo, pool.map(one, todo)):
+    searches = search if isinstance(search, (list, tuple)) else [search]
+
+    def one(entry):
+        for fn in searches:
+            try:
+                per100 = consensus(entry[2], fn(entry[2]))
+            except Exception:   # offline, rate limit, odd payload: try the next database, else the ingredient stays unmatched
+                continue
             if per100:
-                k = item["grams"] / 100
-                item.update({key: round(per100[key] * k, 2) for key in NUTR})
+                return per100
+        return None
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        for (item, grams, _), per100 in zip(plan, pool.map(one, plan)):
+            if per100:
+                item.update({key: round(per100[key] * grams / 100, 2) for key in NUTR})
+                item["grams"] = round(grams, 1)
                 item["matched"], item["source"] = True, per100["source"]
 
 
