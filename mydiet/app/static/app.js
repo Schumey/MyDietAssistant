@@ -191,6 +191,8 @@ const EN = {
   "Feste Mahlzeiten (Frühstück, Mittagessen, …)": "Fixed meals (breakfast, lunch, …)", "Uhrzeiten (08:47 …, 11:30 …)": "Times (08:47 …, 11:30 …)",
   "Automatisch (Windows-Look bei HA-95/98-Theme)": "Automatic (Windows look with HA 95/98 theme)", "Standard (HA-Theme)": "Default (HA theme)", "Windows-Look": "Windows look",
   "Darstellung": "Appearance", "Bestehende Einträge bleiben erhalten; ohne Uhrzeit erscheinen sie in der Zeitansicht am Ende.": "Existing entries are kept; entries without a time appear at the end in the time view.",
+  "Auf diesem Gerät beim Öffnen direkt den Barcode-Scanner starten": "Start the barcode scanner right away when opening on this device",
+  "Für ein Homescreen-Widget der Companion-App: Lege dort eine Verknüpfung auf dieses Panel an, dann öffnet sich die Kamera sofort.": "For a Companion app home screen widget: create a shortcut to this panel there and the camera opens right away.",
   "Optik": "Look", "Nach oben": "Move up", "Nach unten": "Move down", "Nur an bestimmten Tagen anzeigen": "Show only on certain days", "Wieder einblenden": "Show again",
   "Ausblenden (nur noch an Tagen mit Einträgen sichtbar)": "Hide (only visible on days with entries)", "Ausblenden": "Hide", "{} – blende sie stattdessen mit ⊘ aus.": "{} – hide it with ⊘ instead.",
   "Neue Mahlzeit, z. B. Nachtschicht": "New meal, e.g. night shift", "nur an Tagen: {}": "only on days: {}", "Regel bearbeiten": "Edit rule", "Regel löschen": "Delete rule",
@@ -803,6 +805,8 @@ Object.assign(LANGS, {
     "Windows-Look": "Look Windows",
     "Darstellung": "Apparence",
     "Bestehende Einträge bleiben erhalten; ohne Uhrzeit erscheinen sie in der Zeitansicht am Ende.": "Les entrées existantes sont conservées ; sans heure, elles apparaissent à la fin dans la vue horaire.",
+    "Auf diesem Gerät beim Öffnen direkt den Barcode-Scanner starten": "Lancer directement le lecteur de codes-barres à l'ouverture sur cet appareil",
+    "Für ein Homescreen-Widget der Companion-App: Lege dort eine Verknüpfung auf dieses Panel an, dann öffnet sich die Kamera sofort.": "Pour un widget d'écran d'accueil de l'application Companion : crée-y un raccourci vers ce panneau, et la caméra s'ouvre aussitôt.",
     "Optik": "Look",
     "Nach oben": "Monter",
     "Nach unten": "Descendre",
@@ -1536,6 +1540,8 @@ Object.assign(LANGS, {
     "Windows-Look": "Aspecto Windows",
     "Darstellung": "Apariencia",
     "Bestehende Einträge bleiben erhalten; ohne Uhrzeit erscheinen sie in der Zeitansicht am Ende.": "Las entradas existentes se conservan; las que no tienen hora aparecen al final en la vista por horas.",
+    "Auf diesem Gerät beim Öffnen direkt den Barcode-Scanner starten": "Iniciar el lector de códigos de barras al abrir en este dispositivo",
+    "Für ein Homescreen-Widget der Companion-App: Lege dort eine Verknüpfung auf dieses Panel an, dann öffnet sich die Kamera sofort.": "Para un widget de pantalla de inicio de la app Companion: crea allí un acceso directo a este panel y la cámara se abrirá al instante.",
     "Optik": "Aspecto",
     "Nach oben": "Subir",
     "Nach unten": "Bajar",
@@ -2053,7 +2059,7 @@ function show(tab) {
   state.tab = tab;
   for (const b of document.querySelectorAll("#tabs button")) b.classList.toggle("active", b.dataset.tab === tab);
   for (const s of document.querySelectorAll("main > section")) s.hidden = s.id !== tab;
-  ({ diary: renderDiary, foods: renderFoods, meals: renderMeals, weight: renderWeight, stats: renderStats, settings: renderSettings, recipes: renderRecipes })[tab]();
+  return ({ diary: renderDiary, foods: renderFoods, meals: renderMeals, weight: renderWeight, stats: renderStats, settings: renderSettings, recipes: renderRecipes })[tab]();
 }
 
 // ---------------------------------------------------------------- categories
@@ -2585,6 +2591,15 @@ async function scanPhoto(file) {
   return v;
 }
 
+// Read (no argument) or set the "start the scanner when the app opens" flag of this device.
+function scanOnOpen(on) {
+  try {
+    if (on === undefined) return localStorage.getItem("mda.scanOnOpen") === "1";
+    if (on) localStorage.setItem("mda.scanOnOpen", "1"); else localStorage.removeItem("mda.scanOnOpen");
+  } catch { /* storage blocked */ }
+  return !!on;
+}
+
 // ---------------------------------------------------------------- food form (shared)
 // Create (food == null) or edit a food; onSave receives the food id.
 function foodForm({ food = null, prefill = {}, onSave, onCancel }) {
@@ -2728,7 +2743,7 @@ function foodForm({ food = null, prefill = {}, onSave, onCancel }) {
 }
 
 // ---------------------------------------------------------------- add dialog (foods + saved meals)
-async function openAdd(meal) {
+async function openAdd(meal, { scan = false } = {}) {
   const times = state.data.mode === "times";
   let [foods, saved, sugg] = await Promise.all([api("foods"), api("saved-meals"),
     api("suggestions" + (meal ? "?meal_id=" + meal.id : "")), loadCats()]);
@@ -2873,13 +2888,14 @@ async function openAdd(meal) {
     const own = await api("foods?barcode=" + encodeURIComponent(code));
     if (own.length) select(own[0]); else newFood({ barcode: code });
   }
+  const startScan = async () => {
+    scanBox.replaceChildren();
+    try { await found(await scanBarcode(scanBox)); } catch (e) { if (e.message !== "Abgebrochen") scanBox.replaceChildren(h("div", { class: "err" }, e.message)); }
+  };
   body.append(tabs, search, scanBox, chips, sug, results,
     h("div", { class: "actions" },
       h("button", { class: "flat", onclick: () => newFood() }, "+ Neues Lebensmittel"),
-      h("button", { class: "flat", onclick: async () => {
-        scanBox.replaceChildren();
-        try { await found(await scanBarcode(scanBox)); } catch (e) { if (e.message !== "Abgebrochen") scanBox.replaceChildren(h("div", { class: "err" }, e.message)); }
-      } }, "Barcode scannen"),
+      h("button", { class: "flat", onclick: startScan }, "Barcode scannen"),
       h("button", { class: "flat", onclick: () => photoIn.click() }, "Foto vom Barcode"), photoIn,
       h("button", { class: "flat", onclick: () => quickDialog(meal) }, "Schnelleingabe (nur kcal)"),
       h("button", { class: "flat", onclick: () => dlg.close() }, "Schließen")));
@@ -2887,6 +2903,7 @@ async function openAdd(meal) {
     times ? h("div", { style: "margin-bottom:8px" }, h("label", {}, "Uhrzeit"), time) : null, body, detail);
   draw();
   dlg.showModal();
+  if (scan) startScan();
 }
 
 // ---------------------------------------------------------------- charts
@@ -4556,11 +4573,14 @@ async function renderSettings() {
     h("option", { value: "default" }, "Standard (HA-Theme)"),
     h("option", { value: "win" }, "Windows-Look"));
   skin.value = state.skin;
+  const scanOpen = h("input", { type: "checkbox", checked: scanOnOpen(), onchange: () => scanOnOpen(scanOpen.checked) });
   root.append(h("div", { class: "card" }, h("h2", {}, "Darstellung"),
     h("label", {}, "Tagebuch"), mode,
     h("div", { class: "muted", style: "margin-top:8px" },
       "Bestehende Einträge bleiben erhalten; ohne Uhrzeit erscheinen sie in der Zeitansicht am Ende."),
-    h("label", { style: "margin-top:12px" }, "Optik"), skin));
+    h("label", { style: "margin-top:12px" }, "Optik"), skin,
+    h("label", { class: "pick", style: "margin-top:12px" }, scanOpen, "Auf diesem Gerät beim Öffnen direkt den Barcode-Scanner starten"),
+    h("div", { class: "muted" }, "Für ein Homescreen-Widget der Companion-App: Lege dort eine Verknüpfung auf dieses Panel an, dann öffnet sich die Kamera sofort.")));
 
   // meals
   const meals = day.meals;
@@ -4836,5 +4856,7 @@ api("me").then(m => { $("#who").textContent = m.name; state.admin = !!m.admin; }
   } catch { /* keep auto */ }
   applySkin();
   applyTabs();
-  show("diary");
+  await show("diary");
+  // per device (a phone shortcut to the panel), so it lives in the browser and not in the user's settings
+  if (scanOnOpen()) openAdd(state.data.mode === "times" ? null : state.data.meals.find(m => !m.hidden && !m.archived) || state.data.meals[0], { scan: true });
 })();

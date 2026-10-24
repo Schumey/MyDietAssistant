@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.6.0
+
+### Neu
+- **Barcode-Scanner beim Öffnen:** Einstellungen → Darstellung: „Auf diesem Gerät beim Öffnen direkt den Barcode-Scanner starten“. Zusammen mit einer Homescreen-Verknüpfung der Companion-App auf das Panel „Ernährung“ öffnet sich so sofort die Kamera zum Scannen. Die Option gilt pro Gerät (im Browser gespeichert), nicht für Dein ganzes Konto.
+
 ## 1.5.2
 
 ### Behoben

@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.6.0
+
+### New
+- **Barcode scanner on open:** Settings → Look: "Start the barcode scanner right away when opening on this device". Together with a Companion app home screen shortcut to the "Ernährung" panel, the camera opens immediately for scanning. The option is per device (stored in the browser), not for your whole account.
+
 ## 1.5.2
 
 ### Fixed
