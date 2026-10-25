@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.6.1
+
+### Fixed
+- **Windows look with taskbar:** With the HA 95 taskbar active, the panel only got the default iframe height (about 150 px) and the diary was cut off. If the frame is that small, the app now sizes it to the window height.
+
 ## 1.6.0
 
 ### New

@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.6.1
+
+### Behoben
+- **Windows-Look mit Taskleiste:** Ist in HA 95 die Taskleiste aktiv, bekam das Panel nur die Standardhöhe eines Rahmens (ca. 150 px) und das Tagebuch war abgeschnitten. Ist der Rahmen so niedrig, passt die App ihn jetzt an die Fensterhöhe an.
+
 ## 1.6.0
 
 ### Neu
