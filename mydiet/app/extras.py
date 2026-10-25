@@ -321,6 +321,7 @@ class SavedItemIn(BaseModel):
     tol: float = 0           # allowed deviation from the ratio, percent
     pack_g: float = 0
     step_g: float = 0
+    pack_max: int = 2        # 1 = only a single package
 
 
 class SavedMealEdit(BaseModel):
@@ -342,7 +343,7 @@ def saved_meal_rows(c, owner: str):
     out = []
     for m in c.execute("SELECT * FROM saved_meals WHERE owner=? ORDER BY name COLLATE NOCASE", (owner,)):
         items = [dict(i) for i in c.execute(
-            "SELECT name, grams, kcal, protein, carbs, fat, fiber, sugar, salt, sat_fat, mode, tol, pack_g, step_g FROM saved_meal_items"
+            "SELECT name, grams, kcal, protein, carbs, fat, fiber, sugar, salt, sat_fat, mode, tol, pack_g, step_g, pack_max FROM saved_meal_items"
             " WHERE saved_meal_id=? ORDER BY id", (m["id"],))]
         out.append({**dict(m), "items": items,
                     **{k: round(sum(i[k] for i in items), 1) for k in ("kcal", "protein", "carbs", "fat", *db.MICROS)}})
@@ -396,10 +397,10 @@ def edit_saved(sid: int, s: SavedMealEdit, x_remote_user_id: str | None = Header
         if s.items is not None and c.execute("SELECT 1 FROM saved_meals WHERE id=? AND owner=?", (sid, owner)).fetchone():
             c.execute("DELETE FROM saved_meal_items WHERE saved_meal_id=?", (sid,))
             c.executemany(
-                "INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,mode,tol,pack_g,step_g)"
-                " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                "INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,mode,tol,pack_g,step_g,pack_max)"
+                " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 [(sid, i.name, i.grams, i.kcal, i.protein, i.carbs, i.fat, i.fiber, i.sugar, i.salt, i.sat_fat,
-                  "fixed" if i.mode == "fixed" else "scale", min(max(i.tol, 0), 100), max(i.pack_g, 0), max(i.step_g, 0))
+                  "fixed" if i.mode == "fixed" else "scale", min(max(i.tol, 0), 100), max(i.pack_g, 0), max(i.step_g, 0), 1 if i.pack_max == 1 else 2)
                  for i in s.items])
     return {"ok": True}
 
@@ -414,8 +415,8 @@ def copy_saved(sid: int, x_remote_user_id: str | None = Header(None)):
             raise HTTPException(404, "saved meal not found")
         cur = c.execute("INSERT INTO saved_meals(owner,name,category,min_scale,max_scale) VALUES(?,?,?,?,?)",
                         (owner, f"{m['name']} (Kopie)", m["category"], m["min_scale"], m["max_scale"]))
-        c.execute("INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,mode,tol,pack_g,step_g)"
-                  " SELECT ?,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,mode,tol,pack_g,step_g FROM saved_meal_items WHERE saved_meal_id=? ORDER BY id",
+        c.execute("INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,mode,tol,pack_g,step_g,pack_max)"
+                  " SELECT ?,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,mode,tol,pack_g,step_g,pack_max FROM saved_meal_items WHERE saved_meal_id=? ORDER BY id",
                   (cur.lastrowid, sid))
         return {"id": cur.lastrowid}
 
@@ -687,10 +688,10 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
             sid = smap[s.get("id")] = c.execute("INSERT INTO saved_meals(owner,name,category,min_scale,max_scale) VALUES(?,?,?,?,?)",
                                                 (owner, s["name"], s.get("category", ""), s.get("min_scale", 0), s.get("max_scale", 0))).lastrowid
             for i in s.get("items", []):
-                c.execute("INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,mode,tol,pack_g,step_g)"
-                          " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                c.execute("INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,mode,tol,pack_g,step_g,pack_max)"
+                          " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                           (sid, i["name"], i["grams"], i["kcal"], i["protein"], i["carbs"], i["fat"],
-                           *(i.get(m, 0) for m in db.MICROS), i.get("mode", "scale"), i.get("tol", 0), i.get("pack_g", 0), i.get("step_g", 0)))
+                           *(i.get(m, 0) for m in db.MICROS), i.get("mode", "scale"), i.get("tol", 0), i.get("pack_g", 0), i.get("step_g", 0), i.get("pack_max", 2)))
         c.execute("DELETE FROM suggest_addons WHERE owner=?", (owner,))
         for a in d.get("suggest_addons", []):
             if fmap.get(a.get("food_id")):

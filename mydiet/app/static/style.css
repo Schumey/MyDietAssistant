@@ -510,3 +510,5 @@ html[data-skin="win"] .now-banner { background: var(--w-field); color: var(--w-t
 .list .sug-opts input { width: 64px; flex: none; }
 .sug-range { display: flex; align-items: center; gap: 8px; }
 .sug-range input { width: 80px; flex: none; }
+button.sug-settings { width: 100%; margin-bottom: 12px; }
+.sug-opts select { max-width: 150px; }

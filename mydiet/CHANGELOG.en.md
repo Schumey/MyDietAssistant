@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.7.1
+
+### Changed
+- **Meal suggestions:** fixed ingredients with a package size can now be limited to “only 1 package” (instead of 1 or 2). The entry to priorities and add-ons is a clearly visible button instead of the gear icon. New database column (migration 5), included in export, backup, import, sharing and copying.
+
 ## 1.7.0
 
 ### Added

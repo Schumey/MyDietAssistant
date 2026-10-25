@@ -85,12 +85,13 @@ def _rnd(v: float, step: float) -> float:
 
 
 def _pack_options(cand: dict):
-    """Fixed items with a package size can be 1 or 2 packages: all combinations (at most for the first two such items)."""
+    """Fixed items with a package size can be 1 or 2 packages (pack_max 1: only one): all combinations (at most for the first two such items)."""
     idx = [i for i, it in enumerate(cand["items"]) if it["mode"] == "fixed" and it.get("pack_g", 0) > 0 and it["grams"] > 0][:2]
     if not idx:
         yield {}
         return
-    for ns in itertools.product((1, 2), repeat=len(idx)):
+    ranges = [range(1, (1 if cand["items"][i].get("pack_max", 2) == 1 else 2) + 1) for i in idx]
+    for ns in itertools.product(*ranges):
         yield {i: n * cand["items"][i]["pack_g"] / cand["items"][i]["grams"] for i, n in zip(idx, ns)}
 
 

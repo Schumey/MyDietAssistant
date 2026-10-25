@@ -73,7 +73,8 @@ CREATE TABLE IF NOT EXISTS saved_meal_items (
   mode TEXT NOT NULL DEFAULT 'scale',     -- suggestions: 'scale' (follows the meal factor) | 'fixed'
   tol REAL NOT NULL DEFAULT 0,            -- allowed deviation from the ratio in percent
   pack_g REAL NOT NULL DEFAULT 0,         -- fixed items: package size (1 or 2 packages), 0 = exactly the stored amount
-  step_g REAL NOT NULL DEFAULT 0          -- rounding step in grams, 0 = automatic
+  step_g REAL NOT NULL DEFAULT 0,         -- rounding step in grams, 0 = automatic
+  pack_max INTEGER NOT NULL DEFAULT 2     -- fixed items with a package: at most this many packages (1 = a single package)
 );
 CREATE TABLE IF NOT EXISTS suggest_addons (   -- foods that go with any meal (nuts ...): suggestions may add them
   id INTEGER PRIMARY KEY,
@@ -330,7 +331,12 @@ def _m4_v17(c):
     c.execute("CREATE INDEX IF NOT EXISTS suggest_addons_owner ON suggest_addons(owner)")
 
 
-MIGRATIONS = (_m1_legacy, _m2_v1, _m3_v11, _m4_v17)
+def _m5_v171(c):
+    """v1.7.1: fixed ingredients with a package can be limited to a single package."""
+    _add(c, "saved_meal_items", "pack_max", "INTEGER NOT NULL DEFAULT 2")
+
+
+MIGRATIONS = (_m1_legacy, _m2_v1, _m3_v11, _m4_v17, _m5_v171)
 
 
 def init():

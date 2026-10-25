@@ -107,7 +107,7 @@ def cand_from_items(name, category, items, source, sid=None, min_scale=0, max_sc
     """items: dicts with name, grams, kcal.. (totals for that amount) and optional mode/tol/pack_g/step_g."""
     return {"name": name, "category": category, "source": source, "saved_meal_id": sid, "min_scale": min_scale, "max_scale": max_scale,
             "items": [{"name": i["name"], "grams": i["grams"], "mode": "fixed" if i.get("mode") == "fixed" else "scale",
-                       "tol": i.get("tol", 0), "pack_g": i.get("pack_g", 0), "step_g": i.get("step_g", 0),
+                       "tol": i.get("tol", 0), "pack_g": i.get("pack_g", 0), "step_g": i.get("step_g", 0), "pack_max": i.get("pack_max", 2),
                        "base": {k: i.get(k, 0.0) or 0.0 for k in (*suggest.KEYS, *suggest.MICROS)}} for i in items]}
 
 
@@ -295,8 +295,8 @@ def suggest_keep(b: KeepIn, x_remote_user_id: str | None = Header(None)):
     with db.conn() as c:
         cur = c.execute("INSERT INTO saved_meals(owner,name,category) VALUES(?,?,?)", (owner, b.name.strip(), b.category.strip()))
         c.executemany(
-            "INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,mode,tol,pack_g,step_g)"
-            " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,mode,tol,pack_g,step_g,pack_max)"
+            " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             [(cur.lastrowid, i.name, i.grams, i.kcal, i.protein, i.carbs, i.fat, i.fiber, i.sugar, i.salt, i.sat_fat,
-              "fixed" if i.mode == "fixed" else "scale", min(max(i.tol, 0), 100), max(i.pack_g, 0), max(i.step_g, 0)) for i in b.items])
+              "fixed" if i.mode == "fixed" else "scale", min(max(i.tol, 0), 100), max(i.pack_g, 0), max(i.step_g, 0), 1 if i.pack_max == 1 else 2) for i in b.items])
         return {"id": cur.lastrowid}

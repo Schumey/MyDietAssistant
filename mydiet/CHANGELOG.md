@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.7.1
+
+### Geändert
+- **Mahlzeiten-Vorschläge:** Bei festen Zutaten mit Packungsgröße lässt sich jetzt „nur 1 Packung“ wählen (statt wahlweise 1 oder 2). Der Schalter zu den Prioritäten und Beigaben ist ein gut sichtbarer Button statt des Zahnrads. Neue Datenbank-Spalte (Migration 5), in Export, Sicherung, Import, Teilen und Kopieren enthalten.
+
 ## 1.7.0
 
 ### Neu
