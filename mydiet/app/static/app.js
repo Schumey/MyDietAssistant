@@ -2991,7 +2991,7 @@ function foodForm({ food = null, prefill = {}, onSave, onCancel }) {
       const spread = kc.length > 1 ? (Math.max(...kc) - Math.min(...kc)) / (kc.reduce((a, b) => a + b, 0) / kc.length) * 100 : 0;
       const dev = r => { const o = own(); if (!o || !r.kcal) return h("td", {}); const d = (r.kcal - o) / o * 100;
         return h("td", { class: (Math.abs(d) > 15 ? "over" : "muted") + " lk-dev" }, `${d > 0 ? "+" : ""}${n0(d)} %`); };
-      out.replaceChildren(
+      out.replaceChildren(...[
         Object.entries(res.errors || {}).map(([s, m]) => h("div", { class: "muted" }, `${SRC[s] || s}: ${m}`)),
         rows.length ? h("div", { class: "lk-wrap" }, h("table", { class: "lk" },
           h("thead", {}, h("tr", {}, h("th"), h("th", {}, "Quelle"), h("th", {}, "Name"), h("th", {}, "kcal"), h("th", {}, "KH"), h("th", {}, "Fett"),
@@ -3005,7 +3005,7 @@ function foodForm({ food = null, prefill = {}, onSave, onCancel }) {
         rows.length > 1 ? h("div", { class: "actions", style: "justify-content:flex-start" }, h("button", { class: "flat", onclick: () => {
           const sel = rows.filter(x => x.box.checked).map(x => x.r);
           if (sel.length) apply(sel);
-        } }, "Mittelwert der gewählten übernehmen")) : null);
+        } }, "Mittelwert der gewählten übernehmen")) : null].flat().filter(x => x != null));
     }
     return h("div", { class: "lookup" }, h("label", {}, "Online suchen & vergleichen"),
       h("div", { class: "grid", style: "grid-template-columns:minmax(0,1fr) auto" }, q, h("button", { class: "flat", onclick: run }, "Suchen")),
