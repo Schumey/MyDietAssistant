@@ -2215,7 +2215,6 @@ function applyTone() {
 setInterval(applyTone, 2000);
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTone);
 new MutationObserver(applySkin).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme-name"] });
-dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
 
 // ---------------------------------------------------------------- tabs
 $("#tabs").addEventListener("click", e => {

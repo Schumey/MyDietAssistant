@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.7.5
+
+### Geändert
+- **Fenster:** Dialoge schließen nicht mehr durch einen Klick neben das Fenster, nur noch über ihre Schaltflächen (oder Esc).
+
 ## 1.7.4
 
 ### Behoben

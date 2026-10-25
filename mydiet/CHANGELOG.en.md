@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.7.5
+
+### Changed
+- **Dialogs:** dialogs no longer close when you click outside them, only via their buttons (or Esc).
+
 ## 1.7.4
 
 ### Fixed
