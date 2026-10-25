@@ -20,6 +20,7 @@ Home-Assistant-Add-on: lokales Ernährungstagebuch (Kalorien, Makros, Gewicht) m
 - `mydiet/app/static/vendor/zxing.min.js`: ZXing (Apache-2.0) als Barcode-Rückfall, wird nur bei Bedarf nachgeladen.
 - `mydiet/app/static/`: `app.js` (Vanilla-JS-SPA, Helfer `h()`, `api()`, `send()`, Dialoge über `setDlg`/`dlg.showModal()`), `style.css`, `index.html`.
 - `README.en.md` und `mydiet/CHANGELOG.en.md`: englische Fassungen; bei jedem Release mitpflegen. Screenshots unter `docs/screenshots/{de,en}` erzeugt `python docs/make_screenshots.py` (Playwright, Beispieldaten, nach größeren UI-Änderungen neu erzeugen).
+- `docs/de/` und `docs/en/`: die Anleitungen, eine Seite je Thema mit Schritt-für-Schritt-Anleitung, in beiden Sprachen mit gleichen Dateinamen (Einstieg: `README.md`). `mydiet/DOCS.md` ist nur der Tab im HA-Add-on und verlinkt (absolute GitHub-Links) dorthin. Beschriftungen in den Anleitungen so schreiben, wie sie in der Oberfläche stehen (englisch: wie in `EN`). `tests/test_docs.py` prüft Dateipaare, Links und Anker.
 - `roadmap.md`: Ideenliste. Erledigtes wird dort **gelöscht** und steht im Changelog.
 
 ## Konventionen
@@ -50,7 +51,7 @@ MYDIET_DB=/tmp/t.db python -m uvicorn main:app --port 8099
 
 1. `mydiet/config.yaml`: Version erhöhen.
 2. `mydiet/CHANGELOG.md`: neuer Abschnitt oben (Neu / Geändert / Behoben).
-3. `roadmap.md`: Erledigtes entfernen, Neues ergänzen. `mydiet/DOCS.md` bei neuen Optionen, Sensoren oder Schnittstellen. `python -m pytest` muss grün sein.
+3. `roadmap.md`: Erledigtes entfernen, Neues ergänzen. `docs/de` und `docs/en` (je Seite beide Sprachen) bei neuen Optionen, Sensoren, Schnittstellen oder Bedienschritten; `mydiet/DOCS.md` nur, wenn sich Optionen oder Seiten ändern. `python -m pytest` muss grün sein.
 4. Commit (englische Betreffzeile, `v<Version>: ...`), `git push` nach `Schumey/MyDietAssistant`, Branch `main`.
 4a. Für fertige Images (nur wenn `image:` aktiv ist): `git tag v<Version>` und `git push --tags`, danach die Actions abwarten.
 5. **Nicht mehr per Samba einspielen:** Der Nutzer installiert das Add-on aus der App-Version (Repository/Images); nichts nach `\\homeassistant\addons\mydiet` kopieren.

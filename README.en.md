@@ -36,7 +36,7 @@ The interface runs through ingress in the HA sidebar, adopts the active HA theme
 </p>
 <p align="center"><img src="docs/screenshots/en/diary-mobile.png" alt="Diary on a phone" width="260"></p>
 
-Details on options, sensors and usage: [mydiet/DOCS.md](mydiet/DOCS.md) (German). Changes: [mydiet/CHANGELOG.en.md](mydiet/CHANGELOG.en.md). Ideas: [roadmap.md](roadmap.md) (German). The screenshots show the Home Assistant default theme with demo data; more in [docs/screenshots](docs/screenshots).
+**Documentation with step-by-step guides:** [docs/en](docs/en/README.md) ([Deutsch](docs/de/README.md)). Changes: [mydiet/CHANGELOG.en.md](mydiet/CHANGELOG.en.md). Ideas: [roadmap.md](roadmap.md) (German). The screenshots show the Home Assistant default theme with demo data; more in [docs/screenshots](docs/screenshots).
 
 ## Installation
 

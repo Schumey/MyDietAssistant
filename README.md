@@ -37,7 +37,7 @@ Die Oberfläche läuft per Ingress im HA-Seitenmenü, übernimmt das aktive HA-T
 
 Die Bilder zeigen das Standard-Theme von Home Assistant mit Beispieldaten (erzeugt mit `docs/make_screenshots.py`).
 
-Details zu Optionen, Sensoren und Bedienung: [mydiet/DOCS.md](mydiet/DOCS.md). Änderungen: [mydiet/CHANGELOG.md](mydiet/CHANGELOG.md) ([English](mydiet/CHANGELOG.en.md)). Ideen: [roadmap.md](roadmap.md).
+**Dokumentation mit Schritt-für-Schritt-Anleitungen:** [docs/de](docs/de/README.md) ([English](docs/en/README.md)). Änderungen: [mydiet/CHANGELOG.md](mydiet/CHANGELOG.md) ([English](mydiet/CHANGELOG.en.md)). Ideen: [roadmap.md](roadmap.md).
 
 ## Installation
 
