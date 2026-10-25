@@ -4843,19 +4843,6 @@ document.addEventListener("keydown", e => {
   else if (e.key === "/") { const s = document.querySelector(`#${state.tab} input[type=search]`); if (s) { e.preventDefault(); s.focus(); } }
 });
 
-// HA 95 with its taskbar can leave the panel iframe at the browser default (~150px). Ingress is same-origin,
-// so if the frame is that small, size it to the window ourselves; any error (cross-origin) leaves it alone.
-function fixTinyFrame() {
-  try {
-    const f = window.frameElement;
-    if (!f || window.innerHeight >= 300) return;
-    const room = Math.max(400, window.parent.innerHeight - f.getBoundingClientRect().top - 40);
-    f.style.height = room + "px";
-  } catch { /* cross-origin or no frame */ }
-}
-fixTinyFrame();
-window.addEventListener("load", fixTinyFrame);
-
 api("me").then(m => { $("#who").textContent = m.name; state.admin = !!m.admin; });
 (async () => {
   try {

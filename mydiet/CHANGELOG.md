@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.6.2
+
+### Geändert
+- Die Höhen-Korrektur für den Rahmen aus 1.6.1 ist wieder entfernt; die Ursache lag im HA-95-Theme und ist dort behoben.
+
 ## 1.6.1
 
 ### Behoben

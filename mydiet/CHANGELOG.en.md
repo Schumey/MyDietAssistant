@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.6.2
+
+### Changed
+- Removed the frame height workaround from 1.6.1; the cause was in the HA 95 theme and is fixed there.
+
 ## 1.6.1
 
 ### Fixed
