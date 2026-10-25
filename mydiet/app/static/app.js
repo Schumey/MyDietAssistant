@@ -2978,15 +2978,15 @@ function foodForm({ food = null, prefill = {}, onSave, onCancel }) {
       const kc = Object.keys(SRC).map(k => res.results.find(r => r.source === k)).filter(Boolean).map(r => r.kcal);
       const spread = kc.length > 1 ? (Math.max(...kc) - Math.min(...kc)) / (kc.reduce((a, b) => a + b, 0) / kc.length) * 100 : 0;
       const dev = r => { const o = own(); if (!o || !r.kcal) return h("td", {}); const d = (r.kcal - o) / o * 100;
-        return h("td", { class: Math.abs(d) > 15 ? "over" : "muted" }, `${d > 0 ? "+" : ""}${n0(d)} %`); };
+        return h("td", { class: (Math.abs(d) > 15 ? "over" : "muted") + " lk-dev" }, `${d > 0 ? "+" : ""}${n0(d)} %`); };
       out.replaceChildren(
         Object.entries(res.errors || {}).map(([s, m]) => h("div", { class: "muted" }, `${SRC[s] || s}: ${m}`)),
         rows.length ? h("div", { class: "lk-wrap" }, h("table", { class: "lk" },
           h("thead", {}, h("tr", {}, h("th"), h("th", {}, "Quelle"), h("th", {}, "Name"), h("th", {}, "kcal"), h("th", {}, "KH"), h("th", {}, "Fett"),
             h("th", {}, "Eiweiß"), h("th", { title: "Abweichung der kcal von dem Wert im Formular" }, "Abweichung"), h("th"))),
-          h("tbody", {}, rows.map(({ r, box }) => h("tr", {}, h("td", {}, box), h("td", {}, SRC[r.source] || r.source),
-            h("td", {}, r.name, r.brand ? h("div", { class: "muted" }, r.brand) : null),
-            h("td", {}, n0(r.kcal)), h("td", {}, n1(r.carbs)), h("td", {}, n1(r.fat)), h("td", {}, n1(r.protein)), dev(r),
+          h("tbody", {}, rows.map(({ r, box }) => h("tr", {}, h("td", {}, box), h("td", { class: "lk-src" }, SRC[r.source] || r.source),
+            h("td", { class: "lk-name" }, r.name, r.brand ? h("div", { class: "muted" }, r.brand) : null, h("div", { class: "muted lk-srcline" }, SRC[r.source] || r.source)),
+            h("td", { "data-l": "kcal" }, n0(r.kcal)), h("td", { "data-l": "KH" }, n1(r.carbs)), h("td", { "data-l": "Fett" }, n1(r.fat)), h("td", { "data-l": "Eiweiß" }, n1(r.protein)), dev(r),
             h("td", {}, h("button", { class: "flat", onclick: () => apply([r]) }, "Übernehmen"))))))) : h("div", { class: "muted" }, "Nichts gefunden."),
         rows.length ? h("div", { class: "muted" }, "Alle Werte pro 100 g.") : null,
         spread > 15 ? h("div", { class: "warn" }, `Die Quellen weichen bei kcal um bis zu ${n0(spread)} % voneinander ab – bitte prüfen.`) : null,
@@ -2996,7 +2996,7 @@ function foodForm({ food = null, prefill = {}, onSave, onCancel }) {
         } }, "Mittelwert der gewählten übernehmen")) : null);
     }
     return h("div", { class: "lookup" }, h("label", {}, "Online suchen & vergleichen"),
-      h("div", { class: "grid", style: "grid-template-columns:1fr auto" }, q, h("button", { class: "flat", onclick: run }, "Suchen")),
+      h("div", { class: "grid", style: "grid-template-columns:minmax(0,1fr) auto" }, q, h("button", { class: "flat", onclick: run }, "Suchen")),
       h("div", { class: "range" }, Object.entries(SRC).map(([k, l]) => h("label", { class: "pick" }, use[k], l))), out);
   }
   const foreign = !!(food && food.mine === false);

@@ -466,6 +466,21 @@ html[data-skin="win"] .scan-video { border-radius: 0; }
 table.lk { width: 100%; border-collapse: collapse; font-size: 13px; }
 table.lk th, table.lk td { padding: 4px 6px; text-align: left; border-bottom: 1px solid var(--divider-color); vertical-align: top; }
 html[data-skin="win"] .lookup { border: 1px solid var(--w-b1); border-radius: 0; }
+.lookup { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.lookup input[type="text"], .lookup input:not([type]) { min-width: 0; }
+table.lk .lk-srcline { display: none; }
+table.summary tbody th { white-space: normal; }
+dialog { overflow-x: hidden; }
+@media (max-width: 560px) {
+  table.lk thead, table.lk .lk-src, table.lk .lk-dev { display: none; }
+  table.lk .lk-srcline { display: block; }
+  table.lk, table.lk tbody { display: block; }
+  table.lk tr { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; padding: 6px 0; border-bottom: 1px solid var(--divider-color); }
+  table.lk td { border: 0; padding: 0; }
+  table.lk td.lk-name { flex: 1 1 calc(100% - 40px); }
+  table.lk td[data-l]::before { content: attr(data-l) " "; color: var(--secondary-text-color); font-size: 11px; }
+  table.lk td:last-child { margin-left: auto; }
+}
 
 svg.chart .bar-m { fill: var(--primary-color); }
 svg.chart .bar-m.bar-protein { fill: var(--info-color); }
