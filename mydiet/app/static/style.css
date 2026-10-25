@@ -533,3 +533,5 @@ button.sug-settings { width: 100%; margin-bottom: 12px; }
 details.card > summary { cursor: pointer; font-size: 16px; font-weight: 500; }
 details.card[open] > summary { margin-bottom: 12px; }
 .ver-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.list .sug-opts .sug-range-packs input { width: 46px; }
+.sug-range-packs { display: inline-flex; align-items: center; gap: 4px; }

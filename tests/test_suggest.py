@@ -56,9 +56,14 @@ def test_pack_multiples():
     c = cand([PASTA, CHEESE], min_scale=1, max_scale=1)
     big = suggest.best_fit(c, [], {"kcal": 760, "protein": 62, "carbs": 82, "fat": 34}, PRIO, {})
     assert grams(big, "Hüttenkäse") == 400      # two packages fit this goal better
-    single = cand([PASTA, {**CHEESE, "pack_max": 1}], min_scale=1, max_scale=1)
+    single = cand([PASTA, {**CHEESE, "pack_min": 1, "pack_max": 1}], min_scale=1, max_scale=1)
     one = suggest.best_fit(single, [], {"kcal": 760, "protein": 62, "carbs": 82, "fat": 34}, PRIO, {})
     assert grams(one, "Hüttenkäse") == 200      # limited to a single package
+    triple = cand([PASTA, {**CHEESE, "pack_min": 2, "pack_max": 3}], min_scale=1, max_scale=1)
+    assert grams(suggest.best_fit(triple, [], {"kcal": 300, "protein": 20, "carbs": 70, "fat": 5}, PRIO, {}), "Hüttenkäse") == 400   # at least two packages
+    optional = cand([PASTA, {**CHEESE, "pack_min": 0, "pack_max": 1}], min_scale=1, max_scale=1)
+    res = suggest.best_fit(optional, [], {"kcal": 350, "protein": 12, "carbs": 70, "fat": 2}, PRIO, {})
+    assert [i["name"] for i in res["items"]] == ["Nudeln"]           # zero packages: the ingredient is left out
     small = suggest.best_fit(c, [], {"kcal": 550, "protein": 37, "carbs": 76, "fat": 10}, PRIO, {})
     assert grams(small, "Hüttenkäse") == 200
 
@@ -195,14 +200,14 @@ def test_config_roundtrip_and_export_import(user):
     nuss = add_food(c, "Walnüsse", 700, 15, 7, 65)
     sid = save_meal(c, "Nudeln", [(nud, 100)])
     items = c.get("/api/saved-meals").json()[0]["items"]
-    items[0].update(mode="fixed", pack_g=100, tol=10, step_g=10, pack_max=1)
+    items[0].update(mode="fixed", pack_g=100, tol=10, step_g=10, pack_min=0, pack_max=3)
     c.put(f"/api/saved-meals/{sid}", json={"name": "Nudeln", "items": items, "min_scale": 0.5, "max_scale": 2})
     c.put("/api/suggest/addons", json={"addons": [{"food_id": nuss, "min_g": 0, "max_g": 40, "step_g": 10}]})
     c.put("/api/suggest/config", json={"prio": {"kcal": 3, "fat": 0}, "kcal_cap": True, "scope": "next"})
     backup = c.get("/api/export/json").json()
     assert c.post("/api/import/json", json={"data": backup}).status_code == 200
     m = c.get("/api/saved-meals").json()[0]
-    assert (m["min_scale"], m["max_scale"]) == (0.5, 2) and m["items"][0]["pack_g"] == 100 and m["items"][0]["pack_max"] == 1 and m["items"][0]["step_g"] == 10
+    assert (m["min_scale"], m["max_scale"]) == (0.5, 2) and m["items"][0]["pack_g"] == 100 and (m["items"][0]["pack_min"], m["items"][0]["pack_max"]) == (0, 3) and m["items"][0]["step_g"] == 10
     cfg = c.get("/api/suggest/config").json()
     assert cfg["prio"] == {"kcal": 3, "protein": 2, "carbs": 1, "fat": 0} and cfg["kcal_cap"] and cfg["scope"] == "next"
     assert cfg["addons"][0]["name"] == "Walnüsse" and cfg["addons"][0]["max_g"] == 40

@@ -24,7 +24,7 @@ The open budget is the day’s goal (including [Activity](activity.md) and weekd
 Edit a saved meal in the **Meals** tab (**✎**). With the feature on, every ingredient has a mode:
 
 1. **Scalable:** follows the meal’s amount factor. **Deviation ±** lets the ingredient deviate from the ratio to the others by that many percent (0 = rigid).
-2. **Fixed:** stays as saved. With a package size the suggestion takes one or two **packages**.
+2. **Fixed:** stays as saved. With a package size the suggestion takes as many **packages** as set under “Number” (from – to, 0 to 6): 0–1 may leave the ingredient out, 1–1 forces exactly one package, 1–3 allows up to three.
 3. **Amount factor for suggestions** limits how much the whole meal may shrink or grow (empty = 0.6 to 1.6).
 
 Amounts are rounded to 5 g (small amounts to 1 g).

@@ -85,12 +85,12 @@ def _rnd(v: float, step: float) -> float:
 
 
 def _pack_options(cand: dict):
-    """Fixed items with a package size can be 1 or 2 packages (pack_max 1: only one): all combinations (at most for the first two such items)."""
+    """Fixed items with a package size use between pack_min and pack_max packages (0 = left out): all combinations (at most for the first two such items)."""
     idx = [i for i, it in enumerate(cand["items"]) if it["mode"] == "fixed" and it.get("pack_g", 0) > 0 and it["grams"] > 0][:2]
     if not idx:
         yield {}
         return
-    ranges = [range(1, (1 if cand["items"][i].get("pack_max", 2) == 1 else 2) + 1) for i in idx]
+    ranges = [range(cand["items"][i].get("pack_min", 1), max(cand["items"][i].get("pack_max", 2), cand["items"][i].get("pack_min", 1), 1) + 1) for i in idx]
     for ns in itertools.product(*ranges):
         yield {i: n * cand["items"][i]["pack_g"] / cand["items"][i]["grams"] for i, n in zip(idx, ns)}
 
@@ -144,6 +144,8 @@ def _finish(cand, s, packs, addons, u_items, amt_addons):
             step = _step(it["grams"], it.get("step_g", 0))
             grams = max(_rnd(it["grams"] * u, step), step)
             u = grams / it["grams"]
+        if it["mode"] == "fixed" and it["grams"] > 0 and u == 0:   # 0 packages: the ingredient is left out
+            continue
         row = {"name": it["name"], "grams": round(grams, 1), "kind": "item", "mode": it["mode"]}
         for k in (*KEYS, *MICROS):
             row[k] = it["base"].get(k, 0.0) * u

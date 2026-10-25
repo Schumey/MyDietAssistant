@@ -24,7 +24,7 @@ Das offene Tagesbudget ist das Ziel des Tages (inklusive [Aktivität](activity.m
 Bearbeite eine gespeicherte Mahlzeit im Reiter **Mahlzeiten** (**✎**). Bei eingeschalteter Funktion hat jede Zutat einen Modus:
 
 1. **Skalierbar:** folgt dem Mengenfaktor der Mahlzeit. **Abweichung ±** erlaubt der Zutat, vom Verhältnis zu den anderen um so viele Prozent abzuweichen (0 = starr).
-2. **Fest:** bleibt, wie gespeichert. Mit einer Packungsgröße nimmt der Vorschlag eine oder zwei **Packungen**.
+2. **Fest:** bleibt, wie gespeichert. Mit einer Packungsgröße nimmt der Vorschlag so viele **Packungen**, wie unter „Anzahl“ (von – bis, 0 bis 6) eingestellt ist: 0–1 lässt die Zutat auch weg, 1–1 erzwingt genau eine Packung, 1–3 erlaubt bis zu drei.
 3. **Mengenfaktor für Vorschläge** begrenzt, wie stark die ganze Mahlzeit schrumpfen oder wachsen darf (leer = 0,6 bis 1,6).
 
 Mengen werden auf 5 g (kleine Mengen auf 1 g) gerundet.

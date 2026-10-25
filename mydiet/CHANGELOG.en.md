@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.7.6
+
+### Changed
+- **Meal suggestions:** the number of packages of a fixed ingredient is now an adjustable range (“Number from – to”, 0 to 6), e.g. 0–1 (the ingredient may be left out) or 1–3. Replaces the “1 or 2 / only 1 package” choice from 1.7.1; existing settings stay valid. New database column (migration 6).
+
 ## 1.7.5
 
 ### Changed

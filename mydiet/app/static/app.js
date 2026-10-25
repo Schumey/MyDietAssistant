@@ -403,7 +403,7 @@ const EN = {
   "Packung": "Package",
   "Abweichung ±": "Deviation ±",
   "Wie weit diese Zutat vom Verhältnis zu den anderen abweichen darf (in Prozent)": "How far this ingredient may deviate from its ratio to the others (in percent)",
-  "Packungsgröße: der Vorschlag nimmt eine oder zwei Packungen. Leer = genau die gespeicherte Menge.": "Package size: the suggestion uses one or two packages. Empty = exactly the stored amount.",
+  "Packungsgröße: der Vorschlag nimmt so viele Packungen, wie bei „Anzahl“ eingestellt ist. Leer = genau die gespeicherte Menge.": "Package size: the suggestion uses as many packages as set under “Number”. Empty = exactly the stored amount.",
   "Mengenfaktor für Vorschläge": "Amount factor for suggestions",
   "von": "from",
   "bis": "to",
@@ -413,9 +413,8 @@ const EN = {
   "Ungültige Werte": "Invalid values",
   "Kleinster Faktor ist größer als der größte": "The smallest factor is larger than the largest",
 
-  "Wie viele Packungen ein Vorschlag nehmen darf": "How many packages a suggestion may use",
-  "1 oder 2 Packungen": "1 or 2 packages",
-  "nur 1 Packung": "only 1 package",
+  "Wie viele Packungen ein Vorschlag nehmen darf": "How many packages a suggestion may use (from – to; 0 = may be left out)",
+  "Anzahl": "Number",
 
   // default meals
   "Frühstück": "Breakfast", "Mittagessen": "Lunch", "Abendessen": "Dinner", "Snacks": "Snacks",
@@ -1203,7 +1202,7 @@ Object.assign(LANGS, {
     "Packung": "Paquet",
     "Abweichung ±": "Écart ±",
     "Wie weit diese Zutat vom Verhältnis zu den anderen abweichen darf (in Prozent)": "De combien cet ingrédient peut s'écarter de sa proportion par rapport aux autres (en pourcentage)",
-    "Packungsgröße: der Vorschlag nimmt eine oder zwei Packungen. Leer = genau die gespeicherte Menge.": "Taille du paquet : la suggestion prend un ou deux paquets. Vide = exactement la quantité enregistrée.",
+    "Packungsgröße: der Vorschlag nimmt so viele Packungen, wie bei „Anzahl“ eingestellt ist. Leer = genau die gespeicherte Menge.": "Taille du paquet : la suggestion prend le nombre de paquets réglé sous « Nombre ». Vide = exactement la quantité enregistrée.",
     "Mengenfaktor für Vorschläge": "Facteur de quantité pour les suggestions",
     "von": "de",
     "bis": "à",
@@ -1212,9 +1211,8 @@ Object.assign(LANGS, {
     "Vorschlag ist leer": "La suggestion est vide",
     "Ungültige Werte": "Valeurs non valides",
     "Kleinster Faktor ist größer als der größte": "Le plus petit facteur est supérieur au plus grand",
-    "Wie viele Packungen ein Vorschlag nehmen darf": "Combien de paquets une suggestion peut prendre",
-    "1 oder 2 Packungen": "1 ou 2 paquets",
-    "nur 1 Packung": "1 paquet seulement",
+    "Wie viele Packungen ein Vorschlag nehmen darf": "Combien de paquets une suggestion peut prendre (de – à ; 0 = peut être omis)",
+    "Anzahl": "Nombre",
     "Frühstück": "Petit-déjeuner",
     "Mittagessen": "Déjeuner",
     "Abendessen": "Dîner",
@@ -1995,7 +1993,7 @@ Object.assign(LANGS, {
     "Packung": "Envase",
     "Abweichung ±": "Desviación ±",
     "Wie weit diese Zutat vom Verhältnis zu den anderen abweichen darf (in Prozent)": "Cuánto puede desviarse este ingrediente de su proporción respecto a los demás (en porcentaje)",
-    "Packungsgröße: der Vorschlag nimmt eine oder zwei Packungen. Leer = genau die gespeicherte Menge.": "Tamaño del envase: la sugerencia usa uno o dos envases. Vacío = exactamente la cantidad guardada.",
+    "Packungsgröße: der Vorschlag nimmt so viele Packungen, wie bei „Anzahl“ eingestellt ist. Leer = genau die gespeicherte Menge.": "Tamaño del envase: la sugerencia usa tantos envases como se indique en «Número». Vacío = exactamente la cantidad guardada.",
     "Mengenfaktor für Vorschläge": "Factor de cantidad para las sugerencias",
     "von": "de",
     "bis": "a",
@@ -2004,9 +2002,8 @@ Object.assign(LANGS, {
     "Vorschlag ist leer": "La sugerencia está vacía",
     "Ungültige Werte": "Valores no válidos",
     "Kleinster Faktor ist größer als der größte": "El factor mínimo es mayor que el máximo",
-    "Wie viele Packungen ein Vorschlag nehmen darf": "Cuántos envases puede usar una sugerencia",
-    "1 oder 2 Packungen": "1 o 2 envases",
-    "nur 1 Packung": "solo 1 envase",
+    "Wie viele Packungen ein Vorschlag nehmen darf": "Cuántos envases puede usar una sugerencia (de – a; 0 = puede omitirse)",
+    "Anzahl": "Número",
     "Frühstück": "Desayuno",
     "Mittagessen": "Almuerzo",
     "Abendessen": "Cena",
@@ -2519,10 +2516,11 @@ function sugOpts(it, redraw) {
   const tol = h("input", { type: "number", step: "1", min: "0", max: "100", value: it.tol || "", placeholder: "0",
     title: "Wie weit diese Zutat vom Verhältnis zu den anderen abweichen darf (in Prozent)", onchange: () => { it.tol = num(tol.value) || 0; } });
   const pack = h("input", { type: "number", step: "any", min: "0", value: it.pack_g ? gShow(it.pack_g) : "", placeholder: "–",
-    title: "Packungsgröße: der Vorschlag nimmt eine oder zwei Packungen. Leer = genau die gespeicherte Menge.", onchange: () => { it.pack_g = gRead(pack.value) || 0; } });
-  const maxSel = h("select", { title: "Wie viele Packungen ein Vorschlag nehmen darf", onchange: () => { it.pack_max = Number(maxSel.value); } },
-    h("option", { value: 2, selected: it.pack_max !== 1 }, "1 oder 2 Packungen"), h("option", { value: 1, selected: it.pack_max === 1 }, "nur 1 Packung"));
-  return h("div", { class: "sug-opts" }, mode, fixed ? ["Packung", pack, mUnit(), it.pack_g > 0 ? maxSel : null] : ["Abweichung ±", tol, "%"]);
+    title: "Packungsgröße: der Vorschlag nimmt so viele Packungen, wie bei „Anzahl“ eingestellt ist. Leer = genau die gespeicherte Menge.", onchange: () => { it.pack_g = gRead(pack.value) || 0; } });
+  const range = h("span", { class: "sug-range-packs", title: "Wie viele Packungen ein Vorschlag nehmen darf" },
+    h("input", { type: "number", step: "1", min: "0", max: "6", value: it.pack_min ?? 1, onchange: e => { it.pack_min = Math.max(0, Math.round(num(e.target.value) || 0)); if (it.pack_min > (it.pack_max ?? 2)) it.pack_max = it.pack_min; redraw(); } }),
+    "–", h("input", { type: "number", step: "1", min: "1", max: "6", value: it.pack_max ?? 2, onchange: e => { it.pack_max = Math.max(1, Math.round(num(e.target.value) || 1)); if ((it.pack_min ?? 1) > it.pack_max) it.pack_min = it.pack_max; redraw(); } }));
+  return h("div", { class: "sug-opts" }, mode, fixed ? ["Packung", pack, mUnit(), it.pack_g > 0 ? ["Anzahl", range] : null] : ["Abweichung ±", tol, "%"]);
 }
 
 // Steps and burned calories of the day (optional feature): a share of them raises the day's calorie goal.
@@ -3664,7 +3662,7 @@ async function renderMeals() {
         onCancel: () => editSaved(s, draft),
         onDone: (f, g) => {
           if (idx == null) draft.items.push(foodItem(f, g));
-          else { const { mode, tol, pack_g, step_g, pack_max } = draft.items[idx]; draft.items[idx] = { ...foodItem(f, g), mode, tol, pack_g, step_g, pack_max }; }
+          else { const { mode, tol, pack_g, step_g, pack_min, pack_max } = draft.items[idx]; draft.items[idx] = { ...foodItem(f, g), mode, tol, pack_g, step_g, pack_min, pack_max }; }
           editSaved(s, draft);
         },
       }));
@@ -3706,7 +3704,7 @@ async function renderMeals() {
               items: draft.items.map(i => ({
                 name: i.name, grams: i.grams, kcal: i.kcal, protein: i.protein, carbs: i.carbs, fat: i.fat,
                 fiber: i.fiber || 0, sugar: i.sugar || 0, salt: i.salt || 0, sat_fat: i.sat_fat || 0,
-                mode: i.mode || "scale", tol: i.tol || 0, pack_g: i.pack_g || 0, step_g: i.step_g || 0, pack_max: i.pack_max === 1 ? 1 : 2 })) });
+                mode: i.mode || "scale", tol: i.tol || 0, pack_g: i.pack_g || 0, step_g: i.step_g || 0, pack_min: i.pack_min ?? 1, pack_max: i.pack_max ?? 2 })) });
             dlg.close(); renderMeals();
           } catch (e) { msg.textContent = e.message; }
         } }, "Speichern")));

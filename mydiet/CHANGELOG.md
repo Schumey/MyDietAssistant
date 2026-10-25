@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.7.6
+
+### Geändert
+- **Mahlzeiten-Vorschläge:** Die Anzahl der Packungen einer festen Zutat ist jetzt ein einstellbarer Bereich („Anzahl von – bis“, 0 bis 6), z. B. 0–1 (Zutat darf entfallen) oder 1–3. Ersetzt die Wahl „1 oder 2 / nur 1 Packung“ aus 1.7.1; bestehende Einstellungen bleiben gültig. Neue Datenbank-Spalte (Migration 6).
+
 ## 1.7.5
 
 ### Geändert
