@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.7.7
+
+### Behoben
+- **Nach Updates alte Oberfläche:** Die Dateien der Oberfläche (`app.js`, `style.css`) werden jetzt bei jedem Laden beim Server geprüft (kein Browser-Cache mehr ohne Prüfung), damit nach einem Update nicht noch die alte Version angezeigt wird.
+- **Mahlzeiten-Vorschläge:** In 1.7.6 fehlten im Mahlzeiten-Editor die Felder „Anzahl von – bis“ bei festen Zutaten mit Packung (statt der Felder stand ein Platzhaltertext).
+
 ## 1.7.6
 
 ### Geändert

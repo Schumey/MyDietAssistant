@@ -684,4 +684,12 @@ def index():
     return FileResponse(os.path.join(STATIC, "index.html"), headers={"Cache-Control": "no-cache"})
 
 
-app.mount("/static", StaticFiles(directory=STATIC), name="static")
+class RevalidatedStatic(StaticFiles):
+    """Static files are revalidated on every load (ETag, 304 when unchanged); otherwise a browser may keep serving an old app.js after an update."""
+    async def get_response(self, path, scope):
+        r = await super().get_response(path, scope)
+        r.headers["Cache-Control"] = "no-cache"
+        return r
+
+
+app.mount("/static", RevalidatedStatic(directory=STATIC), name="static")

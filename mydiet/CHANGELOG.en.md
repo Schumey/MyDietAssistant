@@ -2,6 +2,12 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.7.7
+
+### Fixed
+- **Old interface after updates:** the interface files (`app.js`, `style.css`) are now revalidated with the server on every load (no more unchecked browser cache), so an update is not hidden behind the old version.
+- **Meal suggestions:** in 1.7.6 the “Number from – to” fields were missing in the meal editor for fixed ingredients with a package (a placeholder text was shown instead).
+
 ## 1.7.6
 
 ### Changed

@@ -2520,7 +2520,7 @@ function sugOpts(it, redraw) {
   const range = h("span", { class: "sug-range-packs", title: "Wie viele Packungen ein Vorschlag nehmen darf" },
     h("input", { type: "number", step: "1", min: "0", max: "6", value: it.pack_min ?? 1, onchange: e => { it.pack_min = Math.max(0, Math.round(num(e.target.value) || 0)); if (it.pack_min > (it.pack_max ?? 2)) it.pack_max = it.pack_min; redraw(); } }),
     "–", h("input", { type: "number", step: "1", min: "1", max: "6", value: it.pack_max ?? 2, onchange: e => { it.pack_max = Math.max(1, Math.round(num(e.target.value) || 1)); if ((it.pack_min ?? 1) > it.pack_max) it.pack_min = it.pack_max; redraw(); } }));
-  return h("div", { class: "sug-opts" }, mode, fixed ? ["Packung", pack, mUnit(), it.pack_g > 0 ? ["Anzahl", range] : null] : ["Abweichung ±", tol, "%"]);
+  return h("div", { class: "sug-opts" }, mode, fixed ? ["Packung", pack, mUnit(), ...(it.pack_g > 0 ? ["Anzahl", range] : [])] : ["Abweichung ±", tol, "%"]);
 }
 
 // Steps and burned calories of the day (optional feature): a share of them raises the day's calorie goal.

@@ -18,6 +18,11 @@ def test_start_page_is_served_without_caching(app_module):
     assert r.status_code == 200 and r.headers["cache-control"] == "no-cache"
 
 
+def test_static_files_are_revalidated_so_updates_show_up(app_module):
+    r = TestClient(app_module.app).get("/static/app.js")
+    assert r.status_code == 200 and r.headers["cache-control"] == "no-cache" and r.headers.get("etag")
+
+
 def test_every_file_referenced_by_index_html_exists_and_is_served(app_module):
     html = read("mydiet", "app", "static", "index.html")
     refs = re.findall(r'(?:src|href)="(static/[^"]+)"', html)
