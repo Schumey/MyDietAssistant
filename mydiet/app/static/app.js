@@ -201,7 +201,7 @@ const EN = {
   "Letzter Fehler ({}): {}": "Last error ({}): {}", "Aktiv": "Active", "pausiert bis {}": "paused until {}", "· {} Tage im Voraus": "· {} days ahead", "· zuletzt {}": "· last {}",
   "Pausieren …": "Pause …", "Jetzt testen (trägt heute ein)": "Test now (logs for today)", "Eingetragen.": "Logged.", "Noch keine Trigger.": "No triggers yet.", "Prüfe …": "Checking …",
   "Kein Home-Assistant-Zugriff (SUPERVISOR_TOKEN fehlt).": "No Home Assistant access (SUPERVISOR_TOKEN missing).", "Geprüft {}, nichts zu tun.": "Checked {}, nothing to do.",
-  "Jetzt prüfen": "Check now", "+ Neuer Trigger": "+ New trigger", "Trigger-Verlauf": "Trigger history",
+  "Jetzt prüfen": "Check now", "Version": "Version", "Installiert: ": "Installed: ", "Nach Updates suchen": "Check for updates", "Keine Verbindung zu GitHub.": "No connection to GitHub.", "Version {} ist verfügbar. In Home Assistant unter Einstellungen → Add-ons „Nach Updates suchen“ und aktualisieren.": "Version {} is available. In Home Assistant, go to Settings → Add-ons, check for updates and update.", "Du hast die aktuelle Version.": "You have the latest version.", "+ Neuer Trigger": "+ New trigger", "Trigger-Verlauf": "Trigger history",
   "Was Trigger zuletzt eingetragen haben. „Rückgängig“ entfernt die Einträge wieder; der Trigger trägt an diesem Tag nicht erneut ein.": "What triggers logged most recently. “Undo” removes the entries again; the trigger does not log again that day.",
   "Trigger gelöscht": "Trigger deleted", "(gelöscht)": "(deleted)", "Einträge nicht mehr vorhanden": "Entries no longer exist", "Rückgängig": "Undo",
   "Erinnerung": "Reminder", "Benachrichtigung über Home Assistant, wenn bis zur gewählten Uhrzeit nichts eingetragen wurde.": "Notification via Home Assistant if nothing has been logged by the chosen time.",
@@ -888,6 +888,12 @@ Object.assign(LANGS, {
     "Kein Home-Assistant-Zugriff (SUPERVISOR_TOKEN fehlt).": "Pas d’accès à Home Assistant (SUPERVISOR_TOKEN manquant).",
     "Geprüft {}, nichts zu tun.": "Vérifié {}, rien à faire.",
     "Jetzt prüfen": "Vérifier maintenant",
+    "Version": "Version",
+    "Installiert: ": "Installée : ",
+    "Nach Updates suchen": "Rechercher des mises à jour",
+    "Keine Verbindung zu GitHub.": "Pas de connexion à GitHub.",
+    "Version {} ist verfügbar. In Home Assistant unter Einstellungen → Add-ons „Nach Updates suchen“ und aktualisieren.": "La version {} est disponible. Dans Home Assistant : Paramètres → Modules complémentaires, rechercher des mises à jour et mettre à jour.",
+    "Du hast die aktuelle Version.": "Vous avez la dernière version.",
     "+ Neuer Trigger": "+ Nouveau déclencheur",
     "Trigger-Verlauf": "Historique des déclencheurs",
     "Was Trigger zuletzt eingetragen haben. „Rückgängig“ entfernt die Einträge wieder; der Trigger trägt an diesem Tag nicht erneut ein.": "Ce que les déclencheurs ont saisi en dernier. “Annuler” retire à nouveau les entrées ; le déclencheur ne saisit pas de nouveau ce jour-là.",
@@ -1674,6 +1680,12 @@ Object.assign(LANGS, {
     "Kein Home-Assistant-Zugriff (SUPERVISOR_TOKEN fehlt).": "Sin acceso a Home Assistant (falta SUPERVISOR_TOKEN).",
     "Geprüft {}, nichts zu tun.": "Comprobado {}, nada que hacer.",
     "Jetzt prüfen": "Comprobar ahora",
+    "Version": "Versión",
+    "Installiert: ": "Instalada: ",
+    "Nach Updates suchen": "Buscar actualizaciones",
+    "Keine Verbindung zu GitHub.": "Sin conexión con GitHub.",
+    "Version {} ist verfügbar. In Home Assistant unter Einstellungen → Add-ons „Nach Updates suchen“ und aktualisieren.": "La versión {} está disponible. En Home Assistant: Ajustes → Complementos, buscar actualizaciones y actualizar.",
+    "Du hast die aktuelle Version.": "Tienes la última versión.",
     "+ Neuer Trigger": "+ Nuevo disparador",
     "Trigger-Verlauf": "Historial de disparadores",
     "Was Trigger zuletzt eingetragen haben. „Rückgängig“ entfernt die Einträge wieder; der Trigger trägt an diesem Tag nicht erneut ein.": "Lo que los disparadores han registrado en último lugar. “Deshacer” vuelve a quitar las entradas; el disparador no vuelve a registrar ese día.",
@@ -5003,7 +5015,7 @@ async function renderSettings() {
       h("button", { onclick: () => triggerDialog({}) }, "+ Neuer Trigger"))));
 
   // what triggers entered, with undo
-  if (runs.length) root.append(h("div", { class: "card" }, h("h2", {}, "Trigger-Verlauf"),
+  if (runs.length) root.append(h("details", { class: "card" }, h("summary", {}, "Trigger-Verlauf"),
     h("div", { class: "muted" }, "Was Trigger zuletzt eingetragen haben. „Rückgängig“ entfernt die Einträge wieder; der Trigger trägt an diesem Tag nicht erneut ein."),
     h("div", { class: "list" }, runs.map(r => h("div", {},
       h("div", { class: "grow" }, h("div", {}, `${r.label || "(gelöscht)"}`, h("span", { class: "tag" }, parse(r.day).toLocaleDateString(I18N.locale))),
@@ -5028,7 +5040,7 @@ async function renderSettings() {
     } }, "Speichern"))));
 
   // automatic backups
-  root.append(h("div", { class: "card" }, h("h2", {}, "Automatische Sicherung"),
+  root.append(h("details", { class: "card" }, h("summary", {}, "Automatische Sicherung"),
     h("div", { class: "muted" }, bk.auto
       ? `Täglich eine JSON-Sicherung in ${bk.dir}, Aufbewahrung ${bk.keep_days} Tage (Add-on-Option „backup_keep_days“).`
       : "Aus (Add-on-Option „auto_backup“)."),
@@ -5071,6 +5083,21 @@ async function renderSettings() {
       }) }, "Sicherung einspielen"),
       h("button", { onclick: () => pickFile(".csv,text/csv", mfpDialog) }, "MyFitnessPal-CSV importieren"),
       h("button", { onclick: importMenu }, "Weitere Importe …"))));
+
+  // installed version and update check
+  const verOut = h("span", { class: "muted" }, "…");
+  const verBtn = h("button", { class: "flat", onclick: async () => {
+    verOut.className = "muted"; verOut.textContent = "Prüfe …";
+    try {
+      const v = await api("version?check=1");
+      if (v.error) { verOut.className = "err"; verOut.textContent = "Keine Verbindung zu GitHub."; }
+      else if (v.update) { verOut.className = "warn"; verOut.textContent = `Version ${v.latest} ist verfügbar. In Home Assistant unter Einstellungen → Add-ons „Nach Updates suchen“ und aktualisieren.`; }
+      else { verOut.className = "muted"; verOut.textContent = "Du hast die aktuelle Version."; }
+    } catch (e) { verOut.className = "err"; verOut.textContent = e.message; }
+  } }, "Nach Updates suchen");
+  root.append(h("div", { class: "card" }, h("h2", {}, "Version"),
+    h("div", { class: "ver-row" }, h("span", {}, "Installiert: ", h("b", {}, "…")), verBtn), verOut));
+  api("version").then(v => { root.querySelector(".ver-row b").textContent = v.version || "?"; verOut.textContent = ""; }).catch(() => { verOut.textContent = ""; });
 }
 
 

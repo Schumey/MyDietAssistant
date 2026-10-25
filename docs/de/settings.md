@@ -17,6 +17,9 @@ Der Reiter **Einstellungen** besteht aus Karten. Karten für Zusatzfunktionen er
 | Schnittstelle für Automationen | Status der API | [Schnittstelle](api.md) |
 | Benutzerverwaltung | nur Administratoren | [Haushalt und Benutzer](household.md#benutzerverwaltung) |
 | Export für Berater und Trainer, Daten | Export, Import | [Daten](data.md) |
+| Version | installierte Version, Update-Prüfung | unten |
+
+Der Trigger-Verlauf und die Automatische Sicherung sind eingeklappt; tippe auf den Titel, um sie zu öffnen. Ganz unten zeigt *Version* die installierte Version; **Nach Updates suchen** meldet, ob eine neuere Version veröffentlicht ist (aktualisieren musst Du in Home Assistant unter *Einstellungen → Add-ons*).
 
 ## Sprache und Einheiten
 

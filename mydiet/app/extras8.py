@@ -167,3 +167,53 @@ def share_entry(eid: int, s: ShareIn, x_remote_user_id: str | None = Header(None
     for u in done:
         publish(u, get_pref(u, "display", "") or u)
     return {"shared": len(done)}
+
+
+# --- version / update check ----------------------------------------------------
+
+REPO_CONFIG_URL = "https://raw.githubusercontent.com/Schumey/MyDietAssistant/main/mydiet/config.yaml"
+
+
+def _version_of(text: str) -> str:
+    import re
+    m = re.search(r'^version:\s*"?([0-9][^"\s]*)"?\s*$', text, re.M)
+    return m.group(1) if m else ""
+
+
+def installed_version() -> str:
+    """The Supervisor knows the installed version; outside HA fall back to the config.yaml next to the app."""
+    import httpx
+    from main import SUPERVISOR_TOKEN
+    if SUPERVISOR_TOKEN:
+        try:
+            r = httpx.get("http://supervisor/addons/self/info", timeout=5, headers={"Authorization": f"Bearer {SUPERVISOR_TOKEN}"})
+            v = (r.json().get("data") or {}).get("version")
+            if v:
+                return str(v)
+        except Exception:
+            pass
+    try:
+        with open(os.path.join(os.path.dirname(__file__), "..", "config.yaml"), encoding="utf-8") as f:
+            return _version_of(f.read())
+    except OSError:
+        return ""
+
+
+def _tuple(v: str):
+    return tuple(int(p) if p.isdigit() else 0 for p in v.split("."))
+
+
+@app.get("/api/version")
+def version_info(check: bool = False):
+    """Installed version; with check=1 also the newest version published in the repository."""
+    out = {"version": installed_version(), "latest": None, "update": False, "error": None}
+    if check:
+        import httpx
+        try:
+            r = httpx.get(REPO_CONFIG_URL, timeout=8, follow_redirects=True)
+            r.raise_for_status()
+            out["latest"] = _version_of(r.text) or None
+            out["update"] = bool(out["latest"] and out["version"] and _tuple(out["latest"]) > _tuple(out["version"]))
+        except Exception as e:
+            out["error"] = str(e) or e.__class__.__name__
+    return out

@@ -480,6 +480,8 @@ dialog { overflow-x: hidden; }
   table.lk td.lk-name { flex: 1 1 calc(100% - 40px); }
   table.lk td[data-l]::before { content: attr(data-l) " "; color: var(--secondary-text-color); font-size: 11px; }
   table.lk td:last-child { margin-left: auto; }
+  table.lk td:first-child { flex: none; width: 28px; align-self: flex-start; }
+  table.lk td:first-child input { width: 20px; height: 20px; min-height: 0; margin: 2px 0 0; padding: 0; }
 }
 
 svg.chart .bar-m { fill: var(--primary-color); }
@@ -527,3 +529,7 @@ html[data-skin="win"] .now-banner { background: var(--w-field); color: var(--w-t
 .sug-range input { width: 80px; flex: none; }
 button.sug-settings { width: 100%; margin-bottom: 12px; }
 .sug-opts select { max-width: 150px; }
+
+details.card > summary { cursor: pointer; font-size: 16px; font-weight: 500; }
+details.card[open] > summary { margin-bottom: 12px; }
+.ver-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }

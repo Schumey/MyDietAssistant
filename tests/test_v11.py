@@ -341,3 +341,17 @@ def test_second_database_is_only_asked_when_the_first_has_nothing():
     usda = lambda t: (asked.append(("usda", t)), [_hit("Flour", 364, "usda")])[1]
     ri.fill_missing(items, [off, usda])
     assert [i["source"] for i in items] == ["usda", "off"] and ("usda", "Butter") not in asked
+
+
+def test_version_endpoint(user, monkeypatch):
+    c = user()
+    v = c.get("/api/version").json()
+    assert v["version"] and v["latest"] is None and v["update"] is False
+    import httpx
+
+    class R:
+        text = 'name: x\nversion: "99.0.0"\n'
+        def raise_for_status(self): pass
+    monkeypatch.setattr(httpx, "get", lambda *a, **k: R())
+    v = c.get("/api/version?check=1").json()
+    assert v["latest"] == "99.0.0" and v["update"] is True

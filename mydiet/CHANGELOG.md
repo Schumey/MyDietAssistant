@@ -2,6 +2,17 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.7.3
+
+### Neu
+- **Einstellungen:** Am Ende zeigt „Version“ die installierte Version, „Nach Updates suchen“ prüft, ob eine neuere veröffentlicht ist. Neuer Endpunkt `/api/version`.
+
+### Geändert
+- **Einstellungen:** Trigger-Verlauf und Automatische Sicherung sind standardmäßig eingeklappt.
+
+### Behoben
+- **Handy:** Im Online-Vergleich stehen Auswahlhäkchen und Titel auf einer Höhe.
+
 ## 1.7.2
 
 ### Behoben

@@ -2,6 +2,17 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.7.3
+
+### Added
+- **Settings:** at the bottom, “Version” shows the installed version; “Check for updates” checks whether a newer one is published. New endpoint `/api/version`.
+
+### Changed
+- **Settings:** Trigger history and Automatic backup are collapsed by default.
+
+### Fixed
+- **Mobile:** in the online comparison, the checkboxes and titles are aligned.
+
 ## 1.7.2
 
 ### Fixed
