@@ -364,6 +364,55 @@ const EN = {
   "Leere Datei": "Empty file", "Die Datei konnte nicht gelesen werden.": "The file could not be read.", "Die Excel-Datei enthält kein Tabellenblatt.": "The Excel file contains no worksheet.",
   "Zu viele Zeilen (höchstens 50 000)": "Too many rows (50,000 at most)", "Spalten für Name und Kalorien (kcal oder kJ) zuordnen": "Assign columns for name and calories (kcal or kJ)",
 
+  "Mahlzeiten-Vorschläge": "Meal suggestions",
+  "Button im Tagebuch: schlägt gespeicherte Mahlzeiten und Kombinationen aus Deinem Verlauf vor, die zu den offenen Kalorien und Makros passen (Mengen werden angepasst, feste Packungen bleiben).": "Button in the diary: suggests saved meals and combinations from your history that fit the remaining calories and macros (amounts are adjusted, fixed packages stay).",
+  "Mahlzeit vorschlagen": "Suggest a meal",
+  "Rest des Tages": "Rest of the day",
+  "Anteil für diese Mahlzeit": "Share for this meal",
+  "Ziel für diese Mahlzeit: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Target for this meal: {} kcal · KH {} g · Fett {} g · Eiweiß {} g",
+  "Dein Tagesziel ist schon erreicht – es gibt nichts aufzufüllen.": "You have already reached your daily goal – there is nothing to fill up.",
+  "Noch keine Vorschläge: Speichere Mahlzeiten im Tagebuch über „Speichern / Kopieren“ oder iss Kombinationen mindestens zweimal, dann tauchen sie hier auf.": "No suggestions yet: save meals in the diary via “Save / copy”, or eat combinations at least twice, then they show up here.",
+  "Weitere Vorschläge": "More suggestions",
+  "Beigabe": "Add-on",
+  "aus dem Verlauf ({}×)": "from your history ({}×)",
+  "Gespeichert": "Saved",
+  "Abweichung vom Ziel: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Deviation from target: {} kcal · KH {} g · Fett {} g · Eiweiß {} g",
+  "Danach am Tag noch offen: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Still open for the day afterwards: {} kcal · KH {} g · Fett {} g · Eiweiß {} g",
+  "Anpassen": "Adjust",
+  "Fertig": "Done",
+  "Prioritäten und Beigaben": "Priorities and add-ons",
+  "Vorschläge einstellen": "Suggestion settings",
+  "Wichtigkeit": "Importance",
+  "egal": "don't care",
+  "normal": "normal",
+  "wichtig": "important",
+  "sehr wichtig": "very important",
+  "Je wichtiger ein Wert, desto genauer soll der Vorschlag ihn treffen. Werte ohne Ziel bleiben außen vor.": "The more important a value, the closer the suggestion should hit it. Values without a goal are ignored.",
+  "Kalorienziel nie überschreiten": "Never exceed the calorie goal",
+  "Eiweißziel möglichst erreichen": "Reach the protein goal if possible",
+  "Beigaben": "Add-ons",
+  "Lebensmittel, die zu jeder Mahlzeit passen (z. B. Nüsse). Ein Vorschlag nimmt sie nur dazu, wenn sie besser zum offenen Rest passen. Felder: Mindestmenge, Höchstmenge, Schrittweite.": "Foods that go with any meal (e.g. nuts). A suggestion only adds them when they fit the remainder better. Fields: minimum, maximum, step.",
+  "Mindestmenge": "Minimum amount",
+  "Höchstmenge": "Maximum amount",
+  "Schrittweite": "Step size",
+  "Beigabe hinzufügen": "Add an add-on",
+  "+ Beigabe": "+ Add-on",
+  "Skalierbar: folgt dem Mengenfaktor der Mahlzeit. Fest: bleibt gleich.": "Scalable: follows the meal's amount factor. Fixed: stays the same.",
+  "Skalierbar": "Scalable",
+  "Fest": "Fixed",
+  "Packung": "Package",
+  "Abweichung ±": "Deviation ±",
+  "Wie weit diese Zutat vom Verhältnis zu den anderen abweichen darf (in Prozent)": "How far this ingredient may deviate from its ratio to the others (in percent)",
+  "Packungsgröße: der Vorschlag nimmt eine oder zwei Packungen. Leer = genau die gespeicherte Menge.": "Package size: the suggestion uses one or two packages. Empty = exactly the stored amount.",
+  "Mengenfaktor für Vorschläge": "Amount factor for suggestions",
+  "von": "from",
+  "bis": "to",
+  "Wie stark die ganze Mahlzeit bei Vorschlägen verkleinert oder vergrößert werden darf (1 = Menge wie gespeichert). Leer = 0,6 bis 1,6.": "How much the whole meal may be reduced or enlarged in suggestions (1 = amount as saved). Empty = 0.6 to 1.6.",
+  "Mahlzeiten-Vorschläge sind nicht aktiviert": "Meal suggestions are not enabled",
+  "Vorschlag ist leer": "The suggestion is empty",
+  "Ungültige Werte": "Invalid values",
+  "Kleinster Faktor ist größer als der größte": "The smallest factor is larger than the largest",
+
   // default meals
   "Frühstück": "Breakfast", "Mittagessen": "Lunch", "Abendessen": "Dinner", "Snacks": "Snacks",
 };
@@ -1105,6 +1154,54 @@ Object.assign(LANGS, {
     "Die Excel-Datei enthält kein Tabellenblatt.": "Le fichier Excel ne contient aucune feuille.",
     "Zu viele Zeilen (höchstens 50 000)": "Trop de lignes (50 000 au maximum)",
     "Spalten für Name und Kalorien (kcal oder kJ) zuordnen": "Attribuez les colonnes du nom et des calories (kcal ou kJ)",
+    "Mahlzeiten-Vorschläge": "Suggestions de repas",
+    "Button im Tagebuch: schlägt gespeicherte Mahlzeiten und Kombinationen aus Deinem Verlauf vor, die zu den offenen Kalorien und Makros passen (Mengen werden angepasst, feste Packungen bleiben).": "Bouton dans le journal : propose des repas enregistrés et des combinaisons de ton historique qui correspondent aux calories et macros restantes (les quantités sont ajustées, les paquets fixes restent).",
+    "Mahlzeit vorschlagen": "Proposer un repas",
+    "Rest des Tages": "Reste de la journée",
+    "Anteil für diese Mahlzeit": "Part pour ce repas",
+    "Ziel für diese Mahlzeit: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Objectif pour ce repas : {} kcal · KH {} g · Fett {} g · Eiweiß {} g",
+    "Dein Tagesziel ist schon erreicht – es gibt nichts aufzufüllen.": "Ton objectif du jour est déjà atteint – il n'y a rien à compléter.",
+    "Noch keine Vorschläge: Speichere Mahlzeiten im Tagebuch über „Speichern / Kopieren“ oder iss Kombinationen mindestens zweimal, dann tauchen sie hier auf.": "Pas encore de suggestions : enregistre des repas dans le journal via « Enregistrer / Copier » ou mange des combinaisons au moins deux fois, elles apparaîtront ici.",
+    "Weitere Vorschläge": "Autres suggestions",
+    "Beigabe": "Accompagnement",
+    "aus dem Verlauf ({}×)": "depuis l'historique ({}×)",
+    "Gespeichert": "Enregistré",
+    "Abweichung vom Ziel: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Écart par rapport à l'objectif : {} kcal · KH {} g · Fett {} g · Eiweiß {} g",
+    "Danach am Tag noch offen: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Encore ouvert pour la journée ensuite : {} kcal · KH {} g · Fett {} g · Eiweiß {} g",
+    "Anpassen": "Ajuster",
+    "Fertig": "Terminé",
+    "Prioritäten und Beigaben": "Priorités et accompagnements",
+    "Vorschläge einstellen": "Réglages des suggestions",
+    "Wichtigkeit": "Importance",
+    "egal": "peu importe",
+    "normal": "normal",
+    "wichtig": "important",
+    "sehr wichtig": "très important",
+    "Je wichtiger ein Wert, desto genauer soll der Vorschlag ihn treffen. Werte ohne Ziel bleiben außen vor.": "Plus une valeur est importante, plus la suggestion doit la respecter. Les valeurs sans objectif sont ignorées.",
+    "Kalorienziel nie überschreiten": "Ne jamais dépasser l'objectif calorique",
+    "Eiweißziel möglichst erreichen": "Atteindre si possible l'objectif en protéines",
+    "Beigaben": "Accompagnements",
+    "Lebensmittel, die zu jeder Mahlzeit passen (z. B. Nüsse). Ein Vorschlag nimmt sie nur dazu, wenn sie besser zum offenen Rest passen. Felder: Mindestmenge, Höchstmenge, Schrittweite.": "Aliments qui vont avec n'importe quel repas (p. ex. noix). Une suggestion ne les ajoute que s'ils conviennent mieux au reste. Champs : minimum, maximum, pas.",
+    "Mindestmenge": "Quantité minimale",
+    "Höchstmenge": "Quantité maximale",
+    "Schrittweite": "Pas",
+    "Beigabe hinzufügen": "Ajouter un accompagnement",
+    "+ Beigabe": "+ Accompagnement",
+    "Skalierbar: folgt dem Mengenfaktor der Mahlzeit. Fest: bleibt gleich.": "Évolutif : suit le facteur de quantité du repas. Fixe : reste identique.",
+    "Skalierbar": "Évolutif",
+    "Fest": "Fixe",
+    "Packung": "Paquet",
+    "Abweichung ±": "Écart ±",
+    "Wie weit diese Zutat vom Verhältnis zu den anderen abweichen darf (in Prozent)": "De combien cet ingrédient peut s'écarter de sa proportion par rapport aux autres (en pourcentage)",
+    "Packungsgröße: der Vorschlag nimmt eine oder zwei Packungen. Leer = genau die gespeicherte Menge.": "Taille du paquet : la suggestion prend un ou deux paquets. Vide = exactement la quantité enregistrée.",
+    "Mengenfaktor für Vorschläge": "Facteur de quantité pour les suggestions",
+    "von": "de",
+    "bis": "à",
+    "Wie stark die ganze Mahlzeit bei Vorschlägen verkleinert oder vergrößert werden darf (1 = Menge wie gespeichert). Leer = 0,6 bis 1,6.": "De combien le repas entier peut être réduit ou agrandi dans les suggestions (1 = quantité enregistrée). Vide = 0,6 à 1,6.",
+    "Mahlzeiten-Vorschläge sind nicht aktiviert": "Les suggestions de repas ne sont pas activées",
+    "Vorschlag ist leer": "La suggestion est vide",
+    "Ungültige Werte": "Valeurs non valides",
+    "Kleinster Faktor ist größer als der größte": "Le plus petit facteur est supérieur au plus grand",
     "Frühstück": "Petit-déjeuner",
     "Mittagessen": "Déjeuner",
     "Abendessen": "Dîner",
@@ -1840,6 +1937,54 @@ Object.assign(LANGS, {
     "Die Excel-Datei enthält kein Tabellenblatt.": "El archivo de Excel no contiene ninguna hoja.",
     "Zu viele Zeilen (höchstens 50 000)": "Demasiadas filas (50 000 como máximo)",
     "Spalten für Name und Kalorien (kcal oder kJ) zuordnen": "Asigna las columnas del nombre y de las calorías (kcal o kJ)",
+    "Mahlzeiten-Vorschläge": "Sugerencias de comidas",
+    "Button im Tagebuch: schlägt gespeicherte Mahlzeiten und Kombinationen aus Deinem Verlauf vor, die zu den offenen Kalorien und Makros passen (Mengen werden angepasst, feste Packungen bleiben).": "Botón en el diario: propone comidas guardadas y combinaciones de tu historial que encajan con las calorías y macros restantes (se ajustan las cantidades, los envases fijos se mantienen).",
+    "Mahlzeit vorschlagen": "Sugerir una comida",
+    "Rest des Tages": "Resto del día",
+    "Anteil für diese Mahlzeit": "Parte para esta comida",
+    "Ziel für diese Mahlzeit: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Objetivo para esta comida: {} kcal · KH {} g · Fett {} g · Eiweiß {} g",
+    "Dein Tagesziel ist schon erreicht – es gibt nichts aufzufüllen.": "Ya has alcanzado tu objetivo diario: no queda nada que completar.",
+    "Noch keine Vorschläge: Speichere Mahlzeiten im Tagebuch über „Speichern / Kopieren“ oder iss Kombinationen mindestens zweimal, dann tauchen sie hier auf.": "Aún no hay sugerencias: guarda comidas en el diario con «Guardar / Copiar» o come combinaciones al menos dos veces y aparecerán aquí.",
+    "Weitere Vorschläge": "Más sugerencias",
+    "Beigabe": "Complemento",
+    "aus dem Verlauf ({}×)": "del historial ({}×)",
+    "Gespeichert": "Guardado",
+    "Abweichung vom Ziel: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Desviación del objetivo: {} kcal · KH {} g · Fett {} g · Eiweiß {} g",
+    "Danach am Tag noch offen: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Todavía abierto para el día después: {} kcal · KH {} g · Fett {} g · Eiweiß {} g",
+    "Anpassen": "Ajustar",
+    "Fertig": "Listo",
+    "Prioritäten und Beigaben": "Prioridades y complementos",
+    "Vorschläge einstellen": "Ajustes de las sugerencias",
+    "Wichtigkeit": "Importancia",
+    "egal": "da igual",
+    "normal": "normal",
+    "wichtig": "importante",
+    "sehr wichtig": "muy importante",
+    "Je wichtiger ein Wert, desto genauer soll der Vorschlag ihn treffen. Werte ohne Ziel bleiben außen vor.": "Cuanto más importante es un valor, más debe acercarse la sugerencia. Los valores sin objetivo se ignoran.",
+    "Kalorienziel nie überschreiten": "No superar nunca el objetivo calórico",
+    "Eiweißziel möglichst erreichen": "Alcanzar si es posible el objetivo de proteínas",
+    "Beigaben": "Complementos",
+    "Lebensmittel, die zu jeder Mahlzeit passen (z. B. Nüsse). Ein Vorschlag nimmt sie nur dazu, wenn sie besser zum offenen Rest passen. Felder: Mindestmenge, Höchstmenge, Schrittweite.": "Alimentos que combinan con cualquier comida (p. ej. frutos secos). Una sugerencia solo los añade si encajan mejor con lo que falta. Campos: mínimo, máximo, paso.",
+    "Mindestmenge": "Cantidad mínima",
+    "Höchstmenge": "Cantidad máxima",
+    "Schrittweite": "Paso",
+    "Beigabe hinzufügen": "Añadir un complemento",
+    "+ Beigabe": "+ Complemento",
+    "Skalierbar: folgt dem Mengenfaktor der Mahlzeit. Fest: bleibt gleich.": "Escalable: sigue el factor de cantidad de la comida. Fijo: se mantiene igual.",
+    "Skalierbar": "Escalable",
+    "Fest": "Fijo",
+    "Packung": "Envase",
+    "Abweichung ±": "Desviación ±",
+    "Wie weit diese Zutat vom Verhältnis zu den anderen abweichen darf (in Prozent)": "Cuánto puede desviarse este ingrediente de su proporción respecto a los demás (en porcentaje)",
+    "Packungsgröße: der Vorschlag nimmt eine oder zwei Packungen. Leer = genau die gespeicherte Menge.": "Tamaño del envase: la sugerencia usa uno o dos envases. Vacío = exactamente la cantidad guardada.",
+    "Mengenfaktor für Vorschläge": "Factor de cantidad para las sugerencias",
+    "von": "de",
+    "bis": "a",
+    "Wie stark die ganze Mahlzeit bei Vorschlägen verkleinert oder vergrößert werden darf (1 = Menge wie gespeichert). Leer = 0,6 bis 1,6.": "Cuánto puede reducirse o ampliarse la comida entera en las sugerencias (1 = cantidad guardada). Vacío = 0,6 a 1,6.",
+    "Mahlzeiten-Vorschläge sind nicht aktiviert": "Las sugerencias de comidas no están activadas",
+    "Vorschlag ist leer": "La sugerencia está vacía",
+    "Ungültige Werte": "Valores no válidos",
+    "Kleinster Faktor ist größer als der größte": "El factor mínimo es mayor que el máximo",
     "Frühstück": "Desayuno",
     "Mittagessen": "Almuerzo",
     "Abendessen": "Cena",
@@ -2194,8 +2339,167 @@ async function renderDiary() {
   root.append(h("div", { class: "hint" },
     !state.features.notes ? null : d.notes[0] ? h("div", { class: "note", onclick: () => noteDialog(0, "Tag") }, d.notes[0])
       : h("button", { class: "flat", onclick: () => noteDialog(0, "Tag") }, "Notiz zum Tag"),
+    state.features.suggest ? h("button", { class: "flat", onclick: () => suggestDialog() }, "Mahlzeit vorschlagen") : null,
     d.entries.length ? h("button", { class: "flat", onclick: () => dayCopyDialog() }, "Ganzen Tag kopieren") : null));
   if (state.features.trackers && trackers.length) root.append(trackerCard(trackers));
+}
+
+// ---------------------------------------------------------------- meal suggestions (optional)
+// Macro line in the usual order; null = no goal for that macro; signed = show + for positive values (deviations).
+const sugText = (t, signed) => {
+  const f = (v, big) => (v == null ? "–" : (signed && v > 0 ? "+" : "") + (big ? n0(v) : n1(v)));
+  return `${f(t.kcal, true)} kcal · KH ${f(t.carbs)} g · Fett ${f(t.fat)} g · Eiweiß ${f(t.protein)} g`;
+};
+const SUG_MACROS = ["kcal", "protein", "carbs", "fat"];
+
+function suggestDialog(opts = {}) {
+  const data = state.data, times = data.mode === "times";
+  const meals = data.meals.filter(m => !m.hidden).length ? data.meals.filter(m => !m.hidden) : data.meals;
+  let mealId = opts.meal ?? (meals.find(m => !data.entries.some(e => e.meal_id === m.id)) || meals[0] || {}).id;
+  let scope = opts.scope || null, shown = 3, seq = 0;
+  const body = h("div");
+  const mealSel = times ? null : h("select", { onchange: () => { mealId = Number(mealSel.value); shown = 3; load(); } },
+    meals.map(m => h("option", { value: m.id, selected: m.id === mealId }, m.name)));
+  const scopeSel = h("select", { onchange: () => { scope = scopeSel.value; shown = 3; send("PUT", "suggest/config", { scope }).catch(() => {}); load(); } },
+    h("option", { value: "day" }, "Rest des Tages"), h("option", { value: "next" }, "Anteil für diese Mahlzeit"));
+
+  async function load() {
+    const my = ++seq;
+    body.replaceChildren(h("div", { class: "muted" }, "Lade …"));
+    let r;
+    try { r = await api(`suggest?day=${state.day}` + (mealId ? "&meal_id=" + mealId : "") + (scope ? "&scope=" + scope : "")); }
+    catch (e) { if (my === seq) body.replaceChildren(h("div", { class: "err" }, e.message)); return; }
+    if (my !== seq) return;
+    scope = r.scope; scopeSel.value = scope;
+    draw(r);
+  }
+
+  function draw(r) {
+    const head = h("div", { class: "muted" }, `Ziel für diese Mahlzeit: ${sugText(r.target)}`);
+    if (r.reached) { body.replaceChildren(h("div", { class: "muted" }, "Dein Tagesziel ist schon erreicht – es gibt nichts aufzufüllen.")); return; }
+    if (!r.items.length) {
+      body.replaceChildren(head, h("div", { class: "muted", style: "margin-top:12px" },
+        "Noch keine Vorschläge: Speichere Mahlzeiten im Tagebuch über „Speichern / Kopieren“ oder iss Kombinationen mindestens zweimal, dann tauchen sie hier auf."));
+      return;
+    }
+    const more = r.items.length > shown ? h("button", { class: "flat", onclick: () => { shown += 3; draw(r); } }, "Weitere Vorschläge") : null;
+    body.replaceChildren(...[head, ...r.items.slice(0, shown).map(p => sugCard(p, r)), more].filter(Boolean));
+  }
+
+  // One suggestion: items, macros, deviation; "Anpassen" turns the amounts into fields.
+  function sugCard(p0, r) {
+    const p = JSON.parse(JSON.stringify(p0));
+    let editing = false;
+    const box = h("div", { class: "card sug" });
+    const total = k => p.items.reduce((a, i) => a + (i[k] || 0), 0);
+    const drawCard = () => {
+      const t = Object.fromEntries(SUG_MACROS.map(k => [k, total(k)]));
+      const diff = Object.fromEntries(SUG_MACROS.map(k => [k, r.target[k] == null ? null : t[k] - r.target[k]]));
+      const left = Object.fromEntries(SUG_MACROS.map(k => [k, r.remaining[k] == null ? null : r.remaining[k] - t[k]]));
+      const rows = p.items.map(i => {
+        if (!editing || !(i.grams > 0)) return h("div", { class: "sug-item" }, entryLabel(i), i.kind === "addon" ? tag("Beigabe") : null);
+        const g = h("input", { type: "number", step: "any", min: gMin(), value: gShow(i.grams), onchange: () => {
+          const ng = gRead(g.value);
+          if (!(ng > 0)) { g.value = gShow(i.grams); return; }
+          const k = ng / i.grams;
+          for (const key of [...SUG_MACROS, "fiber", "sugar", "salt", "sat_fat"]) i[key] = (i[key] || 0) * k;
+          i.grams = ng; drawCard();
+        } });
+        return h("div", { class: "sug-item" }, h("span", { class: "grow" }, i.name, i.kind === "addon" ? tag("Beigabe") : null), g, mUnit());
+      });
+      const keep = p.source === "history" ? h("button", { class: "flat", onclick: async e => {
+        e.target.disabled = true;
+        try {
+          await send("POST", "suggest/keep", { name: p.name, items: p.items.filter(i => i.kind !== "addon").map(i => ({ ...i, mode: "scale", tol: 15 })) });
+          e.target.textContent = "Gespeichert";
+        } catch (err) { e.target.disabled = false; alert(err.message); }
+      } }, "Als Mahlzeit speichern") : null;
+      box.replaceChildren(...[
+        h("div", { class: "sug-title" }, p.name, p.source === "history" ? tag(`aus dem Verlauf (${p.count}×)`) : null),
+        h("div", { class: "sug-items" }, rows),
+        h("div", { class: "muted" }, sugText(t)),
+        h("div", { class: "muted" }, `Abweichung vom Ziel: ${sugText(diff, true)}`),
+        r.scope === "next" ? h("div", { class: "muted" }, `Danach am Tag noch offen: ${sugText(left)}`) : null,
+        h("div", { class: "actions", style: "justify-content:flex-start" },
+          h("button", { onclick: async e => {
+            e.target.disabled = true;
+            const now = new Date();
+            const time = times && state.day === iso(now) ? now.toTimeString().slice(0, 5) : null;
+            try {
+              await send("POST", "suggest/add", { day: state.day, meal_id: times ? null : mealId, time, saved_meal_id: p.saved_meal_id,
+                items: p.items.map(i => ({ name: i.name, grams: i.grams, kcal: i.kcal, protein: i.protein, carbs: i.carbs, fat: i.fat,
+                  fiber: i.fiber || 0, sugar: i.sugar || 0, salt: i.salt || 0, sat_fat: i.sat_fat || 0 })) });
+              dlg.close(); renderDiary();
+            } catch (err) { e.target.disabled = false; alert(err.message); }
+          } }, "Eintragen"),
+          h("button", { class: "flat", onclick: () => { editing = !editing; drawCard(); } }, editing ? "Fertig" : "Anpassen"),
+          keep)].filter(Boolean));
+    };
+    drawCard();
+    return box;
+  }
+
+  setDlg(h("h2", {}, "Mahlzeit vorschlagen"),
+    h("div", { class: "sug-controls" }, mealSel, scopeSel,
+      h("button", { class: "icon", title: "Prioritäten und Beigaben", "aria-label": "Prioritäten und Beigaben", onclick: () => suggestSettings(() => suggestDialog({ meal: mealId, scope })) }, "⚙")),
+    body,
+    h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Schließen")));
+  if (!dlg.open) dlg.showModal();
+  if (scope) scopeSel.value = scope;
+  load();
+}
+
+// Priorities per macro, hard limits and the add-on foods (nuts ...) the suggestions may put next to a meal.
+async function suggestSettings(back) {
+  const cfg = await api("suggest/config");
+  const prio = { ...cfg.prio }, addons = cfg.addons.map(a => ({ ...a }));
+  let cap = cfg.kcal_cap, pmin = cfg.protein_min;
+  const levels = ["egal", "normal", "wichtig", "sehr wichtig"];
+  const msg = h("div", { class: "err" });
+  const show = () => {
+    const field = (a, key, title) => h("input", { type: "number", step: "any", min: "0", style: "width:64px;flex:none", title,
+      value: gShow(a[key]), onchange: e => { a[key] = gRead(e.target.value) || 0; } });
+    const addonRows = addons.map((a, i) => h("div", {}, h("div", { class: "grow" }, a.name),
+      field(a, "min_g", "Mindestmenge"), "–", field(a, "max_g", "Höchstmenge"), mUnit(), field(a, "step_g", "Schrittweite"),
+      h("button", { class: "icon", title: "Entfernen", "aria-label": "Entfernen", onclick: () => { addons.splice(i, 1); show(); } }, "✕")));
+    setDlg(h("h2", {}, "Vorschläge einstellen"),
+      h("label", {}, "Wichtigkeit"),
+      h("div", { class: "list" }, SUG_KEYS.map(([k, label]) => h("div", {}, h("div", { class: "grow" }, label),
+        h("select", { style: "width:auto;flex:none", onchange: e => { prio[k] = Number(e.target.value); } }, levels.map((l, i) => h("option", { value: i, selected: prio[k] === i }, l)))))),
+      h("div", { class: "muted" }, "Je wichtiger ein Wert, desto genauer soll der Vorschlag ihn treffen. Werte ohne Ziel bleiben außen vor."),
+      h("label", { class: "pick" }, h("input", { type: "checkbox", checked: cap, onchange: e => { cap = e.target.checked; } }), h("span", {}, "Kalorienziel nie überschreiten")),
+      h("label", { class: "pick" }, h("input", { type: "checkbox", checked: pmin, onchange: e => { pmin = e.target.checked; } }), h("span", {}, "Eiweißziel möglichst erreichen")),
+      h("label", { style: "margin-top:12px" }, "Beigaben"),
+      h("div", { class: "muted" }, "Lebensmittel, die zu jeder Mahlzeit passen (z. B. Nüsse). Ein Vorschlag nimmt sie nur dazu, wenn sie besser zum offenen Rest passen. Felder: Mindestmenge, Höchstmenge, Schrittweite."),
+      h("div", { class: "list" }, addonRows),
+      h("button", { class: "flat", onclick: () => setDlg(foodSwapDialog({
+        title: "Beigabe hinzufügen", grams: 30, confirm: "Hinzufügen", onCancel: show,
+        onDone: (f, g) => { addons.push({ food_id: f.id, name: f.name, min_g: 0, max_g: g, step_g: 5 }); show(); } })) }, "+ Beigabe"),
+      msg,
+      h("div", { class: "actions" }, h("button", { class: "flat", onclick: back }, "Abbrechen"),
+        h("button", { onclick: async () => {
+          try {
+            await send("PUT", "suggest/config", { prio, kcal_cap: cap, protein_min: pmin });
+            await send("PUT", "suggest/addons", { addons: addons.map(a => ({ food_id: a.food_id, min_g: a.min_g, max_g: a.max_g, step_g: a.step_g })) });
+            back();
+          } catch (e) { msg.textContent = e.message; }
+        } }, "Speichern")));
+  };
+  show();
+}
+
+const SUG_KEYS = [["kcal", "Kalorien"], ["protein", "Eiweiß"], ["carbs", "Kohlenhydrate"], ["fat", "Fette"]];
+
+// Per-ingredient settings in the meal editor: follows the meal factor (with an allowed deviation in %) or stays fixed (optional package size).
+function sugOpts(it, redraw) {
+  const fixed = it.mode === "fixed";
+  const mode = h("select", { title: "Skalierbar: folgt dem Mengenfaktor der Mahlzeit. Fest: bleibt gleich.", onchange: () => { it.mode = mode.value; redraw(); } },
+    h("option", { value: "scale", selected: !fixed }, "Skalierbar"), h("option", { value: "fixed", selected: fixed }, "Fest"));
+  const tol = h("input", { type: "number", step: "1", min: "0", max: "100", value: it.tol || "", placeholder: "0",
+    title: "Wie weit diese Zutat vom Verhältnis zu den anderen abweichen darf (in Prozent)", onchange: () => { it.tol = num(tol.value) || 0; } });
+  const pack = h("input", { type: "number", step: "any", min: "0", value: it.pack_g ? gShow(it.pack_g) : "", placeholder: "–",
+    title: "Packungsgröße: der Vorschlag nimmt eine oder zwei Packungen. Leer = genau die gespeicherte Menge.", onchange: () => { it.pack_g = gRead(pack.value) || 0; } });
+  return h("div", { class: "sug-opts" }, mode, fixed ? ["Packung", pack, mUnit()] : ["Abweichung ±", tol, "%"]);
 }
 
 // Steps and burned calories of the day (optional feature): a share of them raises the day's calorie goal.
@@ -3322,7 +3626,7 @@ async function renderMeals() {
   const chips = h("div");
 
   // Edit name/category and the components of a saved meal: change amounts, swap or remove foods, add new ones.
-  const editSaved = (s, draft = { name: s.name, category: s.category, items: s.items.map(i => ({ ...i })) }) => {
+  const editSaved = (s, draft = { name: s.name, category: s.category, items: s.items.map(i => ({ ...i })), min_scale: s.min_scale || 0, max_scale: s.max_scale || 0 }) => {
     const name = h("input", { value: draft.name, oninput: () => { draft.name = name.value; } });
     const category = h("input", { list: "cat-list", value: draft.category, oninput: () => { draft.category = category.value; } });
     const msg = h("div", { class: "err" });
@@ -3336,7 +3640,8 @@ async function renderMeals() {
         title, grams: idx == null ? null : draft.items[idx].grams, confirm: idx == null ? "Hinzufügen" : "Tauschen",
         onCancel: () => editSaved(s, draft),
         onDone: (f, g) => {
-          if (idx == null) draft.items.push(foodItem(f, g)); else draft.items[idx] = foodItem(f, g);
+          if (idx == null) draft.items.push(foodItem(f, g));
+          else { const { mode, tol, pack_g, step_g } = draft.items[idx]; draft.items[idx] = { ...foodItem(f, g), mode, tol, pack_g, step_g }; }
           editSaved(s, draft);
         },
       }));
@@ -3352,7 +3657,7 @@ async function renderMeals() {
         kc.textContent = `${n0(it.kcal)} kcal`;
       } }) : null;
       const kc = h("span", { class: "muted" }, `${n0(it.kcal)} kcal`);
-      return h("div", {}, h("div", { class: "grow" }, it.name, " ", kc), g, g ? mUnit() : null,
+      return h("div", {}, h("div", { class: "grow" }, it.name, " ", kc, state.features.suggest && g ? sugOpts(it, () => editSaved(s, draft)) : null), g, g ? mUnit() : null,
         h("button", { class: "icon edit", title: "Durch anderes Lebensmittel tauschen", "aria-label": "Tauschen", onclick: () => swap(idx, `„${it.name}“ tauschen`) }, "⇄"),
         h("button", { class: "icon", title: "Entfernen", "aria-label": "Entfernen", disabled: draft.items.length < 2, onclick: () => {
           draft.items.splice(idx, 1); editSaved(s, draft);
@@ -3363,15 +3668,22 @@ async function renderMeals() {
       h("label", { style: "margin-top:12px" }, "Komponenten"),
       h("div", { class: "list" }, rows),
       h("button", { class: "flat", onclick: () => swap(null, "Komponente hinzufügen") }, "+ Komponente"),
-      total, msg,
+      total,
+      state.features.suggest ? [h("label", { style: "margin-top:12px" }, "Mengenfaktor für Vorschläge"),
+        h("div", { class: "sug-range", title: "Wie stark die ganze Mahlzeit bei Vorschlägen verkleinert oder vergrößert werden darf (1 = Menge wie gespeichert). Leer = 0,6 bis 1,6." },
+          "von", h("input", { type: "number", step: "0.05", min: "0.1", placeholder: "0.6", value: draft.min_scale || "", onchange: e => { draft.min_scale = num(e.target.value) || 0; } }),
+          "bis", h("input", { type: "number", step: "0.05", min: "0.1", placeholder: "1.6", value: draft.max_scale || "", onchange: e => { draft.max_scale = num(e.target.value) || 0; } }))] : null,
+      msg,
       h("div", { class: "actions" },
         h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
         h("button", { onclick: async () => {
           if (!draft.name.trim()) { msg.textContent = "Bitte einen Namen angeben."; return; }
           try {
-            await send("PUT", "saved-meals/" + s.id, { name: draft.name, category: draft.category, items: draft.items.map(i => ({
-              name: i.name, grams: i.grams, kcal: i.kcal, protein: i.protein, carbs: i.carbs, fat: i.fat,
-              fiber: i.fiber || 0, sugar: i.sugar || 0, salt: i.salt || 0, sat_fat: i.sat_fat || 0 })) });
+            await send("PUT", "saved-meals/" + s.id, { name: draft.name, category: draft.category, min_scale: draft.min_scale || 0, max_scale: draft.max_scale || 0,
+              items: draft.items.map(i => ({
+                name: i.name, grams: i.grams, kcal: i.kcal, protein: i.protein, carbs: i.carbs, fat: i.fat,
+                fiber: i.fiber || 0, sugar: i.sugar || 0, salt: i.salt || 0, sat_fat: i.sat_fat || 0,
+                mode: i.mode || "scale", tol: i.tol || 0, pack_g: i.pack_g || 0, step_g: i.step_g || 0 })) });
             dlg.close(); renderMeals();
           } catch (e) { msg.textContent = e.message; }
         } }, "Speichern")));
@@ -4393,6 +4705,7 @@ async function renderSettings() {
       feat("activity", "Aktivität", "Schritte und verbrannte Kalorien (aus Home-Assistant-Sensoren oder von Hand) erhöhen das Tagesziel des jeweiligen Tages."),
       feat("scale", "Waage (Sensor)", "Körpergewicht automatisch aus einem Home-Assistant-Sensor übernehmen, z. B. von einer smarten Waage (mit Einheitenumrechnung)."),
       feat("schedule", "Mahlzeiten-Zeitplan", "Zeitfenster pro Mahlzeit: das Tagebuch zeigt, welche Mahlzeit gerade ansteht, und erinnert auf Wunsch per Benachrichtigung."),
+      feat("suggest", "Mahlzeiten-Vorschläge", "Button im Tagebuch: schlägt gespeicherte Mahlzeiten und Kombinationen aus Deinem Verlauf vor, die zu den offenen Kalorien und Makros passen (Mengen werden angepasst, feste Packungen bleiben)."),
       feat("household", "Haushalt", "Einträge, Lebensmittel und Mahlzeiten mit anderen Benutzern teilen, jeder mit eigener Portion (z. B. ein Gericht für die Familie). Beide Seiten müssen die Funktion einschalten."),
       feat("notes", "Notizen", "Freitext zu Mahlzeiten und Tagen (Hunger, Training, Stimmung). Vorhandene Notizen bleiben beim Ausschalten erhalten."),
       feat("body", "Körpermaße und Fortschrittsfotos", "Umfänge (Taille, Brust, Arm …) mit Verlauf und Fotos mit Vergleich im Reiter Gewicht."),

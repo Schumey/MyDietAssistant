@@ -60,7 +60,7 @@ def set_pref(owner: str, key: str, value):
 # --- settings -------------------------------------------------------------
 
 LANGS = ("auto", "de", "en", "fr", "es")   # interface languages (dictionaries in static/app.js)
-FEATURES = ("weekday_goals", "trackers", "micros", "notes", "body", "recipes", "sources", "household", "activity", "schedule", "scale")   # optional features, off by default
+FEATURES = ("weekday_goals", "trackers", "micros", "notes", "body", "recipes", "sources", "household", "activity", "schedule", "scale", "suggest")   # optional features, off by default
 
 
 def features(owner: str) -> dict:
@@ -317,12 +317,18 @@ class SavedItemIn(BaseModel):
     sugar: float = 0
     salt: float = 0
     sat_fat: float = 0
+    mode: str = "scale"      # suggestions: 'scale' | 'fixed'
+    tol: float = 0           # allowed deviation from the ratio, percent
+    pack_g: float = 0
+    step_g: float = 0
 
 
 class SavedMealEdit(BaseModel):
     name: str
     category: str = ""
     items: list[SavedItemIn] | None = None   # replaces all components when given
+    min_scale: float | None = None           # suggestions: factor range (None keeps, 0 = default)
+    max_scale: float | None = None
 
 
 class UseSavedIn(BaseModel):
@@ -336,7 +342,7 @@ def saved_meal_rows(c, owner: str):
     out = []
     for m in c.execute("SELECT * FROM saved_meals WHERE owner=? ORDER BY name COLLATE NOCASE", (owner,)):
         items = [dict(i) for i in c.execute(
-            "SELECT name, grams, kcal, protein, carbs, fat, fiber, sugar, salt, sat_fat FROM saved_meal_items"
+            "SELECT name, grams, kcal, protein, carbs, fat, fiber, sugar, salt, sat_fat, mode, tol, pack_g, step_g FROM saved_meal_items"
             " WHERE saved_meal_id=? ORDER BY id", (m["id"],))]
         out.append({**dict(m), "items": items,
                     **{k: round(sum(i[k] for i in items), 1) for k in ("kcal", "protein", "carbs", "fat", *db.MICROS)}})
@@ -382,11 +388,19 @@ def edit_saved(sid: int, s: SavedMealEdit, x_remote_user_id: str | None = Header
     with db.conn() as c:
         c.execute("UPDATE saved_meals SET name=?, category=? WHERE id=? AND owner=?",
                   (s.name.strip(), s.category.strip(), sid, owner))
+        if s.min_scale is not None or s.max_scale is not None:
+            lo, hi = (max(0, s.min_scale or 0), max(0, s.max_scale or 0))
+            if lo and hi and lo > hi:
+                raise HTTPException(400, "Kleinster Faktor ist größer als der größte")
+            c.execute("UPDATE saved_meals SET min_scale=?, max_scale=? WHERE id=? AND owner=?", (lo, hi, sid, owner))
         if s.items is not None and c.execute("SELECT 1 FROM saved_meals WHERE id=? AND owner=?", (sid, owner)).fetchone():
             c.execute("DELETE FROM saved_meal_items WHERE saved_meal_id=?", (sid,))
             c.executemany(
-                "INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
-                [(sid, i.name, i.grams, i.kcal, i.protein, i.carbs, i.fat, i.fiber, i.sugar, i.salt, i.sat_fat) for i in s.items])
+                "INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,mode,tol,pack_g,step_g)"
+                " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                [(sid, i.name, i.grams, i.kcal, i.protein, i.carbs, i.fat, i.fiber, i.sugar, i.salt, i.sat_fat,
+                  "fixed" if i.mode == "fixed" else "scale", min(max(i.tol, 0), 100), max(i.pack_g, 0), max(i.step_g, 0))
+                 for i in s.items])
     return {"ok": True}
 
 
@@ -398,10 +412,10 @@ def copy_saved(sid: int, x_remote_user_id: str | None = Header(None)):
         m = c.execute("SELECT * FROM saved_meals WHERE id=? AND owner=?", (sid, owner)).fetchone()
         if not m:
             raise HTTPException(404, "saved meal not found")
-        cur = c.execute("INSERT INTO saved_meals(owner,name,category) VALUES(?,?,?)",
-                        (owner, f"{m['name']} (Kopie)", m["category"]))
-        c.execute("INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat)"
-                  " SELECT ?,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat FROM saved_meal_items WHERE saved_meal_id=? ORDER BY id",
+        cur = c.execute("INSERT INTO saved_meals(owner,name,category,min_scale,max_scale) VALUES(?,?,?,?,?)",
+                        (owner, f"{m['name']} (Kopie)", m["category"], m["min_scale"], m["max_scale"]))
+        c.execute("INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,mode,tol,pack_g,step_g)"
+                  " SELECT ?,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,mode,tol,pack_g,step_g FROM saved_meal_items WHERE saved_meal_id=? ORDER BY id",
                   (cur.lastrowid, sid))
         return {"id": cur.lastrowid}
 
@@ -547,6 +561,8 @@ def dump(owner: str) -> dict:
             "goal": q("SELECT kcal,protein,carbs,fat,target_weight FROM goals WHERE owner=?", owner),
             "weights": q("SELECT day,kg FROM weights WHERE owner=? ORDER BY day", owner),
             "saved_meals": saved_meal_rows(c, owner),
+            "suggest_addons": q("SELECT food_id,min_g,max_g,step_g FROM suggest_addons WHERE owner=? ORDER BY id", owner),
+            "suggest": get_pref(owner, "suggest", None),
             "hidden_categories": get_pref(owner, "hidden_categories", []),
             "features": features(owner),
             "goal_weekdays": q("SELECT wd,kcal,protein,carbs,fat FROM goal_weekdays WHERE owner=?", owner),
@@ -668,13 +684,18 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
             c.execute("INSERT INTO weights(owner,day,kg) VALUES(?,?,?)", (owner, w["day"], w["kg"]))
         smap = {}
         for s in d.get("saved_meals", []):
-            sid = smap[s.get("id")] = c.execute("INSERT INTO saved_meals(owner,name,category) VALUES(?,?,?)",
-                                                (owner, s["name"], s.get("category", ""))).lastrowid
+            sid = smap[s.get("id")] = c.execute("INSERT INTO saved_meals(owner,name,category,min_scale,max_scale) VALUES(?,?,?,?,?)",
+                                                (owner, s["name"], s.get("category", ""), s.get("min_scale", 0), s.get("max_scale", 0))).lastrowid
             for i in s.get("items", []):
-                c.execute("INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat)"
-                          " VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                c.execute("INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,mode,tol,pack_g,step_g)"
+                          " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                           (sid, i["name"], i["grams"], i["kcal"], i["protein"], i["carbs"], i["fat"],
-                           *(i.get(m, 0) for m in db.MICROS)))
+                           *(i.get(m, 0) for m in db.MICROS), i.get("mode", "scale"), i.get("tol", 0), i.get("pack_g", 0), i.get("step_g", 0)))
+        c.execute("DELETE FROM suggest_addons WHERE owner=?", (owner,))
+        for a in d.get("suggest_addons", []):
+            if fmap.get(a.get("food_id")):
+                c.execute("INSERT INTO suggest_addons(owner,food_id,min_g,max_g,step_g) VALUES(?,?,?,?,?)",
+                          (owner, fmap[a["food_id"]], a.get("min_g", 0), a.get("max_g", 30), a.get("step_g", 5)))
         pmap = {}
         for p in d.get("goal_profiles", []):
             pmap[p["id"]] = c.execute("INSERT INTO goal_profiles(owner,name,kcal,protein,carbs,fat) VALUES(?,?,?,?,?,?)",
@@ -717,6 +738,8 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
         set_pref(owner, "skin", d["settings"]["skin"])
     if isinstance(d.get("reminder"), dict):
         set_pref(owner, "reminder", d["reminder"])
+    if isinstance(d.get("suggest"), dict):
+        set_pref(owner, "suggest", d["suggest"])
     if "schedule_nudge" in d:
         set_pref(owner, "schedule_nudge", bool(d["schedule_nudge"]))
     if isinstance(d.get("mealie_url"), str):

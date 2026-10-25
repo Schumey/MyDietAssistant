@@ -495,3 +495,18 @@ html[data-skin="win"] .diary tbody tr.item td:first-child { min-height: 0; }
 html[data-skin="win"] .card.now { box-shadow: var(--w-etched), 0 0 0 2px var(--primary-color); }
 html[data-skin="win"] .now-banner { background: var(--w-field); color: var(--w-text); box-shadow: var(--w-sunken); }
 .list input[type="time"] { width: auto; flex: none; }
+
+/* meal suggestions (optional feature); cards, selects and inputs follow the Windows look through their base classes */
+.sug-controls { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+.sug-controls select { flex: 1; min-width: 0; }
+#dlg .card.sug { margin: 10px 0; padding: 10px 12px; }
+.sug-title { font-weight: 500; margin-bottom: 4px; }
+.sug-items { margin: 4px 0 6px; }
+.sug-item { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+.sug-item .grow { flex: 1; min-width: 0; }
+.sug-item input { width: 80px; flex: none; }
+.sug-opts { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 4px; font-size: 12px; color: var(--secondary-text-color); }
+.sug-opts select { width: auto; flex: none; }
+.list .sug-opts input { width: 64px; flex: none; }
+.sug-range { display: flex; align-items: center; gap: 8px; }
+.sug-range input { width: 80px; flex: none; }

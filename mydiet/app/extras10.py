@@ -73,9 +73,10 @@ def share_saved_meals(s: ShareFoodsIn, x_remote_user_id: str | None = Header(Non
                 if m["name"].strip().lower() in have:
                     skipped += 1
                     continue
-                cur = c.execute("INSERT INTO saved_meals(owner,name,category) VALUES(?,?,?)", (u, m["name"], m["category"]))
-                c.execute("INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat)"
-                          " SELECT ?,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat FROM saved_meal_items WHERE saved_meal_id=? ORDER BY id",
+                cur = c.execute("INSERT INTO saved_meals(owner,name,category,min_scale,max_scale) VALUES(?,?,?,?,?)",
+                                (u, m["name"], m["category"], m["min_scale"], m["max_scale"]))
+                c.execute("INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,mode,tol,pack_g,step_g)"
+                          " SELECT ?,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,mode,tol,pack_g,step_g FROM saved_meal_items WHERE saved_meal_id=? ORDER BY id",
                           (cur.lastrowid, m["id"]))
                 copied += 1
     return {"copied": copied, "skipped": skipped}

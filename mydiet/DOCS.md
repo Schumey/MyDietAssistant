@@ -114,6 +114,19 @@ Nur die Online-Suche braucht Internet (Open Food Facts, optional USDA). Den Barc
 
 Der Barcode wird am Lebensmittel gespeichert. Im Hinzufügen-Dialog findet „Barcode scannen“ eigene Lebensmittel direkt; kennt Dein Tagebuch den Code noch nicht, wird er bei Open Food Facts nachgeschlagen und als neues Lebensmittel vorbereitet.
 
+### Scanner per Homescreen-Verknüpfung (Companion-App)
+Ein echtes Widget mit Kamera gibt es in der Companion-App nicht. Mit einer Verknüpfung auf das Panel öffnet sich der Scanner trotzdem mit einem Tipp:
+
+1. Update auf v1.6.0 oder neuer installieren (Einstellungen → Add-ons → MyDietAssistant → Aktualisieren).
+2. Auf dem Handy die Companion-App öffnen, in der Seitenleiste „Ernährung“ wählen und Einstellungen → Darstellung öffnen.
+3. „Auf diesem Gerät beim Öffnen direkt den Barcode-Scanner starten“ einschalten. Die Option gilt nur für dieses Gerät.
+4. **Android:** In der Companion-App Einstellungen → Companion-App → Verknüpfungen (nicht unter „Widgets“, dort gibt es nur Aktionsknopf, Bild, Entität, Mediaplayer, Template und To-do) eine Verknüpfung anlegen. Als Ziel den Pfad des Panels eintragen: `/hassio/ingress/<Add-on-Kennung>`. Die Kennung ist bei Add-ons aus einem Repository meist `<Kürzel>_mydiet` (z. B. `a0d7b954_mydiet`); den genauen Pfad zeigt die Adresszeile des Browsers, wenn Du das Panel „Ernährung“ öffnest. Danach das Home-Assistant-Symbol lange drücken und die Verknüpfung auf den Homescreen ziehen.
+5. **iPhone:** Kurzbefehle-App: Aktion „URL öffnen“ mit `homeassistant://navigate/hassio/ingress/<Add-on-Kennung>` (Kennung wie oben) anlegen und „Zum Home-Bildschirm“ hinzufügen. Ungeprüft.
+6. Verknüpfung antippen: Die App öffnet das Tagebuch, der Hinzufügen-Dialog erscheint mit laufender Kamera. Beim ersten Mal die Kameraerlaubnis erteilen.
+7. Barcode ins Bild halten. Bekannte Lebensmittel werden direkt gewählt, unbekannte bei Open Food Facts nachgeschlagen.
+
+Hinweis: Solange die Option an ist, startet der Scanner bei jedem Öffnen des Panels auf diesem Gerät. Schließen schließt nur den Dialog. Die Kamera braucht HTTPS (Nabu Casa oder eigenes Zertifikat).
+
 ## Aktivität (Zusatzfunktion)
 
 Schritte und verbrannte Kalorien erhöhen das Tagesziel des jeweiligen Tages. Unter Einstellungen → Aktivität wählst Du Sensoren aus Home Assistant (Schritte, aktive Kalorien) und den Anteil, der angerechnet wird (Standard 50 %). Die Sensoren müssen Tageszähler sein, die um Mitternacht auf 0 springen; ein dauerhaft steigender Zähler lässt sich mit dem Helfer „Verbrauchszähler“ (`utility_meter`) auf täglich umstellen. Das Add-on liest sie alle fünf Minuten und behält den höchsten Wert des Tages. „Verlauf nachladen“ im Tagebuch holt die letzten 30 Tage aus der Verlaufsdatenbank von Home Assistant (der Recorder muss die Sensoren aufzeichnen); Tage mit Handeingabe bleiben unberührt. Ohne Kalorien-Sensor werden die Kalorien aus Schritten × Körpergewicht × Faktor geschätzt (Standard 0,0005 kcal je Schritt und kg). Im Tagebuch lassen sich die Werte jedes Tages auch von Hand eintragen; solche Tage überschreiben die Sensoren nicht mehr. Die Statistik und der Sensor „verbleibende kcal“ rechnen mit dem erhöhten Ziel.
@@ -125,6 +138,16 @@ Unter Einstellungen → Zusatzfunktionen „Waage (Sensor)“ einschalten, dann 
 ## Mahlzeiten-Zeitplan (Zusatzfunktion)
 
 Jede Mahlzeit bekommt unter Einstellungen → Mahlzeiten ein Zeitfenster (Von–Bis, auch über Mitternacht). Leer gilt ein Standardfenster für Frühstück (5:00–10:30), Mittagessen (11:00–14:30) und Abendessen (17:00–21:00); Snacks haben keines. Das Tagebuch zeigt heute „Jetzt: Mittagessen“ mit einem Knopf zum Hinzufügen und hebt die Mahlzeit hervor, sonst die nächste anstehende. Auf Wunsch schickt das Add-on eine Benachrichtigung, wenn ein Fenster beginnt und die Mahlzeit noch leer ist (nutzt den Benachrichtigungsdienst der Erinnerung).
+
+## Mahlzeiten-Vorschläge (Zusatzfunktion)
+
+Einstellungen → Zusatzfunktionen → „Mahlzeiten-Vorschläge“ blendet im Tagebuch den Button „Mahlzeit vorschlagen“ ein. Er rechnet das offene Tagesbudget aus (Ziel des Tages inkl. Aktivität und Wochentagsziel minus Gegessenes; Werte ohne Ziel zählen nicht) und sucht unter Deinen gespeicherten Mahlzeiten und den wiederkehrenden Kombinationen aus Deinem Verlauf (gleiche Zutaten in einer Mahlzeit, mindestens zweimal in 180 Tagen) die besten Treffer. Oben im Dialog wählst Du die Mahlzeit, in die eingetragen wird, und ob der **Rest des Tages** oder nur der **Anteil für diese Mahlzeit** (Rest geteilt durch die Zahl der noch leeren Mahlzeiten) das Ziel ist.
+
+**Mengen.** In Mahlzeiten → Bearbeiten (nur mit eingeschalteter Funktion) bekommt jede Zutat einen Modus: *Skalierbar* folgt dem Mengenfaktor der Mahlzeit; „Abweichung ±“ erlaubt der Zutat, vom Verhältnis zu den anderen um so viele Prozent abzuweichen (0 = starr). *Fest* bleibt, wie gespeichert, oder nimmt mit „Packung“ eine oder zwei Packungen. „Mengenfaktor für Vorschläge“ begrenzt, wie stark die ganze Mahlzeit schrumpfen oder wachsen darf (leer = 0,6 bis 1,6). Mengen werden auf 5 g (kleine Mengen 1 g) gerundet.
+
+**Prioritäten** (Zahnrad im Dialog): Wichtigkeit je Kalorien, Eiweiß, Kohlenhydrate und Fett sowie „Kalorienziel nie überschreiten“ und „Eiweißziel möglichst erreichen“. Zu viel zählt stärker als zu wenig. **Beigaben** sind Lebensmittel, die zu jeder Mahlzeit passen (z. B. Nüsse) mit Mindest-/Höchstmenge und Schrittweite; ein Vorschlag nimmt höchstens zwei davon dazu und nur, wenn sie den Rest besser treffen. Bei der Reihenfolge helfen die passende Kategorie (Name der Mahlzeit), Abwechslung gegenüber heute und gestern und die Häufigkeit.
+
+„Anpassen“ erlaubt, die Mengen vor dem Eintragen von Hand zu ändern (Makros und Abweichung rechnen mit). Die Einträge sind wie immer Schnappschüsse. Export, Sicherungen und Import enthalten die Einstellungen, Beigaben und Zutaten-Modi.
 
 ## Lebensmittel-Tabelle importieren
 

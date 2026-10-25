@@ -22,7 +22,7 @@ Die Oberfläche läuft per Ingress im HA-Seitenmenü, übernimmt das aktive HA-T
 - **Trigger:** Lebensmittel oder Mahlzeiten automatisch eintragen, Mahlzeiten nur an bestimmten Tagen zeigen, abhängig von HA-Zuständen, Kalender oder Uhrzeit
 - **HA-Sensoren** für Kalorien, Makros, Rest, Wochenschnitt, Gewicht und Bilanz; Schnittstelle für Automationen (Waage, Sprachassistent)
 - **Import/Export:** JSON-Sicherung, CSV, MyFitnessPal, Cronometer, FDDB, Yazio, Apple Health, Google Fit; Bericht und Tabelle für Berater und Trainer
-- **Optionale Zusatzfunktionen** (standardmäßig aus): Wochentagsziele, Wasser und Ergänzungen, Rezepte, weitere Nährwerte, Notizen, Körpermaße und Fortschrittsfotos, Online-Datenbanken mit Abgleich, Aktivität, Waage (Gewicht aus einem HA-Sensor), Mahlzeiten-Zeitplan, Haushalt (mehrere Benutzer teilen Einträge, Lebensmittel und Mahlzeiten)
+- **Optionale Zusatzfunktionen** (standardmäßig aus): Wochentagsziele, Wasser und Ergänzungen, Rezepte, weitere Nährwerte, Notizen, Körpermaße und Fortschrittsfotos, Online-Datenbanken mit Abgleich, Aktivität, Waage (Gewicht aus einem HA-Sensor), Mahlzeiten-Zeitplan, Mahlzeiten-Vorschläge nach offenen Makros, Haushalt (mehrere Benutzer teilen Einträge, Lebensmittel und Mahlzeiten)
 - **Benutzerverwaltung** für Administratoren, automatische Sicherungen, Erinnerung per Benachrichtigung
 
 <p align="center">

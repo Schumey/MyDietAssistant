@@ -57,7 +57,9 @@ CREATE TABLE IF NOT EXISTS saved_meals (
   id INTEGER PRIMARY KEY,
   owner TEXT NOT NULL,
   name TEXT NOT NULL,
-  category TEXT NOT NULL DEFAULT ''
+  category TEXT NOT NULL DEFAULT '',
+  min_scale REAL NOT NULL DEFAULT 0,      -- meal suggestions: smallest / largest factor (0 = default range)
+  max_scale REAL NOT NULL DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS saved_meal_items (
   id INTEGER PRIMARY KEY,
@@ -67,7 +69,19 @@ CREATE TABLE IF NOT EXISTS saved_meal_items (
   kcal REAL NOT NULL,
   protein REAL NOT NULL,
   carbs REAL NOT NULL,
-  fat REAL NOT NULL
+  fat REAL NOT NULL,
+  mode TEXT NOT NULL DEFAULT 'scale',     -- suggestions: 'scale' (follows the meal factor) | 'fixed'
+  tol REAL NOT NULL DEFAULT 0,            -- allowed deviation from the ratio in percent
+  pack_g REAL NOT NULL DEFAULT 0,         -- fixed items: package size (1 or 2 packages), 0 = exactly the stored amount
+  step_g REAL NOT NULL DEFAULT 0          -- rounding step in grams, 0 = automatic
+);
+CREATE TABLE IF NOT EXISTS suggest_addons (   -- foods that go with any meal (nuts ...): suggestions may add them
+  id INTEGER PRIMARY KEY,
+  owner TEXT NOT NULL,
+  food_id INTEGER NOT NULL,
+  min_g REAL NOT NULL DEFAULT 0,
+  max_g REAL NOT NULL DEFAULT 30,
+  step_g REAL NOT NULL DEFAULT 5
 );
 CREATE TABLE IF NOT EXISTS prefs (
   owner TEXT NOT NULL,
@@ -305,7 +319,18 @@ def _m3_v11(c):
     c.execute("CREATE INDEX IF NOT EXISTS foods_shared ON foods(shared)")
 
 
-MIGRATIONS = (_m1_legacy, _m2_v1, _m3_v11)
+def _m4_v17(c):
+    """v1.7: meal suggestions (ingredient modes and ranges, factor range, add-on foods)."""
+    _add(c, "saved_meals", "min_scale", "REAL NOT NULL DEFAULT 0")
+    _add(c, "saved_meals", "max_scale", "REAL NOT NULL DEFAULT 0")
+    _add(c, "saved_meal_items", "mode", "TEXT NOT NULL DEFAULT 'scale'")
+    _add(c, "saved_meal_items", "tol", "REAL NOT NULL DEFAULT 0")
+    _add(c, "saved_meal_items", "pack_g", "REAL NOT NULL DEFAULT 0")
+    _add(c, "saved_meal_items", "step_g", "REAL NOT NULL DEFAULT 0")
+    c.execute("CREATE INDEX IF NOT EXISTS suggest_addons_owner ON suggest_addons(owner)")
+
+
+MIGRATIONS = (_m1_legacy, _m2_v1, _m3_v11, _m4_v17)
 
 
 def init():

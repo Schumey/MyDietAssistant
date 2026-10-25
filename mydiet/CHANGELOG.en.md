@@ -2,6 +2,17 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.7.0
+
+### Added
+- **Meal suggestions** (optional feature “Mahlzeiten-Vorschläge”): the “Suggest a meal” button at the bottom of the diary works out what is still open today (daily goal including activity and weekday goal, minus what you ate) and proposes fitting meals. Either for the rest of the day or just for the selected meal’s share (the rest divided by the meals that are still empty). Cards show the ingredients in grams, the macros and the deviation from the target, and can be adjusted by hand before they are entered.
+- **Candidates:** saved meals and combinations found in your diary (same ingredients in one meal, at least twice in the last 180 days, with average amounts). Combinations from the history can be saved as a meal.
+- **Ingredient modes in saved meals:** every ingredient is *scalable* (follows the meal’s amount factor, with an allowed deviation in percent, 0 = strictly in ratio) or *fixed* (e.g. a 200 g package of cottage cheese; with a package size the suggestion uses one or two packages). Plus an amount-factor range per meal (default 0.6 to 1.6).
+- **Priorities:** importance for calories, protein, carbs and fat (don’t care to very important), “never exceed the calorie goal” and “reach the protein goal if possible” (gear icon in the suggestion dialog).
+- **Add-ons:** foods that go with any meal (e.g. walnuts) with minimum/maximum amount and step. A suggestion only adds them when they fit the remainder better (at most two).
+- Light ranking hints: matching category, variety (things eaten today or yesterday move back), familiarity.
+- Export, backups, import, sharing and copying meals include the new settings; database migration 4 (new columns, add-ons table).
+
 ## 1.6.2
 
 ### Changed

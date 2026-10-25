@@ -2,6 +2,17 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.7.0
+
+### Neu
+- **Mahlzeiten-Vorschläge** (Zusatzfunktion „Mahlzeiten-Vorschläge“): Der Button „Mahlzeit vorschlagen“ unten im Tagebuch rechnet aus, was heute noch offen ist (Tagesziel inkl. Aktivität und Wochentagsziel minus Gegessenes), und schlägt passende Mahlzeiten vor. Wahlweise für den Rest des ganzen Tages oder nur für den Anteil der gewählten Mahlzeit (Rest geteilt durch die noch leeren Mahlzeiten). Die Karten zeigen die Zutaten in Gramm, die Makros, die Abweichung vom Ziel und lassen sich mit „Anpassen“ von Hand korrigieren, bevor sie eingetragen werden.
+- **Kandidaten:** gespeicherte Mahlzeiten und Kombinationen aus dem Verlauf (gleiche Zutaten in einer Mahlzeit, mindestens zweimal in den letzten 180 Tagen, mit Durchschnittsmengen). Verlaufs-Kombinationen lassen sich mit „Als Mahlzeit speichern“ übernehmen.
+- **Zutaten-Modi in gespeicherten Mahlzeiten:** Jede Zutat ist *skalierbar* (folgt dem Mengenfaktor der Mahlzeit, mit einer Abweichung in Prozent, 0 = starr im Verhältnis) oder *fest* (z. B. eine 200-g-Packung Hüttenkäse; mit Packungsgröße nimmt der Vorschlag eine oder zwei Packungen). Dazu ein Mengenfaktor-Bereich pro Mahlzeit (Standard 0,6 bis 1,6).
+- **Prioritäten:** Wichtigkeit für Kalorien, Eiweiß, Kohlenhydrate und Fett (egal bis sehr wichtig), „Kalorienziel nie überschreiten“ und „Eiweißziel möglichst erreichen“ (Zahnrad im Vorschlags-Dialog).
+- **Beigaben:** Lebensmittel, die zu jeder Mahlzeit passen (z. B. Walnüsse), mit Mindest-/Höchstmenge und Schrittweite. Ein Vorschlag nimmt sie nur dazu, wenn sie besser zum offenen Rest passen (höchstens zwei).
+- Leichte Hilfen bei der Reihenfolge: passende Kategorie, Abwechslung (heute oder gestern schon Gegessenes rutscht nach hinten), Häufigkeit.
+- Export, Sicherungen, Import, Teilen und Kopieren von Mahlzeiten enthalten die neuen Einstellungen; Datenbank-Migration 4 (neue Spalten, Beigaben-Tabelle).
+
 ## 1.6.2
 
 ### Geändert
