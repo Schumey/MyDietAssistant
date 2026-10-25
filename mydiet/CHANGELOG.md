@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.7.2
+
+### Behoben
+- **Handy:** Die Tagesziel-Zeile (auch mit Aktivitäts-Kalorien) bricht um und überlappt die Zahlen nicht mehr. Der Online-Vergleich im Dialog „Neues Lebensmittel“ passt auf schmale Bildschirme, ohne seitlich zu scrollen.
+
 ## 1.7.1
 
 ### Geändert
