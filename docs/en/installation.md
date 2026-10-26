@@ -14,7 +14,7 @@
 3. Reload the page. **MyDietAssistant** appears at the bottom. Open it and tap **Install**.
 4. When the installation has finished, tap **Start**.
 5. Turn on **Show in sidebar** (and, if you like, **Start on boot** and **Watchdog**).
-6. The sidebar now has an entry **Ernährung** (Nutrition). Open it: you see today’s diary.
+6. The sidebar now has an entry **MyDietAssistant**. Open it: you see today’s diary.
 
 The first time, Home Assistant builds the image itself. This can take a few minutes.
 

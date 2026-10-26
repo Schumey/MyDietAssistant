@@ -10,7 +10,7 @@ Die ausführliche Anleitung mit Schritt-für-Schritt-Beschreibungen steht in ein
 
 ## Schnellstart / Quick start
 
-1. Add-on starten und **In Seitenleiste anzeigen** einschalten, dann **Ernährung** öffnen. / Start the add-on, turn on **Show in sidebar**, then open **Ernährung** (Nutrition).
+1. Add-on starten und **In Seitenleiste anzeigen** einschalten, dann **MyDietAssistant** öffnen. / Start the add-on, turn on **Show in sidebar**, then open **MyDietAssistant**.
 2. Einstellungen → Tagesziele festlegen. / Set your goals under Settings → Daily goals.
 3. Im Tagebuch **+ Nahrungsmittel hinzufügen**. / In the diary tap **+ Add food**.
 

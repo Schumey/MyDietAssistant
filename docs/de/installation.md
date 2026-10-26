@@ -14,7 +14,7 @@
 3. Lade die Seite neu. Ganz unten erscheint **MyDietAssistant**. Öffne es und tippe auf **Installieren**.
 4. Wenn die Installation fertig ist, tippe auf **Starten**.
 5. Schalte **In Seitenleiste anzeigen** ein (und bei Bedarf **Beim Hochfahren starten** und **Watchdog**).
-6. In der Seitenleiste erscheint der Eintrag **Ernährung**. Öffne ihn: Du siehst das Tagebuch von heute.
+6. In der Seitenleiste erscheint der Eintrag **MyDietAssistant**. Öffne ihn: Du siehst das Tagebuch von heute.
 
 Das erste Mal baut Home Assistant das Image selbst. Das kann einige Minuten dauern.
 

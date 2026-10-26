@@ -27,7 +27,7 @@ The browser’s own reader (Chrome/Android) is used where available. Otherwise t
 The Companion app has no real widget with a camera. With a shortcut to the panel the scanner still opens with one tap.
 
 1. Install v1.6.0 or newer (see [Installation](installation.md#update)).
-2. On your phone open the Companion app, choose **Ernährung** (Nutrition) in the sidebar and then *Settings → Appearance*.
+2. On your phone open the Companion app, choose **MyDietAssistant** in the sidebar and then *Settings → Appearance*.
 3. Turn on **Start the barcode scanner right away when opening on this device**. The option applies to this device only.
 4. **Android:** In the Companion app open *Settings → Companion app → Shortcuts* (not under “Widgets”; those only offer action button, image, entity, media player, template and to-do) and create a shortcut. As the target enter the path of the panel: `/hassio/ingress/<add-on identifier>`.
    - For add-ons from a repository the identifier is usually `<prefix>_mydiet` (for example `a0d7b954_mydiet`).

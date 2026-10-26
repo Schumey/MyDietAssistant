@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.8.0
+
+### Changed
+- **Sidebar:** The Home Assistant sidebar entry is now called **MyDietAssistant** in every language (previously “Ernährung”). The change takes effect after updating and rebuilding the add-on.
+
 ## 1.7.9
 
 ### Added

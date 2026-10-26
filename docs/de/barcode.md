@@ -27,7 +27,7 @@ Der Browser-eigene Leser (Chrome/Android) wird genutzt, wo es ihn gibt. Sonst sp
 Ein echtes Widget mit Kamera gibt es in der Companion-App nicht. Mit einer Verknüpfung auf das Panel öffnet sich der Scanner trotzdem mit einem Tipp.
 
 1. Installiere v1.6.0 oder neuer (siehe [Installation](installation.md#aktualisieren)).
-2. Öffne auf dem Handy die Companion-App, wähle in der Seitenleiste **Ernährung** und dann *Einstellungen → Darstellung*.
+2. Öffne auf dem Handy die Companion-App, wähle in der Seitenleiste **MyDietAssistant** und dann *Einstellungen → Darstellung*.
 3. Schalte **Auf diesem Gerät beim Öffnen direkt den Barcode-Scanner starten** ein. Die Option gilt nur für dieses Gerät.
 4. **Android:** Öffne in der Companion-App *Einstellungen → Companion-App → Verknüpfungen* (nicht unter „Widgets“; dort gibt es nur Aktionsknopf, Bild, Entität, Mediaplayer, Template und To-do) und lege eine Verknüpfung an. Als Ziel trägst Du den Pfad des Panels ein: `/hassio/ingress/<Add-on-Kennung>`.
    - Die Kennung ist bei Add-ons aus einem Repository meist `<Kürzel>_mydiet` (z. B. `a0d7b954_mydiet`).

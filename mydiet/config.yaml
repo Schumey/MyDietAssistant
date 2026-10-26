@@ -1,5 +1,5 @@
 name: MyDietAssistant
-version: "1.7.9"
+version: "1.8.0"
 slug: mydiet
 url: https://github.com/Schumey/MyDietAssistant
 description: Lokales Ernährungstagebuch (Kalorien & Makros) mit HA-Sensoren
@@ -7,7 +7,7 @@ arch: [amd64, aarch64]
 init: false
 ingress: true
 panel_icon: mdi:food-apple
-panel_title: Ernährung
+panel_title: MyDietAssistant
 homeassistant_api: true
 options:
   default_kcal_goal: 2000

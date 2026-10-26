@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.8.0
+
+### Geändert
+- **Seitenleiste:** Der Eintrag in der Home-Assistant-Seitenleiste heißt in allen Sprachen **MyDietAssistant** (vorher „Ernährung“). Die Änderung greift nach dem Aktualisieren und Neubau des Add-ons.
+
 ## 1.7.9
 
 ### Neu
