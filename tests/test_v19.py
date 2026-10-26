@@ -62,7 +62,7 @@ def test_deleting_recipes_removes_their_foods(user):
     assert c.get("/api/data/counts").json()["foods"] == 0
 
 
-@pytest.mark.parametrize("lang,word", [("nl", "Voedingsrapport"), ("fr", "Rapport nutritionnel"), ("es", "Informe nutricional"), ("en", "Nutrition report"), ("de", "Ernährungsbericht")])
+@pytest.mark.parametrize("lang,word", [("nl", "Voedingsrapport"), ("it", "Rapporto nutrizionale"), ("fr", "Rapport nutritionnel"), ("es", "Informe nutricional"), ("en", "Nutrition report"), ("de", "Ernährungsbericht")])
 def test_report_follows_the_interface_language(me, lang, word):
     me.put("/api/settings", json={"lang": lang})
     assert word in me.get("/api/export/report").text

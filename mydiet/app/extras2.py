@@ -237,6 +237,7 @@ NOTIFY = {   # push texts follow the interface language of the person (German wh
     "fr": ("Journal alimentaire", "Rien n’est encore saisi aujourd’hui (rappel {}).", "{} est à l’ordre du jour ({}–{})."),
     "es": ("Diario de alimentos", "Hoy todavía no hay nada registrado (recordatorio {}).", "Toca {} ({}–{})."),
     "nl": ("Voedingsdagboek", "Vandaag is nog niets ingevoerd (herinnering {}).", "{} staat gepland ({}–{})."),
+    "it": ("Diario alimentare", "Oggi non è ancora stato registrato nulla (promemoria {}).", "È in programma {} ({}–{})."),
 }
 
 

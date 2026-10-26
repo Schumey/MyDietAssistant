@@ -24,7 +24,7 @@ Jede Karte lässt sich ein- und ausklappen: Tippe auf den Titel. Welche Karten o
 ## Sprache und Einheiten
 
 1. Öffne *Einstellungen → Sprache und Einheiten*.
-2. Wähle **Sprache**: Automatisch (Browser), Deutsch, English, Français, Español oder Nederlands.
+2. Wähle **Sprache**: Automatisch (Browser), Deutsch, English, Français, Español, Nederlands oder Italiano.
 3. Wähle **Einheiten**: Metrisch (kg, cm) oder Imperial (lb, in).
 4. Wähle **Lebensmittelmengen**: Gramm oder Unzen (oz).
 5. Tippe auf **Speichern**. Die Seite lädt neu.

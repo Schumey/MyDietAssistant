@@ -2,6 +2,16 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.13.0
+
+### Neu
+- **Italienisch:** Die Oberfläche gibt es jetzt auch auf Italienisch (Einstellungen → Sprache → Italiano), dazu der Ernährungsbericht, die Push-Texte und die Namen der Add-on-Optionen in Home Assistant. Die Übersetzung ist maschinell erstellt und nicht von Muttersprachlern geprüft.
+- **Trainingstag nur an Trainingstagen:** Der Knopf „Trainingstag“ erscheint im Tagebuch erst, wenn der Shake für den Tag eingetragen ist oder ein Trigger ihn gebucht hat. Solange der Trainingstag noch nicht eingerichtet ist, bleibt der Knopf sichtbar. Wer ihn immer sehen will, setzt in den Trainingstag-Einstellungen das Häkchen „Knopf „Trainingstag“ an jedem Tag zeigen“.
+- **Eiweiß bei den Abendessen:** Neues Häkchen „Abendessen sollen das Eiweißziel möglichst erreichen“ (standardmäßig an) in den Trainingstag-Einstellungen.
+
+### Geändert
+- **Mehr Browser-Tests:** Trainingstag (Einstellungen speichern, Knopf, Dialog mit Shake und Abendessen) und die italienische Oberfläche sind jetzt in der Browser-Testsuite abgedeckt.
+
 ## 1.12.1
 
 ### Behoben

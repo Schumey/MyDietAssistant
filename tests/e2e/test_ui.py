@@ -148,3 +148,76 @@ def test_interface_language_switches(page, lang, diary_tab):
         assert page.errors == []
     finally:
         settings(page.base, lang="de")
+
+
+# --- training day -------------------------------------------------------------------------------
+
+def seed_training(base):
+    """Foods, a shake and two dinner meals; returns the shake's id. The shake is configured with a protein target."""
+    from datetime import date
+    day = date.today().isoformat()
+    settings(base, lang="de", features={"suggest": True})
+    httpx.put(base + "/api/goal", json={"kcal": 2600, "protein": 160, "carbs": 300, "fat": 80})
+    mid = [m["id"] for m in httpx.get(f"{base}/api/day/{day}").json()["meals"]]
+
+    def food(name, k, p, c, f):
+        return httpx.post(base + "/api/foods", json={"name": name, "kcal": k, "protein": p, "carbs": c, "fat": f}).json()["id"]
+
+    def save(name, items):
+        for fid, g in items:
+            httpx.post(base + "/api/entries", json={"day": day, "meal_id": mid[0], "food_id": fid, "grams": g})
+        sid = httpx.post(base + "/api/saved-meals", json={"day": day, "meal_id": mid[0], "name": name}).json()["id"]
+        httpx.delete(f"{base}/api/day/{day}/entries?meal_id={mid[0]}")
+        return sid
+    whey, milk = food("Whey", 400, 80, 8, 6), food("Milch", 47, 3.4, 4.8, 1.5)
+    shake = save("Test-Shake", [(whey, 30), (milk, 300)])
+    save("Reis mit Hähnchen", [(food("Reis", 350, 7, 78, 1), 80), (food("Hähnchen", 110, 23, 0, 1.5), 150)])
+    save("Quark pur", [(food("Magerquark", 67, 12, 4, 0.3), 250)])
+    return shake, mid, day
+
+
+def test_training_settings_save_with_empty_fields_and_the_button_follows_the_day(page):
+    shake, mid, day = seed_training(page.base)
+    page.goto(page.base + "/")
+    page.wait_for_selector("#diary .daynav")
+    assert page.query_selector("#diary >> text=Mahlzeit vorschlagen")
+    page.click("#diary >> text=Trainingstag")                        # not set up yet: the button leads to the setup
+    page.click("#dlg >> text=Prioritäten und Beigaben")
+    page.select_option('#dlg select:has(option:text("– kein Shake –"))', str(shake))
+    page.fill('#dlg input[placeholder="egal"] >> nth=1', "40")      # protein only; calories, carbs and fat stay empty
+    page.click("#dlg >> text=Speichern")
+    page.wait_for_selector("#dlg >> text=Shake")
+    assert not page.query_selector("#dlg .err:not(:empty)")
+    page.click("#dlg >> text=Schließen")
+    page.reload()
+    page.wait_for_selector("#diary .daynav")
+    assert not page.query_selector("#diary button:text-is('Trainingstag')")     # configured, but no training yet today
+    httpx.post(f"{page.base}/api/saved-meals/{shake}/add", json={"day": day, "meal_id": mid[0]})
+    page.reload()
+    page.wait_for_selector("#diary button:text-is('Trainingstag')")
+    assert page.errors == []
+
+
+def test_training_dialog_shows_dinners_after_the_shake_is_in_the_diary(page):
+    shake, mid, day = seed_training(page.base)
+    httpx.put(page.base + "/api/suggest/training", json={"saved_meal_id": shake, "target": {"protein": 40}, "shake_meal_id": mid[0], "dinner_meal_id": mid[-1], "always": True})
+    page.goto(page.base + "/")
+    page.click("#diary button:text-is('Trainingstag')")
+    page.wait_for_selector("#dlg h3:text-is('Shake')")
+    assert "Ziel für den Shake" in page.inner_text("#dlg")
+    page.click("#dlg >> text=Eintragen >> nth=0")                    # enter the fitted shake; the dialog stays open and reloads
+    page.wait_for_selector("#dlg >> text=Der Shake ist für heute schon eingetragen.")
+    page.wait_for_selector("#dlg >> text=Reis mit Hähnchen")
+    assert page.query_selector("#diary >> text=Whey")
+    assert page.errors == []
+
+
+def test_italian_interface_is_complete_on_the_main_pages(page):
+    settings(page.base, lang="it", features={})
+    page.goto(page.base + "/")
+    page.wait_for_selector("#diary .daynav")
+    assert [b.text_content() for b in page.query_selector_all("#tabs button:not([hidden])")] == \
+        ["Diario", "Alimenti", "Pasti", "Peso", "Statistiche", "Impostazioni"]
+    assert "Obiettivo giornaliero" in page.inner_text("#diary") or "Il tuo obiettivo giornaliero" in page.inner_text("#diary")
+    assert page.errors == []
+    settings(page.base, lang="de")

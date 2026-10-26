@@ -98,3 +98,39 @@ def test_empty_target_fields_are_accepted(user):
     assert c.put("/api/suggest/training", json=body).status_code == 200
     t = c.get("/api/suggest/config").json()["training"]
     assert t["target"] == {"kcal": None, "protein": 40.0, "carbs": None, "fat": None} and t["auto"]
+
+
+def test_button_shows_only_on_training_days(user):
+    c, shake, mids = shake_setup(user)
+    status = lambda: c.get(f"/api/suggest/training/status?day={DAY}").json()
+    assert status() == {"configured": True, "show": False}
+    c.post(f"/api/saved-meals/{shake}/add", json={"day": DAY, "meal_id": mids[0]})
+    assert status()["show"]                                        # shake is in the diary
+    c.delete(f"/api/day/{DAY}/entries")
+    assert not status()["show"]
+    c.put("/api/suggest/training", json={"saved_meal_id": shake, "target": {"protein": 40}, "always": True})
+    assert status()["show"]
+    assert user().get(f"/api/suggest/training/status?day={DAY}").json() == {"configured": False, "show": False}   # feature off
+
+
+def test_not_configured_keeps_the_button_so_setup_can_be_found(user):
+    assert setup_user(user).get(f"/api/suggest/training/status?day={DAY}").json() == {"configured": False, "show": True}
+
+
+def test_trigger_run_marks_a_training_day(user):
+    from datetime import date
+    c, shake, mids = shake_setup(user)
+    today = date.today().isoformat()
+    tid = c.post("/api/triggers", json={"kind": "time", "match": "12:00", "saved_meal_id": shake, "meal_id": mids[0]}).json()["id"]
+    assert not c.get(f"/api/suggest/training/status?day={today}").json()["show"]
+    c.post(f"/api/triggers/{tid}/run")
+    assert c.get(f"/api/suggest/training/status?day={today}").json()["show"]
+
+
+def test_dinners_aim_for_the_protein_goal_when_asked(user):
+    c, shake, mids = shake_setup(user)
+    r = c.get(f"/api/suggest/training?day={DAY}").json()
+    c.put("/api/suggest/training", json={"saved_meal_id": shake, "target": {"protein": 40}, "dinner_protein": False})
+    off = c.get(f"/api/suggest/training?day={DAY}").json()
+    assert r["items"] and off["items"]
+    assert r["items"][0]["totals"]["protein"] >= off["items"][0]["totals"]["protein"]

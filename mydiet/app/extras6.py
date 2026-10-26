@@ -49,6 +49,13 @@ T = {
            "none": "Geen gegevens in deze periode.", "print": "Afdrukken / opslaan als pdf", "made": "Gemaakt met MyDietAssistant op",
            "fiber": "Vezels", "sugar": "Suikers", "salt": "Zout", "sat_fat": "Verz. vet", "aim": "Doel van de persoon",
            "lose": "Afvallen", "maintain": "Gewicht behouden", "gain": "Aankomen", "dec": ",", "c_s": "KH", "f_s": "Vet", "p_s": "Eiwit"},
+    "it": {"title": "Rapporto nutrizionale", "period": "Periodo", "summary": "Riepilogo", "days": "Giorni", "logged": "Giorni registrati",
+           "avg": "Media per giorno registrato", "kcal": "Calorie", "protein": "Proteine", "carbs": "Carboidrati", "fat": "Grassi", "goal": "Obiettivo",
+           "on_goal": "Giorni entro l’obiettivo calorico", "weight": "Peso", "change": "Variazione", "date": "Data", "note": "Nota", "meal": "Pasto",
+           "food": "Alimento", "amount": "Quantità", "daily": "Panoramica giornaliera", "entries": "Singole voci", "body": "Misure corporee",
+           "none": "Nessun dato in questo periodo.", "print": "Stampa / salva come PDF", "made": "Creato con MyDietAssistant il",
+           "fiber": "Fibre", "sugar": "Zuccheri", "salt": "Sale", "sat_fat": "Grassi sat.", "aim": "Obiettivo della persona",
+           "lose": "Perdere peso", "maintain": "Mantenere il peso", "gain": "Aumentare di peso", "dec": ",", "c_s": "Carb.", "f_s": "Gr.", "p_s": "Prot."},
 }
 
 

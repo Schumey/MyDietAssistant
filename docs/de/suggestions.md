@@ -53,6 +53,10 @@ Für Tage mit Training rechnet die App die Menge deines Post-Workout-Shakes aus 
 
 **Benutzen:** Tippe im Tagebuch auf „Trainingstag“. Oben steht der Shake mit den berechneten Mengen („Eintragen“ oder „Anpassen“), darunter Abendessen, die zu dem passen, was nach dem Shake vom Tagesziel offen ist. Das Ziel des Shakes ist nie größer als der noch offene Rest des Tages. Ist der Shake für heute schon eingetragen, erscheinen nur die Abendessen.
 
+**Wann der Knopf erscheint:** Im Tagebuch steht „Trainingstag“ erst, wenn der Shake für den Tag eingetragen ist oder ein Trigger ihn gebucht hat, also an Tagen mit Training. Solange der Trainingstag nicht eingerichtet ist, ist der Knopf immer da. Mit dem Häkchen „Knopf „Trainingstag“ an jedem Tag zeigen“ erscheint er an allen Tagen.
+
+**Eiweiß:** Mit „Abendessen sollen das Eiweißziel möglichst erreichen“ (standardmäßig an) bevorzugen die Abendessen-Vorschläge Mengen, die das Eiweißziel des Tages erreichen.
+
 **Mit Trigger:** Trägt ein Trigger (z. B. „im Fitnessstudio“) den Shake ein, setze in den Einstellungen das Häkchen „Trigger tragen den Shake mit den berechneten Mengen ein“. Dann nutzt der Trigger heute die berechneten statt der gespeicherten Mengen. Für geplante Tage in der Zukunft bleiben die gespeicherten Mengen.
 
 ## Reihenfolge der Vorschläge

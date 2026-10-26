@@ -45,7 +45,7 @@ def training_clean(t) -> dict:
             "target": {k: pos((t.get("target") or {}).get(k)) for k in suggest.KEYS},
             "shake_meal_id": t.get("shake_meal_id") if isinstance(t.get("shake_meal_id"), int) else None,
             "dinner_meal_id": t.get("dinner_meal_id") if isinstance(t.get("dinner_meal_id"), int) else None,
-            "auto": bool(t.get("auto"))}
+            "auto": bool(t.get("auto")), "always": bool(t.get("always")), "dinner_protein": bool(t.get("dinner_protein", True))}
 
 
 class ConfigIn(BaseModel):
@@ -360,6 +360,8 @@ class TrainingIn(BaseModel):
     shake_meal_id: int | None = None      # diary meal for the shake
     dinner_meal_id: int | None = None     # diary meal for the dinner
     auto: bool = False                    # a trigger that enters the shake uses the fitted amounts
+    always: bool = False                  # show the training-day button on every day, not only on training days
+    dinner_protein: bool = True           # dinners must reach the day's protein goal as far as possible
 
 
 @app.put("/api/suggest/training")
@@ -429,10 +431,29 @@ def suggest_training(day: str, x_remote_user_id: str | None = Header(None)):
         cands, addons = gather(c, owner, day, cfg, dinner["name"] if dinner else "", skip_saved=t["saved_meal_id"])
     rnd = {k: (round(v, 1) if v is not None else None) for k, v in after.items()}
     reached = not any(v for v in after.values())
-    ranked = [] if reached else suggest.rank(cands, addons, after, cfg["prio"], cfg, limit=SHOWN)
+    opts = {**cfg, "protein_min": cfg["protein_min"] or t["dinner_protein"]}
+    ranked = [] if reached else suggest.rank(cands, addons, after, cfg["prio"], opts, limit=SHOWN)
     return {"configured": True, "eaten": eaten, "shake": shake, "remaining": {k: (round(v, 1) if v is not None else None) for k, v in remaining.items()},
             "after": rnd, "reached": reached, "shake_meal_id": t["shake_meal_id"], "dinner_meal_id": t["dinner_meal_id"],
             "items": [proposal(r, after, after) for r in ranked]}
+
+
+@app.get("/api/suggest/training/status")
+def suggest_training_status(day: str, x_remote_user_id: str | None = Header(None)):
+    """Should the diary offer the training-day button? Yes on training days: the shake is in the diary or a trigger entered it."""
+    check_day(day)
+    owner = user_from(x_remote_user_id)
+    if not feature_on(owner, "suggest"):
+        return {"configured": False, "show": False}
+    t = suggest_config(owner)["training"]
+    if not t["saved_meal_id"]:
+        return {"configured": False, "show": True}      # not set up yet: keep the button so the setup can be found
+    with db.conn() as c:
+        cand = next((cd for cd in saved_candidates(c, owner) if cd["saved_meal_id"] == t["saved_meal_id"]), None)
+        ran = c.execute("SELECT 1 FROM trigger_runs r JOIN triggers x ON x.id=r.trigger_id WHERE r.owner=? AND r.day=? AND r.undone=0"
+                        " AND x.saved_meal_id=?", (owner, day, t["saved_meal_id"])).fetchone()
+        show = t["always"] or bool(ran) or bool(cand and shake_eaten(c, owner, day, cand))
+    return {"configured": True, "show": show}
 
 
 def auto_fit(c, owner: str, sid: int, day: str, meal_id: int | None, stamp: str | None):

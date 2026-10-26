@@ -2,6 +2,16 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.13.0
+
+### New
+- **Italian:** The interface is now available in Italian (Settings → Language → Italiano), plus the nutrition report, the push texts and the add-on option names in Home Assistant. The translation is machine-made and not checked by native speakers.
+- **Training day only on training days:** The “Training day” button appears in the diary only once the shake is entered for the day or a trigger booked it. As long as the training day is not set up, the button stays visible. To always see it, tick “Show the “Training day” button every day” in the training-day settings.
+- **Protein for the dinners:** New checkbox “Dinners should reach the protein goal as far as possible” (on by default) in the training-day settings.
+
+### Changed
+- **More browser tests:** The training day (saving the settings, the button, the dialog with shake and dinner) and the Italian interface are now covered by the browser test suite.
+
 ## 1.12.1
 
 ### Fixed
