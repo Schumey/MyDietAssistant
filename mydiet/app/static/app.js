@@ -415,6 +415,10 @@ const EN = {
 
   "Wie viele Packungen ein Vorschlag nehmen darf": "How many packages a suggestion may use (from – to; 0 = may be left out)",
   "Anzahl": "Number",
+  "Ausschließen": "Exclude",
+  "Ausgeschlossen": "Excluded",
+  "Zulassen": "Allow",
+  "Diese Mahlzeiten tauchen in den Vorschlägen nicht mehr auf. Mit „Zulassen“ kommen sie zurück.": "These meals no longer show up in the suggestions. “Allow” brings them back.",
 
   // default meals
   "Frühstück": "Breakfast", "Mittagessen": "Lunch", "Abendessen": "Dinner", "Snacks": "Snacks",
@@ -1213,6 +1217,10 @@ Object.assign(LANGS, {
     "Kleinster Faktor ist größer als der größte": "Le plus petit facteur est supérieur au plus grand",
     "Wie viele Packungen ein Vorschlag nehmen darf": "Combien de paquets une suggestion peut prendre (de – à ; 0 = peut être omis)",
     "Anzahl": "Nombre",
+    "Ausschließen": "Exclure",
+    "Ausgeschlossen": "Exclus",
+    "Zulassen": "Autoriser",
+    "Diese Mahlzeiten tauchen in den Vorschlägen nicht mehr auf. Mit „Zulassen“ kommen sie zurück.": "Ces repas n'apparaissent plus dans les suggestions. « Autoriser » les ramène.",
     "Frühstück": "Petit-déjeuner",
     "Mittagessen": "Déjeuner",
     "Abendessen": "Dîner",
@@ -2004,6 +2012,10 @@ Object.assign(LANGS, {
     "Kleinster Faktor ist größer als der größte": "El factor mínimo es mayor que el máximo",
     "Wie viele Packungen ein Vorschlag nehmen darf": "Cuántos envases puede usar una sugerencia (de – a; 0 = puede omitirse)",
     "Anzahl": "Número",
+    "Ausschließen": "Excluir",
+    "Ausgeschlossen": "Excluidas",
+    "Zulassen": "Permitir",
+    "Diese Mahlzeiten tauchen in den Vorschlägen nicht mehr auf. Mit „Zulassen“ kommen sie zurück.": "Estas comidas ya no aparecen en las sugerencias. «Permitir» las devuelve.",
     "Frühstück": "Desayuno",
     "Mittagessen": "Almuerzo",
     "Abendessen": "Cena",
@@ -2451,7 +2463,12 @@ function suggestDialog(opts = {}) {
             } catch (err) { e.target.disabled = false; alert(err.message); }
           } }, "Eintragen"),
           h("button", { class: "flat", onclick: () => { editing = !editing; drawCard(); } }, editing ? "Fertig" : "Anpassen"),
-          keep)].filter(Boolean));
+          keep,
+          h("button", { class: "flat", onclick: async e => {
+            e.target.disabled = true;
+            try { await send("POST", "suggest/exclude", { key: p.key, name: p.name, on: true }); load(); }
+            catch (err) { e.target.disabled = false; alert(err.message); }
+          } }, "Ausschließen"))].filter(Boolean));
     };
     drawCard();
     return box;
@@ -2470,7 +2487,7 @@ function suggestDialog(opts = {}) {
 // Priorities per macro, hard limits and the add-on foods (nuts ...) the suggestions may put next to a meal.
 async function suggestSettings(back) {
   const cfg = await api("suggest/config");
-  const prio = { ...cfg.prio }, addons = cfg.addons.map(a => ({ ...a }));
+  const prio = { ...cfg.prio }, addons = cfg.addons.map(a => ({ ...a })), excluded = cfg.excluded.map(e => ({ ...e }));
   let cap = cfg.kcal_cap, pmin = cfg.protein_min;
   const levels = ["egal", "normal", "wichtig", "sehr wichtig"];
   const msg = h("div", { class: "err" });
@@ -2493,6 +2510,13 @@ async function suggestSettings(back) {
       h("button", { class: "flat", onclick: () => setDlg(foodSwapDialog({
         title: "Beigabe hinzufügen", grams: 30, confirm: "Hinzufügen", onCancel: show,
         onDone: (f, g) => { addons.push({ food_id: f.id, name: f.name, min_g: 0, max_g: g, step_g: 5 }); show(); } })) }, "+ Beigabe"),
+      excluded.length ? [h("label", { style: "margin-top:12px" }, "Ausgeschlossen"),
+        h("div", { class: "muted" }, "Diese Mahlzeiten tauchen in den Vorschlägen nicht mehr auf. Mit „Zulassen“ kommen sie zurück."),
+        h("div", { class: "list" }, excluded.map((e, i) => h("div", {}, h("div", { class: "grow" }, e.name || e.key),
+          h("button", { class: "flat", onclick: async () => {
+            try { await send("POST", "suggest/exclude", { key: e.key, on: false }); excluded.splice(i, 1); show(); }
+            catch (err) { msg.textContent = err.message; }
+          } }, "Zulassen"))))] : null,
       msg,
       h("div", { class: "actions" }, h("button", { class: "flat", onclick: back }, "Abbrechen"),
         h("button", { onclick: async () => {

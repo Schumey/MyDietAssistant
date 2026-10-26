@@ -215,3 +215,19 @@ def test_config_roundtrip_and_export_import(user):
     cp = c.post(f"/api/saved-meals/{m['id']}/copy").json()["id"]
     copy = next(x for x in c.get("/api/saved-meals").json() if x["id"] == cp)
     assert copy["items"][0]["mode"] == "fixed" and copy["max_scale"] == 2
+
+
+
+def test_exclude_meal_from_suggestions_and_allow_again(user):
+    c = setup_user(user)
+    nud = add_food(c, "Nudeln", 350, 12, 70, 2)
+    sid = save_meal(c, "Nudeln", [(nud, 100)])
+    first = c.get(f"/api/suggest?day={DAY}").json()["items"]
+    assert [p["key"] for p in first] == [f"saved:{sid}"]
+    assert c.post("/api/suggest/exclude", json={"key": first[0]["key"], "name": "Nudeln"}).status_code == 200
+    assert c.get(f"/api/suggest?day={DAY}").json()["items"] == []
+    assert c.get("/api/suggest/config").json()["excluded"] == [{"key": f"saved:{sid}", "name": "Nudeln"}]
+    c.put("/api/suggest/config", json={"kcal_cap": True})          # other settings keep the list
+    assert len(c.get("/api/suggest/config").json()["excluded"]) == 1
+    c.post("/api/suggest/exclude", json={"key": f"saved:{sid}", "on": False})
+    assert len(c.get(f"/api/suggest?day={DAY}").json()["items"]) == 1

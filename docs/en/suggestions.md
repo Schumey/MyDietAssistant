@@ -16,6 +16,7 @@ The **Suggest a meal** button works out what is still open today and proposes fi
 6. The cards show ingredients in grams, macros and the deviation from the goal. **More suggestions** shows further hits.
 7. With **Adjust** you change the amounts by hand (macros and deviation recalculate), then log it.
 8. For combinations from the history you can choose **Save as meal**.
+9. **Exclude** keeps the meal out of the suggestions. To bring it back, open **Suggestion settings** and use **Allow** in the **Excluded** list.
 
 The open budget is the day’s goal (including [Activity](activity.md) and weekday goal) minus what you ate. Values without a goal do not count. If the goal is already reached, there is nothing to fill.
 

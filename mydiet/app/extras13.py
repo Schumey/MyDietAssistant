@@ -17,6 +17,7 @@ HISTORY_MIN_COUNT = 2     # a combination must have been eaten this often to bec
 HISTORY_TOL = 15          # default ratio tolerance (percent) for combinations from the diary
 HISTORY_LIMIT = 40
 SHOWN = 8
+EXCLUDED_MAX = 200
 
 
 def need_suggest(owner: str):
@@ -28,7 +29,8 @@ def suggest_config(owner: str) -> dict:
     saved = get_pref(owner, "suggest", {}) or {}
     prio = {**suggest.DEFAULT_PRIO, **{k: v for k, v in (saved.get("prio") or {}).items() if k in suggest.KEYS}}
     return {"prio": prio, "kcal_cap": bool(saved.get("kcal_cap")), "protein_min": bool(saved.get("protein_min")),
-            "scope": saved.get("scope") if saved.get("scope") in ("day", "next") else "day"}
+            "scope": saved.get("scope") if saved.get("scope") in ("day", "next") else "day",
+            "excluded": [e for e in saved.get("excluded") or [] if isinstance(e, dict) and e.get("key")]}
 
 
 class ConfigIn(BaseModel):
@@ -84,6 +86,25 @@ def suggest_put_config(b: ConfigIn, x_remote_user_id: str | None = Header(None))
     return {"ok": True}
 
 
+class ExcludeIn(BaseModel):
+    key: str
+    name: str = ""
+    on: bool = True
+
+
+@app.post("/api/suggest/exclude")
+def suggest_exclude(b: ExcludeIn, x_remote_user_id: str | None = Header(None)):
+    """Keep a saved meal or a diary combination out of the suggestions (or let it back in)."""
+    owner = user_from(x_remote_user_id)
+    cur = suggest_config(owner)
+    rest = [e for e in cur["excluded"] if e["key"] != b.key]
+    if b.on:
+        rest.append({"key": b.key[:300], "name": b.name[:100]})
+    cur["excluded"] = rest[-EXCLUDED_MAX:]
+    set_pref(owner, "suggest", cur)
+    return {"ok": True}
+
+
 @app.put("/api/suggest/addons")
 def suggest_put_addons(b: AddonsIn, x_remote_user_id: str | None = Header(None)):
     """Replace the add-on list (foods that go with any meal)."""
@@ -113,6 +134,13 @@ def cand_from_items(name, category, items, source, sid=None, min_scale=0, max_sc
 
 def signature(names) -> tuple:
     return tuple(sorted(n.strip().lower() for n in names))
+
+
+def cand_key(cand: dict) -> str:
+    """Stable identity of a candidate, used to exclude it from the suggestions."""
+    if cand["saved_meal_id"]:
+        return f"saved:{cand['saved_meal_id']}"
+    return "history:" + "|".join(signature(i["name"] for i in cand["items"]))
 
 
 def history_candidates(c, owner: str, today: str, known: set) -> list:
@@ -186,7 +214,7 @@ def open_slots(c, owner: str, day: str, meal_id: int | None, times: bool) -> int
 
 def proposal(r: dict, remaining: dict, target: dict) -> dict:
     cand, tot = r["cand"], r["totals"]
-    return {"key": f"{cand['source']}:{cand['saved_meal_id'] or cand['name']}", "source": cand["source"], "saved_meal_id": cand["saved_meal_id"],
+    return {"key": cand_key(cand), "source": cand["source"], "saved_meal_id": cand["saved_meal_id"],
             "name": cand["name"], "category": cand.get("category", ""), "count": cand.get("count"), "items": [
                 {k: (round(v, 1) if isinstance(v, float) else v) for k, v in it.items()} for it in r["items"]],
             "totals": {k: round(v, 1) for k, v in tot.items()},
@@ -215,6 +243,8 @@ def suggest_list(day: str, meal_id: int | None = None, scope: str | None = None,
         for cd in cands:
             known.add(signature(i["name"] for i in cd["items"]))
         cands += history_candidates(c, owner, day, known)
+        out = {e["key"] for e in cfg["excluded"]}
+        cands = [cd for cd in cands if cand_key(cd) not in out]
         addons = addon_rows(c, owner)
         today_names = {r[0].strip().lower() for r in c.execute("SELECT name FROM entries WHERE owner=? AND day=?", (owner, day))}
         y = (date.fromisoformat(day) - timedelta(days=1)).isoformat()

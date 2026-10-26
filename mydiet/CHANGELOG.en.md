@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.7.8
+
+### Added
+- **Meal suggestions:** **Exclude** on a suggestion card keeps that saved meal or history combination out of the suggestions. The **Excluded** list under “Priorities and add-ons” brings it back with **Allow**. The list is part of export and import.
+
 ## 1.7.7
 
 ### Fixed

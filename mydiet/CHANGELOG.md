@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.7.8
+
+### Neu
+- **Mahlzeiten-Vorschläge:** Mit **Ausschließen** auf einer Vorschlagskarte taucht die gespeicherte Mahlzeit oder Verlaufs-Kombination nicht mehr in den Vorschlägen auf. Unter „Prioritäten und Beigaben“ steht die Liste **Ausgeschlossen**, dort holt **Zulassen** sie zurück. Die Liste ist Teil von Export und Import.
+
 ## 1.7.7
 
 ### Behoben

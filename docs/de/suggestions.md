@@ -16,6 +16,7 @@ Der Button **Mahlzeit vorschlagen** rechnet aus, was heute noch offen ist, und s
 6. Die Karten zeigen Zutaten in Gramm, Makros und Abweichung vom Ziel. **Weitere Vorschläge** zeigt weitere Treffer.
 7. Mit **Anpassen** änderst Du die Mengen von Hand (Makros und Abweichung rechnen mit), dann trägst Du ein.
 8. Bei Kombinationen aus dem Verlauf kannst Du **Als Mahlzeit speichern** wählen.
+9. Mit **Ausschließen** taucht die Mahlzeit nicht mehr in den Vorschlägen auf. Zurückholen kannst Du sie im Dialog **Vorschläge einstellen** in der Liste **Ausgeschlossen** mit **Zulassen**.
 
 Das offene Tagesbudget ist das Ziel des Tages (inklusive [Aktivität](activity.md) und Wochentagsziel) minus Gegessenes. Werte ohne Ziel zählen nicht. Ist das Ziel schon erreicht, gibt es nichts aufzufüllen.
 
