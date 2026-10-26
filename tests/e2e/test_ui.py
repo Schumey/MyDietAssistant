@@ -138,7 +138,7 @@ def test_imported_recipe_draft_opens_in_the_editor_and_can_be_saved(page):
     assert page.errors == []
 
 
-@pytest.mark.parametrize("lang,diary_tab", [("en", "Diary"), ("fr", "Journal"), ("es", "Diario")])
+@pytest.mark.parametrize("lang,diary_tab", [("en", "Diary"), ("fr", "Journal"), ("es", "Diario"), ("nl", "Dagboek")])
 def test_interface_language_switches(page, lang, diary_tab):
     settings(page.base, lang=lang)
     try:

@@ -75,13 +75,13 @@ def test_every_add_on_option_is_translated_and_documented():
 
 @pytest.mark.skipif(not shutil.which("node"), reason="node not installed")
 def test_every_language_covers_the_english_dictionary_with_the_same_placeholders(tmp_path):
-    """EN is the reference: FR and ES must translate every key and keep the {} placeholders (a missing entry shows German text)."""
+    """EN is the reference: FR, ES and NL must translate every key and keep the {} placeholders (a missing entry shows German text)."""
     js = read("mydiet", "app", "static", "app.js")
     script = tmp_path / "dump.js"
     script.write_text(js[:js.index("const I18N")] + ";process.stdout.write(JSON.stringify({en: EN, langs: LANGS}))", encoding="utf-8")
     import json
     out = json.loads(subprocess.run(["node", str(script)], check=True, capture_output=True, encoding="utf-8").stdout)
-    assert set(out["langs"]) == {"en", "fr", "es"}
+    assert set(out["langs"]) == {"en", "fr", "es", "nl"}
     for lang, table in out["langs"].items():
         assert set(table) == set(out["en"]), (lang, sorted(set(out["en"]) ^ set(table))[:5])
         for key, text in table.items():
@@ -92,7 +92,7 @@ def test_every_language_covers_the_english_dictionary_with_the_same_placeholders
 def test_language_dictionaries_have_no_duplicate_keys():
     js = read("mydiet", "app", "static", "app.js")
     body = js[js.index("Object.assign(LANGS"):js.index("const I18N")]
-    for block in re.split(r"^  (?:fr|es): [{]", body, flags=re.M)[1:]:
+    for block in re.split(r"^  (?:fr|es|nl): [{]", body, flags=re.M)[1:]:
         keys = re.findall(r'^    "((?:[^"\\]|\\.)*)":', block, flags=re.M)
         assert len(keys) == len(set(keys)) > 600
 

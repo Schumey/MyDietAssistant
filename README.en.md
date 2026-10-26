@@ -9,7 +9,7 @@
 
 A local food diary in the style of MyFitnessPal, as a **Home Assistant add-on**. Calories, macros, weight, triggers from Home Assistant and analyses; everything stays with you: the data lives in a SQLite file in the add-on storage and is part of the HA backup. Only the optional online databases (Open Food Facts, USDA) need the internet.
 
-The interface runs through ingress in the HA sidebar, adopts the active HA theme (automatically a Windows look for themes named "HA 95/98", configurable), is available in German, English, French and Spanish (metric and imperial) and separates users by their HA account.
+The interface runs through ingress in the HA sidebar, adopts the active HA theme (automatically a Windows look for themes named "HA 95/98", configurable), is available in German, English, French, Spanish and Dutch (metric and imperial) and separates users by their HA account.
 
 <p align="center"><img src="docs/screenshots/en/diary.png" alt="Diary with meals, entries and daily goal" width="640"></p>
 

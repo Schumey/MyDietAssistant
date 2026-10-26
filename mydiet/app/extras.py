@@ -59,7 +59,7 @@ def set_pref(owner: str, key: str, value):
 
 # --- settings -------------------------------------------------------------
 
-LANGS = ("auto", "de", "en", "fr", "es")   # interface languages (dictionaries in static/app.js)
+LANGS = ("auto", "de", "en", "fr", "es", "nl")   # interface languages (dictionaries in static/app.js)
 FEATURES = ("weekday_goals", "trackers", "micros", "notes", "body", "recipes", "sources", "household", "activity", "schedule", "scale", "suggest")   # optional features, off by default
 
 
@@ -87,7 +87,7 @@ def goal_hit(mode: str, kcal: float, goal: float) -> bool:
 class SettingsIn(BaseModel):
     diary_mode: str | None = None   # 'meals' | 'times'
     goal_mode: str | None = None    # 'lose' | 'maintain' | 'gain'
-    lang: str | None = None         # 'auto' | 'de' | 'en' | 'fr' | 'es'
+    lang: str | None = None         # 'auto' | 'de' | 'en' | 'fr' | 'es' | 'nl'
     units: str | None = None        # 'metric' | 'imperial'
     mass: str | None = None         # food amounts: 'g' | 'oz'
     goal_rate: float | None = None  # intended kg per week (positive)

@@ -24,7 +24,7 @@ Der Trigger-Verlauf und die Automatische Sicherung sind eingeklappt; tippe auf d
 ## Sprache und Einheiten
 
 1. Öffne *Einstellungen → Sprache und Einheiten*.
-2. Wähle **Sprache**: Automatisch (Browser), Deutsch, English, Français oder Español.
+2. Wähle **Sprache**: Automatisch (Browser), Deutsch, English, Français, Español oder Nederlands.
 3. Wähle **Einheiten**: Metrisch (kg, cm) oder Imperial (lb, in).
 4. Wähle **Lebensmittelmengen**: Gramm oder Unzen (oz).
 5. Tippe auf **Speichern**. Die Seite lädt neu.

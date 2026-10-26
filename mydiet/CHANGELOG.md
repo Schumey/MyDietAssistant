@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.7.9
+
+### Neu
+- **Niederländisch:** Die Oberfläche gibt es jetzt auch auf Niederländisch (Einstellungen → Sprache und Einheiten → Nederlands; „Automatisch“ erkennt sie am Browser).
+
 ## 1.7.8
 
 ### Neu

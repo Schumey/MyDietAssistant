@@ -9,7 +9,7 @@
 
 Lokales Ernährungstagebuch im Stil von MyFitnessPal als **Home-Assistant-Add-on**. Kalorien, Makros, Gewicht, Trigger aus Home Assistant und Auswertungen, alles bleibt bei Dir: die Daten liegen in einer SQLite-Datei im Add-on-Speicher und sind im HA-Backup enthalten. Internet brauchen nur die optionalen Online-Datenbanken (Open Food Facts, USDA).
 
-Die Oberfläche läuft per Ingress im HA-Seitenmenü, übernimmt das aktive HA-Theme (bei Themes namens „HA 95/98“ automatisch im Windows-Look, einstellbar), gibt es auf Deutsch, Englisch, Französisch und Spanisch (metrisch und imperial) und trennt Benutzer anhand ihres HA-Kontos.
+Die Oberfläche läuft per Ingress im HA-Seitenmenü, übernimmt das aktive HA-Theme (bei Themes namens „HA 95/98“ automatisch im Windows-Look, einstellbar), gibt es auf Deutsch, Englisch, Französisch, Spanisch und Niederländisch (metrisch und imperial) und trennt Benutzer anhand ihres HA-Kontos.
 
 <p align="center"><img src="docs/screenshots/de/diary.png" alt="Tagebuch mit Mahlzeiten, Einträgen und Tagesziel" width="640"></p>
 

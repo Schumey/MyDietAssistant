@@ -24,7 +24,7 @@ Trigger history and Automatic backup are collapsed; tap the title to open them. 
 ## Language and units
 
 1. Open *Settings → Language and units*.
-2. Choose **Language**: Automatic (browser), Deutsch, English, Français or Español.
+2. Choose **Language**: Automatic (browser), Deutsch, English, Français, Español or Nederlands.
 3. Choose **Units**: Metric (kg, cm) or Imperial (lb, in).
 4. Choose **Food amounts**: Grams or Ounces (oz).
 5. Tap **Save**. The page reloads.

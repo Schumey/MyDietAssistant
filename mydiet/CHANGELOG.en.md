@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.7.9
+
+### Added
+- **Dutch:** The interface is now also available in Dutch (Settings → Language and units → Nederlands; “Automatic” picks it up from the browser).
+
 ## 1.7.8
 
 ### Added
