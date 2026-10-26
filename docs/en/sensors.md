@@ -16,6 +16,10 @@ With the add-on option `publish_sensors` (default: on) the add-on sets sensors i
 | `sensor.mydiet_<name>_weight_trend` | smoothed weight trend |
 | `sensor.mydiet_<name>_energy_balance` | estimated calorie balance per day (30 days, from weight trend and intake; + surplus, − deficit) |
 | `sensor.mydiet_<name>_current_meal` | name of the meal whose time window is open now, otherwise `none` (only with the [meal schedule](schedule.md); changes on the full minute) |
+| `sensor.mydiet_<name>_next_meal` | name of the next meal whose time window still begins today, otherwise `none` (only with the meal schedule) |
+| `sensor.mydiet_<name>_next_meal_time` | start of that window (`HH:MM`), otherwise `none` |
+| `sensor.mydiet_<name>_weight_to_goal` | kg still to go to the target weight (only with a target weight set) |
+| `sensor.mydiet_<name>_weight_goal_date` | the day the target weight is reached at the current pace; `reached` or `none` (not in sight, less than 14 days of data) |
 
 The statistics and the “calories remaining” sensor use the raised goal when [Activity](activity.md) is on.
 

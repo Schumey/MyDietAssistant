@@ -1,0 +1,25 @@
+configuration:
+  default_kcal_goal:
+    name: Standaard caloriedoel
+    description: Dagelijks caloriedoel voor nieuwe gebruikers (per gebruiker te wijzigen in de instellingen).
+  publish_sensors:
+    name: Sensoren publiceren
+    description: Stuurt de totalen van vandaag en het laatste gewicht als sensoren naar Home Assistant.
+  auto_backup:
+    name: Automatische back-up
+    description: Schrijft dagelijks een JSON-back-up van elke gebruiker naar /backup/mydiet.
+  backup_keep_days:
+    name: Back-ups bewaren (dagen)
+    description: Oudere automatische back-ups worden verwijderd.
+  admin_users:
+    name: Beheerders
+    description: Gebruikers-ID's of namen die het gebruikersbeheer mogen openen. Leeg = de eerste gebruiker die de add-on opende.
+  usda_api_key:
+    name: USDA API-sleutel
+    description: Optionele sleutel van api.data.gov voor de USDA-gegevensbron (zonder sleutel wordt de gedeelde DEMO_KEY met een lage aanvraaglimiet gebruikt).
+  api_key:
+    name: API-sleutel
+    description: Sleutel voor de externe interface (header X-MDA-Key). Leeg = interface uit.
+  mqtt_discovery:
+    name: MQTT-discovery
+    description: Maakt sensoren via MQTT-discovery (unieke ID's, blijven bestaan na een herstart van HA). Vereist de MQTT-integratie; zonder die worden gewone statussen verstuurd.

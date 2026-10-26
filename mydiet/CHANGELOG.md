@@ -2,6 +2,13 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.12.0
+
+### Neu
+- **Sensoren „nächste Mahlzeit“:** `sensor.mydiet_<name>_next_meal` (Name) und `sensor.mydiet_<name>_next_meal_time` (Beginn, `HH:MM`) zeigen das nächste Zeitfenster, das heute noch beginnt, sonst `none`. So können Automationen schon vorher erinnern. Nur mit dem Mahlzeiten-Zeitplan; die Sensoren wechseln zur vollen Minute wie `current_meal`.
+- **Sensoren zum Zielgewicht:** Ist ein Zielgewicht gesetzt, gibt es `sensor.mydiet_<name>_weight_to_goal` (noch zu gehende kg, aus dem geglätteten Trend) und `sensor.mydiet_<name>_weight_goal_date` (Tag, an dem das Ziel beim aktuellen Tempo erreicht wird; `reached`, wenn schon erreicht, `none`, wenn es nicht absehbar ist oder weniger als 14 Tage Daten vorliegen). Die Rechnung ist dieselbe wie die „Prognose Ziel“ im Gewichts-Diagramm.
+- **Add-on-Optionen auf Französisch, Spanisch und Niederländisch:** Namen und Beschreibungen der Optionen erscheinen in Home Assistant in diesen Sprachen (`translations/fr.yaml`, `es.yaml`, `nl.yaml`). Die Texte sind maschinell erstellt; ein Test prüft, dass jede Option übersetzt ist.
+
 ## 1.11.0
 
 ### Neu

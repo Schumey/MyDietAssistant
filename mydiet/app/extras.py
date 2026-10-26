@@ -511,6 +511,40 @@ def energy_balance(owner: str, days: list[dict]) -> dict | None:
     return res
 
 
+def trend_series(weights: list) -> list:
+    """[(date, smoothed kg)] for [(iso day, kg)] (exponential smoothing, 10 % of the gap per day)."""
+    out, tr, prev = [], None, None
+    for day, kg in weights:
+        d = date.fromisoformat(day)
+        tr = kg if tr is None else tr + (1 - 0.9 ** max(1, (d - prev).days)) * (kg - tr)
+        prev = d
+        out.append((d, tr))
+    return out
+
+
+def goal_forecast(weights: list, target: float | None) -> dict | None:
+    """Where the smoothed weight is heading: kg still to go and the day the target is reached at the current pace
+    (slope of the last 28 days, at least 14 days of data). 'date' is an ISO day, 'reached' or 'none'."""
+    pts = trend_series(weights)
+    if not target or len(pts) < 2:
+        return None
+    last = pts[-1]
+    diff = target - last[1]
+    res = {"kg_left": round(abs(diff), 1), "date": "none"}
+    if abs(diff) < 0.2:
+        res.update(kg_left=0.0, date="reached")
+        return res
+    ref = next(p for p in pts if (last[0] - p[0]).days <= 28)
+    span = (last[0] - ref[0]).days
+    if span < 14:
+        return res
+    slope = (last[1] - ref[1]) / span
+    if slope == 0 or (slope > 0) != (diff > 0) or abs(slope) < 0.004 or diff / slope > 730:
+        return res
+    res["date"] = (last[0] + timedelta(days=round(diff / slope))).isoformat()
+    return res
+
+
 def sensor_extras(owner: str) -> list:
     """More HA sensors: remaining kcal today, 7-day average, weight trend, estimated daily balance."""
     today = date.today()
@@ -527,12 +561,10 @@ def sensor_extras(owner: str) -> list:
     if week:
         out.append(("kcal_week_avg", round(sum(week) / len(week)), "kcal"))
     if weights:
-        tr, prev = None, None
-        for day, kg in weights:
-            d = date.fromisoformat(day)
-            tr = kg if tr is None else tr + (1 - 0.9 ** max(1, (d - prev).days)) * (kg - tr)
-            prev = d
-        out.append(("weight_trend", round(tr, 1), "kg"))
+        out.append(("weight_trend", round(trend_series(weights)[-1][1], 1), "kg"))
+        fc = goal_forecast(weights, goal.get("target_weight"))
+        if fc:
+            out += [("weight_to_goal", fc["kg_left"], "kg"), ("weight_goal_date", fc["date"], "")]
     start = today - timedelta(days=29)
     with db.conn() as c:
         rows = {r["day"]: r["k"] for r in c.execute(

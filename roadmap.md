@@ -6,8 +6,7 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 ## Home Assistant
 
-- **Sensor „nächste Mahlzeit“** (S): `sensor.mydiet_<name>_next_meal` mit Beginn des nächsten Fensters als Attribut, damit Automationen vorher erinnern können.
-- **Add-on-Optionstexte auf Französisch und Spanisch** (S): `translations/fr.yaml` und `es.yaml` (die Oberfläche selbst gibt es schon).
+- **Weitere HA-Anbindung** (M): Mahlzeiten-Zeitplan als Kalender-Entität und Einkaufsliste als Todo-Entität.
 
 ## Lebensmittel und Eingabe
 

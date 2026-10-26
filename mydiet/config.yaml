@@ -1,5 +1,5 @@
 name: MyDietAssistant
-version: "1.11.0"
+version: "1.12.0"
 slug: mydiet
 url: https://github.com/Schumey/MyDietAssistant
 description: Lokales Ernährungstagebuch (Kalorien & Makros) mit HA-Sensoren

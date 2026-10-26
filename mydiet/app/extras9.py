@@ -310,7 +310,17 @@ def current_meal_sensor(owner: str) -> list:
     return [("current_meal", m["name"] if m else "none", "")]
 
 
+def next_meal_sensor(owner: str) -> list:
+    """sensor.mydiet_<name>_next_meal and _next_meal_time: the next window that starts later today ("none" when there is none)."""
+    if not feature_on(owner, "schedule"):
+        return []
+    s = schedule(owner)
+    m = next((x for x in s["meals"] if x["id"] == s["next"]), None)
+    return [("next_meal", m["name"] if m else "none", ""), ("next_meal_time", m["window"][0] if m else "none", "")]
+
+
 SENSOR_HOOKS.append(current_meal_sensor)
+SENSOR_HOOKS.append(next_meal_sensor)
 last_meal = {}
 
 
@@ -321,7 +331,7 @@ def publish_meal_changes():
     for o in owners():
         if not feature_on(o, "schedule"):
             continue
-        cur = current_meal_sensor(o)[0][1]
+        cur = (current_meal_sensor(o)[0][1], next_meal_sensor(o)[0][1])
         if last_meal.get(o) != cur:
             last_meal[o] = cur
             publish(o, get_pref(o, "display", o))

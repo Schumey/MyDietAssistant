@@ -67,7 +67,7 @@ def test_every_add_on_option_is_translated_and_documented():
     cfg = read("mydiet", "config.yaml")
     options = re.findall(r"^  (\w+):", cfg.split("options:")[1].split("schema:")[0], flags=re.M)
     assert options
-    for lang in ("en", "de"):
+    for lang in ("en", "de", "fr", "es", "nl"):
         tr = read("mydiet", "translations", f"{lang}.yaml")
         for o in options:
             assert f"  {o}:" in tr, (lang, o)

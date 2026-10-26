@@ -16,6 +16,10 @@ Mit der Add-on-Option `publish_sensors` (Standard: an) setzt das Add-on nach jed
 | `sensor.mydiet_<name>_weight_trend` | geglätteter Gewichtstrend |
 | `sensor.mydiet_<name>_energy_balance` | geschätzte Kalorienbilanz pro Tag (30 Tage, aus Gewichtstrend und Aufnahme; + Überschuss, − Defizit) |
 | `sensor.mydiet_<name>_current_meal` | Name der Mahlzeit, deren Zeitfenster jetzt offen ist, sonst `none` (nur mit [Mahlzeiten-Zeitplan](schedule.md); wechselt zur vollen Minute) |
+| `sensor.mydiet_<name>_next_meal` | Name der nächsten Mahlzeit, deren Zeitfenster heute noch beginnt, sonst `none` (nur mit Mahlzeiten-Zeitplan) |
+| `sensor.mydiet_<name>_next_meal_time` | Beginn dieses Zeitfensters (`HH:MM`), sonst `none` |
+| `sensor.mydiet_<name>_weight_to_goal` | noch zu gehende kg bis zum Zielgewicht (nur mit gesetztem Zielgewicht) |
+| `sensor.mydiet_<name>_weight_goal_date` | Tag, an dem das Zielgewicht beim aktuellen Tempo erreicht wird; `reached` (erreicht) oder `none` (nicht absehbar, weniger als 14 Tage Daten) |
 
 Die Statistik und der Sensor „verbleibende kcal“ rechnen mit dem erhöhten Ziel, wenn die [Aktivität](activity.md) eingeschaltet ist.
 

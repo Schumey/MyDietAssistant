@@ -1,0 +1,25 @@
+configuration:
+  default_kcal_goal:
+    name: Objetivo de calorías predeterminado
+    description: Objetivo diario de calorías para los usuarios nuevos (modificable por usuario en los ajustes).
+  publish_sensors:
+    name: Publicar sensores
+    description: Envía los totales de hoy y el último peso a Home Assistant como sensores.
+  auto_backup:
+    name: Copia de seguridad automática
+    description: Escribe cada día una copia de seguridad JSON de cada usuario en /backup/mydiet.
+  backup_keep_days:
+    name: Conservar copias de seguridad (días)
+    description: Las copias automáticas más antiguas se eliminan.
+  admin_users:
+    name: Administradores
+    description: ID o nombres de los usuarios que pueden abrir la administración de usuarios. Vacío = el primer usuario que abrió el complemento.
+  usda_api_key:
+    name: Clave de API de USDA
+    description: Clave opcional de api.data.gov para la fuente de datos USDA (sin clave se usa la DEMO_KEY compartida, con un límite de peticiones bajo).
+  api_key:
+    name: Clave de API
+    description: Clave para la interfaz externa (cabecera X-MDA-Key). Vacío = interfaz desactivada.
+  mqtt_discovery:
+    name: Descubrimiento MQTT
+    description: Crea los sensores mediante el descubrimiento MQTT (ID únicos, se conservan tras reiniciar HA). Requiere la integración MQTT; sin ella se envían estados simples.
