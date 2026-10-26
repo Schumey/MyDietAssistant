@@ -3166,7 +3166,7 @@ const api = async (path, opts) => {
   const r = await fetch("api/" + path, opts);
   if (!r.ok) {
     let msg = r.status;
-    try { msg = (await r.json()).detail || msg; } catch { /* keep status */ }
+    try { const d = (await r.json()).detail; msg = Array.isArray(d) ? d.map(x => (x.loc || []).slice(1).join(".") + ": " + x.msg).join("; ") : d || msg; } catch { /* keep status */ }
     throw new Error(msg);
   }
   return r.json();

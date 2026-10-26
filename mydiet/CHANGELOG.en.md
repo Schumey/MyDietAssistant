@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.12.1
+
+### Fixed
+- **Saving the training day:** If a field such as target calories/carbs/fat was left empty, saving the training-day settings failed and showed “[object Object]”. Empty fields are now allowed. Server messages about invalid input are shown as readable text everywhere.
+
 ## 1.12.0
 
 ### New

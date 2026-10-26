@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.12.1
+
+### Behoben
+- **Trainingstag speichern:** Blieb bei „Ziel Kalorien/Kohlenhydrate/Fette“ ein Feld leer, schlug das Speichern der Trainingstag-Einstellungen fehl und zeigte „[object Object]“. Leere Felder sind jetzt erlaubt. Fehlermeldungen des Servers zu ungültigen Eingaben erscheinen allgemein als lesbarer Text.
+
 ## 1.12.0
 
 ### Neu

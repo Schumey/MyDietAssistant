@@ -356,7 +356,7 @@ def suggest_keep(b: KeepIn, x_remote_user_id: str | None = Header(None)):
 
 class TrainingIn(BaseModel):
     saved_meal_id: int | None = None      # the post-workout shake (a saved meal)
-    target: dict[str, float] = {}         # what the shake should deliver: kcal / protein / carbs / fat (missing or 0 = does not matter)
+    target: dict[str, float | None] = {}         # what the shake should deliver: kcal / protein / carbs / fat (missing or 0 = does not matter)
     shake_meal_id: int | None = None      # diary meal for the shake
     dinner_meal_id: int | None = None     # diary meal for the dinner
     auto: bool = False                    # a trigger that enters the shake uses the fitted amounts
@@ -372,7 +372,7 @@ def suggest_put_training(b: TrainingIn, x_remote_user_id: str | None = Header(No
             if mid and not c.execute("SELECT 1 FROM meals WHERE id=? AND owner=?", (mid, owner)).fetchone():
                 raise HTTPException(404, "meal not found")
     cur = suggest_config(owner)
-    cur["training"] = training_clean({**b.model_dump(), "target": {k: v for k, v in b.target.items() if k in suggest.KEYS}})
+    cur["training"] = training_clean({**b.model_dump(), "target": {k: v for k, v in b.target.items() if k in suggest.KEYS and v}})
     set_pref(owner, "suggest", cur)
     return {"ok": True}
 

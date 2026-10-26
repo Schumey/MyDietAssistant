@@ -90,3 +90,11 @@ def test_trigger_enters_fitted_amounts_only_when_switched_on(user):
     c.put("/api/suggest/training", json={"saved_meal_id": shake, "target": {"protein": 20}, "shake_meal_id": mids[0], "auto": True})
     assert c.post(f"/api/triggers/{tid}/run").status_code == 200
     assert entered() < base_protein - 5                         # fitted down to about 20 g protein
+
+
+def test_empty_target_fields_are_accepted(user):
+    c, shake, mids = shake_setup(user)
+    body = {"saved_meal_id": shake, "target": {"kcal": None, "protein": 40, "carbs": None, "fat": None}, "shake_meal_id": None, "dinner_meal_id": None, "auto": True}
+    assert c.put("/api/suggest/training", json=body).status_code == 200
+    t = c.get("/api/suggest/config").json()["training"]
+    assert t["target"] == {"kcal": None, "protein": 40.0, "carbs": None, "fat": None} and t["auto"]
