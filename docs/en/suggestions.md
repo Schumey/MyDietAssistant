@@ -41,6 +41,20 @@ Tap **⚙** (“Priorities and add-ons”) in the suggestion dialog. The dialog 
 
 A suggestion takes at most two add-ons and only if they hit the remainder better.
 
+## Training day: shake and dinner
+
+On training days the app works out the amount of your post-workout shake and then looks for dinners for the rest of the day.
+
+**Set up**
+1. Save the shake once as a meal (Diary → “Save / Copy”). Keep its ingredients “Scalable” so the amounts may change.
+2. Open “Suggest a meal” or, in the diary, “Training day”, and tap “Priorities and add-ons”.
+3. Under “Training day” choose the shake and enter the target, e.g. 40 g protein and 50 g carbs. Fields you leave empty do not count. Optionally choose which diary meals the shake and the dinner go into.
+4. Save.
+
+**Use it:** Tap “Training day” in the diary. The shake with the calculated amounts is at the top (“Enter” or “Adjust”), below it dinners that fit what is left of the daily goal after the shake. The shake’s target is never larger than what is left of the day. If the shake is already entered for today, only the dinners are shown.
+
+**With a trigger:** If a trigger (e.g. “at the gym”) enters the shake, tick “Triggers enter the shake with the calculated amounts” in the settings. The trigger then uses the calculated instead of the saved amounts today. For planned days in the future the saved amounts stay.
+
 ## Order of the suggestions
 
 The order is helped by the matching category (meal name), variety compared to today and yesterday, and frequency.

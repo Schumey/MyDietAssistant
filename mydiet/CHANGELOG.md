@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.10.0
+
+### Neu
+- **Trainingstag:** Neuer Knopf „Trainingstag“ neben „Mahlzeit vorschlagen“. Die App rechnet die Mengen deines Post-Workout-Shakes (einer gespeicherten Mahlzeit) so aus, dass er ein Ziel trifft (Kalorien, Eiweiß, Kohlenhydrate, Fette; nie mehr, als vom Tagesziel noch offen ist), und schlägt danach Abendessen vor, die zum Rest des Tages passen. Ist der Shake schon eingetragen, gibt es nur die Abendessen. Einstellung unter „Prioritäten und Beigaben“ → Trainingstag (Mahlzeit-Zuordnung für Shake und Abendessen inklusive). Voraussetzung: Option „Mahlzeiten-Vorschläge“.
+- **Trigger mit berechneten Mengen:** Optional tragen Trigger, die diesen Shake eintragen, ihn mit den berechneten statt den gespeicherten Mengen ein (nur für den heutigen Tag). Die Automatisierung per Fitnessstudio-Trigger bleibt also bestehen.
+
 ## 1.9.0
 
 ### Neu

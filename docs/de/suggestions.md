@@ -41,6 +41,20 @@ Tippe im Vorschlags-Dialog auf **⚙** („Prioritäten und Beigaben“). Der Di
 
 Ein Vorschlag nimmt höchstens zwei Beigaben dazu und nur, wenn sie den Rest besser treffen.
 
+## Trainingstag: Shake und Abendessen
+
+Für Tage mit Training rechnet die App die Menge deines Post-Workout-Shakes aus und sucht danach Abendessen für den Rest des Tages.
+
+**Einrichten**
+1. Speichere den Shake einmal als Mahlzeit (Tagebuch → „Speichern / Kopieren“). Die Zutaten bleiben „Skalierbar“, damit die Mengen angepasst werden dürfen.
+2. Öffne „Mahlzeit vorschlagen“ oder im Tagebuch „Trainingstag“ und tippe auf „Prioritäten und Beigaben“.
+3. Wähle unter „Trainingstag“ den Shake und trage das Ziel ein, z. B. 40 g Eiweiß und 50 g Kohlenhydrate. Felder, die du leer lässt, zählen nicht. Optional legst du fest, in welche Mahlzeit Shake und Abendessen kommen.
+4. Speichern.
+
+**Benutzen:** Tippe im Tagebuch auf „Trainingstag“. Oben steht der Shake mit den berechneten Mengen („Eintragen“ oder „Anpassen“), darunter Abendessen, die zu dem passen, was nach dem Shake vom Tagesziel offen ist. Das Ziel des Shakes ist nie größer als der noch offene Rest des Tages. Ist der Shake für heute schon eingetragen, erscheinen nur die Abendessen.
+
+**Mit Trigger:** Trägt ein Trigger (z. B. „im Fitnessstudio“) den Shake ein, setze in den Einstellungen das Häkchen „Trigger tragen den Shake mit den berechneten Mengen ein“. Dann nutzt der Trigger heute die berechneten statt der gespeicherten Mengen. Für geplante Tage in der Zukunft bleiben die gespeicherten Mengen.
+
 ## Reihenfolge der Vorschläge
 
 Hilfen bei der Reihenfolge sind die passende Kategorie (Name der Mahlzeit), Abwechslung gegenüber heute und gestern und die Häufigkeit.

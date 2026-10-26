@@ -2,6 +2,12 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.10.0
+
+### New
+- **Training day:** New “Training day” button next to “Suggest a meal”. The app works out the amounts of your post-workout shake (a saved meal) so it hits a target (calories, protein, carbs, fat; never more than is left of the daily goal) and then suggests dinners that fit the rest of the day. If the shake is already entered, only the dinners are shown. Set it up under “Priorities and add-ons” → Training day (including the diary meals for shake and dinner). Requires the “Meal suggestions” option.
+- **Triggers with calculated amounts:** Optionally, triggers that enter this shake use the calculated amounts instead of the saved ones (today only). Your gym trigger keeps working.
+
 ## 1.9.0
 
 ### New

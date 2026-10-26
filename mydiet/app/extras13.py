@@ -7,8 +7,9 @@ from fastapi import Header, HTTPException
 from pydantic import BaseModel
 
 import db
+import extras
 import suggest
-from extras import feature_on, get_pref, note_use, set_pref
+from extras import feature_on, first_meal, get_pref, note_use, set_pref
 from extras import SavedItemIn, pack_range, saved_meal_rows
 from main import app, check_day, check_time, day_totals, food_scope, get_goal, publish, user_from
 
@@ -30,7 +31,21 @@ def suggest_config(owner: str) -> dict:
     prio = {**suggest.DEFAULT_PRIO, **{k: v for k, v in (saved.get("prio") or {}).items() if k in suggest.KEYS}}
     return {"prio": prio, "kcal_cap": bool(saved.get("kcal_cap")), "protein_min": bool(saved.get("protein_min")),
             "scope": saved.get("scope") if saved.get("scope") in ("day", "next") else "day",
-            "excluded": [e for e in saved.get("excluded") or [] if isinstance(e, dict) and e.get("key")]}
+            "excluded": [e for e in saved.get("excluded") or [] if isinstance(e, dict) and e.get("key")],
+            "training": training_clean(saved.get("training"))}
+
+
+def training_clean(t) -> dict:
+    """Training-day setup: the shake (a saved meal), what it should deliver, and where shake and dinner go in the diary."""
+    t = t if isinstance(t, dict) else {}
+
+    def pos(v):
+        return float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v) and v > 0 else None
+    return {"saved_meal_id": t.get("saved_meal_id") if isinstance(t.get("saved_meal_id"), int) else None,
+            "target": {k: pos((t.get("target") or {}).get(k)) for k in suggest.KEYS},
+            "shake_meal_id": t.get("shake_meal_id") if isinstance(t.get("shake_meal_id"), int) else None,
+            "dinner_meal_id": t.get("dinner_meal_id") if isinstance(t.get("dinner_meal_id"), int) else None,
+            "auto": bool(t.get("auto"))}
 
 
 class ConfigIn(BaseModel):
@@ -223,6 +238,23 @@ def proposal(r: dict, remaining: dict, target: dict) -> dict:
             "scale": round(r["s"], 2), "cost": round(r["cost"], 3)}
 
 
+def gather(c, owner: str, day: str, cfg: dict, meal_name: str, skip_saved: int | None = None):
+    """All candidates (saved meals + diary combinations, minus the excluded ones) with their bias, plus the add-ons."""
+    known = set()
+    cands = [cd for cd in saved_candidates(c, owner) if cd["saved_meal_id"] != skip_saved]
+    for cd in cands:
+        known.add(signature(i["name"] for i in cd["items"]))
+    cands += history_candidates(c, owner, day, known)
+    out = {e["key"] for e in cfg["excluded"]}
+    cands = [cd for cd in cands if cand_key(cd) not in out]
+    today_names = {r[0].strip().lower() for r in c.execute("SELECT name FROM entries WHERE owner=? AND day=?", (owner, day))}
+    y = (date.fromisoformat(day) - timedelta(days=1)).isoformat()
+    yesterday_names = {r[0].strip().lower() for r in c.execute("SELECT name FROM entries WHERE owner=? AND day=?", (owner, y))}
+    for cd in cands:
+        cd["bias"] = bias_for(cd, meal_name, today_names, yesterday_names)
+    return cands, addon_rows(c, owner)
+
+
 @app.get("/api/suggest")
 def suggest_list(day: str, meal_id: int | None = None, scope: str | None = None, x_remote_user_id: str | None = Header(None)):
     check_day(day)
@@ -238,19 +270,7 @@ def suggest_list(day: str, meal_id: int | None = None, scope: str | None = None,
         meal = c.execute("SELECT name FROM meals WHERE id=? AND owner=?", (meal_id, owner)).fetchone() if meal_id else None
         share = open_slots(c, owner, day, meal_id, times) if scope == "next" else 1
         target = {k: (v / share if v is not None else None) for k, v in remaining.items()}
-        known = set()
-        cands = saved_candidates(c, owner)
-        for cd in cands:
-            known.add(signature(i["name"] for i in cd["items"]))
-        cands += history_candidates(c, owner, day, known)
-        out = {e["key"] for e in cfg["excluded"]}
-        cands = [cd for cd in cands if cand_key(cd) not in out]
-        addons = addon_rows(c, owner)
-        today_names = {r[0].strip().lower() for r in c.execute("SELECT name FROM entries WHERE owner=? AND day=?", (owner, day))}
-        y = (date.fromisoformat(day) - timedelta(days=1)).isoformat()
-        yesterday_names = {r[0].strip().lower() for r in c.execute("SELECT name FROM entries WHERE owner=? AND day=?", (owner, y))}
-    for cd in cands:
-        cd["bias"] = bias_for(cd, meal["name"] if meal else "", today_names, yesterday_names)
+        cands, addons = gather(c, owner, day, cfg, meal["name"] if meal else "")
     if not any(v for v in target.values()):
         return {"remaining": remaining, "target": target, "scope": scope, "slots": share, "items": [], "reached": True}
     ranked = suggest.rank(cands, addons, target, cfg["prio"], cfg, limit=SHOWN)
@@ -330,3 +350,111 @@ def suggest_keep(b: KeepIn, x_remote_user_id: str | None = Header(None)):
             [(cur.lastrowid, i.name, i.grams, i.kcal, i.protein, i.carbs, i.fat, i.fiber, i.sugar, i.salt, i.sat_fat,
               "fixed" if i.mode == "fixed" else "scale", min(max(i.tol, 0), 100), max(i.pack_g, 0), max(i.step_g, 0), *pack_range(i)) for i in b.items])
         return {"id": cur.lastrowid}
+
+
+# --- training day: shake amounts and matching dinners -------------------------------------------
+
+class TrainingIn(BaseModel):
+    saved_meal_id: int | None = None      # the post-workout shake (a saved meal)
+    target: dict[str, float] = {}         # what the shake should deliver: kcal / protein / carbs / fat (missing or 0 = does not matter)
+    shake_meal_id: int | None = None      # diary meal for the shake
+    dinner_meal_id: int | None = None     # diary meal for the dinner
+    auto: bool = False                    # a trigger that enters the shake uses the fitted amounts
+
+
+@app.put("/api/suggest/training")
+def suggest_put_training(b: TrainingIn, x_remote_user_id: str | None = Header(None)):
+    owner = user_from(x_remote_user_id)
+    with db.conn() as c:
+        if b.saved_meal_id and not c.execute("SELECT 1 FROM saved_meals WHERE id=? AND owner=?", (b.saved_meal_id, owner)).fetchone():
+            raise HTTPException(404, "saved meal not found")
+        for mid in (b.shake_meal_id, b.dinner_meal_id):
+            if mid and not c.execute("SELECT 1 FROM meals WHERE id=? AND owner=?", (mid, owner)).fetchone():
+                raise HTTPException(404, "meal not found")
+    cur = suggest_config(owner)
+    cur["training"] = training_clean({**b.model_dump(), "target": {k: v for k, v in b.target.items() if k in suggest.KEYS}})
+    set_pref(owner, "suggest", cur)
+    return {"ok": True}
+
+
+def remaining_for(c, owner: str, day: str) -> dict:
+    goal, tot = get_goal(c, owner, day), day_totals(c, owner, day)
+    return {k: (max(goal[k] - tot[k], 0.0) if goal.get(k) else None) for k in suggest.KEYS}
+
+
+def fit_shake(c, owner: str, cfg: dict, remaining: dict):
+    """(candidate, target, fit) for the configured shake; the target never exceeds what is left of the day. None when not possible."""
+    t = cfg["training"]
+    cand = next((cd for cd in saved_candidates(c, owner) if cd["saved_meal_id"] == t["saved_meal_id"]), None) if t["saved_meal_id"] else None
+    if not cand:
+        return None
+    target = {k: (min(v, remaining[k]) if v is not None and remaining.get(k) is not None else v) for k, v in t["target"].items()}
+    if all(v is None for v in target.values()):
+        return None
+    prio = {k: (max(cfg["prio"][k], 1) if target[k] is not None else 0) for k in suggest.KEYS}
+    fit = suggest.best_fit(cand, [], target, prio, cfg)
+    return (cand, target, {**fit, "cand": cand}) if fit else None
+
+
+def shake_eaten(c, owner: str, day: str, cand: dict) -> bool:
+    today = {r[0].strip().lower() for r in c.execute("SELECT name FROM entries WHERE owner=? AND day=?", (owner, day))}
+    names = {i["name"].strip().lower() for i in cand["items"]}
+    return bool(names) and names <= today
+
+
+@app.get("/api/suggest/training")
+def suggest_training(day: str, x_remote_user_id: str | None = Header(None)):
+    """Training day: amounts for the shake, then dinners that fit what is left of the day after it."""
+    check_day(day)
+    owner = user_from(x_remote_user_id)
+    need_suggest(owner)
+    cfg = suggest_config(owner)
+    t = cfg["training"]
+    with db.conn() as c:
+        db.ensure_meals(c, owner)
+        remaining = remaining_for(c, owner, day)
+        cand = next((cd for cd in saved_candidates(c, owner) if cd["saved_meal_id"] == t["saved_meal_id"]), None) if t["saved_meal_id"] else None
+        if not cand:
+            return {"configured": False}
+        eaten = shake_eaten(c, owner, day, cand)
+        got = None if eaten else fit_shake(c, owner, cfg, remaining)
+        after = dict(remaining)
+        shake = None
+        if got:
+            _, starget, fit = got
+            shake = proposal(fit, remaining, starget)
+            shake["target"] = {k: (round(v, 1) if v is not None else None) for k, v in starget.items()}
+            after = {k: (max(remaining[k] - fit["totals"][k], 0.0) if remaining[k] is not None else None) for k in suggest.KEYS}
+        dinner = c.execute("SELECT name FROM meals WHERE id=? AND owner=?", (t["dinner_meal_id"], owner)).fetchone() if t["dinner_meal_id"] else None
+        cands, addons = gather(c, owner, day, cfg, dinner["name"] if dinner else "", skip_saved=t["saved_meal_id"])
+    rnd = {k: (round(v, 1) if v is not None else None) for k, v in after.items()}
+    reached = not any(v for v in after.values())
+    ranked = [] if reached else suggest.rank(cands, addons, after, cfg["prio"], cfg, limit=SHOWN)
+    return {"configured": True, "eaten": eaten, "shake": shake, "remaining": {k: (round(v, 1) if v is not None else None) for k, v in remaining.items()},
+            "after": rnd, "reached": reached, "shake_meal_id": t["shake_meal_id"], "dinner_meal_id": t["dinner_meal_id"],
+            "items": [proposal(r, after, after) for r in ranked]}
+
+
+def auto_fit(c, owner: str, sid: int, day: str, meal_id: int | None, stamp: str | None):
+    """Trigger hook: enter the configured shake with fitted amounts (only today, only when switched on)."""
+    if day != date.today().isoformat() or not feature_on(owner, "suggest"):
+        return None
+    cfg = suggest_config(owner)
+    t = cfg["training"]
+    if not (t["auto"] and t["saved_meal_id"] == sid):
+        return None
+    got = fit_shake(c, owner, cfg, remaining_for(c, owner, day))
+    if not got:
+        return None
+    meal_id = meal_id or first_meal(c, owner)
+    note_use(c, owner, sid, meal_id)
+    ids = []
+    for i in got[2]["items"]:
+        ids.append(c.execute("INSERT INTO entries(owner,day,meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,time)"
+                             " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                             (owner, day, meal_id, i["name"], i["grams"], i["kcal"], i["protein"], i["carbs"], i["fat"],
+                              i["fiber"], i["sugar"], i["salt"], i["sat_fat"], stamp)).lastrowid)
+    return ids
+
+
+extras.FIT_HOOKS.append(auto_fit)

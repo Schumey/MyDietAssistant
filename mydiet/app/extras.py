@@ -1078,13 +1078,21 @@ def del_trigger(tid: int, x_remote_user_id: str | None = Header(None)):
     return {"ok": True}
 
 
+FIT_HOOKS = []   # modules may enter a saved meal with fitted amounts: hook(c, owner, saved_meal_id, day, meal_id, stamp) -> entry ids or None
+
+
 def fire(c, t, day: str):
     owner = t["owner"]
     # planned days ahead get no clock time; today is stamped with the current time
     stamp = datetime.now().strftime("%H:%M") if day == date.today().isoformat() else None
     ids, label = [], ""
     if t["saved_meal_id"]:
-        ids = add_saved_to_diary(c, owner, t["saved_meal_id"], day, t["meal_id"], time=stamp)
+        for hook in FIT_HOOKS:
+            ids = hook(c, owner, t["saved_meal_id"], day, t["meal_id"], stamp)
+            if ids:
+                break
+        else:
+            ids = add_saved_to_diary(c, owner, t["saved_meal_id"], day, t["meal_id"], time=stamp)
         r = c.execute("SELECT name FROM saved_meals WHERE id=?", (t["saved_meal_id"],)).fetchone()
         label = r["name"] if r else ""
     elif t["food_id"]:

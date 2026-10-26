@@ -381,6 +381,24 @@ const EN = {
   "Anpassen": "Adjust",
   "Fertig": "Done",
   "Prioritäten und Beigaben": "Priorities and add-ons",
+  "Trainingstag": "Training day",
+  "Wähle unter „Prioritäten und Beigaben“ den Shake und sein Ziel, dann kann ich die Mengen ausrechnen.": "Choose the shake and its target under “Priorities and add-ons”, then I can work out the amounts.",
+  "Der Shake ist für heute schon eingetragen.": "The shake is already entered for today.",
+  "Shake": "Shake",
+  "Ziel für den Shake: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Target for the shake: {} kcal · KH {} g · Fett {} g · Eiweiß {} g",
+  "Für den Shake lässt sich kein Vorschlag berechnen: Wähle in den Einstellungen mindestens ein Ziel.": "No suggestion can be calculated for the shake: set at least one target in the settings.",
+  "Dein Tagesziel ist damit erreicht – es bleibt nichts für ein Abendessen übrig.": "This reaches your daily goal – nothing is left for a dinner.",
+  "Noch keine Vorschläge: Speichere Mahlzeiten im Tagebuch über „Speichern / Kopieren“.": "No suggestions yet: save meals in the diary via “Save / Copy”.",
+  "Noch offen: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Still open: {} kcal · KH {} g · Fett {} g · Eiweiß {} g",
+  "Offen nach dem Shake: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Open after the shake: {} kcal · KH {} g · Fett {} g · Eiweiß {} g",
+  "Dein Shake nach dem Training: Die App rechnet die Mengen so aus, dass er das Ziel trifft, und schlägt danach Abendessen für den Rest des Tages vor. Der Shake muss als Mahlzeit gespeichert sein.": "Your shake after training: the app works out the amounts so it hits the target and then suggests dinners for the rest of the day. The shake has to be saved as a meal.",
+  "– kein Shake –": "– no shake –",
+  "Was der Shake liefern soll (leer = egal)": "What the shake should deliver (empty = does not matter)",
+  "Shake eintragen in": "Enter shake in",
+  "erste Mahlzeit": "first meal",
+  "Abendessen eintragen in": "Enter dinner in",
+  "erste freie Mahlzeit": "first free meal",
+  "Trigger tragen den Shake mit den berechneten Mengen ein": "Triggers enter the shake with the calculated amounts",
   "Vorschläge einstellen": "Suggestion settings",
   "Wichtigkeit": "Importance",
   "egal": "don't care",
@@ -1227,6 +1245,24 @@ Object.assign(LANGS, {
     "Anpassen": "Ajuster",
     "Fertig": "Terminé",
     "Prioritäten und Beigaben": "Priorités et accompagnements",
+    "Trainingstag": "Jour d'entraînement",
+    "Wähle unter „Prioritäten und Beigaben“ den Shake und sein Ziel, dann kann ich die Mengen ausrechnen.": "Choisis le shake et son objectif sous « Priorités et accompagnements », puis je peux calculer les quantités.",
+    "Der Shake ist für heute schon eingetragen.": "Le shake est déjà enregistré pour aujourd'hui.",
+    "Shake": "Shake",
+    "Ziel für den Shake: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Objectif pour le shake : {} kcal · KH {} g · Fett {} g · Eiweiß {} g",
+    "Für den Shake lässt sich kein Vorschlag berechnen: Wähle in den Einstellungen mindestens ein Ziel.": "Aucune suggestion n'est possible pour le shake : définis au moins un objectif dans les réglages.",
+    "Dein Tagesziel ist damit erreicht – es bleibt nichts für ein Abendessen übrig.": "Ton objectif du jour est ainsi atteint – il ne reste rien pour un dîner.",
+    "Noch keine Vorschläge: Speichere Mahlzeiten im Tagebuch über „Speichern / Kopieren“.": "Pas encore de suggestions : enregistre des repas dans le journal via « Enregistrer / Copier ».",
+    "Noch offen: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Encore ouvert : {} kcal · KH {} g · Fett {} g · Eiweiß {} g",
+    "Offen nach dem Shake: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Ouvert après le shake : {} kcal · KH {} g · Fett {} g · Eiweiß {} g",
+    "Dein Shake nach dem Training: Die App rechnet die Mengen so aus, dass er das Ziel trifft, und schlägt danach Abendessen für den Rest des Tages vor. Der Shake muss als Mahlzeit gespeichert sein.": "Ton shake après l'entraînement : l'app calcule les quantités pour atteindre l'objectif, puis propose des dîners pour le reste de la journée. Le shake doit être enregistré comme repas.",
+    "– kein Shake –": "– aucun shake –",
+    "Was der Shake liefern soll (leer = egal)": "Ce que le shake doit apporter (vide = peu importe)",
+    "Shake eintragen in": "Enregistrer le shake dans",
+    "erste Mahlzeit": "premier repas",
+    "Abendessen eintragen in": "Enregistrer le dîner dans",
+    "erste freie Mahlzeit": "premier repas libre",
+    "Trigger tragen den Shake mit den berechneten Mengen ein": "Les déclencheurs saisissent le shake avec les quantités calculées",
     "Vorschläge einstellen": "Réglages des suggestions",
     "Wichtigkeit": "Importance",
     "egal": "peu importe",
@@ -2065,6 +2101,24 @@ Object.assign(LANGS, {
     "Anpassen": "Ajustar",
     "Fertig": "Listo",
     "Prioritäten und Beigaben": "Prioridades y complementos",
+    "Trainingstag": "Día de entrenamiento",
+    "Wähle unter „Prioritäten und Beigaben“ den Shake und sein Ziel, dann kann ich die Mengen ausrechnen.": "Elige el batido y su objetivo en «Prioridades y complementos» y entonces puedo calcular las cantidades.",
+    "Der Shake ist für heute schon eingetragen.": "El batido ya está registrado para hoy.",
+    "Shake": "Batido",
+    "Ziel für den Shake: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Objetivo para el batido: {} kcal · KH {} g · Fett {} g · Eiweiß {} g",
+    "Für den Shake lässt sich kein Vorschlag berechnen: Wähle in den Einstellungen mindestens ein Ziel.": "No se puede calcular una sugerencia para el batido: define al menos un objetivo en los ajustes.",
+    "Dein Tagesziel ist damit erreicht – es bleibt nichts für ein Abendessen übrig.": "Con esto alcanzas tu objetivo del día: no queda nada para una cena.",
+    "Noch keine Vorschläge: Speichere Mahlzeiten im Tagebuch über „Speichern / Kopieren“.": "Aún no hay sugerencias: guarda comidas en el diario con «Guardar / Copiar».",
+    "Noch offen: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Todavía abierto: {} kcal · KH {} g · Fett {} g · Eiweiß {} g",
+    "Offen nach dem Shake: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Abierto tras el batido: {} kcal · KH {} g · Fett {} g · Eiweiß {} g",
+    "Dein Shake nach dem Training: Die App rechnet die Mengen so aus, dass er das Ziel trifft, und schlägt danach Abendessen für den Rest des Tages vor. Der Shake muss als Mahlzeit gespeichert sein.": "Tu batido después de entrenar: la app calcula las cantidades para alcanzar el objetivo y luego sugiere cenas para el resto del día. El batido debe estar guardado como comida.",
+    "– kein Shake –": "– sin batido –",
+    "Was der Shake liefern soll (leer = egal)": "Lo que debe aportar el batido (vacío = da igual)",
+    "Shake eintragen in": "Registrar el batido en",
+    "erste Mahlzeit": "primera comida",
+    "Abendessen eintragen in": "Registrar la cena en",
+    "erste freie Mahlzeit": "primera comida libre",
+    "Trigger tragen den Shake mit den berechneten Mengen ein": "Los disparadores registran el batido con las cantidades calculadas",
     "Vorschläge einstellen": "Ajustes de las sugerencias",
     "Wichtigkeit": "Importancia",
     "egal": "da igual",
@@ -2915,6 +2969,24 @@ Object.assign(LANGS, {
     "Anpassen": "Aanpassen",
     "Fertig": "Klaar",
     "Prioritäten und Beigaben": "Prioriteiten en toevoegingen",
+    "Trainingstag": "Trainingsdag",
+    "Wähle unter „Prioritäten und Beigaben“ den Shake und sein Ziel, dann kann ich die Mengen ausrechnen.": "Kies de shake en het doel onder “Prioriteiten en toevoegingen”, dan kan ik de hoeveelheden uitrekenen.",
+    "Der Shake ist für heute schon eingetragen.": "De shake is voor vandaag al ingevoerd.",
+    "Shake": "Shake",
+    "Ziel für den Shake: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Doel voor de shake: {} kcal · koolh. {} g · vet {} g · eiwit {} g",
+    "Für den Shake lässt sich kein Vorschlag berechnen: Wähle in den Einstellungen mindestens ein Ziel.": "Voor de shake kan geen suggestie worden berekend: stel in de instellingen minstens één doel in.",
+    "Dein Tagesziel ist damit erreicht – es bleibt nichts für ein Abendessen übrig.": "Hiermee haal je je dagdoel – er blijft niets over voor een avondeten.",
+    "Noch keine Vorschläge: Speichere Mahlzeiten im Tagebuch über „Speichern / Kopieren“.": "Nog geen suggesties: sla maaltijden op in het dagboek via “Opslaan / Kopiëren”.",
+    "Noch offen: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Nog open: {} kcal · koolh. {} g · vet {} g · eiwit {} g",
+    "Offen nach dem Shake: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Open na de shake: {} kcal · koolh. {} g · vet {} g · eiwit {} g",
+    "Dein Shake nach dem Training: Die App rechnet die Mengen so aus, dass er das Ziel trifft, und schlägt danach Abendessen für den Rest des Tages vor. Der Shake muss als Mahlzeit gespeichert sein.": "Je shake na de training: de app rekent de hoeveelheden uit zodat het doel wordt gehaald en stelt daarna avondeten voor de rest van de dag voor. De shake moet als maaltijd zijn opgeslagen.",
+    "– kein Shake –": "– geen shake –",
+    "Was der Shake liefern soll (leer = egal)": "Wat de shake moet leveren (leeg = maakt niet uit)",
+    "Shake eintragen in": "Shake invoeren bij",
+    "erste Mahlzeit": "eerste maaltijd",
+    "Abendessen eintragen in": "Avondeten invoeren bij",
+    "erste freie Mahlzeit": "eerste vrije maaltijd",
+    "Trigger tragen den Shake mit den berechneten Mengen ein": "Triggers voeren de shake in met de berekende hoeveelheden",
     "Vorschläge einstellen": "Suggesties instellen",
     "Wichtigkeit": "Belang",
     "egal": "maakt niet uit",
@@ -3350,6 +3422,7 @@ async function renderDiary() {
     !state.features.notes ? null : d.notes[0] ? h("div", { class: "note", onclick: () => noteDialog(0, "Tag") }, d.notes[0])
       : h("button", { class: "flat", onclick: () => noteDialog(0, "Tag") }, "Notiz zum Tag"),
     state.features.suggest ? h("button", { class: "flat", onclick: () => suggestDialog() }, "Mahlzeit vorschlagen") : null,
+    state.features.suggest ? h("button", { class: "flat", onclick: () => suggestDialog({ training: true }) }, "Trainingstag") : null,
     d.entries.length ? h("button", { class: "flat", onclick: () => dayCopyDialog() }, "Ganzen Tag kopieren") : null));
   if (state.features.trackers && trackers.length) root.append(trackerCard(trackers));
 }
@@ -3377,11 +3450,35 @@ function suggestDialog(opts = {}) {
     const my = ++seq;
     body.replaceChildren(h("div", { class: "muted" }, "Lade …"));
     let r;
-    try { r = await api(`suggest?day=${state.day}` + (mealId ? "&meal_id=" + mealId : "") + (scope ? "&scope=" + scope : "")); }
+    try { r = await api(opts.training ? `suggest/training?day=${state.day}` : `suggest?day=${state.day}` + (mealId ? "&meal_id=" + mealId : "") + (scope ? "&scope=" + scope : "")); }
     catch (e) { if (my === seq) body.replaceChildren(h("div", { class: "err" }, e.message)); return; }
     if (my !== seq) return;
+    if (opts.training) { drawTraining(r); return; }
     scope = r.scope; scopeSel.value = scope;
     draw(r);
+  }
+
+  // Training day: first the shake with fitted amounts, then dinners for what is left of the day.
+  function drawTraining(r) {
+    if (!r.configured) {
+      body.replaceChildren(h("div", { class: "muted" }, "Wähle unter „Prioritäten und Beigaben“ den Shake und sein Ziel, dann kann ich die Mengen ausrechnen."));
+      return;
+    }
+    const parts = [];
+    if (r.eaten) parts.push(h("div", { class: "muted" }, "Der Shake ist für heute schon eingetragen."));
+    else if (r.shake) {
+      parts.push(h("h3", {}, "Shake"), h("div", { class: "muted" }, `Ziel für den Shake: ${sugText(r.shake.target)}`),
+        sugCard(r.shake, { target: r.shake.target, remaining: r.remaining, scope: "next" }, { meal: r.shake_meal_id, keepOpen: true }));
+    } else parts.push(h("div", { class: "muted" }, "Für den Shake lässt sich kein Vorschlag berechnen: Wähle in den Einstellungen mindestens ein Ziel."));
+    parts.push(h("h3", {}, "Abendessen"));
+    if (r.reached) parts.push(h("div", { class: "muted" }, "Dein Tagesziel ist damit erreicht – es bleibt nichts für ein Abendessen übrig."));
+    else if (!r.items.length) parts.push(h("div", { class: "muted" }, "Noch keine Vorschläge: Speichere Mahlzeiten im Tagebuch über „Speichern / Kopieren“."));
+    else {
+      parts.push(h("div", { class: "muted" }, (r.eaten || !r.shake ? `Noch offen: ${sugText(r.after)}` : `Offen nach dem Shake: ${sugText(r.after)}`)),
+        ...r.items.slice(0, shown).map(p => sugCard(p, { target: r.after, remaining: r.after, scope: "day" }, { meal: r.dinner_meal_id })));
+      if (r.items.length > shown) parts.push(h("button", { class: "flat", onclick: () => { shown += 3; drawTraining(r); } }, "Weitere Vorschläge"));
+    }
+    body.replaceChildren(...parts);
   }
 
   function draw(r) {
@@ -3397,7 +3494,7 @@ function suggestDialog(opts = {}) {
   }
 
   // One suggestion: items, macros, deviation; "Anpassen" turns the amounts into fields.
-  function sugCard(p0, r) {
+  function sugCard(p0, r, o = {}) {
     const p = JSON.parse(JSON.stringify(p0));
     let editing = false;
     const box = h("div", { class: "card sug" });
@@ -3436,10 +3533,10 @@ function suggestDialog(opts = {}) {
             const now = new Date();
             const time = times && state.day === iso(now) ? now.toTimeString().slice(0, 5) : null;
             try {
-              await send("POST", "suggest/add", { day: state.day, meal_id: times ? null : mealId, time, saved_meal_id: p.saved_meal_id,
+              await send("POST", "suggest/add", { day: state.day, meal_id: times ? null : (o.meal || mealId), time, saved_meal_id: p.saved_meal_id,
                 items: p.items.map(i => ({ name: i.name, grams: i.grams, kcal: i.kcal, protein: i.protein, carbs: i.carbs, fat: i.fat,
                   fiber: i.fiber || 0, sugar: i.sugar || 0, salt: i.salt || 0, sat_fat: i.sat_fat || 0 })) });
-              dlg.close(); renderDiary();
+              if (o.keepOpen) { await renderDiary(); load(); } else { dlg.close(); renderDiary(); }
             } catch (err) { e.target.disabled = false; alert(err.message); }
           } }, "Eintragen"),
           h("button", { class: "flat", onclick: () => { editing = !editing; drawCard(); } }, editing ? "Fertig" : "Anpassen"),
@@ -3454,9 +3551,9 @@ function suggestDialog(opts = {}) {
     return box;
   }
 
-  setDlg(h("h2", {}, "Mahlzeit vorschlagen"),
-    h("div", { class: "sug-controls" }, mealSel, scopeSel),
-    h("button", { class: "sug-settings", onclick: () => suggestSettings(() => suggestDialog({ meal: mealId, scope })) }, "Prioritäten und Beigaben"),
+  setDlg(h("h2", {}, opts.training ? "Trainingstag" : "Mahlzeit vorschlagen"),
+    opts.training ? null : h("div", { class: "sug-controls" }, mealSel, scopeSel),
+    h("button", { class: "sug-settings", onclick: () => suggestSettings(() => suggestDialog(opts.training ? opts : { meal: mealId, scope })) }, "Prioritäten und Beigaben"),
     body,
     h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Schließen")));
   if (!dlg.open) dlg.showModal();
@@ -3467,6 +3564,9 @@ function suggestDialog(opts = {}) {
 // Priorities per macro, hard limits and the add-on foods (nuts ...) the suggestions may put next to a meal.
 async function suggestSettings(back) {
   const cfg = await api("suggest/config");
+  const savedMeals = await api("saved-meals");
+  const tr = JSON.parse(JSON.stringify(cfg.training));
+  const dayMeals = state.data.mode === "times" ? [] : state.data.meals;
   const prio = { ...cfg.prio }, addons = cfg.addons.map(a => ({ ...a })), excluded = cfg.excluded.map(e => ({ ...e }));
   let cap = cfg.kcal_cap, pmin = cfg.protein_min;
   const levels = ["egal", "normal", "wichtig", "sehr wichtig"];
@@ -3490,6 +3590,22 @@ async function suggestSettings(back) {
       h("button", { class: "flat", onclick: () => setDlg(foodSwapDialog({
         title: "Beigabe hinzufügen", grams: 30, confirm: "Hinzufügen", onCancel: show,
         onDone: (f, g) => { addons.push({ food_id: f.id, name: f.name, min_g: 0, max_g: g, step_g: 5 }); show(); } })) }, "+ Beigabe"),
+      h("label", { style: "margin-top:12px" }, "Trainingstag"),
+      h("div", { class: "muted" }, "Dein Shake nach dem Training: Die App rechnet die Mengen so aus, dass er das Ziel trifft, und schlägt danach Abendessen für den Rest des Tages vor. Der Shake muss als Mahlzeit gespeichert sein."),
+      h("select", { onchange: e => { tr.saved_meal_id = Number(e.target.value) || null; } },
+        h("option", { value: "" }, "– kein Shake –"), savedMeals.map(m => h("option", { value: m.id, selected: m.id === tr.saved_meal_id }, m.name))),
+      h("div", { class: "muted" }, "Was der Shake liefern soll (leer = egal)"),
+      h("div", { class: "list" }, SUG_KEYS.map(([k, label]) => h("div", {}, h("div", { class: "grow" }, label),
+        h("input", { type: "number", step: "any", min: "0", style: "width:80px;flex:none", placeholder: "egal", value: tr.target[k] || "",
+          onchange: e => { tr.target[k] = Number(e.target.value) || null; } }), h("span", { class: "muted" }, k === "kcal" ? "kcal" : "g")))),
+      dayMeals.length ? [h("label", {}, "Shake eintragen in"),
+        h("select", { onchange: e => { tr.shake_meal_id = Number(e.target.value) || null; } },
+          h("option", { value: "" }, "erste Mahlzeit"), dayMeals.map(m => h("option", { value: m.id, selected: m.id === tr.shake_meal_id }, m.name))),
+        h("label", {}, "Abendessen eintragen in"),
+        h("select", { onchange: e => { tr.dinner_meal_id = Number(e.target.value) || null; } },
+          h("option", { value: "" }, "erste freie Mahlzeit"), dayMeals.map(m => h("option", { value: m.id, selected: m.id === tr.dinner_meal_id }, m.name)))] : null,
+      h("label", { class: "pick" }, h("input", { type: "checkbox", checked: tr.auto, onchange: e => { tr.auto = e.target.checked; } }),
+        h("span", {}, "Trigger tragen den Shake mit den berechneten Mengen ein")),
       excluded.length ? [h("label", { style: "margin-top:12px" }, "Ausgeschlossen"),
         h("div", { class: "muted" }, "Diese Mahlzeiten tauchen in den Vorschlägen nicht mehr auf. Mit „Zulassen“ kommen sie zurück."),
         h("div", { class: "list" }, excluded.map((e, i) => h("div", {}, h("div", { class: "grow" }, e.name || e.key),
@@ -3502,6 +3618,7 @@ async function suggestSettings(back) {
         h("button", { onclick: async () => {
           try {
             await send("PUT", "suggest/config", { prio, kcal_cap: cap, protein_min: pmin });
+            await send("PUT", "suggest/training", tr);
             await send("PUT", "suggest/addons", { addons: addons.map(a => ({ food_id: a.food_id, min_g: a.min_g, max_g: a.max_g, step_g: a.step_g })) });
             back();
           } catch (e) { msg.textContent = e.message; }
