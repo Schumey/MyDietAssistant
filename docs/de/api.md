@@ -60,6 +60,76 @@ Der Schlüssel muss im Header `X-MDA-Key` stehen. Ohne gültigen Schlüssel antw
 
 Wenn Du das Gewicht von einer smarten Waage übernehmen willst, ist die [Waage als Sensor](weight.md#waage-als-sensor) einfacher als eine Automation.
 
+### Essen per Satz eintragen (Sprachassistent)
+
+`/api/ext/say` nimmt einen ganzen Satz statt eines genauen Lebensmittelnamens. So kannst Du mit Home Assistant Assist oder einer Automation sagen, was Du gegessen hast.
+
+**Beispiele für `text`:** „zwei Äpfel und 200 g Skyr“, „eine halbe Banane“, „3 Scheiben Brot, ein Glas Milch“, „Post-Workout-Shake“.
+
+- Mengen als Zahl oder Wort (ein, zwei, … zwölf, halbe, anderthalb), Einheiten `g`, `kg`, `ml`, `l`, `EL`, `TL`.
+- Ohne Gramm-Angabe gilt eine Portion: bei „3 Scheiben Brot“ die Portion „Scheibe“ des Lebensmittels (anlegbar im Lebensmittel unter „Portionen“), sonst die Portionsgröße des Lebensmittels, sonst 100 g.
+- Es werden Lebensmittel und gespeicherte Mahlzeiten gefunden. Mehrzahl, Umlaute und Groß-/Kleinschreibung spielen keine Rolle. „Äpfel“ findet „Apfel“.
+- Was nicht gefunden wird, steht in `unmatched`, der Rest wird trotzdem eingetragen.
+
+| Feld | Bedeutung |
+|---|---|
+| `user` | Benutzer-ID |
+| `text` | der Satz |
+| `meal` | optional, Name der Mahlzeit (sonst die laut Zeitplan fällige, sonst die erste) |
+| `day`, `time` | optional, wie bei `/api/ext/entry` |
+| `lang` | optional, `de` (Standard) oder `en` für den Antwortsatz |
+| `dry_run` | optional, `true` zeigt nur, was eingetragen würde |
+
+Die Antwort enthält `ok`, `added`, `unmatched` und `message`, einen kurzen Satz zum Vorlesen.
+
+**Mit Assist („Ich habe zwei Äpfel gegessen“)**
+
+1. Lege in der `configuration.yaml` den Befehl an (ersetze den Schlüssel):
+
+```yaml
+rest_command:
+  mydiet_say:
+    url: "http://local-mydiet:8099/api/ext/say"
+    method: POST
+    headers:
+      X-MDA-Key: "DEIN_SCHLUESSEL"
+      Content-Type: application/json
+    payload: '{"user": "{{ user }}", "text": {{ text | tojson }}}'
+
+intent_script:
+  MydietLog:
+    action:
+      - action: rest_command.mydiet_say
+        data:
+          user: "default"
+          text: "{{ food_text }}"
+        response_variable: mda
+      - stop: ""
+        response_variable: mda
+    speech:
+      text: "{{ action_response.content.message }}"
+```
+
+2. Lege die Datei `config/custom_sentences/de/mydiet.yaml` an:
+
+```yaml
+language: "de"
+intents:
+  MydietLog:
+    data:
+      - sentences:
+          - "trag[e] {food_text} ein"
+          - "ich habe {food_text} (gegessen|getrunken)"
+          - "füg[e] {food_text} zum Ernährungstagebuch hinzu"
+lists:
+  food_text:
+    wildcard: true
+```
+
+3. Lade die Konfiguration neu, trage bei `user` Deine Benutzer-ID ein und sage zu Assist: „Ich habe zwei Äpfel und 200 Gramm Skyr gegessen“.
+
+Zum Testen: **Entwicklerwerkzeuge → Aktionen**, `rest_command.mydiet_say` mit `user` und `text`. Für einen Probelauf ohne Eintragen rufst Du den Endpunkt direkt mit `"dry_run": true` auf. Die Assist-Sätze und die Weitergabe der Antwort hängen von Deiner Home-Assistant-Version ab (Platzhalter mit `wildcard` brauchen eine aktuelle Version).
+
 ## Erinnerung
 
 Das Add-on schickt einmal pro Tag eine Nachricht, wenn bis zu einer Uhrzeit noch nichts eingetragen ist.

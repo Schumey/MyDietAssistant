@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.11.0
+
+### New
+- **Enter food by sentence (voice assistant):** New endpoint `POST /api/ext/say` in the external interface (same `api_key`). It understands sentences such as “two apples and 200 g skyr”, “half a banana” or “3 slices of bread”: quantities as numbers or words, grams/kilos/millilitres/litres/tbsp/tsp, portions from the food’s portion sizes, plural and umlauts do not matter. It finds foods and saved meals (“Post-workout shake”). The answer carries a short sentence to read out (“Added: …. Not found: …”), in English on request (`lang`). The meal is the one currently due according to the schedule, otherwise the first one, or given by `meal`; `dry_run` only shows what would be entered. The guide has a ready example for Home Assistant Assist (“I ate two apples”). The Home Assistant side of the example is untested; the endpoint itself is tested. The parser understands German best; a few English words work as well.
+
 ## 1.10.0
 
 ### New

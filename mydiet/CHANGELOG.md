@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.11.0
+
+### Neu
+- **Essen per Satz eintragen (Sprachassistent):** Neuer Endpunkt `POST /api/ext/say` der externen Schnittstelle (gleicher Schlüssel `api_key`). Er versteht Sätze wie „zwei Äpfel und 200 g Skyr“, „eine halbe Banane“ oder „3 Scheiben Brot“: Mengen als Zahl oder Wort, Gramm/Kilo/Milliliter/Liter/EL/TL, Portionen aus den Lebensmittel-Portionen, Mehrzahl und Umlaute egal. Gefunden werden Lebensmittel und gespeicherte Mahlzeiten („Post-Workout-Shake“). Die Antwort enthält einen kurzen Satz zum Vorlesen („Eingetragen: …. Nicht gefunden: …“), auf Wunsch englisch (`lang`). Die Mahlzeit ist die, die laut Zeitplan gerade dran ist, sonst die erste, oder per `meal` angegeben; mit `dry_run` wird nur gezeigt, was eingetragen würde. In der Anleitung steht ein fertiges Beispiel für Home Assistant Assist („Ich habe zwei Äpfel gegessen“). Die Home-Assistant-Seite des Beispiels ist ungeprüft; der Endpunkt selbst ist getestet.
+
 ## 1.10.0
 
 ### Neu

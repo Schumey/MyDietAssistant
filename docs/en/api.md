@@ -60,6 +60,77 @@ The key must be in the header `X-MDA-Key`. Without a valid key the add-on answer
 
 To take over the weight of a smart scale, the [scale as a sensor](weight.md#scale-as-a-sensor) is easier than an automation.
 
+### Enter food by sentence (voice assistant)
+
+`/api/ext/say` takes a whole sentence instead of an exact food name. With Home Assistant Assist or an automation you can say what you ate.
+
+**Examples for `text`:** “two apples and 200 g skyr”, “half a banana”, “3 slices of bread, a glass of milk”, “Post-workout shake”.
+
+- Quantities as numbers or words (a, one, two, … twelve, half), units `g`, `kg`, `ml`, `l`, `EL` (tablespoon), `TL` (teaspoon).
+- Without a weight, one portion counts: for “3 slices of bread” the food’s portion named like “slice” (add it in the food under “Portions”), otherwise the food’s serving size, otherwise 100 g.
+- Foods and saved meals are found. Plural, umlauts and capitalisation do not matter. Names are matched as you saved them.
+- What is not found is listed in `unmatched`; the rest is entered anyway.
+- The parser understands German best; a few English words (and, one, two, half, grams, …) work as well.
+
+| Field | Meaning |
+|---|---|
+| `user` | user id |
+| `text` | the sentence |
+| `meal` | optional, name of the meal (otherwise the one due according to the schedule, otherwise the first) |
+| `day`, `time` | optional, as for `/api/ext/entry` |
+| `lang` | optional, `de` (default) or `en` for the answer sentence |
+| `dry_run` | optional, `true` only shows what would be entered |
+
+The answer contains `ok`, `added`, `unmatched` and `message`, a short sentence to read out.
+
+**With Assist (“I ate two apples”)**
+
+1. Add the command to `configuration.yaml` (replace the key):
+
+```yaml
+rest_command:
+  mydiet_say:
+    url: "http://local-mydiet:8099/api/ext/say"
+    method: POST
+    headers:
+      X-MDA-Key: "YOUR_KEY"
+      Content-Type: application/json
+    payload: '{"user": "{{ user }}", "text": {{ text | tojson }}, "lang": "en"}'
+
+intent_script:
+  MydietLog:
+    action:
+      - action: rest_command.mydiet_say
+        data:
+          user: "default"
+          text: "{{ food_text }}"
+        response_variable: mda
+      - stop: ""
+        response_variable: mda
+    speech:
+      text: "{{ action_response.content.message }}"
+```
+
+2. Create the file `config/custom_sentences/en/mydiet.yaml`:
+
+```yaml
+language: "en"
+intents:
+  MydietLog:
+    data:
+      - sentences:
+          - "log {food_text}"
+          - "I (ate|had|drank) {food_text}"
+          - "add {food_text} to my food diary"
+lists:
+  food_text:
+    wildcard: true
+```
+
+3. Reload the configuration, put your user id in `user` and tell Assist: “I ate two apples and 200 grams of skyr”.
+
+To test: **Developer tools → Actions**, `rest_command.mydiet_say` with `user` and `text`. For a dry run call the endpoint directly with `"dry_run": true`. The Assist sentences and how the answer is passed on depend on your Home Assistant version (`wildcard` placeholders need a recent one).
+
 ## Reminder
 
 The add-on sends a message once a day if nothing has been logged by a given time.

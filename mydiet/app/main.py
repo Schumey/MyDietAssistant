@@ -676,6 +676,7 @@ from extras10 import *  # noqa: E402,F401,F403  (sharing foods/meals, food table
 from extras11 import *  # noqa: E402,F401,F403  (weight from a Home Assistant sensor)
 from extras12 import *  # noqa: E402,F401,F403  (recipe import from Mealie)
 from extras13 import *  # noqa: E402,F401,F403  (meal suggestions)
+from extras14 import *  # noqa: E402,F401,F403  (enter food from a sentence, external API)
 
 
 @app.get("/")
