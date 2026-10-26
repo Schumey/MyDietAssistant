@@ -26,6 +26,16 @@ Alle Funktionen hier betreffen nur Dein Benutzerkonto, auch Export und Import.
 
 Die JSON-Sicherung enthält Einträge, Lebensmittel, Mahlzeiten, Gewicht, Trigger (Aktionen und Mahlzeiten-Regeln), Zusatzfunktions-Einstellungen, Erinnerung, Optik, die Mealie-Adresse und mehr. Nicht enthalten sind der Trigger-Verlauf, Fortschrittsfotos und der Mealie-Token.
 
+## Daten löschen
+
+Unter *Einstellungen → Daten* öffnet **Daten löschen …** eine Auswahl: **Tagebuch**, **Lebensmittel**, **Gespeicherte Mahlzeiten**, **Rezepte**, **Gewicht und Körpermaße**, **Tagesziele** und **Trigger**. Hinter jedem Bereich steht, wie viele Einträge er enthält.
+
+1. Lege vorher eine Sicherung an (siehe oben).
+2. Hake die Bereiche an, die weg sollen, und tippe auf **Endgültig löschen**.
+3. Bestätige die Rückfrage. Erst dann wird gelöscht, unwiderruflich.
+
+Nur Dein Konto ist betroffen; andere Benutzer und Deine Einstellungen bleiben unberührt. Beim Löschen der Lebensmittel bleiben Tagebucheinträge erhalten (sie sind Schnappschüsse); beim Löschen der Rezepte verschwinden auch die Lebensmittel, die für sie angelegt wurden.
+
 ## Eine Sicherung wiederherstellen
 
 1. Öffne *Einstellungen → Automatische Sicherung* und tippe bei einer Sicherung auf **Wiederherstellen**. Oder tippe unter *Einstellungen → Daten* auf **Sicherung einspielen** und wähle eine JSON-Datei.

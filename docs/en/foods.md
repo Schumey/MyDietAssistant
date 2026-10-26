@@ -58,7 +58,7 @@ If you have a nutrition table (BLS, CIQUAL, Swiss food composition database, Ope
 2. Choose a CSV, TXT or Excel file (`.xlsx`) with nutrition values per 100 g.
 3. Columns are recognised by their headings. This includes the abbreviations of the **BLS** (`ST`, `GCAL`, `GJ`, `ZE`, `ZF`, `ZK`, `ZB`) and the columns of **CIQUAL** (`alim_nom_fr`, “Protéines”, “Glucides”, “Lipides” …) and the **Swiss food composition database**.
 4. Check the mapping in the preview and correct it if needed.
-5. Choose the category for all new foods and start the import.
+5. If the table has a category column (e.g. “Category”, “Food group”, Open Food Facts “categories”), it is taken over; with several categories in one cell the first one counts. For foods without a category in the file (or if no column was recognised) you choose the category yourself. Then start the import.
 
 Energy in kJ is converted, sodium is converted to salt. Foods with the same name and brand stay unchanged. The BLS itself is available as a file from the Max Rubner-Institut (its terms of use apply to the data); the add-on does not ship it.
 

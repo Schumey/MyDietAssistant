@@ -28,6 +28,27 @@ T = {
            "none": "No data in this period.", "print": "Print / save as PDF", "made": "Created with MyDietAssistant on",
            "fiber": "Fiber", "sugar": "Sugar", "salt": "Salt", "sat_fat": "Sat. fat", "aim": "Person's aim",
            "lose": "Lose weight", "maintain": "Maintain weight", "gain": "Gain weight", "dec": ".", "c_s": "Carbs", "f_s": "Fat", "p_s": "Protein"},
+    "fr": {"title": "Rapport nutritionnel", "period": "Période", "summary": "Résumé", "days": "Jours", "logged": "Jours enregistrés",
+           "avg": "Moyenne par jour enregistré", "kcal": "Calories", "protein": "Protéines", "carbs": "Glucides", "fat": "Lipides", "goal": "Objectif",
+           "on_goal": "Jours dans l’objectif calorique", "weight": "Poids", "change": "Variation", "date": "Date", "note": "Note", "meal": "Repas",
+           "food": "Aliment", "amount": "Quantité", "daily": "Vue par jour", "entries": "Entrées individuelles", "body": "Mensurations",
+           "none": "Aucune donnée sur cette période.", "print": "Imprimer / enregistrer en PDF", "made": "Créé avec MyDietAssistant le",
+           "fiber": "Fibres", "sugar": "Sucres", "salt": "Sel", "sat_fat": "Acides gras sat.", "aim": "Objectif de la personne",
+           "lose": "Perdre du poids", "maintain": "Maintenir le poids", "gain": "Prendre du poids", "dec": ",", "c_s": "Gluc.", "f_s": "Lip.", "p_s": "Prot."},
+    "es": {"title": "Informe nutricional", "period": "Periodo", "summary": "Resumen", "days": "Días", "logged": "Días registrados",
+           "avg": "Media por día registrado", "kcal": "Calorías", "protein": "Proteínas", "carbs": "Carbohidratos", "fat": "Grasas", "goal": "Objetivo",
+           "on_goal": "Días dentro del objetivo calórico", "weight": "Peso", "change": "Cambio", "date": "Fecha", "note": "Nota", "meal": "Comida",
+           "food": "Alimento", "amount": "Cantidad", "daily": "Resumen diario", "entries": "Entradas individuales", "body": "Medidas corporales",
+           "none": "No hay datos en este periodo.", "print": "Imprimir / guardar como PDF", "made": "Creado con MyDietAssistant el",
+           "fiber": "Fibra", "sugar": "Azúcares", "salt": "Sal", "sat_fat": "Grasas sat.", "aim": "Objetivo de la persona",
+           "lose": "Perder peso", "maintain": "Mantener el peso", "gain": "Ganar peso", "dec": ",", "c_s": "HC", "f_s": "Grasa", "p_s": "Prot."},
+    "nl": {"title": "Voedingsrapport", "period": "Periode", "summary": "Samenvatting", "days": "Dagen", "logged": "Geregistreerde dagen",
+           "avg": "Gemiddelde per geregistreerde dag", "kcal": "Calorieën", "protein": "Eiwit", "carbs": "Koolhydraten", "fat": "Vet", "goal": "Doel",
+           "on_goal": "Dagen binnen het caloriedoel", "weight": "Gewicht", "change": "Verandering", "date": "Datum", "note": "Notitie", "meal": "Maaltijd",
+           "food": "Voedingsmiddel", "amount": "Hoeveelheid", "daily": "Dagoverzicht", "entries": "Afzonderlijke items", "body": "Lichaamsmaten",
+           "none": "Geen gegevens in deze periode.", "print": "Afdrukken / opslaan als pdf", "made": "Gemaakt met MyDietAssistant op",
+           "fiber": "Vezels", "sugar": "Suikers", "salt": "Zout", "sat_fat": "Verz. vet", "aim": "Doel van de persoon",
+           "lose": "Afvallen", "maintain": "Gewicht behouden", "gain": "Aankomen", "dec": ",", "c_s": "KH", "f_s": "Vet", "p_s": "Eiwit"},
 }
 
 
@@ -94,11 +115,13 @@ def fmt(v: float, dec: str, digits: int = 0) -> str:
 
 @app.get("/api/export/report", response_class=Response)
 def export_report(a_from: str | None = None, a_to: str | None = None, entries: bool = False,
-                  x_remote_user_id: str | None = Header(None), x_remote_user_display_name: str | None = Header(None)):
+                  x_remote_user_id: str | None = Header(None), x_remote_user_display_name: str | None = Header(None),
+                  accept_language: str | None = Header(None)):
     owner = user_from(x_remote_user_id)
     start, end = period(a_from, a_to)
     lang = get_pref(owner, "lang", "auto")
-    lang = "en" if lang == "en" else "de"
+    if lang not in T:   # "auto": follow the browser language, German otherwise
+        lang = next((c for c in (x.split(";")[0].strip()[:2].lower() for x in (accept_language or "").split(",")) if c in T), "de")
     imperial = get_pref(owner, "units", "metric") == "imperial"
     t = T[lang]
     dec = t["dec"]
@@ -116,7 +139,7 @@ def export_report(a_from: str | None = None, a_to: str | None = None, entries: b
 
     def dated(s: str) -> str:
         y, m, d = s.split("-")
-        return f"{d}.{m}.{y}" if lang == "de" else f"{m}/{d}/{y}"
+        return f"{m}/{d}/{y}" if lang == "en" else f"{d}.{m}.{y}" if lang == "de" else f"{d}/{m}/{y}"
 
     tiles = [(t["logged"], f"{len(logged)} / {len(data['days'])}"), (t["kcal"] + " Ø", f"{n(avg('kcal'))} kcal"),
              (t["protein"] + " Ø", f"{n(avg('protein'))} g"), (t["carbs"] + " Ø", f"{n(avg('carbs'))} g"), (t["fat"] + " Ø", f"{n(avg('fat'))} g")]

@@ -103,3 +103,39 @@ def test_server_accepts_exactly_the_languages_the_front_end_offers():
     select = re.search(r"const langSel = .*?Español.*?\n", js, flags=re.S)[0]
     offered = set(re.findall(r'value: "(\w+)"', select)) - {"auto"}
     assert offered == {lang for lang in extras.LANGS if lang != "auto"}
+
+
+@pytest.mark.skipif(not shutil.which("node"), reason="node not installed")
+def test_german_server_messages_have_a_translation(tmp_path):
+    """The front end shows server errors through the dictionary; a German message without an entry reaches FR/ES/NL users untranslated."""
+    import ast
+    import glob
+    import json
+    js = read("mydiet", "app", "static", "app.js")
+    script = tmp_path / "dump.js"
+    script.write_text(js[:js.index("const I18N")] + ";process.stdout.write(JSON.stringify(EN))", encoding="utf-8")
+    en = json.loads(subprocess.run(["node", str(script)], check=True, capture_output=True, encoding="utf-8").stdout)
+    exact = {k.strip() for k in en if "{}" not in k}
+    pats = [re.compile("^" + "(.*?)".join(re.escape(p) for p in k.split("{}")) + "$", re.S) for k in en if "{}" in k]
+    german = re.compile(r"[äöüßÄÖÜ]|\b(nicht|und|oder|bitte|keine?|wird|für|Datei|Fehler|gefunden|Lebensmittel|Mahlzeit)\b")
+
+    def text(node):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            return node.value
+        if isinstance(node, ast.JoinedStr):
+            return "".join(v.value if isinstance(v, ast.Constant) else "{}" for v in node.values)
+        return None
+
+    missing = []
+    for f in glob.glob(os.path.join(ROOT, "mydiet", "app", "*.py")):
+        for n in ast.walk(ast.parse(open(f, encoding="utf-8").read())):
+            if isinstance(n, ast.Call) and getattr(n.func, "id", "") == "HTTPException":
+                arg = n.args[1] if len(n.args) > 1 else None
+            elif isinstance(n, ast.Raise) and isinstance(n.exc, ast.Call) and n.exc.args and getattr(n.exc.func, "id", "") == "ValueError":
+                arg = n.exc.args[0]
+            else:
+                continue
+            t = text(arg) if arg is not None else None
+            if t and german.search(t) and t not in exact and not any(p.match(t) for p in pats):
+                missing.append((os.path.basename(f), t))
+    assert not missing, missing

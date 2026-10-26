@@ -58,7 +58,7 @@ Wenn Du eine Nährwerttabelle hast (BLS, CIQUAL, Schweizer Nährwertdatenbank, O
 2. Wähle eine CSV-, TXT- oder Excel-Datei (`.xlsx`) mit Nährwerten pro 100 g.
 3. Die Spalten werden anhand der Überschriften erkannt. Erkannt werden auch die Kürzel der **BLS** (`ST`, `GCAL`, `GJ`, `ZE`, `ZF`, `ZK`, `ZB`) und die Spalten der **CIQUAL** (`alim_nom_fr`, „Protéines“, „Glucides“, „Lipides“ …) sowie der **Schweizer Nährwertdatenbank**.
 4. Prüfe in der Vorschau die Zuordnung und korrigiere sie bei Bedarf.
-5. Wähle die Kategorie für alle neuen Lebensmittel und starte den Import.
+5. Enthält die Tabelle eine Kategorie-Spalte (z. B. „Kategorie“, „Warengruppe“, Open Food Facts „categories“), wird sie übernommen; bei mehreren Kategorien in einer Zelle gilt die erste. Für Lebensmittel ohne Kategorie in der Datei (oder wenn keine Spalte erkannt wurde) wählst Du die Kategorie selbst. Starte dann den Import.
 
 Energie in kJ wird umgerechnet, Natrium in Salz. Lebensmittel mit gleichem Namen und gleicher Marke bleiben unverändert. Die BLS selbst gibt es beim Max Rubner-Institut als Datei (dort gelten die Nutzungsbedingungen); das Add-on bringt sie nicht mit.
 

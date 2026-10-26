@@ -26,6 +26,16 @@ All functions here only affect your own user account, including export and impor
 
 The JSON backup contains entries, foods, meals, weight, triggers (actions and meal rules), settings of optional features, reminder, look, the Mealie address and more. It does not contain the trigger history, progress photos or the Mealie token.
 
+## Delete data
+
+Under *Settings → Data*, **Delete data …** opens a selection: **Diary**, **Foods**, **Saved meals**, **Recipes**, **Weight and body measurements**, **Daily goals** and **Triggers**. Each area shows how many items it holds.
+
+1. Create a backup first (see above).
+2. Tick the areas to remove and tap **Delete permanently**.
+3. Confirm the follow-up question. Only then is the data deleted, irreversibly.
+
+Only your account is affected; other users and your settings stay untouched. Deleting the foods keeps diary entries (they are snapshots); deleting the recipes also removes the foods that were created for them.
+
 ## Restore a backup
 
 1. Open *Settings → Automatic backup* and tap **Restore** on a backup. Or, under *Settings → Data*, tap **Restore backup** and choose a JSON file.

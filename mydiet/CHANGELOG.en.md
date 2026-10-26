@@ -2,6 +2,18 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.9.0
+
+### New
+- **Categories in the food import:** If the table has a category column (e.g. “Category”, “Food group”, Open Food Facts “categories”), the categories are taken over (the first one if a cell lists several). The category chosen in the dialog now only applies to foods without a category in the file. The column can be corrected in the mapping.
+- **Delete data:** Under Settings → Data you can delete diary, foods, saved meals, recipes, weight and body measurements, daily goals and triggers selectively, with item counts and an extra confirmation. Only your own account is affected.
+- **Collapsible settings:** Every settings card can be collapsed and expanded; the browser remembers the state (at first only the first card is open).
+
+### Fixed
+- **German texts in other languages:** The interface still showed German in a few places in French, Spanish and Dutch. Fixed: placeholders in multi-line fields (e.g. “Preparation”), messages of the recipe and Mealie imports, hints in the food dialog and the online comparison, summaries of the table import, column names in the table import, and the names the add-on creates itself (water, caffeine, creatine, “Recipe”, “(copy)”).
+- **Report and notifications:** The nutrition report is now also available in French, Spanish and Dutch (“Automatic” follows the browser), and the reminder and the meal-due notification appear in the chosen language. The push texts could not be checked outside Home Assistant.
+- A test now checks that every German server error message has a dictionary entry.
+
 ## 1.8.1
 
 ### Changed

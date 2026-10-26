@@ -19,7 +19,7 @@ The **Settings** tab consists of cards. Cards for optional features only appear 
 | Export for dietitian and trainer, Data | export, import | [Data](data.md) |
 | Version | installed version, update check | below |
 
-Trigger history and Automatic backup are collapsed; tap the title to open them. At the very bottom, *Version* shows the installed version; **Check for updates** tells you whether a newer version is published (you update in Home Assistant under *Settings → Add-ons*).
+Every card can be collapsed and expanded: tap the title. The browser remembers which cards are open (at first only the first one is). At the very bottom, *Version* shows the installed version; **Check for updates** tells you whether a newer version is published (you update in Home Assistant under *Settings → Add-ons*).
 
 ## Language and units
 

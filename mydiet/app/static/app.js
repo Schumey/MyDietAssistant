@@ -320,7 +320,7 @@ const EN = {
   "Lebensmittel-Tabelle importieren": "Import food table", "Lebensmittel-Tabelle": "Food table", "Energie (kJ)": "Energy (kJ)", "Kalorien (kcal)": "Calories (kcal)",
   "Bitte die Spalten für Name und Kalorien zuordnen.": "Please assign the columns for name and calories.",
   "{} Lebensmittel erkannt ({} Zeilen ohne Name oder Kalorien werden übersprungen). Werte gelten pro 100 g.": "{} foods recognised ({} rows without a name or calories are skipped). Values are per 100 g.",
-  "Kategorie für die importierten Lebensmittel": "Category for the imported foods", "Vorhandene Lebensmittel mit gleichem Namen und gleicher Marke bleiben unverändert.": "Existing foods with the same name and brand stay unchanged.",
+  "Kategorie für Lebensmittel ohne Kategorie in der Datei": "Category for the imported foods", "Vorhandene Lebensmittel mit gleichem Namen und gleicher Marke bleiben unverändert.": "Existing foods with the same name and brand stay unchanged.",
   "Importiert: {} neu, {} schon vorhanden, {} übersprungen.": "Imported: {} new, {} already there, {} skipped.",
   "Eine Nährwerttabelle (zum Beispiel BLS, Open-Food-Facts-Export oder eigene Liste) als CSV oder Excel-Datei: Lebensmittel mit Werten pro 100 g werden in Deine Bibliothek aufgenommen.":
     "A nutrition table (for example BLS, an Open Food Facts export or your own list) as a CSV or Excel file: foods with values per 100 g are added to your library.",
@@ -422,6 +422,49 @@ const EN = {
 
   // default meals
   "Frühstück": "Breakfast", "Mittagessen": "Lunch", "Abendessen": "Dinner", "Snacks": "Snacks",
+  "Mahlzeit": "Meal",
+  "Menge": "Amount",
+  "Die Makros ergeben {} g auf 100 g – mehr als möglich.": "The macros add up to {} g per 100 g – more than possible.",
+  "Die Makros ergeben rechnerisch ca. {} kcal, angegeben sind {} kcal.": "The macros add up to about {} kcal, but {} kcal are entered.",
+  "{} Lebensmittel durch ausgeblendete Kategorien versteckt.": "{} foods hidden by hidden categories.",
+  "{}: Werte übernommen ✓": "{}: values applied ✓",
+  "{}: {} kcal · KH {} · Fett {} · Eiweiß {} ({})": "{}: {} kcal · carbs {} · fat {} · protein {} ({})",
+  "{} geprüft: {} stimmen überein, {} weichen ab, {} ohne Treffer.": "{} checked: {} match, {} differ, {} without a match.",
+  "{} Einträge, {} Gewichtswerte ({} bis {}) aus {} Zeilen.": "{} entries, {} weight values ({} to {}) from {} rows.",
+  "{} Tage ({} bis {}), {} Einträge, {} Gewichtswerte": "{} days ({} to {}), {} entries, {} weight values",
+  "{} Uhr · {}": "{} · {}",
+  "Die Excel-Datei ist zu groß.": "The Excel file is too large.",
+  "Mealie ist noch nicht eingerichtet (Einstellungen → Mealie).": "Mealie is not set up yet (Settings → Mealie).",
+  "Mealie konnte nicht erreicht werden.": "Mealie could not be reached.",
+  "Bitte eine Adresse wie http://mealie:9000 angeben.": "Please enter an address like http://mealie:9000.",
+  "Nicht gefunden (Adresse oder Rezept prüfen).": "Not found (check the address or the recipe).",
+  "Mealie antwortete mit Fehler {}.": "Mealie answered with error {}.",
+  "Unter dieser Adresse läuft kein Mealie.": "No Mealie is running at this address.",
+  "Ungültiges Rezept.": "Invalid recipe.",
+  "Diese Adresse ist nicht erlaubt (Mealie läuft auf einem eigenen Server oder Add-on).": "This address is not allowed (Mealie runs on its own server or add-on).",
+  "Mealie ist nicht erreichbar.": "Mealie is not reachable.",
+  "Die Seite antwortete mit Fehler {}.": "The page answered with error {}.",
+  "Rezept": "Recipe",
+  "Wasser": "Water",
+  "Koffein": "Caffeine",
+  "Kreatin": "Creatine",
+  "{} (Kopie)": "{} (copy)",
+  "Daten löschen …": "Delete data …",
+  "Daten löschen": "Delete data",
+  "Löscht die gewählten Daten Deines Kontos unwiderruflich. Andere Benutzer und die Einstellungen bleiben unberührt. Lege vorher am besten eine Sicherung (JSON) an.": "Permanently deletes the chosen data of your account. Other users and the settings stay untouched. Best create a backup (JSON) first.",
+  "Einträge, Notizen, Wasser und Aktivität aller Tage": "entries, notes, water and activity of all days",
+  "alle Lebensmittel der Bibliothek (Tagebucheinträge bleiben)": "all foods of the library (diary entries stay)",
+  "alle gespeicherten Mahlzeiten": "all saved meals",
+  "alle Rezepte samt ihrer Lebensmittel": "all recipes including their foods",
+  "Gewicht und Körpermaße": "Weight and body measurements",
+  "Gewichtswerte, Körpermaße und Fortschrittsfotos": "weight values, body measurements and progress photos",
+  "Tagesziel, Wochentagsziele und Profile": "daily goal, weekday goals and profiles",
+  "alle Trigger und Mahlzeiten-Regeln samt Verlauf": "all triggers and meal rules including history",
+  "Bitte mindestens einen Bereich wählen.": "Please choose at least one area.",
+  "Bitte mindestens einen gültigen Bereich wählen.": "Please choose at least one valid area.",
+  "Wirklich unwiderruflich löschen: {}?": "Really delete permanently: {}?",
+  "Gelöscht.": "Deleted.",
+  "Endgültig löschen": "Delete permanently",
 };
 
 // Languages: German is the source text; every other language is a dictionary German -> language (EN, FR, ES ...).
@@ -1104,7 +1147,7 @@ Object.assign(LANGS, {
     "Energie (kJ)": "Énergie (kJ)",
     "Bitte die Spalten für Name und Kalorien zuordnen.": "Veuillez attribuer les colonnes du nom et des calories.",
     "{} Lebensmittel erkannt ({} Zeilen ohne Name oder Kalorien werden übersprungen). Werte gelten pro 100 g.": "{} aliments reconnus ({} lignes sans nom ni calories sont ignorées). Valeurs pour 100 g.",
-    "Kategorie für die importierten Lebensmittel": "Catégorie des aliments importés",
+    "Kategorie für Lebensmittel ohne Kategorie in der Datei": "Catégorie des aliments importés",
     "Vorhandene Lebensmittel mit gleichem Namen und gleicher Marke bleiben unverändert.": "Les aliments existants avec les mêmes nom et marque restent inchangés.",
     "Importiert: {} neu, {} schon vorhanden, {} übersprungen.": "Importé : {} nouveaux, {} déjà présents, {} ignorés.",
     "Eine Nährwerttabelle (zum Beispiel BLS, Open-Food-Facts-Export oder eigene Liste) als CSV oder Excel-Datei: Lebensmittel mit Werten pro 100 g werden in Deine Bibliothek aufgenommen.": "Un tableau nutritionnel (par exemple BLS, export Open Food Facts, CIQUAL ou votre propre liste) au format CSV ou Excel : les aliments avec valeurs pour 100 g sont ajoutés à votre bibliothèque.",
@@ -1225,6 +1268,49 @@ Object.assign(LANGS, {
     "Mittagessen": "Déjeuner",
     "Abendessen": "Dîner",
     "Snacks": "En-cas",
+    "Mahlzeit": "Repas",
+    "Menge": "Quantité",
+    "Die Makros ergeben {} g auf 100 g – mehr als möglich.": "Les macros font {} g pour 100 g – plus que possible.",
+    "Die Makros ergeben rechnerisch ca. {} kcal, angegeben sind {} kcal.": "Les macros donnent environ {} kcal, mais {} kcal sont indiquées.",
+    "{} Lebensmittel durch ausgeblendete Kategorien versteckt.": "{} aliments masqués par des catégories masquées.",
+    "{}: Werte übernommen ✓": "{} : valeurs reprises ✓",
+    "{}: {} kcal · KH {} · Fett {} · Eiweiß {} ({})": "{} : {} kcal · gluc. {} · lip. {} · prot. {} ({})",
+    "{} geprüft: {} stimmen überein, {} weichen ab, {} ohne Treffer.": "{} vérifiés : {} concordent, {} diffèrent, {} sans résultat.",
+    "{} Einträge, {} Gewichtswerte ({} bis {}) aus {} Zeilen.": "{} entrées, {} valeurs de poids ({} à {}) sur {} lignes.",
+    "{} Tage ({} bis {}), {} Einträge, {} Gewichtswerte": "{} jours ({} à {}), {} entrées, {} valeurs de poids",
+    "{} Uhr · {}": "{} · {}",
+    "Die Excel-Datei ist zu groß.": "Le fichier Excel est trop volumineux.",
+    "Mealie ist noch nicht eingerichtet (Einstellungen → Mealie).": "Mealie n’est pas encore configuré (Réglages → Mealie).",
+    "Mealie konnte nicht erreicht werden.": "Mealie est inaccessible.",
+    "Bitte eine Adresse wie http://mealie:9000 angeben.": "Indiquez une adresse comme http://mealie:9000.",
+    "Nicht gefunden (Adresse oder Rezept prüfen).": "Introuvable (vérifiez l’adresse ou la recette).",
+    "Mealie antwortete mit Fehler {}.": "Mealie a répondu par l’erreur {}.",
+    "Unter dieser Adresse läuft kein Mealie.": "Aucun Mealie ne fonctionne à cette adresse.",
+    "Ungültiges Rezept.": "Recette non valide.",
+    "Diese Adresse ist nicht erlaubt (Mealie läuft auf einem eigenen Server oder Add-on).": "Cette adresse n’est pas autorisée (Mealie tourne sur son propre serveur ou module).",
+    "Mealie ist nicht erreichbar.": "Mealie est inaccessible.",
+    "Die Seite antwortete mit Fehler {}.": "La page a répondu par l’erreur {}.",
+    "Rezept": "Recette",
+    "Wasser": "Eau",
+    "Koffein": "Caféine",
+    "Kreatin": "Créatine",
+    "{} (Kopie)": "{} (copie)",
+    "Daten löschen …": "Supprimer des données …",
+    "Daten löschen": "Supprimer des données",
+    "Löscht die gewählten Daten Deines Kontos unwiderruflich. Andere Benutzer und die Einstellungen bleiben unberührt. Lege vorher am besten eine Sicherung (JSON) an.": "Supprime définitivement les données choisies de votre compte. Les autres utilisateurs et les réglages restent intacts. Créez d’abord une sauvegarde (JSON).",
+    "Einträge, Notizen, Wasser und Aktivität aller Tage": "entrées, notes, eau et activité de tous les jours",
+    "alle Lebensmittel der Bibliothek (Tagebucheinträge bleiben)": "tous les aliments de la bibliothèque (les entrées du journal restent)",
+    "alle gespeicherten Mahlzeiten": "tous les repas enregistrés",
+    "alle Rezepte samt ihrer Lebensmittel": "toutes les recettes avec leurs aliments",
+    "Gewicht und Körpermaße": "Poids et mensurations",
+    "Gewichtswerte, Körpermaße und Fortschrittsfotos": "valeurs de poids, mensurations et photos de progression",
+    "Tagesziel, Wochentagsziele und Profile": "objectif quotidien, objectifs par jour de la semaine et profils",
+    "alle Trigger und Mahlzeiten-Regeln samt Verlauf": "tous les déclencheurs et règles de repas avec l’historique",
+    "Bitte mindestens einen Bereich wählen.": "Choisissez au moins un domaine.",
+    "Bitte mindestens einen gültigen Bereich wählen.": "Choisissez au moins un domaine valide.",
+    "Wirklich unwiderruflich löschen: {}?": "Vraiment supprimer définitivement : {} ?",
+    "Gelöscht.": "Supprimé.",
+    "Endgültig löschen": "Supprimer définitivement",
   },
   es: {
     "Ernährung": "Alimentación",
@@ -1899,7 +1985,7 @@ Object.assign(LANGS, {
     "Energie (kJ)": "Energía (kJ)",
     "Bitte die Spalten für Name und Kalorien zuordnen.": "Asigna las columnas del nombre y de las calorías.",
     "{} Lebensmittel erkannt ({} Zeilen ohne Name oder Kalorien werden übersprungen). Werte gelten pro 100 g.": "{} alimentos reconocidos ({} filas sin nombre ni calorías se omiten). Los valores son por 100 g.",
-    "Kategorie für die importierten Lebensmittel": "Categoría de los alimentos importados",
+    "Kategorie für Lebensmittel ohne Kategorie in der Datei": "Categoría de los alimentos importados",
     "Vorhandene Lebensmittel mit gleichem Namen und gleicher Marke bleiben unverändert.": "Los alimentos existentes con el mismo nombre y la misma marca no cambian.",
     "Importiert: {} neu, {} schon vorhanden, {} übersprungen.": "Importado: {} nuevos, {} ya existentes, {} omitidos.",
     "Eine Nährwerttabelle (zum Beispiel BLS, Open-Food-Facts-Export oder eigene Liste) als CSV oder Excel-Datei: Lebensmittel mit Werten pro 100 g werden in Deine Bibliothek aufgenommen.": "Una tabla nutricional (por ejemplo BLS, exportación de Open Food Facts, CIQUAL o tu propia lista) en CSV o Excel: los alimentos con valores por 100 g se añaden a tu biblioteca.",
@@ -2020,6 +2106,49 @@ Object.assign(LANGS, {
     "Mittagessen": "Almuerzo",
     "Abendessen": "Cena",
     "Snacks": "Snacks",
+    "Mahlzeit": "Comida",
+    "Menge": "Cantidad",
+    "Die Makros ergeben {} g auf 100 g – mehr als möglich.": "Los macros suman {} g por 100 g – más de lo posible.",
+    "Die Makros ergeben rechnerisch ca. {} kcal, angegeben sind {} kcal.": "Los macros suman unas {} kcal, pero se indican {} kcal.",
+    "{} Lebensmittel durch ausgeblendete Kategorien versteckt.": "{} alimentos ocultos por categorías ocultas.",
+    "{}: Werte übernommen ✓": "{}: valores aplicados ✓",
+    "{}: {} kcal · KH {} · Fett {} · Eiweiß {} ({})": "{}: {} kcal · HC {} · grasa {} · prot. {} ({})",
+    "{} geprüft: {} stimmen überein, {} weichen ab, {} ohne Treffer.": "{} comprobados: {} coinciden, {} difieren, {} sin resultado.",
+    "{} Einträge, {} Gewichtswerte ({} bis {}) aus {} Zeilen.": "{} entradas, {} valores de peso ({} a {}) de {} filas.",
+    "{} Tage ({} bis {}), {} Einträge, {} Gewichtswerte": "{} días ({} a {}), {} entradas, {} valores de peso",
+    "{} Uhr · {}": "{} · {}",
+    "Die Excel-Datei ist zu groß.": "El archivo de Excel es demasiado grande.",
+    "Mealie ist noch nicht eingerichtet (Einstellungen → Mealie).": "Mealie aún no está configurado (Ajustes → Mealie).",
+    "Mealie konnte nicht erreicht werden.": "No se pudo acceder a Mealie.",
+    "Bitte eine Adresse wie http://mealie:9000 angeben.": "Indica una dirección como http://mealie:9000.",
+    "Nicht gefunden (Adresse oder Rezept prüfen).": "No encontrado (revisa la dirección o la receta).",
+    "Mealie antwortete mit Fehler {}.": "Mealie respondió con el error {}.",
+    "Unter dieser Adresse läuft kein Mealie.": "No hay ningún Mealie en esta dirección.",
+    "Ungültiges Rezept.": "Receta no válida.",
+    "Diese Adresse ist nicht erlaubt (Mealie läuft auf einem eigenen Server oder Add-on).": "Esta dirección no está permitida (Mealie se ejecuta en su propio servidor o complemento).",
+    "Mealie ist nicht erreichbar.": "Mealie no está accesible.",
+    "Die Seite antwortete mit Fehler {}.": "La página respondió con el error {}.",
+    "Rezept": "Receta",
+    "Wasser": "Agua",
+    "Koffein": "Cafeína",
+    "Kreatin": "Creatina",
+    "{} (Kopie)": "{} (copia)",
+    "Daten löschen …": "Eliminar datos …",
+    "Daten löschen": "Eliminar datos",
+    "Löscht die gewählten Daten Deines Kontos unwiderruflich. Andere Benutzer und die Einstellungen bleiben unberührt. Lege vorher am besten eine Sicherung (JSON) an.": "Elimina de forma permanente los datos elegidos de tu cuenta. Los demás usuarios y los ajustes no se tocan. Lo mejor es crear antes una copia de seguridad (JSON).",
+    "Einträge, Notizen, Wasser und Aktivität aller Tage": "entradas, notas, agua y actividad de todos los días",
+    "alle Lebensmittel der Bibliothek (Tagebucheinträge bleiben)": "todos los alimentos de la biblioteca (las entradas del diario se conservan)",
+    "alle gespeicherten Mahlzeiten": "todas las comidas guardadas",
+    "alle Rezepte samt ihrer Lebensmittel": "todas las recetas con sus alimentos",
+    "Gewicht und Körpermaße": "Peso y medidas corporales",
+    "Gewichtswerte, Körpermaße und Fortschrittsfotos": "valores de peso, medidas corporales y fotos de progreso",
+    "Tagesziel, Wochentagsziele und Profile": "objetivo diario, objetivos por día de la semana y perfiles",
+    "alle Trigger und Mahlzeiten-Regeln samt Verlauf": "todos los disparadores y reglas de comidas con su historial",
+    "Bitte mindestens einen Bereich wählen.": "Elige al menos un área.",
+    "Bitte mindestens einen gültigen Bereich wählen.": "Elige al menos un área válida.",
+    "Wirklich unwiderruflich löschen: {}?": "¿Eliminar definitivamente: {}?",
+    "Gelöscht.": "Eliminado.",
+    "Endgültig löschen": "Eliminar definitivamente",
   },
   nl: {
     "Ernährung": "Voeding",
@@ -2700,7 +2829,7 @@ Object.assign(LANGS, {
     "Energie (kJ)": "Energie (kJ)",
     "Bitte die Spalten für Name und Kalorien zuordnen.": "Wijs de kolommen voor naam en calorieën toe.",
     "{} Lebensmittel erkannt ({} Zeilen ohne Name oder Kalorien werden übersprungen). Werte gelten pro 100 g.": "{} voedingsmiddelen herkend ({} rijen zonder naam of calorieën worden overgeslagen). Waarden gelden per 100 g.",
-    "Kategorie für die importierten Lebensmittel": "Categorie voor de geïmporteerde voedingsmiddelen",
+    "Kategorie für Lebensmittel ohne Kategorie in der Datei": "Categorie voor de geïmporteerde voedingsmiddelen",
     "Vorhandene Lebensmittel mit gleichem Namen und gleicher Marke bleiben unverändert.": "Bestaande voedingsmiddelen met dezelfde naam en hetzelfde merk blijven ongewijzigd.",
     "Importiert: {} neu, {} schon vorhanden, {} übersprungen.": "Geïmporteerd: {} nieuw, {} al aanwezig, {} overgeslagen.",
     "Eine Nährwerttabelle (zum Beispiel BLS, Open-Food-Facts-Export oder eigene Liste) als CSV oder Excel-Datei: Lebensmittel mit Werten pro 100 g werden in Deine Bibliothek aufgenommen.": "Een voedingswaardetabel (bijvoorbeeld BLS, een Open Food Facts-export of je eigen lijst) als CSV- of Excel-bestand: voedingsmiddelen met waarden per 100 g worden aan je bibliotheek toegevoegd.",
@@ -2827,6 +2956,49 @@ Object.assign(LANGS, {
     "Mittagessen": "Lunch",
     "Abendessen": "Avondeten",
     "Snacks": "Snacks",
+    "Mahlzeit": "Maaltijd",
+    "Menge": "Hoeveelheid",
+    "Die Makros ergeben {} g auf 100 g – mehr als möglich.": "De macro’s komen uit op {} g per 100 g – meer dan mogelijk.",
+    "Die Makros ergeben rechnerisch ca. {} kcal, angegeben sind {} kcal.": "De macro’s komen uit op ca. {} kcal, opgegeven is {} kcal.",
+    "{} Lebensmittel durch ausgeblendete Kategorien versteckt.": "{} voedingsmiddelen verborgen door verborgen categorieën.",
+    "{}: Werte übernommen ✓": "{}: waarden overgenomen ✓",
+    "{}: {} kcal · KH {} · Fett {} · Eiweiß {} ({})": "{}: {} kcal · koolh. {} · vet {} · eiwit {} ({})",
+    "{} geprüft: {} stimmen überein, {} weichen ab, {} ohne Treffer.": "{} gecontroleerd: {} komen overeen, {} wijken af, {} zonder treffer.",
+    "{} Einträge, {} Gewichtswerte ({} bis {}) aus {} Zeilen.": "{} items, {} gewichtswaarden ({} t/m {}) uit {} rijen.",
+    "{} Tage ({} bis {}), {} Einträge, {} Gewichtswerte": "{} dagen ({} t/m {}), {} items, {} gewichtswaarden",
+    "{} Uhr · {}": "{} · {}",
+    "Die Excel-Datei ist zu groß.": "Het Excel-bestand is te groot.",
+    "Mealie ist noch nicht eingerichtet (Einstellungen → Mealie).": "Mealie is nog niet ingesteld (Instellingen → Mealie).",
+    "Mealie konnte nicht erreicht werden.": "Mealie kon niet worden bereikt.",
+    "Bitte eine Adresse wie http://mealie:9000 angeben.": "Geef een adres op zoals http://mealie:9000.",
+    "Nicht gefunden (Adresse oder Rezept prüfen).": "Niet gevonden (controleer het adres of het recept).",
+    "Mealie antwortete mit Fehler {}.": "Mealie antwoordde met fout {}.",
+    "Unter dieser Adresse läuft kein Mealie.": "Op dit adres draait geen Mealie.",
+    "Ungültiges Rezept.": "Ongeldig recept.",
+    "Diese Adresse ist nicht erlaubt (Mealie läuft auf einem eigenen Server oder Add-on).": "Dit adres is niet toegestaan (Mealie draait op een eigen server of add-on).",
+    "Mealie ist nicht erreichbar.": "Mealie is niet bereikbaar.",
+    "Die Seite antwortete mit Fehler {}.": "De pagina antwoordde met fout {}.",
+    "Rezept": "Recept",
+    "Wasser": "Water",
+    "Koffein": "Cafeïne",
+    "Kreatin": "Creatine",
+    "{} (Kopie)": "{} (kopie)",
+    "Daten löschen …": "Gegevens verwijderen …",
+    "Daten löschen": "Gegevens verwijderen",
+    "Löscht die gewählten Daten Deines Kontos unwiderruflich. Andere Benutzer und die Einstellungen bleiben unberührt. Lege vorher am besten eine Sicherung (JSON) an.": "Verwijdert de gekozen gegevens van je account definitief. Andere gebruikers en de instellingen blijven ongemoeid. Maak vooraf het best een back-up (JSON).",
+    "Einträge, Notizen, Wasser und Aktivität aller Tage": "items, notities, water en activiteit van alle dagen",
+    "alle Lebensmittel der Bibliothek (Tagebucheinträge bleiben)": "alle voedingsmiddelen van de bibliotheek (dagboekitems blijven)",
+    "alle gespeicherten Mahlzeiten": "alle opgeslagen maaltijden",
+    "alle Rezepte samt ihrer Lebensmittel": "alle recepten inclusief hun voedingsmiddelen",
+    "Gewicht und Körpermaße": "Gewicht en lichaamsmaten",
+    "Gewichtswerte, Körpermaße und Fortschrittsfotos": "gewichtswaarden, lichaamsmaten en voortgangsfoto’s",
+    "Tagesziel, Wochentagsziele und Profile": "dagdoel, doelen per weekdag en profielen",
+    "alle Trigger und Mahlzeiten-Regeln samt Verlauf": "alle triggers en maaltijdregels inclusief verloop",
+    "Bitte mindestens einen Bereich wählen.": "Kies minstens één onderdeel.",
+    "Bitte mindestens einen gültigen Bereich wählen.": "Kies minstens één geldig onderdeel.",
+    "Wirklich unwiderruflich löschen: {}?": "Echt definitief verwijderen: {}?",
+    "Gelöscht.": "Verwijderd.",
+    "Endgültig löschen": "Definitief verwijderen",
   },
 });
 
@@ -2866,14 +3038,14 @@ const I18N = (() => {
   };
 
   const ATTRS = ["placeholder", "title", "aria-label", "alt", "data-tip"];
-  const SKIP = new Set(["SCRIPT", "STYLE", "TEXTAREA"]);
+  const SKIP = new Set(["TEXTAREA"]);
   const fixText = n => { const t = api.tr(n.nodeValue); if (t !== n.nodeValue) n.nodeValue = t; };
   const fixAttr = (el, a) => { const v = el.getAttribute(a); if (v) { const t = api.tr(v); if (t !== v) el.setAttribute(a, t); } };
   const walk = node => {
     if (node.nodeType === 3) return fixText(node);
-    if (node.nodeType !== 1 || SKIP.has(node.tagName)) return;
+    if (node.nodeType !== 1 || node.tagName === "SCRIPT" || node.tagName === "STYLE") return;
     for (const a of ATTRS) fixAttr(node, a);
-    node.childNodes.forEach(walk);
+    if (!SKIP.has(node.tagName)) node.childNodes.forEach(walk);   // a textarea's own text is the user's input, but its placeholder is ours
   };
   let obs = null;
   api.setLang = (lang, units, mass) => {
@@ -2915,6 +3087,7 @@ const h = (tag, attrs = {}, ...kids) => {
     else if (v !== false && v != null) e.setAttribute(k, v === true ? "" : v);
   }
   e.append(...kids.flat().filter(x => x != null));
+  if ((tag === "h2" || tag === "summary") && typeof kids[0] === "string") e.dataset.src = kids[0];   // the German title, whatever the display language
   return e;
 };
 const api = async (path, opts) => {
@@ -4405,7 +4578,7 @@ async function foodCheckDialog() {
 
 // Food table (BLS, Open Food Facts export, own list as CSV or Excel): the server guesses the columns, the user can correct them.
 const FOOD_FIELDS = [["name", "Name"], ["brand", "Marke"], ["barcode", "Barcode"], ["kcal", "Kalorien (kcal)"], ["kj", "Energie (kJ)"], ["protein", "Eiweiß"],
-  ["carbs", "Kohlenhydrate"], ["fat", "Fett"], ["fiber", "Ballaststoffe"], ["sugar", "Zucker"], ["salt", "Salz"], ["sodium", "Natrium"], ["sat_fat", "ges. Fettsäuren"]];
+  ["carbs", "Kohlenhydrate"], ["fat", "Fett"], ["fiber", "Ballaststoffe"], ["sugar", "Zucker"], ["salt", "Salz"], ["sodium", "Natrium"], ["sat_fat", "ges. Fettsäuren"], ["category", "Kategorie"]];
 
 async function foodImportDialog(file) {
   const post = async (path, qs = "") => {
@@ -4434,7 +4607,7 @@ async function foodImportDialog(file) {
   setDlg(h("h2", {}, "Lebensmittel-Tabelle importieren"),
     p.preset ? h("div", {}, `Erkannt: ${p.preset}`) : null, info,
     h("details", {}, h("summary", {}, "Zuordnung der Spalten"), h("div", { class: "grid" }, FOOD_FIELDS.map(([k, label]) => h("div", {}, h("label", {}, label), selects[k])))),
-    sample, h("label", {}, "Kategorie für die importierten Lebensmittel"), category,
+    sample, h("label", {}, "Kategorie für Lebensmittel ohne Kategorie in der Datei"), category,
     h("div", { class: "muted" }, "Vorhandene Lebensmittel mit gleichem Namen und gleicher Marke bleiben unverändert."), msg,
     h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
       h("button", { onclick: async () => {
@@ -5295,7 +5468,8 @@ async function tableDialog(file) {
   const mapping = () => Object.fromEntries(TABLE_FIELDS.map(([k]) => [k, selects[k].value === "" ? null : Number(selects[k].value)]));
   const redraw = (q) => {
     info.textContent = q.mapping.date == null ? "Bitte die Spalte mit dem Datum zuordnen."
-      : `${q.items} Einträge, ${q.weights} Gewichtswerte${q.from ? ` (${q.from} bis ${q.to})` : ""} aus ${q.count} Zeilen.`;
+      : q.from ? `${q.items} Einträge, ${q.weights} Gewichtswerte (${q.from} bis ${q.to}) aus ${q.count} Zeilen.`
+        : `${q.items} Einträge, ${q.weights} Gewichtswerte aus ${q.count} Zeilen.`;
     sample.replaceChildren(h("table", { class: "lk" }, h("thead", {}, h("tr", {}, q.headers.map(x => h("th", {}, x)))),
       h("tbody", {}, q.rows.map(r => h("tr", {}, q.headers.map((_, i) => h("td", {}, r[i] || "")))))));
   };
@@ -5910,7 +6084,8 @@ async function renderSettings() {
         catch (e) { alert("Datei nicht lesbar: " + e.message); }
       }) }, "Sicherung einspielen"),
       h("button", { onclick: () => pickFile(".csv,text/csv", mfpDialog) }, "MyFitnessPal-CSV importieren"),
-      h("button", { onclick: importMenu }, "Weitere Importe …"))));
+      h("button", { onclick: importMenu }, "Weitere Importe …"),
+      h("button", { class: "flat danger", onclick: deleteDataDialog }, "Daten löschen …"))));
 
   // installed version and update check
   const verOut = h("span", { class: "muted" }, "…");
@@ -5926,6 +6101,55 @@ async function renderSettings() {
   root.append(h("div", { class: "card" }, h("h2", {}, "Version"),
     h("div", { class: "ver-row" }, h("span", {}, "Installiert: ", h("b", {}, "…")), verBtn), verOut));
   api("version").then(v => { root.querySelector(".ver-row b").textContent = v.version || "?"; verOut.textContent = ""; }).catch(() => { verOut.textContent = ""; });
+  foldCards(root);
+}
+
+// Every settings card folds up; which ones are open is remembered per device (the first one is open until chosen otherwise).
+function foldCards(root) {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem("mda-settings-open") || "{}"); } catch { /* private mode: no memory */ }
+  const remember = (title, open) => {
+    saved[title] = open;
+    try { localStorage.setItem("mda-settings-open", JSON.stringify(saved)); } catch { /* private mode */ }
+  };
+  [...root.children].forEach((card, i) => {
+    let det = card;
+    if (card.tagName !== "DETAILS") {
+      const head = card.firstElementChild;
+      if (!head || head.tagName !== "H2") return;
+      det = h("details", { class: card.className });
+      det.append(h("summary", {}, head.dataset.src || head.textContent), ...[...card.children].slice(1));
+      card.replaceWith(det);
+    }
+    const sum = det.querySelector("summary");
+    const title = sum.dataset.src || sum.textContent;
+    det.open = title in saved ? !!saved[title] : i === 0;
+    det.addEventListener("toggle", () => remember(title, det.open));
+  });
+}
+
+// Delete parts of the own data, behind a second confirmation.
+async function deleteDataDialog() {
+  const counts = await api("data/counts");
+  const PARTS = [["diary", "Tagebuch", "Einträge, Notizen, Wasser und Aktivität aller Tage"], ["foods", "Lebensmittel", "alle Lebensmittel der Bibliothek (Tagebucheinträge bleiben)"],
+    ["saved_meals", "Gespeicherte Mahlzeiten", "alle gespeicherten Mahlzeiten"], ["recipes", "Rezepte", "alle Rezepte samt ihrer Lebensmittel"],
+    ["weights", "Gewicht und Körpermaße", "Gewichtswerte, Körpermaße und Fortschrittsfotos"], ["goals", "Tagesziele", "Tagesziel, Wochentagsziele und Profile"],
+    ["triggers", "Trigger", "alle Trigger und Mahlzeiten-Regeln samt Verlauf"]];
+  const rows = PARTS.map(([k, label, hint]) => ({ k, label, on: h("input", { type: "checkbox", disabled: !counts[k] }), hint, n: counts[k] }));
+  const msg = h("div", { class: "err" });
+  setDlg(h("h2", {}, "Daten löschen"),
+    h("div", { class: "muted" }, "Löscht die gewählten Daten Deines Kontos unwiderruflich. Andere Benutzer und die Einstellungen bleiben unberührt. Lege vorher am besten eine Sicherung (JSON) an."),
+    h("div", { class: "list" }, rows.map(r => h("div", {}, h("label", { class: "pick grow" }, r.on, h("span", {}, r.label, ` (${n0(r.n)})`, h("div", { class: "muted" }, r.hint)))))),
+    msg,
+    h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
+      h("button", { class: "danger", onclick: async () => {
+        const chosen = rows.filter(r => r.on.checked);
+        if (!chosen.length) { msg.textContent = "Bitte mindestens einen Bereich wählen."; return; }
+        if (!confirm(`Wirklich unwiderruflich löschen: ${chosen.map(r => r.label).join(", ")}?`)) return;
+        try { await send("POST", "data/delete", { parts: chosen.map(r => r.k) }); dlg.close(); alert("Gelöscht."); await loadCats(); show("diary"); }
+        catch (e) { msg.textContent = e.message; }
+      } }, "Endgültig löschen")));
+  dlg.showModal();
 }
 
 

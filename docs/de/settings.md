@@ -19,7 +19,7 @@ Der Reiter **Einstellungen** besteht aus Karten. Karten für Zusatzfunktionen er
 | Export für Berater und Trainer, Daten | Export, Import | [Daten](data.md) |
 | Version | installierte Version, Update-Prüfung | unten |
 
-Der Trigger-Verlauf und die Automatische Sicherung sind eingeklappt; tippe auf den Titel, um sie zu öffnen. Ganz unten zeigt *Version* die installierte Version; **Nach Updates suchen** meldet, ob eine neuere Version veröffentlicht ist (aktualisieren musst Du in Home Assistant unter *Einstellungen → Add-ons*).
+Jede Karte lässt sich ein- und ausklappen: Tippe auf den Titel. Welche Karten offen sind, merkt sich der Browser (zu Beginn ist nur die erste offen). Ganz unten zeigt *Version* die installierte Version; **Nach Updates suchen** meldet, ob eine neuere Version veröffentlicht ist (aktualisieren musst Du in Home Assistant unter *Einstellungen → Add-ons*).
 
 ## Sprache und Einheiten
 

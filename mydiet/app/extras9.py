@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 import db
 from extras import feature_on, get_pref, ha_get, set_pref
-from extras2 import owners
+from extras2 import notify_text, owners
 from main import GOAL_HOOKS, SENSOR_HOOKS, SUPERVISOR_TOKEN, app, check_day, check_time, publish, user_from
 
 
@@ -296,7 +296,7 @@ def send_meal_nudges():
         try:
             httpx.post(f"http://supervisor/core/api/services/{domain}/{svc}", timeout=8,
                        headers={"Authorization": f"Bearer {SUPERVISOR_TOKEN}"},
-                       json={"title": "Ernährungstagebuch", "message": f"{m['name']} steht an ({m['window'][0]}–{m['window'][1]} Uhr)."}).raise_for_status()
+                       json=dict(zip(("title", "message"), notify_text(o, 2, m["name"], m["window"][0], m["window"][1])))).raise_for_status()
         except httpx.HTTPError as e:
             print(f"[nudge] {o}: {e!r}", flush=True)
 

@@ -2,6 +2,18 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.9.0
+
+### Neu
+- **Kategorien beim Lebensmittel-Import:** Enthält die Tabelle eine Kategorie-Spalte (z. B. „Kategorie“, „Warengruppe“, Open Food Facts „categories“), werden die Kategorien übernommen (bei mehreren in einer Zelle die erste). Die im Dialog gewählte Kategorie gilt nur noch für Lebensmittel ohne Kategorie in der Datei. Die Spalte lässt sich in der Zuordnung korrigieren.
+- **Daten löschen:** Unter Einstellungen → Daten lassen sich Tagebuch, Lebensmittel, gespeicherte Mahlzeiten, Rezepte, Gewicht und Körpermaße, Tagesziele und Trigger gezielt löschen, mit Mengenangabe und einer zusätzlichen Rückfrage. Nur das eigene Konto ist betroffen.
+- **Einstellungen ausklappbar:** Jede Karte der Einstellungen lässt sich ein- und ausklappen; der Browser merkt sich den Zustand (anfangs ist nur die erste Karte offen).
+
+### Behoben
+- **Deutsche Texte in anderen Sprachen:** Die Oberfläche war in Französisch, Spanisch und Niederländisch an einigen Stellen noch deutsch. Behoben: Platzhaltertexte in mehrzeiligen Feldern (z. B. „Zubereitung“), Meldungen der Rezept- und Mealie-Importe, Hinweise im Lebensmittel-Dialog und beim Online-Abgleich, Zusammenfassungen des Tabellen-Imports, Spaltennamen im Tabellen-Import sowie die vom Add-on selbst angelegten Namen (Wasser, Koffein, Kreatin, „Rezept“, „(Kopie)“).
+- **Bericht und Benachrichtigungen:** Der Ernährungsbericht gibt es jetzt auch auf Französisch, Spanisch und Niederländisch („Automatisch“ folgt dem Browser), die Erinnerung und der Hinweis auf eine anstehende Mahlzeit erscheinen in der gewählten Sprache. Beides ließ sich nur im Browser bzw. in Home Assistant prüfen, die Push-Texte sind ungeprüft.
+- Ein Test prüft jetzt, dass jede deutsche Fehlermeldung des Servers einen Eintrag im Wörterbuch hat.
+
 ## 1.8.1
 
 ### Geändert

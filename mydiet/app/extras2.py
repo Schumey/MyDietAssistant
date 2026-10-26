@@ -231,6 +231,21 @@ def put_reminder(r: ReminderIn, x_remote_user_id: str | None = Header(None)):
     return {"ok": True}
 
 
+NOTIFY = {   # push texts follow the interface language of the person (German when it is "auto")
+    "de": ("Ernährungstagebuch", "Heute ist noch nichts eingetragen (Erinnerung {} Uhr).", "{} steht an ({}–{} Uhr)."),
+    "en": ("Food diary", "Nothing logged yet today (reminder {}).", "{} is due ({}–{})."),
+    "fr": ("Journal alimentaire", "Rien n’est encore saisi aujourd’hui (rappel {}).", "{} est à l’ordre du jour ({}–{})."),
+    "es": ("Diario de alimentos", "Hoy todavía no hay nada registrado (recordatorio {}).", "Toca {} ({}–{})."),
+    "nl": ("Voedingsdagboek", "Vandaag is nog niets ingevoerd (herinnering {}).", "{} staat gepland ({}–{})."),
+}
+
+
+def notify_text(owner: str, kind: int, *args) -> tuple[str, str]:
+    """(title, message) of a push notification; kind 1 = diary reminder, 2 = meal nudge."""
+    t = NOTIFY.get(get_pref(owner, "lang", "auto"), NOTIFY["de"])
+    return t[0], t[kind].format(*args)
+
+
 def send_reminders():
     if not SUPERVISOR_TOKEN:
         return
@@ -249,8 +264,7 @@ def send_reminders():
         try:
             httpx.post(f"http://supervisor/core/api/services/{domain}/{svc}", timeout=8,
                        headers={"Authorization": f"Bearer {SUPERVISOR_TOKEN}"},
-                       json={"title": "Ernährungstagebuch",
-                             "message": f"Heute ist noch nichts eingetragen (Erinnerung {r['time']} Uhr)."}
+                       json=dict(zip(("title", "message"), notify_text(o, 1, r["time"])))
                        ).raise_for_status()
         except httpx.HTTPError as e:
             print(f"[reminder] {o}: {e!r}", flush=True)

@@ -3,6 +3,7 @@ and check the own foods against the online databases."""
 import csv
 import io
 import json
+import os
 import re
 import zipfile
 from xml.etree import ElementTree as ET
@@ -12,6 +13,7 @@ from pydantic import BaseModel
 
 import db
 from extras import feature_on, get_pref
+from extras3 import PHOTO_DIR
 from extras7 import detect_delim, to_num
 from main import app, user_from
 
@@ -84,7 +86,7 @@ def share_saved_meals(s: ShareFoodsIn, x_remote_user_id: str | None = Header(Non
 
 # --- food table import ---------------------------------------------------------------
 
-FOOD_FIELDS = ("name", "brand", "barcode", "kcal", "kj", "protein", "carbs", "fat", "fiber", "sugar", "salt", "sodium", "sat_fat")
+FOOD_FIELDS = ("name", "brand", "barcode", "kcal", "kj", "protein", "carbs", "fat", "fiber", "sugar", "salt", "sodium", "sat_fat", "category")
 
 # normalised header (lower case, brackets and "_100g" removed) or its first word -> field. BLS codes (GCAL, ZE, ...) and
 # Open Food Facts column names are included next to plain German and English headings.
@@ -104,6 +106,8 @@ FOOD_SYNONYMS = [
     ("sodium", ("sodium", "natrium", "na")),
     ("sat_fat", ("saturated fat", "saturated-fat", "gesättigte fettsäuren", "fasat", "saturated", "gesättigte", "ag saturés", "acides gras saturés",
                 "fettsäuren gesättigt", "fettsäuren, gesättigt", "fatty acids saturated", "fatty acids, saturated")),
+    ("category", ("category", "categories", "kategorie", "kategorien", "warengruppe", "food group", "group", "gruppe", "catégorie", "categoría", "categorie", "main category",
+                  "pnns groups 1", "alim grp nom fr", "alim grp nom eng")),
 ]
 
 
@@ -198,7 +202,8 @@ def parse_foods(data: bytes, mapping: dict) -> tuple[list[dict], int]:
         if not salt and col(r, "sodium"):
             na = to_num(col(r, "sodium"), comma)
             salt = (na / 1000 if sodium_mg or na > 10 else na) * 2.5
-        out.append({"name": name[:200], "brand": col(r, "brand").split(",")[0].strip()[:100], "barcode": col(r, "barcode").strip() if col(r, "barcode").strip().isdigit() else "",
+        cat = re.sub(r"^[a-z]{2}:", "", col(r, "category").split(",")[0].strip())[:60]   # Open Food Facts lists several, "en:..." prefixed
+        out.append({"name": name[:200], "category": cat, "brand": col(r, "brand").split(",")[0].strip()[:100], "barcode": col(r, "barcode").strip() if col(r, "barcode").strip().isdigit() else "",
                     "kcal": round(kcal, 1), "protein": to_num(col(r, "protein"), comma), "carbs": to_num(col(r, "carbs"), comma), "fat": to_num(col(r, "fat"), comma),
                     "fiber": to_num(col(r, "fiber"), comma), "sugar": to_num(col(r, "sugar"), comma), "salt": round(salt, 3), "sat_fat": to_num(col(r, "sat_fat"), comma)})
     return out, bad
@@ -247,9 +252,74 @@ async def foods_import(request: Request, mapping: str, category: str = "", x_rem
             if key in have:
                 continue
             have.add(key)
-            new.append((owner, f["name"], f["brand"], f["kcal"], f["protein"], f["carbs"], f["fat"], f["fiber"], f["sugar"], f["salt"], f["sat_fat"], 100, category.strip()[:60], f["barcode"]))
+            new.append((owner, f["name"], f["brand"], f["kcal"], f["protein"], f["carbs"], f["fat"], f["fiber"], f["sugar"], f["salt"], f["sat_fat"], 100, f["category"] or category.strip()[:60], f["barcode"]))
         c.executemany("INSERT INTO foods(owner,name,brand,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,serving_g,category,barcode) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", new)
     return {"added": len(new), "duplicates": len(foods) - len(new), "skipped": bad}
+
+
+# --- delete parts of the own data (Settings -> Delete data) -------------------------------
+
+# part -> statements that remove it for one owner (child rows first); counts shows how much there is
+DATA_PARTS = {
+    "diary": ("DELETE FROM tracker_log WHERE tracker_id IN (SELECT id FROM trackers WHERE owner=?)",
+              "DELETE FROM trigger_log WHERE trigger_id IN (SELECT id FROM triggers WHERE owner=?)",
+              "DELETE FROM meal_trigger_log WHERE meal_trigger_id IN (SELECT id FROM meal_triggers WHERE owner=?)",
+              "DELETE FROM trigger_runs WHERE owner=?", "DELETE FROM entries WHERE owner=?", "DELETE FROM day_notes WHERE owner=?",
+              "DELETE FROM activity_days WHERE owner=?", "DELETE FROM day_flags WHERE owner=?", "DELETE FROM day_profile WHERE owner=?"),
+    "foods": ("DELETE FROM food_portions WHERE food_id IN (SELECT id FROM foods WHERE owner=?)", "DELETE FROM suggest_addons WHERE owner=?",
+              "DELETE FROM foods WHERE owner=?"),
+    "saved_meals": ("DELETE FROM saved_meal_items WHERE saved_meal_id IN (SELECT id FROM saved_meals WHERE owner=?)",
+                    "DELETE FROM saved_meal_uses WHERE owner=?", "DELETE FROM triggers WHERE owner=? AND saved_meal_id IS NOT NULL",
+                    "DELETE FROM saved_meals WHERE owner=?"),
+    "recipes": ("DELETE FROM recipe_items WHERE recipe_id IN (SELECT id FROM recipes WHERE owner=?)",
+                "DELETE FROM food_portions WHERE food_id IN (SELECT food_id FROM recipes WHERE owner=? AND food_id IS NOT NULL)",
+                "DELETE FROM foods WHERE owner=? AND id IN (SELECT food_id FROM recipes WHERE owner=? AND food_id IS NOT NULL)",
+                "DELETE FROM recipes WHERE owner=?"),
+    "weights": ("DELETE FROM weights WHERE owner=?", "DELETE FROM body_measures WHERE owner=?", "DELETE FROM body_photos WHERE owner=?"),
+    "goals": ("DELETE FROM goals WHERE owner=?", "DELETE FROM goal_weekdays WHERE owner=?", "DELETE FROM day_profile WHERE owner=?",
+              "DELETE FROM triggers WHERE owner=? AND profile_id IS NOT NULL", "DELETE FROM goal_profiles WHERE owner=?"),
+    "triggers": ("DELETE FROM trigger_log WHERE trigger_id IN (SELECT id FROM triggers WHERE owner=?)",
+                 "DELETE FROM meal_trigger_log WHERE meal_trigger_id IN (SELECT id FROM meal_triggers WHERE owner=?)",
+                 "DELETE FROM trigger_runs WHERE owner=?", "DELETE FROM triggers WHERE owner=?", "DELETE FROM meal_triggers WHERE owner=?"),
+}
+DATA_COUNTS = {"diary": "SELECT COUNT(*) FROM entries WHERE owner=?", "foods": "SELECT COUNT(*) FROM foods WHERE owner=?",
+               "saved_meals": "SELECT COUNT(*) FROM saved_meals WHERE owner=?", "recipes": "SELECT COUNT(*) FROM recipes WHERE owner=?",
+               "weights": "SELECT (SELECT COUNT(*) FROM weights WHERE owner=?) + (SELECT COUNT(*) FROM body_measures WHERE owner=?)"
+                          " + (SELECT COUNT(*) FROM body_photos WHERE owner=?)",
+               "goals": "SELECT (SELECT COUNT(*) FROM goals WHERE owner=?) + (SELECT COUNT(*) FROM goal_weekdays WHERE owner=?)"
+                        " + (SELECT COUNT(*) FROM goal_profiles WHERE owner=?)",
+               "triggers": "SELECT (SELECT COUNT(*) FROM triggers WHERE owner=?) + (SELECT COUNT(*) FROM meal_triggers WHERE owner=?)"}
+
+
+@app.get("/api/data/counts")
+def data_counts(x_remote_user_id: str | None = Header(None)):
+    """How many items each deletable part holds (shown next to the check boxes)."""
+    owner = user_from(x_remote_user_id)
+    with db.conn() as c:
+        return {k: c.execute(sql, (owner,) * sql.count("?")).fetchone()[0] for k, sql in DATA_COUNTS.items()}
+
+
+class DeleteData(BaseModel):
+    parts: list[str]
+
+
+@app.post("/api/data/delete")
+def delete_data(d: DeleteData, x_remote_user_id: str | None = Header(None)):
+    """Permanently delete the chosen parts of the own data (never other users' data, never the settings)."""
+    owner = user_from(x_remote_user_id)
+    parts = list(dict.fromkeys(d.parts))
+    if not parts or any(p not in DATA_PARTS for p in parts):
+        raise HTTPException(400, "Bitte mindestens einen gültigen Bereich wählen.")
+    with db.conn() as c:
+        photos = [r[0] for r in c.execute("SELECT id FROM body_photos WHERE owner=?", (owner,))] if "weights" in parts else []
+        for p in parts:
+            for sql in DATA_PARTS[p]:
+                c.execute(sql, (owner,) * sql.count("?"))
+    for pid in photos:
+        f = os.path.join(PHOTO_DIR, f"{pid}.img")
+        if os.path.exists(f):
+            os.remove(f)
+    return {"deleted": parts}
 
 
 # --- check own foods against the online databases -----------------------------------------

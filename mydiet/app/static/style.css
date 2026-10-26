@@ -309,6 +309,7 @@ html[data-skin="win"] .card {
   background: var(--w-face); border: 0; border-radius: 0; box-shadow: var(--w-etched); margin: 0 2px 14px;
 }
 html[data-skin="win"] .card > h2 { font-size: 13px; font-weight: 700; }
+html[data-skin="win"] details.card > summary { font-size: 13px; font-weight: 700; }
 html[data-skin="win"] .tile { background: var(--w-face); border-radius: 0; box-shadow: var(--w-sunken); }
 html[data-skin="win"] .tile b { font-weight: 700; }
 html[data-skin="win"] .tag { border-radius: 0; background: var(--w-field); box-shadow: var(--w-sunken); color: var(--w-text); padding: 0 6px; }
