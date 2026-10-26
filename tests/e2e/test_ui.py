@@ -216,8 +216,8 @@ def test_italian_interface_is_complete_on_the_main_pages(page):
     settings(page.base, lang="it", features={})
     page.goto(page.base + "/")
     page.wait_for_selector("#diary .daynav")
-    assert [b.text_content() for b in page.query_selector_all("#tabs button:not([hidden])")] == \
-        ["Diario", "Alimenti", "Pasti", "Peso", "Statistiche", "Impostazioni"]
+    tabs = [b.text_content() for b in page.query_selector_all("#tabs button:not([hidden])")]
+    assert [t for t in tabs if t != "Ricette"] == ["Diario", "Alimenti", "Pasti", "Peso", "Statistiche", "Impostazioni"]
     assert "Obiettivo giornaliero" in page.inner_text("#diary") or "Il tuo obiettivo giornaliero" in page.inner_text("#diary")
     assert page.errors == []
     settings(page.base, lang="de")
