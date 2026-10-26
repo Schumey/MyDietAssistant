@@ -6,7 +6,7 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 ## Home Assistant
 
-- **Weitere HA-Anbindung** (M): Mahlzeiten-Zeitplan als Kalender-Entität und Einkaufsliste als Todo-Entität.
+- **Sprach-Eintrag mit Rückfragen** (M): bei mehrdeutigen Treffern („Apfel“ oder „Apfelsaft“?) nachfragen und Synonyme für Lebensmittel pflegen; nötig sind echte Sätze aus dem Alltag.
 
 ## Lebensmittel und Eingabe
 

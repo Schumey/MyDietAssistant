@@ -221,3 +221,21 @@ def test_italian_interface_is_complete_on_the_main_pages(page):
     assert "Obiettivo giornaliero" in page.inner_text("#diary") or "Il tuo obiettivo giornaliero" in page.inner_text("#diary")
     assert page.errors == []
     settings(page.base, lang="de")
+
+
+def test_shopping_list_adds_up_recipes_and_meals(page):
+    settings(page.base, lang="de", features={"recipes": True, "shopping": True})
+    r = httpx.post(page.base + "/api/recipes", json={"name": "Nudelpfanne", "portions": 2, "items": [
+        {"name": "Nudeln", "grams": 200, "kcal": 700, "protein": 0, "carbs": 0, "fat": 0},
+        {"name": "Tomaten", "grams": 300, "kcal": 60, "protein": 0, "carbs": 0, "fat": 0}]})
+    assert r.status_code == 200, r.text
+    page.goto(page.base + "/")
+    page.click('#tabs button[data-tab="recipes"]')
+    page.click("#recipes >> text=Einkaufsliste")
+    page.wait_for_selector("#dlg >> text=Noch nichts gewählt.")
+    page.fill('#dlg .list div:has-text("Nudelpfanne") input', "4")                  # four portions = twice the recipe
+    page.wait_for_selector("#dlg >> text=Nudeln – 400 g")
+    assert "Tomaten – 600 g" in page.inner_text("#dlg")
+    assert page.query_selector("#dlg >> text=Keine Todo-Liste in Home Assistant gefunden.")      # no Home Assistant locally
+    page.click("#dlg >> text=In die Zwischenablage kopieren")
+    assert page.errors == []

@@ -46,6 +46,7 @@ Erklärungen / Details: [Installation](https://github.com/Schumey/MyDietAssistan
 | Aktivität / Activity | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/activity.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/activity.md) |
 | Mahlzeiten-Zeitplan / Meal schedule | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/schedule.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/schedule.md) |
 | Mahlzeiten-Vorschläge / Meal suggestions | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/suggestions.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/suggestions.md) |
+| Einkaufsliste / Shopping list | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/shopping.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/shopping.md) |
 | Haushalt und Benutzer / Household and users | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/household.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/household.md) |
 | Sensoren / Sensors (MQTT) | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/sensors.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/sensors.md) |
 | Trigger / Triggers | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/triggers.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/triggers.md) |

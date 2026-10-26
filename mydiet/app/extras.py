@@ -60,7 +60,7 @@ def set_pref(owner: str, key: str, value):
 # --- settings -------------------------------------------------------------
 
 LANGS = ("auto", "de", "en", "fr", "es", "nl", "it")   # interface languages (dictionaries in static/app.js)
-FEATURES = ("weekday_goals", "trackers", "micros", "notes", "body", "recipes", "sources", "household", "activity", "schedule", "scale", "suggest")   # optional features, off by default
+FEATURES = ("weekday_goals", "trackers", "micros", "notes", "body", "recipes", "sources", "household", "activity", "schedule", "scale", "suggest", "shopping")   # optional features, off by default
 
 
 def features(owner: str) -> dict:

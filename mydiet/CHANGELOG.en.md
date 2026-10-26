@@ -2,6 +2,14 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.14.0
+
+### New
+- **Shopping list (optional feature):** Adds up the ingredients of chosen recipes (portions) and saved meals (multiple) by name. The list can be copied or sent to a to-do list in Home Assistant (service `todo.add_item`, e.g. the shopping list); the last list used is remembered. “Shopping list” button under the Meals and Recipes tabs. Sending only works inside the add-on and is untested; the calculation is tested.
+
+### Note
+- There is no **calendar** for the meal schedule: an add-on cannot create a calendar entity in Home Assistant (that would need a custom integration). For automations there are the `next_meal` and `next_meal_time` sensors (since 1.12).
+
 ## 1.13.0
 
 ### New

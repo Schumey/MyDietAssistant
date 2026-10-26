@@ -485,6 +485,20 @@ const EN = {
   "Endgültig löschen": "Delete permanently",
   "Abendessen sollen das Eiweißziel möglichst erreichen": "Dinners should reach the protein goal as far as possible",
   "Knopf „Trainingstag“ an jedem Tag zeigen (sonst nur, wenn der Shake eingetragen oder per Trigger gebucht wurde)": "Show the “Training day” button every day (otherwise only when the shake is entered or a trigger booked it)",
+  "Einkaufsliste": "Shopping list",
+  "Wähle Rezepte (Portionen) und gespeicherte Mahlzeiten (Vielfaches, 1 = einmal): Die Zutaten werden zusammengezählt.": "Choose recipes (portions) and saved meals (multiple, 1 = once): the ingredients are added up.",
+  "Noch nichts gewählt.": "Nothing chosen yet.",
+  "In die Zwischenablage kopieren": "Copy to clipboard",
+  "Kopiert ✓": "Copied ✓",
+  "An Home Assistant senden": "Send to Home Assistant",
+  "Todo-Liste": "To-do list",
+  "Keine Todo-Liste in Home Assistant gefunden.": "No to-do list found in Home Assistant.",
+  "{} Einträge gesendet.": "{} items sent.",
+  "Zutaten von Rezepten und gespeicherten Mahlzeiten zusammenzählen, kopieren oder an eine Todo-Liste in Home Assistant schicken (z. B. die Einkaufsliste).": "Add up the ingredients of recipes and saved meals, copy them or send them to a to-do list in Home Assistant (e.g. the shopping list).",
+  "Einkaufsliste nicht aktiviert": "Shopping list is not enabled",
+  "Todo-Liste fehlt": "To-do list missing",
+  "Keine Einträge": "No items",
+  "Home Assistant nicht erreichbar (gesendet: {})": "Home Assistant not reachable (sent: {})",
 };
 
 // Languages: German is the source text; every other language is a dictionary German -> language (EN, FR, ES ...).
@@ -1351,6 +1365,20 @@ Object.assign(LANGS, {
     "Endgültig löschen": "Supprimer définitivement",
     "Abendessen sollen das Eiweißziel möglichst erreichen": "Les dîners doivent atteindre au mieux l’objectif de protéines",
     "Knopf „Trainingstag“ an jedem Tag zeigen (sonst nur, wenn der Shake eingetragen oder per Trigger gebucht wurde)": "Afficher le bouton « Jour d’entraînement » chaque jour (sinon seulement si le shake est saisi ou enregistré par un déclencheur)",
+    "Einkaufsliste": "Liste de courses",
+    "Wähle Rezepte (Portionen) und gespeicherte Mahlzeiten (Vielfaches, 1 = einmal): Die Zutaten werden zusammengezählt.": "Choisis des recettes (portions) et des repas enregistrés (multiple, 1 = une fois) : les ingrédients sont additionnés.",
+    "Noch nichts gewählt.": "Rien de choisi pour l’instant.",
+    "In die Zwischenablage kopieren": "Copier dans le presse-papiers",
+    "Kopiert ✓": "Copié ✓",
+    "An Home Assistant senden": "Envoyer à Home Assistant",
+    "Todo-Liste": "Liste de tâches",
+    "Keine Todo-Liste in Home Assistant gefunden.": "Aucune liste de tâches trouvée dans Home Assistant.",
+    "{} Einträge gesendet.": "{} éléments envoyés.",
+    "Zutaten von Rezepten und gespeicherten Mahlzeiten zusammenzählen, kopieren oder an eine Todo-Liste in Home Assistant schicken (z. B. die Einkaufsliste).": "Additionne les ingrédients des recettes et des repas enregistrés, les copie ou les envoie vers une liste de tâches de Home Assistant (p. ex. la liste de courses).",
+    "Einkaufsliste nicht aktiviert": "La liste de courses n’est pas activée",
+    "Todo-Liste fehlt": "Liste de tâches manquante",
+    "Keine Einträge": "Aucun élément",
+    "Home Assistant nicht erreichbar (gesendet: {})": "Home Assistant injoignable (envoyés : {})",
   },
   es: {
     "Ernährung": "Alimentación",
@@ -2209,6 +2237,20 @@ Object.assign(LANGS, {
     "Endgültig löschen": "Eliminar definitivamente",
     "Abendessen sollen das Eiweißziel möglichst erreichen": "Las cenas deben alcanzar en lo posible el objetivo de proteínas",
     "Knopf „Trainingstag“ an jedem Tag zeigen (sonst nur, wenn der Shake eingetragen oder per Trigger gebucht wurde)": "Mostrar el botón «Día de entrenamiento» todos los días (si no, solo cuando el batido está registrado o lo registró un disparador)",
+    "Einkaufsliste": "Lista de la compra",
+    "Wähle Rezepte (Portionen) und gespeicherte Mahlzeiten (Vielfaches, 1 = einmal): Die Zutaten werden zusammengezählt.": "Elige recetas (raciones) y comidas guardadas (múltiplo, 1 = una vez): los ingredientes se suman.",
+    "Noch nichts gewählt.": "Todavía no has elegido nada.",
+    "In die Zwischenablage kopieren": "Copiar al portapapeles",
+    "Kopiert ✓": "Copiado ✓",
+    "An Home Assistant senden": "Enviar a Home Assistant",
+    "Todo-Liste": "Lista de tareas",
+    "Keine Todo-Liste in Home Assistant gefunden.": "No se encontró ninguna lista de tareas en Home Assistant.",
+    "{} Einträge gesendet.": "{} elementos enviados.",
+    "Zutaten von Rezepten und gespeicherten Mahlzeiten zusammenzählen, kopieren oder an eine Todo-Liste in Home Assistant schicken (z. B. die Einkaufsliste).": "Suma los ingredientes de recetas y comidas guardadas, los copia o los envía a una lista de tareas de Home Assistant (p. ej. la lista de la compra).",
+    "Einkaufsliste nicht aktiviert": "La lista de la compra no está activada",
+    "Todo-Liste fehlt": "Falta la lista de tareas",
+    "Keine Einträge": "Sin elementos",
+    "Home Assistant nicht erreichbar (gesendet: {})": "Home Assistant no es accesible (enviados: {})",
   },
   nl: {
     "Ernährung": "Voeding",
@@ -3079,6 +3121,20 @@ Object.assign(LANGS, {
     "Endgültig löschen": "Definitief verwijderen",
     "Abendessen sollen das Eiweißziel möglichst erreichen": "Avondeten moet het eiwitdoel zo goed mogelijk halen",
     "Knopf „Trainingstag“ an jedem Tag zeigen (sonst nur, wenn der Shake eingetragen oder per Trigger gebucht wurde)": "Knop “Trainingsdag” elke dag tonen (anders alleen als de shake is ingevoerd of door een trigger is geboekt)",
+    "Einkaufsliste": "Boodschappenlijst",
+    "Wähle Rezepte (Portionen) und gespeicherte Mahlzeiten (Vielfaches, 1 = einmal): Die Zutaten werden zusammengezählt.": "Kies recepten (porties) en opgeslagen maaltijden (veelvoud, 1 = eenmaal): de ingrediënten worden opgeteld.",
+    "Noch nichts gewählt.": "Nog niets gekozen.",
+    "In die Zwischenablage kopieren": "Kopiëren naar klembord",
+    "Kopiert ✓": "Gekopieerd ✓",
+    "An Home Assistant senden": "Naar Home Assistant sturen",
+    "Todo-Liste": "Takenlijst",
+    "Keine Todo-Liste in Home Assistant gefunden.": "Geen takenlijst gevonden in Home Assistant.",
+    "{} Einträge gesendet.": "{} items verstuurd.",
+    "Zutaten von Rezepten und gespeicherten Mahlzeiten zusammenzählen, kopieren oder an eine Todo-Liste in Home Assistant schicken (z. B. die Einkaufsliste).": "Telt de ingrediënten van recepten en opgeslagen maaltijden op, kopieert ze of stuurt ze naar een takenlijst in Home Assistant (bijv. de boodschappenlijst).",
+    "Einkaufsliste nicht aktiviert": "Boodschappenlijst is niet ingeschakeld",
+    "Todo-Liste fehlt": "Takenlijst ontbreekt",
+    "Keine Einträge": "Geen items",
+    "Home Assistant nicht erreichbar (gesendet: {})": "Home Assistant niet bereikbaar (verstuurd: {})",
   },
   it: {
     "Ernährung": "Alimentazione",
@@ -3949,6 +4005,20 @@ Object.assign(LANGS, {
     "Endgültig löschen": "Elimina definitivamente",
     "Abendessen sollen das Eiweißziel möglichst erreichen": "Le cene dovrebbero raggiungere il più possibile l’obiettivo proteico",
     "Knopf „Trainingstag“ an jedem Tag zeigen (sonst nur, wenn der Shake eingetragen oder per Trigger gebucht wurde)": "Mostra il pulsante “Giorno di allenamento” ogni giorno (altrimenti solo quando lo shake è registrato o un trigger lo ha registrato)",
+    "Einkaufsliste": "Lista della spesa",
+    "Wähle Rezepte (Portionen) und gespeicherte Mahlzeiten (Vielfaches, 1 = einmal): Die Zutaten werden zusammengezählt.": "Scegli ricette (porzioni) e pasti salvati (multiplo, 1 = una volta): gli ingredienti vengono sommati.",
+    "Noch nichts gewählt.": "Ancora nulla di scelto.",
+    "In die Zwischenablage kopieren": "Copia negli appunti",
+    "Kopiert ✓": "Copiato ✓",
+    "An Home Assistant senden": "Invia a Home Assistant",
+    "Todo-Liste": "Lista di cose da fare",
+    "Keine Todo-Liste in Home Assistant gefunden.": "Nessuna lista di cose da fare trovata in Home Assistant.",
+    "{} Einträge gesendet.": "{} voci inviate.",
+    "Zutaten von Rezepten und gespeicherten Mahlzeiten zusammenzählen, kopieren oder an eine Todo-Liste in Home Assistant schicken (z. B. die Einkaufsliste).": "Somma gli ingredienti di ricette e pasti salvati, li copia o li invia a una lista di cose da fare in Home Assistant (es. la lista della spesa).",
+    "Einkaufsliste nicht aktiviert": "La lista della spesa non è attivata",
+    "Todo-Liste fehlt": "Lista di cose da fare mancante",
+    "Keine Einträge": "Nessuna voce",
+    "Home Assistant nicht erreichbar (gesendet: {})": "Home Assistant non raggiungibile (inviate: {})",
   },
 });
 
@@ -5741,7 +5811,64 @@ async function renderMeals() {
 
   const search = h("input", { type: "search", placeholder: "Mahlzeiten suchen…", oninput: draw });
   root.append(h("div", { class: "card" }, search, chips, list));
+  if (state.features.shopping) root.append(h("div", { class: "hint" }, h("button", { class: "flat", onclick: shoppingDialog }, "Einkaufsliste")));
   draw();
+}
+
+// ---------------------------------------------------------------- shopping list (optional)
+// Adds up the ingredients of chosen recipes (portions) and saved meals (multiple of the saved amounts); copy it or send it to a Home Assistant to-do list.
+const shopLine = i => {
+  const g = Number(i.grams) || 0;
+  if (g <= 0) return i.name;
+  return `${i.name} – ${g >= 1000 ? (Math.round(g / 10) / 100).toLocaleString(I18N.locale) + " kg" : Math.round(g) + " g"}`;
+};
+
+async function shoppingDialog() {
+  const [recipes, meals, todos] = await Promise.all([state.features.recipes ? api("recipes") : [], api("saved-meals"),
+    api("shopping/todos").catch(() => ({ entities: [], last: "" }))]);
+  const rAmt = {}, mAmt = {};
+  let items = [], seq = 0;
+  const out = h("div", { class: "list" });
+  const msg = h("div", { class: "err" });
+  const text = () => items.map(shopLine).join("\n");
+
+  async function recalc() {
+    const my = ++seq;
+    const body = { recipes: Object.entries(rAmt).map(([id, amount]) => ({ id: Number(id), amount })), meals: Object.entries(mAmt).map(([id, amount]) => ({ id: Number(id), amount })) };
+    try { items = (await send("POST", "shopping/list", body)).items; } catch (e) { if (my === seq) msg.textContent = e.message; return; }
+    if (my !== seq) return;
+    msg.textContent = "";
+    out.replaceChildren(...(items.length ? items.map(i => h("div", {}, shopLine(i))) : [h("div", { class: "muted" }, "Noch nichts gewählt.")]));
+  }
+  const pick = (store, id, name, hint) => {
+    const f = h("input", { type: "number", step: "any", min: "0", placeholder: "0", style: "width:72px;flex:none", title: hint,
+      oninput: () => { const v = num(f.value); if (v > 0) store[id] = v; else delete store[id]; recalc(); } });
+    return h("div", {}, h("div", { class: "grow" }, name), f);
+  };
+  const send2 = h("select", {}, todos.entities.map(e => h("option", { value: e.id, selected: e.id === todos.last }, e.name || e.id)));
+  const copy = h("button", { class: "flat", onclick: async e => {
+    const t = text();
+    try { await navigator.clipboard.writeText(t); }
+    catch { const ta = h("textarea", {}); ta.value = t; document.body.append(ta); ta.select(); document.execCommand("copy"); ta.remove(); }
+    e.target.textContent = "Kopiert ✓";
+  } }, "In die Zwischenablage kopieren");
+  const sendBtn = h("button", { onclick: async e => {
+    if (!items.length) return;
+    e.target.disabled = true;
+    try { const r = await send("POST", "shopping/send", { entity: send2.value, items }); msg.textContent = ""; e.target.textContent = `${r.sent} Einträge gesendet.`; }
+    catch (err) { msg.textContent = err.message; }
+    e.target.disabled = false;
+  } }, "An Home Assistant senden");
+  setDlg(h("h2", {}, "Einkaufsliste"),
+    h("div", { class: "muted" }, "Wähle Rezepte (Portionen) und gespeicherte Mahlzeiten (Vielfaches, 1 = einmal): Die Zutaten werden zusammengezählt."),
+    recipes.length ? [h("label", {}, "Rezepte"), h("div", { class: "list" }, recipes.map(r => pick(rAmt, r.id, r.name, "Portionen")))] : null,
+    meals.length ? [h("label", {}, "Mahlzeiten"), h("div", { class: "list" }, meals.map(m => pick(mAmt, m.id, m.name, "Vielfaches")))] : null,
+    h("label", {}, "Einkaufsliste"), out,
+    todos.entities.length ? [h("label", {}, "Todo-Liste"), send2] : h("div", { class: "muted" }, "Keine Todo-Liste in Home Assistant gefunden."),
+    msg,
+    h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Schließen"), copy, todos.entities.length ? sendBtn : null));
+  if (!dlg.open) dlg.showModal();
+  recalc();
 }
 
 
@@ -5903,6 +6030,7 @@ async function renderRecipes() {
       mealieCfg?.token_set ? h("button", { class: "flat", onclick: mealieDialog }, "Aus Mealie …") : null),
     h("div", { class: "muted", style: "margin-top:8px" }, "Jedes Rezept erscheint auch unter Lebensmittel (pro 100 g, mit „1 Portion“) und lässt sich überall eintragen. Änderungen am Rezept aktualisieren dieses Lebensmittel."),
     chips, list));
+  if (state.features.shopping) root.append(h("div", { class: "hint" }, h("button", { class: "flat", onclick: shoppingDialog }, "Einkaufsliste")));
   draw();
 }
 
@@ -6732,6 +6860,7 @@ async function renderSettings() {
       feat("scale", "Waage (Sensor)", "Körpergewicht automatisch aus einem Home-Assistant-Sensor übernehmen, z. B. von einer smarten Waage (mit Einheitenumrechnung)."),
       feat("schedule", "Mahlzeiten-Zeitplan", "Zeitfenster pro Mahlzeit: das Tagebuch zeigt, welche Mahlzeit gerade ansteht, und erinnert auf Wunsch per Benachrichtigung."),
       feat("suggest", "Mahlzeiten-Vorschläge", "Button im Tagebuch: schlägt gespeicherte Mahlzeiten und Kombinationen aus Deinem Verlauf vor, die zu den offenen Kalorien und Makros passen (Mengen werden angepasst, feste Packungen bleiben)."),
+      feat("shopping", "Einkaufsliste", "Zutaten von Rezepten und gespeicherten Mahlzeiten zusammenzählen, kopieren oder an eine Todo-Liste in Home Assistant schicken (z. B. die Einkaufsliste)."),
       feat("household", "Haushalt", "Einträge, Lebensmittel und Mahlzeiten mit anderen Benutzern teilen, jeder mit eigener Portion (z. B. ein Gericht für die Familie). Beide Seiten müssen die Funktion einschalten."),
       feat("notes", "Notizen", "Freitext zu Mahlzeiten und Tagen (Hunger, Training, Stimmung). Vorhandene Notizen bleiben beim Ausschalten erhalten."),
       feat("body", "Körpermaße und Fortschrittsfotos", "Umfänge (Taille, Brust, Arm …) mit Verlauf und Fotos mit Vergleich im Reiter Gewicht."),

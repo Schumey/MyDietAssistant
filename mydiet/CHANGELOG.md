@@ -2,6 +2,14 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.14.0
+
+### Neu
+- **Einkaufsliste (Zusatzfunktion):** Zählt die Zutaten gewählter Rezepte (Portionen) und gespeicherter Mahlzeiten (Vielfaches) nach Namen zusammen. Die Liste lässt sich kopieren oder an eine Todo-Liste in Home Assistant senden (Dienst `todo.add_item`, z. B. die Einkaufsliste); die zuletzt benutzte Liste wird gemerkt. Knopf „Einkaufsliste“ unter den Reitern Mahlzeiten und Rezepte. Das Senden läuft nur im Add-on und ist ungeprüft; die Berechnung ist getestet.
+
+### Hinweis
+- Einen **Kalender** für den Mahlzeiten-Zeitplan gibt es nicht: Ein Add-on kann keine Kalender-Entität in Home Assistant anlegen (dafür wäre eine eigene Integration nötig). Für Automationen gibt es die Sensoren `next_meal` und `next_meal_time` (seit 1.12).
+
 ## 1.13.0
 
 ### Neu

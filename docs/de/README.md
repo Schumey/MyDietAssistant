@@ -30,6 +30,7 @@ Diese Anleitung ist in einzelne Seiten aufgeteilt. Jede Seite beschreibt ein The
 | [Aktivität](activity.md) | Schritte und Kalorien erhöhen das Tagesziel |
 | [Mahlzeiten-Zeitplan](schedule.md) | Zeitfenster pro Mahlzeit, Hinweis „Jetzt: …“ |
 | [Mahlzeiten-Vorschläge](suggestions.md) | Passende Mahlzeiten für die offenen Makros |
+| [Einkaufsliste](shopping.md) | Zutaten zusammenzählen, kopieren oder an eine Todo-Liste in Home Assistant senden |
 | [Haushalt und Benutzer](household.md) | Mehrere Benutzer, Teilen, Benutzerverwaltung |
 
 ## Home Assistant
