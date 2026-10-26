@@ -378,6 +378,18 @@ def food_scope(c, owner: str) -> tuple[str, list]:
     return f"(owner=? OR (shared=1 AND owner IN ({','.join('?' * len(others))})))", [owner, *others]
 
 
+def owner_names(c, rows: list, owner: str):
+    """Mark rows of other household members: mine / owner_name (used for shared recipes and saved meals)."""
+    names = {}
+    for r in rows:
+        r["mine"] = r["owner"] == owner
+        if not r["mine"]:
+            if r["owner"] not in names:
+                u = c.execute("SELECT name FROM users WHERE id=?", (r["owner"],)).fetchone()
+                names[r["owner"]] = u["name"] if u and u["name"] else r["owner"]
+            r["owner_name"] = names[r["owner"]]
+
+
 @app.get("/api/foods")
 def list_foods(q: str = "", barcode: str = "", favorite: int = 0, limit: int = 200, offset: int = 0, x_remote_user_id: str | None = Header(None)):
     owner = user_from(x_remote_user_id)

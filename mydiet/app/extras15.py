@@ -38,11 +38,11 @@ def add_up(c, owner: str, b: ListIn) -> list:
     for p in b.recipes:
         if p.amount <= 0:
             continue
-        for r in recipe_rows(c, owner, p.id):
+        for r in recipe_rows(c, owner, p.id, shared=True):
             for i in r["items"]:
                 put(i["name"], i["grams"] * p.amount / r["portions"])
     wanted = {p.id: p.amount for p in b.meals if p.amount > 0}
-    for m in saved_meal_rows(c, owner):
+    for m in saved_meal_rows(c, owner, shared=True):
         for i in m["items"] if m["id"] in wanted else []:
             put(i["name"], i["grams"] * wanted[m["id"]])
     return sorted(({"name": v["name"], "grams": round(v["grams"], 1)} for v in sums.values()), key=lambda v: v["name"].lower())

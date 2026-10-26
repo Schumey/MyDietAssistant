@@ -239,3 +239,29 @@ def test_shopping_list_adds_up_recipes_and_meals(page):
     assert page.query_selector("#dlg >> text=Keine Todo-Liste in Home Assistant gefunden.")      # no Home Assistant locally
     page.click("#dlg >> text=In die Zwischenablage kopieren")
     assert page.errors == []
+
+
+def test_household_sees_shared_recipes_and_meals_but_cannot_change_them(browser, server):
+    """Two users in the household: Anna offers a recipe, Ben sees it tagged with her name, can copy it and has no edit or delete button."""
+    anna = {"X-Remote-User-Id": "anna", "X-Remote-User-Display-Name": "Anna"}
+    ben = {"X-Remote-User-Id": "ben", "X-Remote-User-Display-Name": "Ben"}
+    for h in (anna, ben):
+        httpx.get(server + "/api/me", headers=h)
+        httpx.put(server + "/api/settings", headers=h, json={"lang": "de", "features": {"household": True, "recipes": True}})
+    rid = httpx.post(server + "/api/recipes", headers=anna, json={"name": "Annas Suppe", "portions": 2, "shared": True, "items": [
+        {"name": "Linsen", "grams": 200, "kcal": 700, "protein": 50, "carbs": 120, "fat": 4}]}).json()["id"]
+    ctx = browser.new_context(viewport={"width": 1100, "height": 900}, extra_http_headers=ben)
+    page = ctx.new_page()
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(server + "/")
+    page.click('#tabs button[data-tab="recipes"]')
+    row = page.wait_for_selector('#recipes .list > div:has-text("Annas Suppe")')
+    assert "von Anna" in row.inner_text()
+    assert row.query_selector('button[aria-label="Bearbeiten"]') is None and row.query_selector('button[aria-label="Löschen"]') is None
+    row.query_selector('button[aria-label="Kopieren"]').click()
+    page.wait_for_selector("#dlg >> text=Rezept bearbeiten")
+    assert page.input_value("#dlg input >> nth=0").startswith("Annas Suppe")
+    assert errors == []
+    ctx.close()
+    assert rid

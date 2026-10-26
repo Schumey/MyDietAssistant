@@ -59,7 +59,8 @@ CREATE TABLE IF NOT EXISTS saved_meals (
   name TEXT NOT NULL,
   category TEXT NOT NULL DEFAULT '',
   min_scale REAL NOT NULL DEFAULT 0,      -- meal suggestions: smallest / largest factor (0 = default range)
-  max_scale REAL NOT NULL DEFAULT 0
+  max_scale REAL NOT NULL DEFAULT 0,
+  shared INTEGER NOT NULL DEFAULT 0       -- v1.15: offered in the household library
 );
 CREATE TABLE IF NOT EXISTS saved_meal_items (
   id INTEGER PRIMARY KEY,
@@ -171,7 +172,8 @@ CREATE TABLE IF NOT EXISTS recipes (          -- optional: ingredients + portion
   category TEXT NOT NULL DEFAULT '',
   food_id INTEGER,
   source TEXT NOT NULL DEFAULT '',          -- v1.1: page the recipe was imported from
-  instructions TEXT NOT NULL DEFAULT ''     -- v1.1: preparation steps, one per line
+  instructions TEXT NOT NULL DEFAULT '',    -- v1.1: preparation steps, one per line
+  shared INTEGER NOT NULL DEFAULT 0         -- v1.15: offered in the household library
 );
 CREATE TABLE IF NOT EXISTS recipe_items (
   id INTEGER PRIMARY KEY,
@@ -342,7 +344,15 @@ def _m6_v176(c):
     _add(c, "saved_meal_items", "pack_min", "INTEGER NOT NULL DEFAULT 1")
 
 
-MIGRATIONS = (_m1_legacy, _m2_v1, _m3_v11, _m4_v17, _m5_v171, _m6_v176)
+def _m7_v115(c):
+    """v1.15: saved meals and recipes can be offered in the household library like foods."""
+    _add(c, "saved_meals", "shared", "INTEGER NOT NULL DEFAULT 0")
+    _add(c, "recipes", "shared", "INTEGER NOT NULL DEFAULT 0")
+    c.execute("CREATE INDEX IF NOT EXISTS saved_meals_shared ON saved_meals(shared)")
+    c.execute("CREATE INDEX IF NOT EXISTS recipes_shared ON recipes(shared)")
+
+
+MIGRATIONS = (_m1_legacy, _m2_v1, _m3_v11, _m4_v17, _m5_v171, _m6_v176, _m7_v115)
 
 
 def init():

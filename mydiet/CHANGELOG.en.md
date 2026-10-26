@@ -2,6 +2,14 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.15.0
+
+### New
+- **Shared library for recipes and saved meals:** When editing, a recipe or meal can be offered to the household. The others see it marked “from <Name>”, may log it (recipes also as a food), add it to the shopping list and make their own copy. Editing, deleting, triggers and the sharing itself stay with the owner. A recipe’s food follows the recipe’s sharing. The flag is kept in export, backup and import.
+
+### Changed
+- Database: new column `shared` for recipes and saved meals (migration 7, does not change existing data).
+
 ## 1.14.0
 
 ### New

@@ -2,6 +2,14 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.15.0
+
+### Neu
+- **Gemeinsame Bibliothek für Rezepte und gespeicherte Mahlzeiten:** Beim Bearbeiten lässt sich ein Rezept oder eine Mahlzeit für den Haushalt anbieten. Die anderen sehen es mit „von <Name>“, dürfen es eintragen (Rezepte auch als Lebensmittel), in die Einkaufsliste aufnehmen und als eigene Kopie anlegen. Ändern, Löschen, Trigger und das Freigeben bleiben beim Besitzer. Das Lebensmittel eines Rezepts folgt dem Anbieten des Rezepts. Die Markierung bleibt in Export, Sicherung und Import erhalten.
+
+### Geändert
+- Datenbank: neue Spalte `shared` bei Rezepten und gespeicherten Mahlzeiten (Migration 7, ändert vorhandene Daten nicht).
+
 ## 1.14.0
 
 ### Neu

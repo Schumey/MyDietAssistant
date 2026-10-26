@@ -499,6 +499,7 @@ const EN = {
   "Todo-Liste fehlt": "To-do list missing",
   "Keine Einträge": "No items",
   "Home Assistant nicht erreichbar (gesendet: {})": "Home Assistant not reachable (sent: {})",
+  "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren, ändern nur Du)": "Offer in the shared household library (others may use and copy it, only you can change it)",
 };
 
 // Languages: German is the source text; every other language is a dictionary German -> language (EN, FR, ES ...).
@@ -1379,6 +1380,7 @@ Object.assign(LANGS, {
     "Todo-Liste fehlt": "Liste de tâches manquante",
     "Keine Einträge": "Aucun élément",
     "Home Assistant nicht erreichbar (gesendet: {})": "Home Assistant injoignable (envoyés : {})",
+    "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren, ändern nur Du)": "Proposer dans la bibliothèque partagée du foyer (les autres peuvent l’utiliser et le copier, seul toi peux le modifier)",
   },
   es: {
     "Ernährung": "Alimentación",
@@ -2251,6 +2253,7 @@ Object.assign(LANGS, {
     "Todo-Liste fehlt": "Falta la lista de tareas",
     "Keine Einträge": "Sin elementos",
     "Home Assistant nicht erreichbar (gesendet: {})": "Home Assistant no es accesible (enviados: {})",
+    "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren, ändern nur Du)": "Ofrecer en la biblioteca compartida del hogar (los demás pueden usarlo y copiarlo, solo tú puedes cambiarlo)",
   },
   nl: {
     "Ernährung": "Voeding",
@@ -3135,6 +3138,7 @@ Object.assign(LANGS, {
     "Todo-Liste fehlt": "Takenlijst ontbreekt",
     "Keine Einträge": "Geen items",
     "Home Assistant nicht erreichbar (gesendet: {})": "Home Assistant niet bereikbaar (verstuurd: {})",
+    "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren, ändern nur Du)": "Aanbieden in de gedeelde huishoudbibliotheek (anderen mogen het gebruiken en kopiëren, alleen jij kunt het wijzigen)",
   },
   it: {
     "Ernährung": "Alimentazione",
@@ -4019,6 +4023,7 @@ Object.assign(LANGS, {
     "Todo-Liste fehlt": "Lista di cose da fare mancante",
     "Keine Einträge": "Nessuna voce",
     "Home Assistant nicht erreichbar (gesendet: {})": "Home Assistant non raggiungibile (inviate: {})",
+    "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren, ändern nur Du)": "Offri nella libreria familiare condivisa (gli altri possono usarlo e copiarlo, solo tu puoi modificarlo)",
   },
 });
 
@@ -4513,7 +4518,7 @@ function suggestDialog(opts = {}) {
 // Priorities per macro, hard limits and the add-on foods (nuts ...) the suggestions may put next to a meal.
 async function suggestSettings(back) {
   const cfg = await api("suggest/config");
-  const savedMeals = await api("saved-meals");
+  const savedMeals = (await api("saved-meals")).filter(m => m.mine !== false);
   const tr = JSON.parse(JSON.stringify(cfg.training));
   const dayMeals = state.data.mode === "times" ? [] : state.data.meals;
   const prio = { ...cfg.prio }, addons = cfg.addons.map(a => ({ ...a })), excluded = cfg.excluded.map(e => ({ ...e }));
@@ -5713,6 +5718,12 @@ async function shareLibrary(kind, item) {
 }
 
 // ---------------------------------------------------------------- saved meals page
+const sharedFrom = o => h("span", { class: "shared-tag", title: "Gemeinsame Haushaltsbibliothek" }, `von ${o.owner_name}`);
+const sharedMark = o => (o.shared ? h("span", { class: "shared-tag", title: "Für den Haushalt freigegeben" }, "geteilt") : null);
+const shareBox = (draft, obj) => (state.features.household && (!obj || obj.mine !== false)
+  ? h("label", { class: "pick", style: "margin-top:12px" }, h("input", { type: "checkbox", checked: !!draft.shared, onchange: e => { draft.shared = e.target.checked; } }),
+    "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren, ändern nur Du)") : null);
+
 async function renderMeals() {
   const [saved] = await Promise.all([api("saved-meals"), loadCats()]);
   const root = $("#meals");
@@ -5721,7 +5732,7 @@ async function renderMeals() {
   const chips = h("div");
 
   // Edit name/category and the components of a saved meal: change amounts, swap or remove foods, add new ones.
-  const editSaved = (s, draft = { name: s.name, category: s.category, items: s.items.map(i => ({ ...i })), min_scale: s.min_scale || 0, max_scale: s.max_scale || 0 }) => {
+  const editSaved = (s, draft = { name: s.name, category: s.category, items: s.items.map(i => ({ ...i })), min_scale: s.min_scale || 0, max_scale: s.max_scale || 0, shared: !!s.shared }) => {
     const name = h("input", { value: draft.name, oninput: () => { draft.name = name.value; } });
     const category = h("input", { list: "cat-list", value: draft.category, oninput: () => { draft.category = category.value; } });
     const msg = h("div", { class: "err" });
@@ -5768,6 +5779,7 @@ async function renderMeals() {
         h("div", { class: "sug-range", title: "Wie stark die ganze Mahlzeit bei Vorschlägen verkleinert oder vergrößert werden darf (1 = Menge wie gespeichert). Leer = 0,6 bis 1,6." },
           "von", h("input", { type: "number", step: "0.05", min: "0.1", placeholder: "0.6", value: draft.min_scale || "", onchange: e => { draft.min_scale = num(e.target.value) || 0; } }),
           "bis", h("input", { type: "number", step: "0.05", min: "0.1", placeholder: "1.6", value: draft.max_scale || "", onchange: e => { draft.max_scale = num(e.target.value) || 0; } }))] : null,
+      shareBox(draft, s),
       msg,
       h("div", { class: "actions" },
         h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
@@ -5775,6 +5787,7 @@ async function renderMeals() {
           if (!draft.name.trim()) { msg.textContent = "Bitte einen Namen angeben."; return; }
           try {
             await send("PUT", "saved-meals/" + s.id, { name: draft.name, category: draft.category, min_scale: draft.min_scale || 0, max_scale: draft.max_scale || 0,
+              shared: state.features.household && s.mine !== false ? !!draft.shared : undefined,
               items: draft.items.map(i => ({
                 name: i.name, grams: i.grams, kcal: i.kcal, protein: i.protein, carbs: i.carbs, fat: i.fat,
                 fiber: i.fiber || 0, sugar: i.sugar || 0, salt: i.salt || 0, sat_fat: i.sat_fat || 0,
@@ -5790,19 +5803,19 @@ async function renderMeals() {
     const q = search.value.toLowerCase();
     const shown = saved.filter(isVisible).filter(s => s.name.toLowerCase().includes(q));
     list.replaceChildren(...(shown.length ? shown.map(s => h("div", {},
-      h("div", { class: "grow" }, h("div", {}, s.name, tag(s.category)),
+      h("div", { class: "grow" }, h("div", {}, s.name, s.mine === false ? sharedFrom(s) : [tag(s.category), sharedMark(s)]),
         h("div", { class: "muted" }, `${n0(s.kcal)} kcal · KH ${n1(s.carbs)} g · Fett ${n1(s.fat)} g · Eiweiß ${n1(s.protein)} g`),
         h("div", { class: "muted" }, s.items.map(entryLabel).join(" · "))),
-      h("button", { class: "icon", title: "Trigger anlegen", "aria-label": "Trigger anlegen", onclick: () => triggerDialog({ item: "s:" + s.id }) }, "⚡"),
-      state.features.household ? h("button", { class: "icon", title: "Mit dem Haushalt teilen", "aria-label": "Teilen", onclick: () => shareLibrary("saved-meals", s) }, "⇪") : null,
-      h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => editSaved(s) }, "✎"),
+      s.mine === false ? null : h("button", { class: "icon", title: "Trigger anlegen", "aria-label": "Trigger anlegen", onclick: () => triggerDialog({ item: "s:" + s.id }) }, "⚡"),
+      state.features.household && s.mine !== false ? h("button", { class: "icon", title: "Mit dem Haushalt teilen", "aria-label": "Teilen", onclick: () => shareLibrary("saved-meals", s) }, "⇪") : null,
+      s.mine === false ? null : h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => editSaved(s) }, "✎"),
       h("button", { class: "icon", title: "Kopie anlegen", "aria-label": "Kopieren", onclick: async () => {
         const { id } = await send("POST", `saved-meals/${s.id}/copy`);
         await renderMeals();
         const copy = (await api("saved-meals")).find(x => x.id === id);
         if (copy) editSaved(copy);
       } }, "⧉"),
-      h("button", { class: "icon", title: "Löschen", "aria-label": "Löschen", onclick: async () => {
+      s.mine === false ? null : h("button", { class: "icon", title: "Löschen", "aria-label": "Löschen", onclick: async () => {
         if (!confirm(`Mahlzeit „${s.name}“ löschen?`)) return;
         await api("saved-meals/" + s.id, { method: "DELETE" }); renderMeals();
       } }, "✕")))
@@ -5880,7 +5893,7 @@ async function renderRecipes() {
   const list = h("div", { class: "list" });
   const chips = h("div");
 
-  const editRecipe = (r, draft = r ? { name: r.name, category: r.category, portions: r.portions, cooked_g: r.cooked_g, source: r.source || "", instructions: r.instructions || "", items: r.items.map(i => ({ ...i })) }
+  const editRecipe = (r, draft = r ? { name: r.name, category: r.category, portions: r.portions, cooked_g: r.cooked_g, source: r.source || "", instructions: r.instructions || "", shared: !!r.shared, items: r.items.map(i => ({ ...i })) }
     : { name: "", category: "", portions: 2, cooked_g: null, source: "", instructions: "", items: [] }) => {
     const name = h("input", { value: draft.name, oninput: () => { draft.name = name.value; } });
     const category = h("input", { list: "cat-list", value: draft.category, oninput: () => { draft.category = category.value; } });
@@ -5934,7 +5947,7 @@ async function renderRecipes() {
       draft.items.some(i => i.source) ? h("div", { class: "warn-note" }, "Orange Zutaten fehlten in Deinen Lebensmitteln und wurden aus Online-Datenbanken ergänzt (Richtwerte, bitte prüfen).") : null,
       h("div", { class: "list" }, rows.length ? rows : [h("div", { class: "muted" }, "Noch keine Zutaten.")]),
       h("button", { class: "flat", onclick: () => swap(null, "Zutat hinzufügen") }, "+ Zutat"),
-      total, h("label", {}, "Zubereitung"), instr, h("label", {}, "Quelle"), source, msg,
+      total, h("label", {}, "Zubereitung"), instr, h("label", {}, "Quelle"), source, shareBox(draft, r), msg,
       h("div", { class: "actions" },
         h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
         h("button", { onclick: async () => {
@@ -5942,6 +5955,7 @@ async function renderRecipes() {
             source: draft.source || "", instructions: draft.instructions || "",
             items: draft.items.map(i => ({ name: i.name, grams: i.grams, kcal: i.kcal, protein: i.protein, carbs: i.carbs, fat: i.fat,
               fiber: i.fiber || 0, sugar: i.sugar || 0, salt: i.salt || 0, sat_fat: i.sat_fat || 0 })) };
+          if (state.features.household && (!r || r.mine !== false)) body.shared = !!draft.shared;
           try { await send(r ? "PUT" : "POST", "recipes" + (r ? "/" + r.id : ""), body); dlg.close(); renderRecipes(); }
           catch (e) { msg.textContent = e.message; }
         } }, "Speichern")));
@@ -6003,20 +6017,20 @@ async function renderRecipes() {
     const q = search.value.toLowerCase();
     const shown = recipes.filter(isVisible).filter(r => r.name.toLowerCase().includes(q));
     list.replaceChildren(...(shown.length ? shown.map(r => h("div", {},
-      h("div", { class: "grow" }, h("div", {}, r.name, tag(r.category)),
+      h("div", { class: "grow" }, h("div", {}, r.name, r.mine === false ? sharedFrom(r) : [tag(r.category), sharedMark(r)]),
         h("div", { class: "muted" }, `Pro Portion (${gText(r.portion_g)}): ${n0(r.portion.kcal)} kcal · KH ${n1(r.portion.carbs)} g · Fett ${n1(r.portion.fat)} g · Eiweiß ${n1(r.portion.protein)} g · ${n1(r.portions)} Portionen`),
         h("div", { class: "muted" }, r.items.map(i => `${i.name} ${gText(i.grams)}`).join(" · ")),
         r.instructions ? h("details", {}, h("summary", { class: "muted" }, "Zubereitung"), h("ol", { class: "steps" }, ...r.instructions.split("\n").filter(x => x.trim()).map(x => h("li", {}, x)))) : null,
         /^https?:\/\//.test(r.source || "") ? h("div", { class: "muted" }, h("a", { href: r.source, target: "_blank", rel: "noopener noreferrer" }, new URL(r.source).hostname.replace(/^www\./, ""))) : null),
       h("button", { class: "icon", title: "Trigger anlegen", "aria-label": "Trigger anlegen", disabled: !r.food_id, onclick: () => triggerDialog({ item: "f:" + r.food_id }) }, "⚡"),
-      h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => editRecipe(r) }, "✎"),
+      r.mine === false ? null : h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => editRecipe(r) }, "✎"),
       h("button", { class: "icon", title: "Kopie anlegen", "aria-label": "Kopieren", onclick: async () => {
         const { id } = await send("POST", `recipes/${r.id}/copy`);
         await renderRecipes();
         const copy = (await api("recipes")).find(x => x.id === id);
         if (copy) editRecipe(copy);
       } }, "⧉"),
-      h("button", { class: "icon", title: "Löschen", "aria-label": "Löschen", onclick: async () => {
+      r.mine === false ? null : h("button", { class: "icon", title: "Löschen", "aria-label": "Löschen", onclick: async () => {
         if (!confirm(`Rezept „${r.name}“ löschen? Das zugehörige Lebensmittel wird ebenfalls gelöscht, bereits eingetragene Mahlzeiten bleiben erhalten.`)) return;
         await api("recipes/" + r.id, { method: "DELETE" }); renderRecipes();
       } }, "✕")))

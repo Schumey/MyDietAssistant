@@ -11,7 +11,6 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 ## Lebensmittel und Eingabe
 
 - **Rezept-Import aus Text und Foto** (L): Rezepte aus eingefügtem Text oder einem Foto lesen, wenn die Seite keine Rezeptdaten mitliefert.
-- **Gemeinsame Bibliothek auch für Rezepte und gespeicherte Mahlzeiten** (M): bisher gilt sie für Lebensmittel, Rezepte und Mahlzeiten lassen sich nur kopieren.
 - **Weitere Sprachen** (S je Sprache): zum Beispiel Italienisch; ein Wörterbuch in `static/app.js` und ein Eintrag in `LANGS` (`extras.py`) genügen.
 - **Weitere Datenquellen** (M): zum Beispiel die Österreichische Nährwerttabelle oder USDA-Dateiexporte über den Tabellen-Import (Spaltenkürzel ergänzen). CIQUAL und die Schweizer Datenbank sind seit 1.1 erkannt, bisher nur gegen Beispielzeilen geprüft.
 

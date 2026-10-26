@@ -15,7 +15,7 @@ from fastapi.responses import Response
 from pydantic import BaseModel
 
 import db
-from main import SUPERVISOR_TOKEN, app, check_day, check_time, day_totals, get_goal, publish, user_from
+from main import SUPERVISOR_TOKEN, app, check_day, check_time, day_totals, food_scope, get_goal, owner_names, publish, user_from
 
 KCAL_PER_KG = 7700
 
@@ -331,6 +331,7 @@ class SavedMealEdit(BaseModel):
     items: list[SavedItemIn] | None = None   # replaces all components when given
     min_scale: float | None = None           # suggestions: factor range (None keeps, 0 = default)
     max_scale: float | None = None
+    shared: bool | None = None               # household: offer in the shared library (owner only; None keeps)
 
 
 class UseSavedIn(BaseModel):
@@ -347,21 +348,25 @@ def pack_range(i) -> tuple[int, int]:
     return max(0, min(int(g("pack_min", 1)), hi)), hi
 
 
-def saved_meal_rows(c, owner: str):
+def saved_meal_rows(c, owner: str, shared: bool = False, only: int | None = None):
+    """The user's saved meals; with shared=True also those other household members offer (marked mine / owner_name)."""
     out = []
-    for m in c.execute("SELECT * FROM saved_meals WHERE owner=? ORDER BY name COLLATE NOCASE", (owner,)):
+    scope, sp = food_scope(c, owner) if shared else ("owner=?", [owner])
+    for m in c.execute(f"SELECT * FROM saved_meals WHERE {scope}" + (" AND id=?" if only else "") + " ORDER BY name COLLATE NOCASE",
+                       (*sp, only) if only else sp):
         items = [dict(i) for i in c.execute(
             "SELECT name, grams, kcal, protein, carbs, fat, fiber, sugar, salt, sat_fat, mode, tol, pack_g, step_g, pack_min, pack_max FROM saved_meal_items"
             " WHERE saved_meal_id=? ORDER BY id", (m["id"],))]
         out.append({**dict(m), "items": items,
                     **{k: round(sum(i[k] for i in items), 1) for k in ("kcal", "protein", "carbs", "fat", *db.MICROS)}})
+    owner_names(c, out, owner)
     return out
 
 
 @app.get("/api/saved-meals")
 def list_saved(x_remote_user_id: str | None = Header(None)):
     with db.conn() as c:
-        return saved_meal_rows(c, user_from(x_remote_user_id))
+        return saved_meal_rows(c, user_from(x_remote_user_id), shared=True)
 
 
 @app.post("/api/saved-meals")
@@ -397,6 +402,8 @@ def edit_saved(sid: int, s: SavedMealEdit, x_remote_user_id: str | None = Header
     with db.conn() as c:
         c.execute("UPDATE saved_meals SET name=?, category=? WHERE id=? AND owner=?",
                   (s.name.strip(), s.category.strip(), sid, owner))
+        if s.shared is not None:
+            c.execute("UPDATE saved_meals SET shared=? WHERE id=? AND owner=?", (int(s.shared), sid, owner))
         if s.min_scale is not None or s.max_scale is not None:
             lo, hi = (max(0, s.min_scale or 0), max(0, s.max_scale or 0))
             if lo and hi and lo > hi:
@@ -418,7 +425,8 @@ def copy_saved(sid: int, x_remote_user_id: str | None = Header(None)):
     """Duplicate a saved meal as a starting point for a variant."""
     owner = user_from(x_remote_user_id)
     with db.conn() as c:
-        m = c.execute("SELECT * FROM saved_meals WHERE id=? AND owner=?", (sid, owner)).fetchone()
+        scope, sp = food_scope(c, owner)
+        m = c.execute(f"SELECT * FROM saved_meals WHERE id=? AND {scope}", (sid, *sp)).fetchone()
         if not m:
             raise HTTPException(404, "saved meal not found")
         cur = c.execute("INSERT INTO saved_meals(owner,name,category,min_scale,max_scale) VALUES(?,?,?,?,?)",
@@ -452,9 +460,10 @@ def note_use(c, owner: str, sid: int, meal_id: int | None):
 def add_saved_to_diary(c, owner: str, sid: int, day: str, meal_id: int | None, factor: float = 1,
                        time: str | None = None):
     meal_id = meal_id or first_meal(c, owner)
-    note_use(c, owner, sid, meal_id)
-    if not c.execute("SELECT 1 FROM saved_meals WHERE id=? AND owner=?", (sid, owner)).fetchone():
+    scope, sp = food_scope(c, owner)
+    if not c.execute(f"SELECT 1 FROM saved_meals WHERE id=? AND {scope}", (sid, *sp)).fetchone():   # own or offered by the household
         raise HTTPException(404, "saved meal not found")
+    note_use(c, owner, sid, meal_id)
     if not c.execute("SELECT 1 FROM meals WHERE id=? AND owner=?", (meal_id, owner)).fetchone():
         raise HTTPException(404, "meal not found")
     ids = []
@@ -702,9 +711,9 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
             for p in f.get("portions", []):
                 c.execute("INSERT INTO food_portions(food_id,name,grams) VALUES(?,?,?)", (fid, p["name"], p["grams"]))
         for r in d.get("recipes", []):
-            rid = c.execute("INSERT INTO recipes(owner,name,portions,cooked_g,category,food_id,source,instructions) VALUES(?,?,?,?,?,?,?,?)",
+            rid = c.execute("INSERT INTO recipes(owner,name,portions,cooked_g,category,food_id,source,instructions,shared) VALUES(?,?,?,?,?,?,?,?,?)",
                             (owner, r["name"], r["portions"], r.get("cooked_g"), r.get("category", ""), fmap.get(r.get("food_id")),
-                             r.get("source", ""), r.get("instructions", ""))).lastrowid
+                             r.get("source", ""), r.get("instructions", ""), r.get("shared", 0))).lastrowid
             for i in r.get("items", []):
                 c.execute("INSERT INTO recipe_items(recipe_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
                           (rid, i["name"], i["grams"], i["kcal"], i.get("protein", 0), i.get("carbs", 0), i.get("fat", 0), *(i.get(m, 0) for m in db.MICROS)))
@@ -725,8 +734,8 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
             c.execute("INSERT INTO weights(owner,day,kg) VALUES(?,?,?)", (owner, w["day"], w["kg"]))
         smap = {}
         for s in d.get("saved_meals", []):
-            sid = smap[s.get("id")] = c.execute("INSERT INTO saved_meals(owner,name,category,min_scale,max_scale) VALUES(?,?,?,?,?)",
-                                                (owner, s["name"], s.get("category", ""), s.get("min_scale", 0), s.get("max_scale", 0))).lastrowid
+            sid = smap[s.get("id")] = c.execute("INSERT INTO saved_meals(owner,name,category,min_scale,max_scale,shared) VALUES(?,?,?,?,?,?)",
+                                                (owner, s["name"], s.get("category", ""), s.get("min_scale", 0), s.get("max_scale", 0), s.get("shared", 0))).lastrowid
             for i in s.get("items", []):
                 c.execute("INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,mode,tol,pack_g,step_g,pack_min,pack_max)"
                           " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",

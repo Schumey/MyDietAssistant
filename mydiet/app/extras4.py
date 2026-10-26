@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 import db
 import recipe_import
-from main import app, food_scope, user_from
+from main import app, food_scope, owner_names, user_from
 
 NUTR = ("kcal", "protein", "carbs", "fat", *db.MICROS)
 
@@ -30,6 +30,7 @@ class RecipeIn(BaseModel):
     category: str = ""
     source: str = ""            # page the recipe came from
     instructions: str = ""      # preparation steps, one per line
+    shared: bool | None = None  # household: offer in the shared library (owner only; None keeps)
     items: list[IngredientIn]
 
 
@@ -68,6 +69,7 @@ def sync_food(c, owner: str, rid: int):
         fid = c.execute("INSERT INTO foods(owner,name,brand,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,serving_g,category)"
                         " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", (owner, *vals)).lastrowid
         c.execute("UPDATE recipes SET food_id=? WHERE id=?", (fid, rid))
+    c.execute("UPDATE foods SET shared=? WHERE id=?", (r["shared"], fid))      # the recipe's food follows the recipe's sharing
     c.execute("DELETE FROM food_portions WHERE food_id=?", (fid,))
     c.execute("INSERT INTO food_portions(food_id,name,grams) VALUES(?,?,?)", (fid, "1 Portion", portion_g))
     return fid
@@ -80,21 +82,24 @@ def write_items(c, rid: int, items):
         [(rid, i.name, i.grams, i.kcal, i.protein, i.carbs, i.fat, i.fiber, i.sugar, i.salt, i.sat_fat) for i in items])
 
 
-def recipe_rows(c, owner: str, only: int | None = None) -> list[dict]:
+def recipe_rows(c, owner: str, only: int | None = None, shared: bool = False) -> list[dict]:
+    """The user's recipes; with shared=True also those other household members offer (marked mine / owner_name)."""
     out = []
-    for r in c.execute("SELECT * FROM recipes WHERE owner=?" + (" AND id=?" if only else "") + " ORDER BY name COLLATE NOCASE",
-                       (owner, only) if only else (owner,)):
+    scope, sp = food_scope(c, owner) if shared else ("owner=?", [owner])
+    for r in c.execute(f"SELECT * FROM recipes WHERE {scope}" + (" AND id=?" if only else "") + " ORDER BY name COLLATE NOCASE",
+                       (*sp, only) if only else sp):
         items = [dict(i) for i in c.execute("SELECT * FROM recipe_items WHERE recipe_id=? ORDER BY id", (r["id"],))]
         grams, tot = totals(items, r["cooked_g"])
         out.append({**dict(r), "items": items, "total_g": grams, "total": tot,
                     "portion": {k: v / r["portions"] for k, v in tot.items()}, "portion_g": grams / r["portions"]})
+    owner_names(c, out, owner)
     return out
 
 
 @app.get("/api/recipes")
 def list_recipes(x_remote_user_id: str | None = Header(None)):
     with db.conn() as c:
-        return recipe_rows(c, user_from(x_remote_user_id))
+        return recipe_rows(c, user_from(x_remote_user_id), shared=True)
 
 
 @app.post("/api/recipes")
@@ -102,8 +107,9 @@ def add_recipe(r: RecipeIn, x_remote_user_id: str | None = Header(None)):
     check_recipe(r)
     owner = user_from(x_remote_user_id)
     with db.conn() as c:
-        rid = c.execute("INSERT INTO recipes(owner,name,portions,cooked_g,category,source,instructions) VALUES(?,?,?,?,?,?,?)",
-                        (owner, r.name.strip(), r.portions, r.cooked_g, r.category.strip(), r.source.strip()[:500], r.instructions.strip()[:20000])).lastrowid
+        rid = c.execute("INSERT INTO recipes(owner,name,portions,cooked_g,category,source,instructions,shared) VALUES(?,?,?,?,?,?,?,?)",
+                        (owner, r.name.strip(), r.portions, r.cooked_g, r.category.strip(), r.source.strip()[:500], r.instructions.strip()[:20000],
+                         int(bool(r.shared)))).lastrowid
         write_items(c, rid, r.items)
         sync_food(c, owner, rid)
     return {"id": rid}
@@ -118,6 +124,8 @@ def edit_recipe(rid: int, r: RecipeIn, x_remote_user_id: str | None = Header(Non
             raise HTTPException(404, "Rezept nicht gefunden")
         c.execute("UPDATE recipes SET name=?,portions=?,cooked_g=?,category=?,source=?,instructions=? WHERE id=?",
                   (r.name.strip(), r.portions, r.cooked_g, r.category.strip(), r.source.strip()[:500], r.instructions.strip()[:20000], rid))
+        if r.shared is not None:
+            c.execute("UPDATE recipes SET shared=? WHERE id=?", (int(r.shared), rid))
         write_items(c, rid, r.items)
         sync_food(c, owner, rid)
     return {"ok": True}
@@ -127,7 +135,8 @@ def edit_recipe(rid: int, r: RecipeIn, x_remote_user_id: str | None = Header(Non
 def copy_recipe(rid: int, x_remote_user_id: str | None = Header(None)):
     owner = user_from(x_remote_user_id)
     with db.conn() as c:
-        src = c.execute("SELECT * FROM recipes WHERE id=? AND owner=?", (rid, owner)).fetchone()
+        scope, sp = food_scope(c, owner)
+        src = c.execute(f"SELECT * FROM recipes WHERE id=? AND {scope}", (rid, *sp)).fetchone()
         if not src:
             raise HTTPException(404, "Rezept nicht gefunden")
         new = c.execute("INSERT INTO recipes(owner,name,portions,cooked_g,category,source,instructions) VALUES(?,?,?,?,?,?,?)",

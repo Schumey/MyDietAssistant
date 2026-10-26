@@ -38,7 +38,14 @@ Ein Lebensmittel für alle anbieten:
 
 Alle anderen mit „Haushalt“ sehen es mit dem Vermerk „von <Name>“ in ihrer Liste und im Hinzufügen-Dialog. Sie dürfen es eintragen und ändern. Die Änderung gilt sofort für alle, bereits eingetragene Mengen bleiben Schnappschüsse. Löschen, Favorit, Trigger und das Freigeben selbst bleiben beim Besitzer.
 
-Rezepte und gespeicherte Mahlzeiten lassen sich bisher nur kopieren.
+### Rezepte und gespeicherte Mahlzeiten
+
+Auch Rezepte und gespeicherte Mahlzeiten lassen sich für den Haushalt anbieten:
+
+1. Öffne das Rezept oder die Mahlzeit zum Bearbeiten (**✎**).
+2. Schalte **In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren, ändern nur Du)** ein und speichere.
+
+Die anderen sehen das Rezept im Reiter **Rezepte** und die Mahlzeit im Reiter **Mahlzeiten**, jeweils mit „von <Name>“. Sie dürfen es eintragen (Rezepte erscheinen auch als Lebensmittel mit „1 Portion“), in die [Einkaufsliste](shopping.md) aufnehmen und mit **⧉** als eigene Kopie anlegen. Ändern, Löschen, Trigger und das Freigeben bleiben beim Besitzer, anders als bei Lebensmitteln. Beide Seiten müssen „Haushalt“ eingeschaltet haben. Wer das Anbieten zurücknimmt, nimmt auch das zugehörige Lebensmittel eines Rezepts aus der gemeinsamen Bibliothek. Bereits angelegte Kopien und eingetragene Mengen bleiben.
 
 ## Benutzerverwaltung
 
