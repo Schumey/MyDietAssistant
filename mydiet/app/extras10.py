@@ -12,7 +12,7 @@ from pydantic import BaseModel
 
 import db
 from extras import feature_on, get_pref
-from extras7 import to_num
+from extras7 import detect_delim, to_num
 from main import app, user_from
 
 # --- sharing with the household ----------------------------------------------------
@@ -173,10 +173,9 @@ def read_table(data: bytes) -> tuple[list[list[str]], bool]:
             break
         except UnicodeDecodeError:
             continue
-    head = text[:4000]
-    delim = max(",;\t", key=lambda d: head.count(d))
+    delim = detect_delim(text)
     rows = [r for r in csv.reader(io.StringIO(text), delimiter=delim) if any(x.strip() for x in r)]
-    return rows, delim == ";"
+    return rows, delim == ";" or (delim != "," and any(re.fullmatch(r"\s*-?\d+,\d+\s*", c) for r in rows[1:40] for c in r))
 
 
 def parse_foods(data: bytes, mapping: dict) -> tuple[list[dict], int]:

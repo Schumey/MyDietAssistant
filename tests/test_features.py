@@ -219,6 +219,16 @@ def test_xlsx_import_and_energy_in_kilojoules(me):
     assert round(f["Cracker"]["kcal"]) == 454 and f["Cracker"]["salt"] == 2.0   # 800 mg sodium = 2 g salt
 
 
+def test_pipe_separated_food_table_is_imported(me):
+    data = "Name|Brand|kcal|Protein|Fat\nHaferflocken, zart|Bio, Marke|372,0|13,5|7,0\nQuark|X|67|12|0,2\n".encode()
+    p = me.post("/api/import/foods/preview", content=data).json()
+    assert p["items"] == 2
+    import json
+    me.post(f"/api/import/foods?mapping={json.dumps(p['mapping'])}", content=data)
+    f = {x["name"]: x for x in me.get("/api/foods").json()}
+    assert f["Haferflocken, zart"]["kcal"] == 372 and f["Haferflocken, zart"]["protein"] == 13.5
+
+
 def test_broken_food_files_are_rejected(me):
     assert me.post("/api/import/foods/preview", content=b"").status_code == 400
     assert me.post("/api/import/foods/preview", content=b"PK\x03\x04nonsense").status_code == 400

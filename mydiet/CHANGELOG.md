@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.8.1
+
+### Geändert
+- **CSV-Import:** Das Spaltentrennzeichen wird jetzt dynamisch erkannt und umfasst auch den senkrechten Strich `|` (zusätzlich zu `,`, `;` und Tabulator). Gewählt wird das Zeichen, das die ersten Zeilen durchgehend in gleich viele Spalten teilt; Kommas in Freitextspalten stören die Erkennung nicht mehr. Gilt für den Lebensmittel-Import und den Tabellen-Import.
+
 ## 1.8.0
 
 ### Geändert

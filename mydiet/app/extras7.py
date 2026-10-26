@@ -37,10 +37,24 @@ SYNONYMS = [
 ]
 
 
+def detect_delim(text: str) -> str:
+    """Column separator of a table: the candidate that splits the first lines into the same (largest) number of
+    columns; plain character counts break when a free-text column contains commas."""
+    lines = [l for l in text[:8000].splitlines() if l.strip()][:20]
+
+    def score(d: str) -> tuple[int, int]:
+        counts = [next(csv.reader([l], delimiter=d), []).__len__() - 1 for l in lines]
+        counts = [c for c in counts if c > 0]
+        if not counts:
+            return 0, 0
+        top = max(set(counts), key=counts.count)           # most common column count
+        return counts.count(top), top
+    return max(",;\t|", key=score)
+
+
 def sniff(text: str) -> tuple[str, list[list[str]]]:
     text = text.lstrip("﻿")
-    head = text[:4000]
-    delim = max(",;\t", key=lambda d: head.count(d))
+    delim = detect_delim(text)
     rows = [r for r in csv.reader(io.StringIO(text), delimiter=delim) if any(x.strip() for x in r)]
     if len(rows) < 2:
         raise HTTPException(400, "Die Datei enthält keine Datenzeilen.")
@@ -173,7 +187,7 @@ def parse_table(text: str, mapping: dict[str, int | None], weight_unit: str = "k
     if mapping.get("date") is None:
         raise HTTPException(400, "Bitte die Spalte mit dem Datum zuordnen.")
     order = date_order([cell(r, "date") for r in body])
-    dc = delim in (";", "\t") or any(re.search(r"\d,\d", cell(r, "kcal")) for r in body[:30])
+    dc = delim in (";", "\t", "|") or any(re.search(r"\d,\d", cell(r, "kcal")) for r in body[:30])
     items, weights = [], {}
     for r in body:
         day = to_day(cell(r, "date"), order)

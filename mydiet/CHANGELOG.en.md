@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.8.1
+
+### Changed
+- **CSV import:** The column separator is now detected dynamically and also supports the pipe `|` (besides `,`, `;` and tab). The character that splits the first lines into a consistent number of columns wins, so commas in free-text columns no longer confuse detection. Applies to the food import and the table import.
+
 ## 1.8.0
 
 ### Changed
