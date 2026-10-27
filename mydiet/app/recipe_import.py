@@ -370,3 +370,50 @@ def draft_from_node(n: dict, url: str, foods: list[dict]) -> dict:
              "instructions": "\n".join(_steps(n.get("recipeInstructions") or "")), "items": build_items(ings, foods),
              "nutrition": nutrition_of(n)}
     return draft
+
+
+# --- recipe from pasted text -----------------------------------------------------------------
+
+HEAD_ING = re.compile(r"^\s*(?:zutaten|ingredients|für das rezept|you will need)\b[^\n]{0,40}:?\s*$", re.I)
+HEAD_STEPS = re.compile(r"^\s*(?:zubereitung|zubereitungsschritte|anleitung|methode|so geht[’']?s|directions|instructions|method|steps|preparation)\b[^\n]{0,30}:?\s*$", re.I)
+YIELD = re.compile(r"(?:für|ergibt|portionen|servings?|serves|makes)\s*:?\s*(\d+(?:[.,]\d+)?)|(\d+(?:[.,]\d+)?)\s*(?:portionen|portion|servings?|personen)", re.I)
+BULLET = re.compile(r"^\s*(?:[-*•–▪●]+|\d+[.)])\s+")
+LOOKS_LIKE_INGREDIENT = re.compile(r"^\s*(?:[-*•–▪●]\s*)?(?:\d|[½⅓⅔¼¾⅛⅕]|eine?n?\s+(?:prise|handvoll|spritzer|messerspitze|dose|packung|bund)|etwas|nach geschmack|a (?:pinch|handful|dash))", re.I)
+
+
+def parse_recipe_text(text: str) -> dict:
+    """A schema.org-shaped dict (name, recipeYield, recipeIngredient, recipeInstructions) from pasted recipe text.
+    Headings like "Zutaten" / "Zubereitung" split the text; without headings, lines that start with an amount are ingredients
+    and long sentences are steps. The first short line before the ingredients is the title."""
+    lines = [l.rstrip() for l in (text or "").replace("\r", "").split("\n")]
+    name, ings, steps, portions = "", [], [], None
+    mode = None
+    for raw in lines:
+        line = raw.strip()
+        if not line:
+            continue
+        if HEAD_ING.match(line):
+            mode = "ing"
+            continue
+        if HEAD_STEPS.match(line):
+            mode = "steps"
+            continue
+        m = YIELD.search(line)
+        if m and len(line) < 60 and portions is None and not LOOKS_LIKE_INGREDIENT.match(line):
+            portions = m.group(1) or m.group(2)
+            continue
+        if mode == "ing":
+            ings.append(BULLET.sub("", line))
+        elif mode == "steps":
+            steps.append(BULLET.sub("", line))
+        elif LOOKS_LIKE_INGREDIENT.match(line):
+            ings.append(BULLET.sub("", line))
+        elif not name and not ings and len(line) <= 80:
+            name = line.rstrip(":")
+        elif ings or len(line) > 60:
+            steps.append(BULLET.sub("", line))
+        elif not name:
+            name = line
+    if not ings:
+        raise ValueError("Im Text wurden keine Zutaten gefunden (Zeilen mit Mengen, z. B. „200 g Mehl“).")
+    return {"name": name, "recipeYield": portions, "recipeIngredient": ings, "recipeInstructions": steps}

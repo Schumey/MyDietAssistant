@@ -285,3 +285,19 @@ def test_nutrient_gaps_card_in_the_statistics(page):
     assert "below the goal" in card.inner_text() and "at least" in card.inner_text()
     assert page.errors == []
     settings(page.base, lang="de")
+
+
+def test_recipe_from_pasted_text_opens_in_the_editor(page):
+    settings(page.base, lang="de", features={"recipes": True})
+    httpx.post(page.base + "/api/foods", json={"name": "Mehl Typ 405", "kcal": 340, "protein": 10, "carbs": 70, "fat": 1})
+    page.goto(page.base + "/")
+    page.click('#tabs button[data-tab="recipes"]')
+    page.click("#recipes >> text=Aus Text")
+    page.fill("#dlg textarea", "Pfannkuchen\nFür 2 Portionen\n\nZutaten\n200 g Mehl\n2 Eier\n\nZubereitung\n1. Alles verrühren.\n2. Ausbacken.")
+    page.click("#dlg >> text=Importieren")
+    page.wait_for_selector("#dlg h2:text-is('Neues Rezept')")
+    assert page.input_value("#dlg input >> nth=0") == "Pfannkuchen"
+    assert "Alles verrühren." in page.input_value("#dlg textarea")
+    page.click("#dlg >> text=Speichern")
+    page.wait_for_selector("#recipes >> text=Pfannkuchen")
+    assert page.errors == []

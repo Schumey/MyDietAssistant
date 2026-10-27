@@ -56,7 +56,7 @@ Wenn Du eine Nährwerttabelle hast (BLS, CIQUAL, Schweizer Nährwertdatenbank, O
 
 1. Öffne **Lebensmittel** und tippe auf **Tabelle importieren …** (auch unter *Einstellungen → Daten → Weitere Importe …*).
 2. Wähle eine CSV-, TXT- oder Excel-Datei (`.xlsx`) mit Nährwerten pro 100 g.
-3. Die Spalten werden anhand der Überschriften erkannt. Erkannt werden auch die Kürzel der **BLS** (`ST`, `GCAL`, `GJ`, `ZE`, `ZF`, `ZK`, `ZB`) und die Spalten der **CIQUAL** (`alim_nom_fr`, „Protéines“, „Glucides“, „Lipides“ …) sowie der **Schweizer Nährwertdatenbank**.
+3. Die Spalten werden anhand der Überschriften erkannt. Erkannt werden auch die Kürzel der **BLS** (`ST`, `GCAL`, `GJ`, `ZE`, `ZF`, `ZK`, `ZB`) und die Spalten der **CIQUAL** (`alim_nom_fr`, „Protéines“, „Glucides“, „Lipides“ …) sowie der **Schweizer Nährwertdatenbank**. Auch typische Überschriften von USDA-Tabellen („Total lipid (fat)“, „Carbohydrate, by difference“, „Fatty acids, total saturated“ …) und der Österreichischen Nährwerttabelle („Fett gesamt“, „Verfügbare Kohlenhydrate“ …) werden erkannt; falls etwas fehlt, lässt sich die Zuordnung im Dialog korrigieren.
 4. Prüfe in der Vorschau die Zuordnung und korrigiere sie bei Bedarf.
 5. Enthält die Tabelle eine Kategorie-Spalte (z. B. „Kategorie“, „Warengruppe“, Open Food Facts „categories“), wird sie übernommen; bei mehreren Kategorien in einer Zelle gilt die erste. Für Lebensmittel ohne Kategorie in der Datei (oder wenn keine Spalte erkannt wurde) wählst Du die Kategorie selbst. Starte dann den Import.
 

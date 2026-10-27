@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.18.0
+
+### Neu
+- **Rezept aus Text:** Im Reiter Rezepte gibt es „Aus Text …“. Ein eingefügter Rezepttext (Titel, optional „Für 4 Portionen“, Zutaten mit Mengen, Zubereitung; mit oder ohne Überschriften) wird zu einem Entwurf im Editor, die Zutaten werden wie beim Webseiten-Import Deinen Lebensmitteln zugeordnet. Ein Rezept aus einem Foto zu lesen ist lokal nicht möglich (keine Texterkennung im Add-on).
+- **Tabellen-Import:** Typische Spaltenüberschriften von USDA-Tabellen („Total lipid (fat)“, „Carbohydrate, by difference“ …) und der Österreichischen Nährwerttabelle („Fett gesamt“, „Verfügbare Kohlenhydrate“ …) werden erkannt. Bisher nur gegen Beispielüberschriften geprüft.
+
 ## 1.17.0
 
 ### Neu

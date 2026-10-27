@@ -92,20 +92,22 @@ FOOD_FIELDS = ("name", "brand", "barcode", "kcal", "kj", "protein", "carbs", "fa
 # Open Food Facts column names are included next to plain German and English headings.
 FOOD_SYNONYMS = [
     ("name", ("name", "lebensmittel", "lebensmittelbezeichnung", "bezeichnung", "st", "food", "food name", "description", "produkt", "product", "product name",
-              "alim nom fr", "alim nom eng", "alim nom")),   # CIQUAL
+              "alim nom fr", "alim nom eng", "alim nom",   # CIQUAL
+              "lebensmittelname", "food description", "short description")),   # Austrian table, USDA
     ("brand", ("brand", "brands", "marke", "hersteller")),
     ("barcode", ("barcode", "ean", "gtin", "upc")),
-    ("kcal", ("kcal", "gcal", "enercc", "energie kcal", "energy kcal", "energy-kcal", "kalorien", "calories")),
+    ("kcal", ("kcal", "gcal", "enercc", "energie kcal", "energy kcal", "energy-kcal", "kalorien", "calories", "energie kilokalorien", "kilocalories")),
     ("kj", ("kj", "gj", "enercj", "energie kj", "energy kj", "energy-kj")),
     ("protein", ("protein", "proteins", "eiweiß", "eiweiss", "ze", "prot625", "proteine", "protéines", "proteínas")),
-    ("carbs", ("carbs", "carbohydrates", "kohlenhydrate", "zk", "cho", "chavl", "carbohydrate", "glucides", "kohlenhydrate verfügbar")),
-    ("fat", ("fat", "fett", "zf", "fat total", "lipides")),
-    ("fiber", ("fiber", "fibre", "ballaststoffe", "zb", "fibt", "fibres", "nahrungsfasern", "fibre total")),
-    ("sugar", ("sugar", "sugars", "zucker", "sucres")),
-    ("salt", ("salt", "salz", "nacl", "sel", "salz nacl")),
+    ("carbs", ("carbs", "carbohydrates", "kohlenhydrate", "zk", "cho", "chavl", "carbohydrate", "glucides", "kohlenhydrate verfügbar", "carbohydrate by difference", "kohlenhydrate gesamt", "verfügbare kohlenhydrate")),
+    ("fat", ("fat", "fett", "zf", "fat total", "lipides", "total lipid", "total fat", "fett gesamt", "gesamtfett", "fett total")),
+    ("fiber", ("fiber", "fibre", "ballaststoffe", "zb", "fibt", "fibres", "nahrungsfasern", "fibre total", "ballaststoffe gesamt", "fiber total dietary")),
+    ("sugar", ("sugar", "sugars", "zucker", "sucres", "sugars total", "zucker gesamt", "zuckerarten")),
+    ("salt", ("salt", "salz", "nacl", "sel", "salz nacl", "kochsalz", "salz gesamt")),
     ("sodium", ("sodium", "natrium", "na")),
     ("sat_fat", ("saturated fat", "saturated-fat", "gesättigte fettsäuren", "fasat", "saturated", "gesättigte", "ag saturés", "acides gras saturés",
-                "fettsäuren gesättigt", "fettsäuren, gesättigt", "fatty acids saturated", "fatty acids, saturated")),
+                "fettsäuren gesättigt", "fettsäuren, gesättigt", "fatty acids saturated", "fatty acids, saturated",
+                "fatty acids total saturated", "fatty acids, total saturated", "gesättigte fettsäuren gesamt")),
     ("category", ("category", "categories", "kategorie", "kategorien", "warengruppe", "food group", "group", "gruppe", "catégorie", "categoría", "categorie", "main category",
                   "pnns groups 1", "alim grp nom fr", "alim grp nom eng")),
 ]

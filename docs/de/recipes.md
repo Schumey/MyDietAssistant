@@ -30,6 +30,16 @@ Zum Eintragen suchst Du das Rezept im Hinzufügen-Dialog wie ein Lebensmittel.
 
 Grenzen: Abgerufen werden nur öffentliche http(s)-Adressen (Adressen im lokalen Netz sind gesperrt, höchstens 3 MB). Seiten ohne Rezeptdaten oder hinter einem Login lassen sich nicht lesen.
 
+## Rezept aus Text importieren
+
+Wenn Du ein Rezept als Text hast (aus einer Nachricht, einem Dokument oder von Hand abgetippt), brauchst Du keine Webseite.
+
+1. Öffne den Reiter **Rezepte** und tippe auf **Aus Text …**.
+2. Füge den Text unter **Rezepttext** ein. Am besten steht oben der Titel, dann optional „Für 4 Portionen“, danach die Überschriften **Zutaten** (eine Zutat pro Zeile mit Menge, z. B. „200 g Mehl“) und **Zubereitung** (ein Schritt pro Zeile). Ohne Überschriften erkennt die App Zeilen mit einer Menge am Anfang als Zutaten und lange Sätze als Zubereitung.
+3. Tippe auf **Importieren**. Die Zutaten werden Deinen Lebensmitteln zugeordnet, nicht zugeordnete erscheinen rot, wie beim Import von einer Webseite. Prüfe alles im Editor und tippe auf **Speichern**.
+
+Ein Rezept aus einem Foto zu lesen ist nicht möglich: Dafür bräuchte das Add-on eine Texterkennung, die lokal nicht zur Verfügung steht. Wenn Du den Text des Fotos hast (etwa über die Texterkennung Deines Handys), füge ihn hier ein.
+
 ## Rezepte aus Mealie importieren
 
 Für Rezepte in [Mealie](https://mealie.io).

@@ -2,6 +2,12 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.18.0
+
+### New
+- **Recipe from text:** The Recipes tab has “From text …”. Pasted recipe text (title, optionally “Serves 4”, ingredients with amounts, instructions; with or without headings) becomes a draft in the editor, and the ingredients are matched with your foods as with the web page import. Reading a recipe from a photo is not possible locally (no text recognition in the add-on).
+- **Table import:** Typical column headings of USDA tables (“Total lipid (fat)”, “Carbohydrate, by difference” …) and of the Austrian nutrition table (“Fett gesamt”, “Verfügbare Kohlenhydrate” …) are recognised. So far only tested against example headings.
+
 ## 1.17.0
 
 ### New

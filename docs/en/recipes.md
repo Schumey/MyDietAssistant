@@ -30,6 +30,16 @@ To log it, search for the recipe in the add dialog like a food.
 
 Limits: only public http(s) addresses are fetched (addresses in the local network are blocked, at most 3 MB). Pages without recipe data or behind a login cannot be read.
 
+## Import a recipe from text
+
+If you have a recipe as text (from a message, a document or typed by hand), you do not need a web page.
+
+1. Open the **Recipes** tab and tap **From text …**.
+2. Paste the text under **Recipe text**. Best is the title at the top, then optionally “Serves 4”, then the headings **Ingredients** (one ingredient per line with an amount, e.g. “200 g flour”) and **Instructions** (one step per line). Without headings, lines that start with an amount count as ingredients and long sentences as instructions.
+3. Tap **Import**. The ingredients are matched with your foods, unmatched ones show in red, as with the import from a web page. Review everything in the editor and tap **Save**.
+
+Reading a recipe from a photo is not possible: the add-on would need text recognition, which is not available locally. If you have the photo’s text (for example through your phone’s text recognition), paste it here.
+
 ## Import recipes from Mealie
 
 For recipes you keep in [Mealie](https://mealie.io).

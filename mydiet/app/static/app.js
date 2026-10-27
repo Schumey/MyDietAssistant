@@ -528,6 +528,12 @@ const EN = {
   "Ø {} g (mind. {} g) – {} % unter dem Ziel": "Ø {} g (at least {} g) – {} % below the goal",
   "Ø {} g (höchstens {} g) – im Ziel": "Ø {} g (at most {} g) – on target",
   "Ø {} g (höchstens {} g) – {} % über dem Ziel": "Ø {} g (at most {} g) – {} % above the goal",
+  "Aus Text …": "From text …",
+  "Rezept aus Text": "Recipe from text",
+  "Füge ein Rezept als Text ein: erst der Titel, dann die Zutaten (eine pro Zeile, mit Menge) und die Zubereitung. Überschriften wie „Zutaten“ und „Zubereitung“ helfen. Die Zutaten werden Deinen Lebensmitteln zugeordnet; Du prüfst alles, bevor es gespeichert wird.": "Paste a recipe as text: first the title, then the ingredients (one per line, with an amount) and the instructions. Headings such as “Ingredients” and “Instructions” help. The ingredients are matched with your foods; you review everything before it is saved.",
+  "Rezepttext": "Recipe text",
+  "Im Text wurden keine Zutaten gefunden (Zeilen mit Mengen, z. B. „200 g Mehl“).": "No ingredients found in the text (lines with amounts, e.g. “200 g flour”).",
+  "Der Text ist zu lang.": "The text is too long.",
 };
 
 // Languages: German is the source text; every other language is a dictionary German -> language (EN, FR, ES ...).
@@ -1436,6 +1442,12 @@ Object.assign(LANGS, {
     "Ø {} g (mind. {} g) – {} % unter dem Ziel": "Ø {} g (au moins {} g) – {} % sous l’objectif",
     "Ø {} g (höchstens {} g) – im Ziel": "Ø {} g (au plus {} g) – dans l’objectif",
     "Ø {} g (höchstens {} g) – {} % über dem Ziel": "Ø {} g (au plus {} g) – {} % au-dessus de l’objectif",
+    "Aus Text …": "Depuis un texte …",
+    "Rezept aus Text": "Recette à partir d’un texte",
+    "Füge ein Rezept als Text ein: erst der Titel, dann die Zutaten (eine pro Zeile, mit Menge) und die Zubereitung. Überschriften wie „Zutaten“ und „Zubereitung“ helfen. Die Zutaten werden Deinen Lebensmitteln zugeordnet; Du prüfst alles, bevor es gespeichert wird.": "Colle une recette sous forme de texte : d’abord le titre, puis les ingrédients (un par ligne, avec la quantité) et la préparation. Des titres comme « Ingrédients » et « Préparation » aident. Les ingrédients sont associés à tes aliments ; tu vérifies tout avant l’enregistrement.",
+    "Rezepttext": "Texte de la recette",
+    "Im Text wurden keine Zutaten gefunden (Zeilen mit Mengen, z. B. „200 g Mehl“).": "Aucun ingrédient trouvé dans le texte (lignes avec quantités, p. ex. « 200 g de farine »).",
+    "Der Text ist zu lang.": "Le texte est trop long.",
   },
   es: {
     "Ernährung": "Alimentación",
@@ -2336,6 +2348,12 @@ Object.assign(LANGS, {
     "Ø {} g (mind. {} g) – {} % unter dem Ziel": "Ø {} g (al menos {} g) – {} % por debajo del objetivo",
     "Ø {} g (höchstens {} g) – im Ziel": "Ø {} g (como máximo {} g) – en el objetivo",
     "Ø {} g (höchstens {} g) – {} % über dem Ziel": "Ø {} g (como máximo {} g) – {} % por encima del objetivo",
+    "Aus Text …": "Desde texto …",
+    "Rezept aus Text": "Receta desde texto",
+    "Füge ein Rezept als Text ein: erst der Titel, dann die Zutaten (eine pro Zeile, mit Menge) und die Zubereitung. Überschriften wie „Zutaten“ und „Zubereitung“ helfen. Die Zutaten werden Deinen Lebensmitteln zugeordnet; Du prüfst alles, bevor es gespeichert wird.": "Pega una receta como texto: primero el título, luego los ingredientes (uno por línea, con cantidad) y la preparación. Encabezados como «Ingredientes» y «Preparación» ayudan. Los ingredientes se asocian a tus alimentos; revisas todo antes de guardar.",
+    "Rezepttext": "Texto de la receta",
+    "Im Text wurden keine Zutaten gefunden (Zeilen mit Mengen, z. B. „200 g Mehl“).": "No se encontraron ingredientes en el texto (líneas con cantidades, p. ej. «200 g de harina»).",
+    "Der Text ist zu lang.": "El texto es demasiado largo.",
   },
   nl: {
     "Ernährung": "Voeding",
@@ -3248,6 +3266,12 @@ Object.assign(LANGS, {
     "Ø {} g (mind. {} g) – {} % unter dem Ziel": "Ø {} g (minstens {} g) – {} % onder het doel",
     "Ø {} g (höchstens {} g) – im Ziel": "Ø {} g (hoogstens {} g) – op doel",
     "Ø {} g (höchstens {} g) – {} % über dem Ziel": "Ø {} g (hoogstens {} g) – {} % boven het doel",
+    "Aus Text …": "Uit tekst …",
+    "Rezept aus Text": "Recept uit tekst",
+    "Füge ein Rezept als Text ein: erst der Titel, dann die Zutaten (eine pro Zeile, mit Menge) und die Zubereitung. Überschriften wie „Zutaten“ und „Zubereitung“ helfen. Die Zutaten werden Deinen Lebensmitteln zugeordnet; Du prüfst alles, bevor es gespeichert wird.": "Plak een recept als tekst: eerst de titel, dan de ingrediënten (één per regel, met hoeveelheid) en de bereiding. Kopjes als “Ingrediënten” en “Bereiding” helpen. De ingrediënten worden gekoppeld aan je voedingsmiddelen; je controleert alles voordat het wordt opgeslagen.",
+    "Rezepttext": "Receptentekst",
+    "Im Text wurden keine Zutaten gefunden (Zeilen mit Mengen, z. B. „200 g Mehl“).": "Geen ingrediënten gevonden in de tekst (regels met hoeveelheden, bijv. “200 g bloem”).",
+    "Der Text ist zu lang.": "De tekst is te lang.",
   },
   it: {
     "Ernährung": "Alimentazione",
@@ -4160,6 +4184,12 @@ Object.assign(LANGS, {
     "Ø {} g (mind. {} g) – {} % unter dem Ziel": "Ø {} g (almeno {} g) – {} % sotto l’obiettivo",
     "Ø {} g (höchstens {} g) – im Ziel": "Ø {} g (al massimo {} g) – in linea con l’obiettivo",
     "Ø {} g (höchstens {} g) – {} % über dem Ziel": "Ø {} g (al massimo {} g) – {} % sopra l’obiettivo",
+    "Aus Text …": "Da testo …",
+    "Rezept aus Text": "Ricetta da testo",
+    "Füge ein Rezept als Text ein: erst der Titel, dann die Zutaten (eine pro Zeile, mit Menge) und die Zubereitung. Überschriften wie „Zutaten“ und „Zubereitung“ helfen. Die Zutaten werden Deinen Lebensmitteln zugeordnet; Du prüfst alles, bevor es gespeichert wird.": "Incolla una ricetta come testo: prima il titolo, poi gli ingredienti (uno per riga, con la quantità) e la preparazione. Titoli come “Ingredienti” e “Preparazione” aiutano. Gli ingredienti vengono abbinati ai tuoi alimenti; controlli tutto prima del salvataggio.",
+    "Rezepttext": "Testo della ricetta",
+    "Im Text wurden keine Zutaten gefunden (Zeilen mit Mengen, z. B. „200 g Mehl“).": "Nel testo non sono stati trovati ingredienti (righe con quantità, es. “200 g di farina”).",
+    "Der Text ist zu lang.": "Il testo è troppo lungo.",
   },
 });
 
@@ -6122,6 +6152,22 @@ async function renderRecipes() {
     dlg.showModal();
   };
 
+  // Pasted recipe text (title, ingredients, steps) becomes a draft in the editor.
+  const textDialog = () => {
+    const text = h("textarea", { rows: 12, autofocus: true });
+    const msg = h("div", { class: "err" });
+    const go = h("button", { onclick: async () => {
+      msg.textContent = ""; go.disabled = true; go.textContent = "Lade …";
+      try { editRecipe(null, await send("POST", "recipes/import-text", { text: text.value })); }
+      catch (e) { msg.textContent = e.message; go.disabled = false; go.textContent = "Importieren"; }
+    } }, "Importieren");
+    setDlg(h("h2", {}, "Rezept aus Text"),
+      h("div", { class: "muted" }, "Füge ein Rezept als Text ein: erst der Titel, dann die Zutaten (eine pro Zeile, mit Menge) und die Zubereitung. Überschriften wie „Zutaten“ und „Zubereitung“ helfen. Die Zutaten werden Deinen Lebensmitteln zugeordnet; Du prüfst alles, bevor es gespeichert wird."),
+      h("label", {}, "Rezepttext"), text, msg,
+      h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"), go));
+    dlg.showModal();
+  };
+
   // Pick a recipe from the user's Mealie server (searchable list); the chosen one opens in the editor as a draft.
   const mealieDialog = () => {
     const q = h("input", { type: "search", placeholder: "In Mealie suchen…", autofocus: true });
@@ -6183,8 +6229,9 @@ async function renderRecipes() {
 
   const search = h("input", { type: "search", placeholder: "Rezepte suchen…", oninput: draw });
   root.append(h("div", { class: "card" },
-    h("div", { class: "grid", style: `grid-template-columns:1fr auto auto${mealieCfg?.token_set ? " auto" : ""}` }, search, h("button", { onclick: () => editRecipe(null) }, "+ Neues Rezept"),
+    h("div", { class: "grid", style: `grid-template-columns:1fr auto auto auto${mealieCfg?.token_set ? " auto" : ""}` }, search, h("button", { onclick: () => editRecipe(null) }, "+ Neues Rezept"),
       h("button", { class: "flat", onclick: importDialog }, "Von Webseite …"),
+      h("button", { class: "flat", onclick: textDialog }, "Aus Text …"),
       mealieCfg?.token_set ? h("button", { class: "flat", onclick: mealieDialog }, "Aus Mealie …") : null),
     h("div", { class: "muted", style: "margin-top:8px" }, "Jedes Rezept erscheint auch unter Lebensmittel (pro 100 g, mit „1 Portion“) und lässt sich überall eintragen. Änderungen am Rezept aktualisieren dieses Lebensmittel."),
     chips, list));

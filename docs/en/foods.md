@@ -56,7 +56,7 @@ If you have a nutrition table (BLS, CIQUAL, Swiss food composition database, Ope
 
 1. Open **Foods** and tap **Import table …** (also under *Settings → Data → More imports …*).
 2. Choose a CSV, TXT or Excel file (`.xlsx`) with nutrition values per 100 g.
-3. Columns are recognised by their headings. This includes the abbreviations of the **BLS** (`ST`, `GCAL`, `GJ`, `ZE`, `ZF`, `ZK`, `ZB`) and the columns of **CIQUAL** (`alim_nom_fr`, “Protéines”, “Glucides”, “Lipides” …) and the **Swiss food composition database**.
+3. Columns are recognised by their headings. This includes the abbreviations of the **BLS** (`ST`, `GCAL`, `GJ`, `ZE`, `ZF`, `ZK`, `ZB`) and the columns of **CIQUAL** (`alim_nom_fr`, “Protéines”, “Glucides”, “Lipides” …) and the **Swiss food composition database**. Typical headings of USDA tables (“Total lipid (fat)”, “Carbohydrate, by difference”, “Fatty acids, total saturated” …) and of the Austrian nutrition table (“Fett gesamt”, “Verfügbare Kohlenhydrate” …) are recognised too; if something is missing, the assignment can be corrected in the dialog.
 4. Check the mapping in the preview and correct it if needed.
 5. If the table has a category column (e.g. “Category”, “Food group”, Open Food Facts “categories”), it is taken over; with several categories in one cell the first one counts. For foods without a category in the file (or if no column was recognised) you choose the category yourself. Then start the import.
 

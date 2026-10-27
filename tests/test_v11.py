@@ -355,3 +355,15 @@ def test_version_endpoint(user, monkeypatch):
     monkeypatch.setattr(httpx, "get", lambda *a, **k: R())
     v = c.get("/api/version?check=1").json()
     assert v["latest"] == "99.0.0" and v["update"] is True
+
+
+def test_usda_and_austrian_table_columns_are_recognised():
+    import extras10
+    usda = ["Description", "Energy (kcal)", "Protein (g)", "Carbohydrate, by difference (g)", "Total lipid (fat) (g)", "Fiber, total dietary (g)",
+            "Sugars, total including NLEA (g)", "Fatty acids, total saturated (g)", "Sodium, Na (mg)"]
+    m = extras10.guess_food_mapping(usda)
+    assert [m[k] for k in ("name", "kcal", "protein", "carbs", "fat", "fiber", "sugar", "sat_fat", "sodium")] == [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    at = ["Lebensmittelname", "Energie (kJ)", "Energie (kcal)", "Eiweiß (g)", "Verfügbare Kohlenhydrate (g)", "Fett gesamt (g)", "Ballaststoffe gesamt (g)", "Zucker gesamt (g)",
+          "Gesättigte Fettsäuren gesamt (g)", "Salz (g)"]
+    m = extras10.guess_food_mapping(at)
+    assert [m[k] for k in ("name", "kj", "kcal", "protein", "carbs", "fat", "fiber", "sugar", "sat_fat", "salt")] == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]

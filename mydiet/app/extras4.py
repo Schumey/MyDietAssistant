@@ -169,6 +169,41 @@ class ImportUrlIn(BaseModel):
     url: str
 
 
+class ImportTextIn(BaseModel):
+    text: str
+
+
+def finish_draft(owner: str, draft: dict) -> dict:
+    """Staples missing from the library come from the online databases (needs the feature: queries leave the device)."""
+    from extras import feature_on
+    if feature_on(owner, "sources"):
+        import extras5
+
+        def source(name):
+            return lambda term: extras5.cached_search(name, term, "")[0]
+        recipe_import.fill_missing(draft["items"], [source("off"), source("usda")])
+    return draft
+
+
+@app.post("/api/recipes/import-text")
+def import_recipe_text(b: ImportTextIn, x_remote_user_id: str | None = Header(None)):
+    """Read a recipe from pasted text (title, ingredients, steps) and return a draft for the recipe editor; nothing is saved."""
+    owner = user_from(x_remote_user_id)
+    from extras import feature_on
+    if not feature_on(owner, "recipes"):
+        raise HTTPException(403, "Rezepte sind nicht aktiviert")
+    if len(b.text) > 30000:
+        raise HTTPException(400, "Der Text ist zu lang.")
+    try:
+        node = recipe_import.parse_recipe_text(b.text)
+        with db.conn() as c:
+            scope, sp = food_scope(c, owner)
+            foods = [dict(r) for r in c.execute(f"SELECT * FROM foods WHERE {scope}", sp)]
+        return finish_draft(owner, recipe_import.draft_from_node(node, "", foods))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
 @app.post("/api/recipes/import-url")
 def import_recipe_url(b: ImportUrlIn, x_remote_user_id: str | None = Header(None)):
     """Read a recipe from a web page (schema.org data) and return a draft for the recipe editor; nothing is saved."""
@@ -185,13 +220,7 @@ def import_recipe_url(b: ImportUrlIn, x_remote_user_id: str | None = Header(None
             scope, sp = food_scope(c, owner)
             foods = [dict(r) for r in c.execute(f"SELECT * FROM foods WHERE {scope}", sp)]
         draft = recipe_import.to_draft(page, url, foods)
-        if feature_on(owner, "sources"):   # staples missing from the library come from the online databases (needs the feature: queries leave the device)
-            import extras5
-
-            def source(name):
-                return lambda term: extras5.cached_search(name, term, "")[0]
-            recipe_import.fill_missing(draft["items"], [source("off"), source("usda")])
-        return draft
+        return finish_draft(owner, draft)
     except ValueError as e:
         raise HTTPException(400, str(e))
     except httpx.HTTPError:
