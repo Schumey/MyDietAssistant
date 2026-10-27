@@ -8,6 +8,7 @@ The **Settings** tab consists of cards. Cards for optional features only appear 
 |---|---|---|
 | Daily goals | aim, calories and macros, target weight | [Goals and statistics](goals-and-stats.md) |
 | Language and units | language, units, food amounts | below |
+| Add dialog | “Frequently used”: foods, meals or both | below |
 | Optional features | switch optional features on and off | below |
 | Appearance | diary view, look, scanner on open | below |
 | Meals | meals, time windows, show rules | [Diary](diary.md#manage-meals), [Schedule](schedule.md) |
@@ -30,6 +31,14 @@ Every card can be collapsed and expanded: tap the title. The browser remembers w
 5. Tap **Save**. The page reloads.
 
 Weight and body measurements are always stored internally in kg and cm; only display and input change. Food amounts are always stored in grams, the nutrition values stay “per 100 g”. The texts of the add-on options in Home Assistant are available in German and English as well.
+
+## Add dialog
+
+1. Open *Settings → Add dialog*.
+2. Under **“Frequently used” shows** choose Foods, Saved meals or Both.
+3. Tap **Save**.
+
+The choice applies to the *Foods* tab in the add dialog. The *My meals* tab always lists the frequently used meals.
 
 ## Turn on optional features
 

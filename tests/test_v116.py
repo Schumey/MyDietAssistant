@@ -67,3 +67,11 @@ def test_database_health_is_for_administrators_and_checks_integrity(user, monkey
     assert r["ok"] and r["result"] == ["ok"] and r["vacuumed"] and r["size_after"] > 0
     assert admin.post("/api/admin/db/check", json={}).json()["vacuumed"] is False
     assert other.post("/api/admin/db/check", json={}).status_code == 403
+
+
+def test_frequent_setting_roundtrip_and_validation(user):
+    c = user("Anna")
+    assert c.get("/api/settings").json()["frequent"] == "foods"
+    assert c.put("/api/settings", json={"frequent": "both"}).status_code == 200
+    assert c.get("/api/settings").json()["frequent"] == "both"
+    assert c.put("/api/settings", json={"frequent": "x"}).status_code == 400

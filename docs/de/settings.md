@@ -8,6 +8,7 @@ Der Reiter **Einstellungen** besteht aus Karten. Karten für Zusatzfunktionen er
 |---|---|---|
 | Tagesziele | Ziel, Kalorien und Makros, Zielgewicht | [Ziele und Statistik](goals-and-stats.md) |
 | Sprache und Einheiten | Sprache, Einheiten, Lebensmittelmengen | unten |
+| Hinzufügen-Dialog | „Häufig verwendet“: Lebensmittel, Mahlzeiten oder beides | unten |
 | Zusatzfunktionen | optionale Funktionen ein-/ausschalten | unten |
 | Darstellung | Tagebuch-Ansicht, Optik, Scanner beim Öffnen | unten |
 | Mahlzeiten | Mahlzeiten, Zeitfenster, Einblend-Regeln | [Tagebuch](diary.md#mahlzeiten-verwalten), [Zeitplan](schedule.md) |
@@ -30,6 +31,14 @@ Jede Karte lässt sich ein- und ausklappen: Tippe auf den Titel. Welche Karten o
 5. Tippe auf **Speichern**. Die Seite lädt neu.
 
 Gewicht und Körpermaße werden intern immer in kg und cm gespeichert, nur Anzeige und Eingabe wechseln. Lebensmittelmengen werden immer in Gramm gespeichert, die Nährwerte bleiben „pro 100 g“. Die Texte der Add-on-Optionen in Home Assistant gibt es ebenfalls auf Deutsch und Englisch.
+
+## Hinzufügen-Dialog
+
+1. Öffne *Einstellungen → Hinzufügen-Dialog*.
+2. Wähle bei **„Häufig verwendet“ zeigt**: Lebensmittel, Gespeicherte Mahlzeiten oder Beides.
+3. Tippe auf **Speichern**.
+
+Die Auswahl gilt für den Reiter *Lebensmittel* im Dialog zum Hinzufügen. Im Reiter *Meine Mahlzeiten* stehen immer die häufig verwendeten Mahlzeiten.
 
 ## Zusatzfunktionen einschalten
 

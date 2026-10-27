@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.21.0
+
+### Neu
+- **„Häufig verwendet“ im Hinzufügen-Dialog wählbar:** Unter *Einstellungen → Hinzufügen-Dialog* legst Du fest, ob im Reiter „Lebensmittel“ häufig verwendete Lebensmittel, gespeicherte Mahlzeiten oder beides stehen (Standard: Lebensmittel).
+
 ## 1.20.0
 
 ### Neu

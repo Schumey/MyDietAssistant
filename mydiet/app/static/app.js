@@ -45,6 +45,7 @@ const EN = {
   "Portion (g)": "Portion (g)", "kcal / 100 g": "kcal / 100 g", "KH / 100 g": "Carbs / 100 g", "Fett / 100 g": "Fat / 100 g", "Eiweiß / 100 g": "Protein / 100 g",
   "Portionsgrößen (optional)": "Portion sizes (optional)", "+ Portion": "+ Portion", "Name und kcal sind Pflicht.": "Name and kcal are required.",
   "Speichern & wählen": "Save & choose", "Suchen…": "Search…", "★ Favoriten": "★ Favorites", "Meine Mahlzeiten": "My meals", "Häufig verwendet": "Frequently used",
+  "Beides": "Both", "Hinzufügen-Dialog": "Add dialog", "„Häufig verwendet“ zeigt": "“Frequently used” shows", "Gilt für den Reiter „Lebensmittel“ im Dialog zum Hinzufügen. Im Reiter „Meine Mahlzeiten“ stehen immer die häufig verwendeten Mahlzeiten.": "Applies to the “Foods” tab in the add dialog. The “My meals” tab always lists the frequently used meals.",
   "Alle": "All", "Nichts gefunden – lege ein neues Lebensmittel an.": "Nothing found – create a new food.",
   "Noch keine Favoriten – markiere Lebensmittel auf der Seite „Lebensmittel“ mit ☆.": "No favorites yet – mark foods with ☆ on the “Foods” page.",
   "Keine gespeicherte Mahlzeit. Im Tagebuch über „Als Mahlzeit speichern“ anlegen.": "No saved meal. Create one in the diary via “Save as meal”.",
@@ -665,6 +666,7 @@ Object.assign(LANGS, {
     "★ Favoriten": "★ Favoris",
     "Meine Mahlzeiten": "Mes repas",
     "Häufig verwendet": "Souvent utilisés",
+    "Beides": "Les deux", "Hinzufügen-Dialog": "Boîte d'ajout", "„Häufig verwendet“ zeigt": "« Souvent utilisés » affiche", "Gilt für den Reiter „Lebensmittel“ im Dialog zum Hinzufügen. Im Reiter „Meine Mahlzeiten“ stehen immer die häufig verwendeten Mahlzeiten.": "S'applique à l'onglet « Aliments » de la boîte d'ajout. L'onglet « Mes repas » affiche toujours les repas souvent utilisés.",
     "Alle": "Tous",
     "Nichts gefunden – lege ein neues Lebensmittel an.": "Rien trouvé – créez un nouvel aliment.",
     "Noch keine Favoriten – markiere Lebensmittel auf der Seite „Lebensmittel“ mit ☆.": "Pas encore de favoris – marquez des aliments avec ☆ sur la page “Aliments”.",
@@ -1578,6 +1580,7 @@ Object.assign(LANGS, {
     "★ Favoriten": "★ Favoritos",
     "Meine Mahlzeiten": "Mis comidas",
     "Häufig verwendet": "Usados con frecuencia",
+    "Beides": "Ambos", "Hinzufügen-Dialog": "Diálogo de añadir", "„Häufig verwendet“ zeigt": "«Usados con frecuencia» muestra", "Gilt für den Reiter „Lebensmittel“ im Dialog zum Hinzufügen. Im Reiter „Meine Mahlzeiten“ stehen immer die häufig verwendeten Mahlzeiten.": "Se aplica a la pestaña «Alimentos» del diálogo de añadir. La pestaña «Mis comidas» siempre muestra las comidas más usadas.",
     "Alle": "Todos",
     "Nichts gefunden – lege ein neues Lebensmittel an.": "No se encontró nada – crea un alimento nuevo.",
     "Noch keine Favoriten – markiere Lebensmittel auf der Seite „Lebensmittel“ mit ☆.": "Aún no hay favoritos – marca alimentos con ☆ en la página “Alimentos”.",
@@ -2491,6 +2494,7 @@ Object.assign(LANGS, {
     "★ Favoriten": "★ Favorieten",
     "Meine Mahlzeiten": "Mijn maaltijden",
     "Häufig verwendet": "Vaak gebruikt",
+    "Beides": "Beide", "Hinzufügen-Dialog": "Toevoegvenster", "„Häufig verwendet“ zeigt": "“Vaak gebruikt” toont", "Gilt für den Reiter „Lebensmittel“ im Dialog zum Hinzufügen. Im Reiter „Meine Mahlzeiten“ stehen immer die häufig verwendeten Mahlzeiten.": "Geldt voor het tabblad “Voedingsmiddelen” in het toevoegvenster. Op het tabblad “Mijn maaltijden” staan altijd de vaak gebruikte maaltijden.",
     "Alle": "Alle",
     "Nichts gefunden – lege ein neues Lebensmittel an.": "Niets gevonden – maak een nieuw voedingsmiddel aan.",
     "Noch keine Favoriten – markiere Lebensmittel auf der Seite „Lebensmittel“ mit ☆.": "Nog geen favorieten – markeer voedingsmiddelen op de pagina “Voedingsmiddelen” met ☆.",
@@ -3416,6 +3420,7 @@ Object.assign(LANGS, {
     "★ Favoriten": "★ Preferiti",
     "Meine Mahlzeiten": "I miei pasti",
     "Häufig verwendet": "Usati spesso",
+    "Beides": "Entrambi", "Hinzufügen-Dialog": "Finestra di aggiunta", "„Häufig verwendet“ zeigt": "«Usati spesso» mostra", "Gilt für den Reiter „Lebensmittel“ im Dialog zum Hinzufügen. Im Reiter „Meine Mahlzeiten“ stehen immer die häufig verwendeten Mahlzeiten.": "Vale per la scheda «Alimenti» nella finestra di aggiunta. La scheda «I miei pasti» mostra sempre i pasti usati spesso.",
     "Alle": "Tutti",
     "Nichts gefunden – lege ein neues Lebensmittel an.": "Nessun risultato – crea un nuovo alimento.",
     "Noch keine Favoriten – markiere Lebensmittel auf der Seite „Lebensmittel“ mit ☆.": "Ancora nessun preferito – contrassegna gli alimenti con ☆ nella pagina “Alimenti”.",
@@ -4341,6 +4346,7 @@ Object.assign(LANGS, {
     "★ Favoriten": "★ Favoritos",
     "Meine Mahlzeiten": "Minhas refeições",
     "Häufig verwendet": "Usados com frequência",
+    "Beides": "Ambos", "Hinzufügen-Dialog": "Diálogo de adicionar", "„Häufig verwendet“ zeigt": "“Usados com frequência” mostra", "Gilt für den Reiter „Lebensmittel“ im Dialog zum Hinzufügen. Im Reiter „Meine Mahlzeiten“ stehen immer die häufig verwendeten Mahlzeiten.": "Aplica-se ao separador “Alimentos” no diálogo de adicionar. O separador “As minhas refeições” mostra sempre as refeições mais usadas.",
     "Alle": "Todos",
     "Nichts gefunden – lege ein neues Lebensmittel an.": "Nada encontrado – crie um novo alimento.",
     "Noch keine Favoriten – markiere Lebensmittel auf der Seite „Lebensmittel“ mit ☆.": "Ainda sem favoritos – marque alimentos com ☆ na página “Alimentos”.",
@@ -5266,6 +5272,7 @@ Object.assign(LANGS, {
     "★ Favoriten": "★ Ulubione",
     "Meine Mahlzeiten": "Moje posiłki",
     "Häufig verwendet": "Często używane",
+    "Beides": "Oba", "Hinzufügen-Dialog": "Okno dodawania", "„Häufig verwendet“ zeigt": "„Często używane” pokazuje", "Gilt für den Reiter „Lebensmittel“ im Dialog zum Hinzufügen. Im Reiter „Meine Mahlzeiten“ stehen immer die häufig verwendeten Mahlzeiten.": "Dotyczy karty „Produkty” w oknie dodawania. Karta „Moje posiłki” zawsze pokazuje często używane posiłki.",
     "Alle": "Wszystkie",
     "Nichts gefunden – lege ein neues Lebensmittel an.": "Nic nie znaleziono – utwórz nowy produkt.",
     "Noch keine Favoriten – markiere Lebensmittel auf der Seite „Lebensmittel“ mit ☆.": "Brak ulubionych – oznacz produkty ☆ na stronie „Produkty”.",
@@ -7305,9 +7312,13 @@ async function openAdd(meal, { scan = false } = {}) {
     for (const b of tabs.children) b.classList.toggle("active", b.dataset.t === tab);
     const q = search.value.toLowerCase();
     const list = tab === "foods" ? foods : tab === "fav" ? (favs || foods.filter(f => f.favorite)) : saved;
-    const frequent = tab === "foods" ? sugg.items : tab === "saved" ? sugg.saved.filter(isVisible) : [];
+    const fm = state.frequent;
+    const savedFreq = sugg.saved.filter(isVisible).map(x => ({ x, saved: true }));
+    const entryFreq = sugg.items.map(x => ({ x, saved: false }));
+    const frequent = tab === "foods" ? (fm === "meals" ? savedFreq : fm === "both" ? [...savedFreq, ...entryFreq] : entryFreq)
+      : tab === "saved" ? savedFreq : [];
     sug.replaceChildren(...(!q && frequent.length ? [h("div", { class: "muted sect" }, "Häufig verwendet"),
-      ...frequent.map(x => h("button", { class: "food", onclick: () => (tab === "foods" ? selectEntry(x) : selectSaved(x)) },
+      ...frequent.map(({ x, saved: isSaved }) => h("button", { class: "food", onclick: () => (isSaved ? selectSaved(x) : selectEntry(x)) },
         h("span", {}, x.name), h("span", { class: "muted" }, `${n0(x.kcal)} kcal${x.grams ? " · " + gText(x.grams) : ""}`))),
       h("div", { class: "muted sect" }, "Alle")] : []));
     const hits = remote && tab === "foods" && search.value.trim().length >= 2;
@@ -9041,6 +9052,17 @@ async function renderSettings() {
     h("div", { class: "grid" }, h("div", {}, h("label", {}, "Sprache"), langSel), h("div", {}, h("label", {}, "Einheiten"), unitSel), h("div", {}, h("label", {}, "Lebensmittelmengen"), massSel)),
     h("div", { class: "actions" }, h("button", { onclick: savePref }, "Speichern"))));
 
+  const freqSel = h("select", {}, h("option", { value: "foods" }, "Lebensmittel"), h("option", { value: "meals" }, "Gespeicherte Mahlzeiten"), h("option", { value: "both" }, "Beides"));
+  freqSel.value = state.frequent;
+  const freqSaved = h("span", { class: "muted" });
+  root.append(h("div", { class: "card" }, h("h2", {}, "Hinzufügen-Dialog"),
+    h("label", {}, "„Häufig verwendet“ zeigt"), freqSel,
+    h("div", { class: "muted", style: "margin-bottom:8px" }, "Gilt für den Reiter „Lebensmittel“ im Dialog zum Hinzufügen. Im Reiter „Meine Mahlzeiten“ stehen immer die häufig verwendeten Mahlzeiten."),
+    h("div", { class: "actions" }, freqSaved, h("button", { onclick: async () => {
+      await send("PUT", "settings", { frequent: freqSel.value });
+      state.frequent = freqSel.value; freqSaved.textContent = "Gespeichert ✓";
+    } }, "Speichern"))));
+
   // optional features
   const feat = (key, label, hint) => {
     const box = h("input", { type: "checkbox", checked: !!state.features[key], onchange: async () => {
@@ -9619,6 +9641,7 @@ api("me").then(m => { $("#who").textContent = m.name; state.admin = !!m.admin; }
     I18N.setLang(st.lang, st.units, st.mass);
     state.goalMode = st.goal_mode || "lose";
     state.goalRate = st.goal_rate ?? 0.5;
+    state.frequent = st.frequent || "foods";
   } catch { /* keep auto */ }
   applySkin();
   applyTabs();

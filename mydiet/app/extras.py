@@ -92,6 +92,7 @@ class SettingsIn(BaseModel):
     mass: str | None = None         # food amounts: 'g' | 'oz'
     goal_rate: float | None = None  # intended kg per week (positive)
     skin: str | None = None         # 'auto' | 'default' | 'win'
+    frequent: str | None = None     # add dialog, "frequently used" on the foods tab: 'foods' | 'meals' | 'both'
     features: dict[str, bool] | None = None
 
 
@@ -100,7 +101,7 @@ def read_settings(x_remote_user_id: str | None = Header(None)):
     owner = user_from(x_remote_user_id)
     return {"diary_mode": get_pref(owner, "diary_mode", "meals"), "skin": get_pref(owner, "skin", "auto"),
             "features": features(owner), "lang": get_pref(owner, "lang", "auto"), "units": get_pref(owner, "units", "metric"), "mass": get_pref(owner, "mass", "g"),
-            "goal_mode": get_pref(owner, "goal_mode", "lose"),
+            "goal_mode": get_pref(owner, "goal_mode", "lose"), "frequent": get_pref(owner, "frequent", "foods"),
             "goal_rate": get_pref(owner, "goal_rate", 0.5)}
 
 
@@ -133,6 +134,10 @@ def write_settings(s: SettingsIn, x_remote_user_id: str | None = Header(None)):
         if s.skin not in ("auto", "default", "win"):
             raise HTTPException(400, "skin must be auto, default or win")
         set_pref(owner, "skin", s.skin)
+    if s.frequent is not None:
+        if s.frequent not in ("foods", "meals", "both"):
+            raise HTTPException(400, "frequent must be foods, meals or both")
+        set_pref(owner, "frequent", s.frequent)
     if s.features is not None:
         set_pref(owner, "features", {**features(owner), **{k: v for k, v in s.features.items() if k in FEATURES}})
     return {"ok": True}
