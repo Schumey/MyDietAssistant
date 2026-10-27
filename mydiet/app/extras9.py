@@ -109,10 +109,19 @@ def del_activity_day(day: str, x_remote_user_id: str | None = Header(None)):
 
 
 def sensor_value(entity: str) -> float | None:
+    """Current value of a daily sensor; None when unavailable or when it was last changed before today
+    (a sensor that resets late after midnight still holds yesterday's total, which must not count for today)."""
     try:
-        v = float(ha_get(f"states/{entity}")["state"])
+        st = ha_get(f"states/{entity}")
+        v = float(st["state"])
     except (httpx.HTTPError, ValueError, KeyError, TypeError):
         return None
+    try:
+        changed = datetime.fromisoformat(st["last_changed"].replace("Z", "+00:00")).astimezone().date()
+        if changed < date.today():
+            return None
+    except (KeyError, ValueError, TypeError, AttributeError):
+        pass   # no usable timestamp: trust the value
     return v if v >= 0 else None
 
 

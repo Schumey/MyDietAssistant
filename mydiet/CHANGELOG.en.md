@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.21.1
+
+### Fixed
+- **Activity counters now reset overnight:** steps and calories from sensors that only reset to 0 some time after midnight (e.g. Garmin) carried the previous day's total into the new day, where it stuck as the "highest value". A sensor value now only counts if it changed today. No manual workaround or helper needed.
+
 ## 1.21.0
 
 ### New

@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.21.1
+
+### Behoben
+- **Aktivitäts-Zähler setzen sich über Nacht zurück:** Schritte und Kalorien aus Sensoren, die nach Mitternacht erst verspätet auf 0 gehen (z. B. Garmin), brachten den Vortagswert in den neuen Tag, wo er als „Höchstwert“ hängenblieb. Ein Sensorwert zählt jetzt nur noch, wenn er heute geändert wurde. Kein Umweg über „manuell“ nötig, auch kein Helper.
+
 ## 1.21.0
 
 ### Neu

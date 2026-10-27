@@ -59,6 +59,19 @@ def test_activity_sensor_sync_keeps_the_highest_value_and_respects_manual_days(u
     assert c.post("/api/activity/sync").json()["steps"] == 99999
 
 
+def test_sensor_value_ignores_a_value_not_changed_since_yesterday(monkeypatch):
+    from datetime import timedelta, timezone
+    now = datetime.now(timezone.utc)
+    state = {}
+    monkeypatch.setattr(extras9, "ha_get", lambda path, **kw: state)
+    state.update({"state": "9000", "last_changed": (now - timedelta(days=1, hours=1)).isoformat()})
+    assert extras9.sensor_value("sensor.steps") is None   # Garmin has not reset yet: still yesterday's total
+    state["last_changed"] = datetime.now().astimezone().replace(hour=0, minute=0, second=1).isoformat()
+    assert extras9.sensor_value("sensor.steps") == 9000
+    state.pop("last_changed")
+    assert extras9.sensor_value("sensor.steps") == 9000
+
+
 def test_activity_config_validation(me):
     assert me.put("/api/activity/config", json={"steps_entity": "no entity"}).status_code == 400
     assert me.put(f"/api/activity/{DAY}", json={"steps": -1}).status_code == 400
