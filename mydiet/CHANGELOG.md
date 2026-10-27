@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.20.0
+
+### Neu
+- **Portugiesisch und Polnisch:** Die Oberfläche gibt es jetzt auch auf Portugiesisch (brasilianische Schreibweise) und Polnisch (Einstellungen → Sprache → Português / Polski), dazu der Ernährungsbericht, der Wochenbericht, die Push-Texte und die Namen der Add-on-Optionen in Home Assistant (`translations/pt-BR.yaml`, `pl.yaml`). Beide Übersetzungen sind maschinell erstellt und nicht von Muttersprachlern geprüft; formal geprüft sind Schlüssel und Platzhalter.
+
 ## 1.19.0
 
 ### Neu

@@ -21,6 +21,8 @@ WEEKLY = {   # title, headline, protein days, logged days, weight change, nothin
     "fr": ("Bilan de la semaine", "Ø {} kcal par jour (objectif {})", "objectif de protéines atteint {}/{} jours", "{}/{} jours saisis", "poids {} kg", "Rien n’a été saisi cette semaine."),
     "es": ("Resumen semanal", "Ø {} kcal al día (objetivo {})", "objetivo de proteínas en {}/{} días", "{}/{} días registrados", "peso {} kg", "Esta semana no se registró nada."),
     "nl": ("Weekoverzicht", "Ø {} kcal per dag (doel {})", "eiwitdoel op {}/{} dagen", "{}/{} dagen geregistreerd", "gewicht {} kg", "Deze week is niets ingevoerd."),
+    "pt": ("Resumo semanal", "Ø {} kcal por dia (meta {})", "meta de proteína em {}/{} dias", "{}/{} dias registrados", "peso {} kg", "Nada foi registrado nesta semana."),
+    "pl": ("Raport tygodniowy", "Ø {} kcal dziennie (cel {})", "cel białka w {}/{} dni", "zapisano {}/{} dni", "waga {} kg", "W tym tygodniu nic nie zapisano."),
     "it": ("Riepilogo settimanale", "Ø {} kcal al giorno (obiettivo {})", "obiettivo proteico in {}/{} giorni", "{}/{} giorni registrati", "peso {} kg", "Questa settimana non è stato registrato nulla."),
 }
 

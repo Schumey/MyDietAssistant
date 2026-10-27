@@ -432,3 +432,17 @@ def test_arrow_keys_on_the_tab_bar_do_not_also_change_the_day(page):
     page.wait_for_selector("#diary:not([hidden])")
     page.wait_for_timeout(300)
     assert page.input_value("#diary .daynav input[type=date]") == before
+
+
+@pytest.mark.parametrize("lang,tabs", [("pt", ["Diário", "Alimentos", "Refeições", "Peso", "Estatísticas", "Configurações"]),
+                                        ("pl", ["Dziennik", "Produkty", "Posiłki", "Waga", "Statystyki", "Ustawienia"])])
+def test_portuguese_and_polish_interfaces_translate_the_main_pages(page, lang, tabs):
+    settings(page.base, lang=lang, features={})
+    page.goto(page.base + "/")
+    page.wait_for_selector("#diary .daynav")
+    shown = [b.text_content() for b in page.query_selector_all("#tabs button:not([hidden])")]
+    assert [t for t in shown if t not in ("Receitas", "Przepisy")] == tabs
+    page.click('#tabs button[data-tab="settings"]')
+    page.wait_for_selector("#settings .card")
+    assert "Obiettivo" not in page.inner_text("#settings") and page.errors == []
+    settings(page.base, lang="de")

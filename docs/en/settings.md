@@ -24,7 +24,7 @@ Every card can be collapsed and expanded: tap the title. The browser remembers w
 ## Language and units
 
 1. Open *Settings → Language and units*.
-2. Choose **Language**: Automatic (browser), Deutsch, English, Français, Español, Nederlands or Italiano.
+2. Choose **Language**: Automatic (browser), Deutsch, English, Français, Español, Nederlands, Italiano, Português or Polski. The Portuguese follows Brazilian spelling.
 3. Choose **Units**: Metric (kg, cm) or Imperial (lb, in).
 4. Choose **Food amounts**: Grams or Ounces (oz).
 5. Tap **Save**. The page reloads.

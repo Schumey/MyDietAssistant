@@ -67,7 +67,7 @@ def test_every_add_on_option_is_translated_and_documented():
     cfg = read("mydiet", "config.yaml")
     options = re.findall(r"^  (\w+):", cfg.split("options:")[1].split("schema:")[0], flags=re.M)
     assert options
-    for lang in ("en", "de", "fr", "es", "nl", "it"):
+    for lang in ("en", "de", "fr", "es", "nl", "it", "pt-BR", "pl"):
         tr = read("mydiet", "translations", f"{lang}.yaml")
         for o in options:
             assert f"  {o}:" in tr, (lang, o)
@@ -75,13 +75,13 @@ def test_every_add_on_option_is_translated_and_documented():
 
 @pytest.mark.skipif(not shutil.which("node"), reason="node not installed")
 def test_every_language_covers_the_english_dictionary_with_the_same_placeholders(tmp_path):
-    """EN is the reference: FR, ES, NL and IT must translate every key and keep the {} placeholders (a missing entry shows German text)."""
+    """EN is the reference: FR, ES, NL, IT, PT and PL must translate every key and keep the {} placeholders (a missing entry shows German text)."""
     js = read("mydiet", "app", "static", "app.js")
     script = tmp_path / "dump.js"
     script.write_text(js[:js.index("const I18N")] + ";process.stdout.write(JSON.stringify({en: EN, langs: LANGS}))", encoding="utf-8")
     import json
     out = json.loads(subprocess.run(["node", str(script)], check=True, capture_output=True, encoding="utf-8").stdout)
-    assert set(out["langs"]) == {"en", "fr", "es", "nl", "it"}
+    assert set(out["langs"]) == {"en", "fr", "es", "nl", "it", "pt", "pl"}
     for lang, table in out["langs"].items():
         assert set(table) == set(out["en"]), (lang, sorted(set(out["en"]) ^ set(table))[:5])
         for key, text in table.items():
@@ -92,7 +92,7 @@ def test_every_language_covers_the_english_dictionary_with_the_same_placeholders
 def test_language_dictionaries_have_no_duplicate_keys():
     js = read("mydiet", "app", "static", "app.js")
     body = js[js.index("Object.assign(LANGS"):js.index("const I18N")]
-    for block in re.split(r"^  (?:fr|es|nl|it): [{]", body, flags=re.M)[1:]:
+    for block in re.split(r"^  (?:fr|es|nl|it|pt|pl): [{]", body, flags=re.M)[1:]:
         keys = re.findall(r'^    "((?:[^"\\]|\\.)*)":', block, flags=re.M)
         assert len(keys) == len(set(keys)) > 600
 

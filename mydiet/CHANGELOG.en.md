@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.20.0
+
+### New
+- **Portuguese and Polish:** The interface is now available in Portuguese (Brazilian spelling) and Polish (Settings → Language → Português / Polski), plus the nutrition report, the weekly report, the push texts and the add-on option names in Home Assistant (`translations/pt-BR.yaml`, `pl.yaml`). Both translations are machine-made and not checked by native speakers; keys and placeholders are checked formally.
+
 ## 1.19.0
 
 ### New
