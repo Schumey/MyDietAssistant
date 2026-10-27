@@ -2,6 +2,13 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.16.0
+
+### New
+- **Weekly report as a notification:** Once a week (weekday and time adjustable) a summary of the last seven days: average calories against the goal, days the protein goal was reached, days logged, weight change. Uses the notification service of the reminder, arrives in the chosen language and has a preview in the settings. Only runs inside the add-on and is untested there.
+- **Training day extended:** Sensors `training_day` (`yes`/`no`) and `training_shake` (calculated amounts as text) for automations. A training day can also be detected through activity (threshold for burned calories, needs “Activity”).
+- **Database health check:** The user administration shows the size, rows, free space and last backup. “Check” runs an integrity check, “Check and compact” repacks the file (VACUUM). Administrators only.
+
 ## 1.15.0
 
 ### New

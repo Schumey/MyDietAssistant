@@ -55,5 +55,6 @@ Only administrators see the **User administration** card under *Settings*.
 2. The table shows per user entries, days, foods and the last entry.
 3. **Export** downloads a user’s data as JSON.
 4. **Delete** irrevocably removes all data of a user. To confirm you must type the name.
+5. Under **Database** you see the size, rows, free space and the last backup. **Check** runs an integrity check, **Check and compact** then repacks the file (saves space after large deletions). Best make a backup first.
 
 Export and import under *Settings → Data* always affect only your own account.

@@ -143,4 +143,24 @@ The add-on sends a message once a day if nothing has been logged by a given time
 
 The [meal schedule](schedule.md) uses the same notification service. The reminder only runs in the Home Assistant add-on.
 
+## Weekly report
+
+Once a week the add-on sends a summary of the last seven days, for example “Ø 2,012 kcal a day (goal 2100), protein goal on 5/7 days, 7/7 days logged, weight -0.4 kg.”
+
+1. Set up the **Reminder** first (its notification service is shared).
+2. Open *Settings → Weekly report*, switch on **Weekly report active** and choose **Weekday** and **Time**. Under **Preview** you see the text the message would have today.
+3. Tap **Save**.
+
+The weekly report comes in the chosen language and only runs inside the Home Assistant add-on.
+
+## Weekly report
+
+Once a week the add-on sends a summary of the last seven days, for example “Ø 2,012 kcal a day (goal 2100), protein goal on 5/7 days, 7/7 days logged, weight -0.4 kg.”
+
+1. Set up the **Reminder** first (its notification service is shared).
+2. Open *Settings → Weekly report*, switch on **Weekly report active** and choose **Weekday** and **Time**. Under **Preview** you see the text the message would have today.
+3. Tap **Save**.
+
+The weekly report comes in the chosen language and only runs inside the Home Assistant add-on.
+
 If nothing arrives, continue with [Troubleshooting](troubleshooting.md).

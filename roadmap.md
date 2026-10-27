@@ -7,8 +7,6 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 ## Home Assistant
 
 - **Sprach-Eintrag mit Rückfragen** (M): bei mehrdeutigen Treffern („Apfel“ oder „Apfelsaft“?) nachfragen und Synonyme für Lebensmittel pflegen; nötig sind echte Sätze aus dem Alltag.
-- **Wochenbericht per Benachrichtigung** (S): der Ernährungsbericht als kurze Zusammenfassung sonntagabends über den Benachrichtigungsdienst der Erinnerung (Hintergrundjob über `extras2.EXTRA_JOBS`).
-- **Trainingstag erweitern** (S): berechnete Shake-Mengen als Sensor für Automationen oder als Hinweis in der Benachrichtigung; Trainingstag zusätzlich über die Aktivität erkennen (Schritte, verbrannte Kalorien).
 
 ## Lebensmittel und Eingabe
 
@@ -22,6 +20,5 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 - **Mehr Browser-Tests** (M): Barcode-Dialog, Handy-Ansicht und Windows-Look ergänzen (Haushaltsansicht, Trainingstag, Einkaufsliste und Italienisch sind seit 1.13–1.15 abgedeckt).
 - **Wörterbücher prüfen lassen** (S): Muttersprachler für Französisch, Spanisch, Niederländisch und Italienisch, bisher maschinell erstellt und nur formal geprüft (gleiche Schlüssel, gleiche Platzhalter).
-- **Datenbank-Gesundheitscheck** (S): in der Benutzerverwaltung Größe, Anzahl der Einträge und letzte Sicherung zeigen, dazu `VACUUM` und Integritätsprüfung per Knopf.
 - **Offline-Eingabe** (M): Einträge ohne Verbindung zwischenspeichern und nachsenden, nützlich unterwegs mit schlechtem Empfang.
 - **Barrierefreiheit prüfen** (S–M): Tastaturbedienung der Dialoge, Fokusreihenfolge, Kontraste im Windows-95-Look.

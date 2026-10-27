@@ -500,6 +500,21 @@ const EN = {
   "Keine Einträge": "No items",
   "Home Assistant nicht erreichbar (gesendet: {})": "Home Assistant not reachable (sent: {})",
   "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren, ändern nur Du)": "Offer in the shared household library (others may use and copy it, only you can change it)",
+  "Wochenbericht": "Weekly report",
+  "Einmal pro Woche eine Zusammenfassung der letzten sieben Tage per Benachrichtigung. Nutzt den Benachrichtigungsdienst aus „Erinnerung“.": "Once a week a summary of the last seven days as a notification. Uses the notification service from “Reminder”.",
+  "Wochenbericht aktiv": "Weekly report active",
+  "Wochentag": "Weekday",
+  "Vorschau": "Preview",
+  "Datenbank": "Database",
+  "{} · {} Zeilen in {} Tabellen · frei {} · letzte Sicherung: {}": "{} · {} rows in {} tables · free {} · last backup: {}",
+  "Prüfen": "Check",
+  "Prüfen und verdichten": "Check and compact",
+  "Prüfung läuft …": "Checking …",
+  "Verdichtet: {} → {}": "Compacted: {} → {}",
+  "Datenbank ist in Ordnung.": "The database is fine.",
+  "Datenbank prüfen: {}": "Database check: {}",
+  "Auch erkennen, wenn so viele Kalorien verbrannt wurden (kcal, 0 = aus)": "Also detect when this many calories were burned (kcal, 0 = off)",
+  "Wochentag ungültig": "Invalid weekday",
 };
 
 // Languages: German is the source text; every other language is a dictionary German -> language (EN, FR, ES ...).
@@ -1381,6 +1396,20 @@ Object.assign(LANGS, {
     "Keine Einträge": "Aucun élément",
     "Home Assistant nicht erreichbar (gesendet: {})": "Home Assistant injoignable (envoyés : {})",
     "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren, ändern nur Du)": "Proposer dans la bibliothèque partagée du foyer (les autres peuvent l’utiliser et le copier, seul toi peux le modifier)",
+    "Wochenbericht": "Bilan hebdomadaire",
+    "Einmal pro Woche eine Zusammenfassung der letzten sieben Tage per Benachrichtigung. Nutzt den Benachrichtigungsdienst aus „Erinnerung“.": "Une fois par semaine, un résumé des sept derniers jours en notification. Utilise le service de notification de « Rappel ».",
+    "Wochenbericht aktiv": "Bilan hebdomadaire actif",
+    "Wochentag": "Jour de la semaine",
+    "Vorschau": "Aperçu",
+    "Datenbank": "Base de données",
+    "{} · {} Zeilen in {} Tabellen · frei {} · letzte Sicherung: {}": "{} · {} lignes dans {} tables · libre {} · dernière sauvegarde : {}",
+    "Prüfen und verdichten": "Vérifier et compacter",
+    "Prüfung läuft …": "Vérification en cours …",
+    "Verdichtet: {} → {}": "Compactée : {} → {}",
+    "Datenbank ist in Ordnung.": "La base de données est en ordre.",
+    "Datenbank prüfen: {}": "Vérification de la base : {}",
+    "Auch erkennen, wenn so viele Kalorien verbrannt wurden (kcal, 0 = aus)": "Détecter aussi à partir de ce nombre de calories brûlées (kcal, 0 = désactivé)",
+    "Wochentag ungültig": "Jour de la semaine invalide",
   },
   es: {
     "Ernährung": "Alimentación",
@@ -2254,6 +2283,20 @@ Object.assign(LANGS, {
     "Keine Einträge": "Sin elementos",
     "Home Assistant nicht erreichbar (gesendet: {})": "Home Assistant no es accesible (enviados: {})",
     "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren, ändern nur Du)": "Ofrecer en la biblioteca compartida del hogar (los demás pueden usarlo y copiarlo, solo tú puedes cambiarlo)",
+    "Wochenbericht": "Resumen semanal",
+    "Einmal pro Woche eine Zusammenfassung der letzten sieben Tage per Benachrichtigung. Nutzt den Benachrichtigungsdienst aus „Erinnerung“.": "Una vez a la semana, un resumen de los últimos siete días como notificación. Usa el servicio de notificación de «Recordatorio».",
+    "Wochenbericht aktiv": "Resumen semanal activo",
+    "Wochentag": "Día de la semana",
+    "Vorschau": "Vista previa",
+    "Datenbank": "Base de datos",
+    "{} · {} Zeilen in {} Tabellen · frei {} · letzte Sicherung: {}": "{} · {} filas en {} tablas · libre {} · última copia de seguridad: {}",
+    "Prüfen und verdichten": "Comprobar y compactar",
+    "Prüfung läuft …": "Comprobando …",
+    "Verdichtet: {} → {}": "Compactada: {} → {}",
+    "Datenbank ist in Ordnung.": "La base de datos está bien.",
+    "Datenbank prüfen: {}": "Comprobación de la base de datos: {}",
+    "Auch erkennen, wenn so viele Kalorien verbrannt wurden (kcal, 0 = aus)": "Detectar también a partir de estas calorías quemadas (kcal, 0 = desactivado)",
+    "Wochentag ungültig": "Día de la semana no válido",
   },
   nl: {
     "Ernährung": "Voeding",
@@ -3139,6 +3182,20 @@ Object.assign(LANGS, {
     "Keine Einträge": "Geen items",
     "Home Assistant nicht erreichbar (gesendet: {})": "Home Assistant niet bereikbaar (verstuurd: {})",
     "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren, ändern nur Du)": "Aanbieden in de gedeelde huishoudbibliotheek (anderen mogen het gebruiken en kopiëren, alleen jij kunt het wijzigen)",
+    "Wochenbericht": "Weekoverzicht",
+    "Einmal pro Woche eine Zusammenfassung der letzten sieben Tage per Benachrichtigung. Nutzt den Benachrichtigungsdienst aus „Erinnerung“.": "Eén keer per week een samenvatting van de laatste zeven dagen als melding. Gebruikt de meldingsdienst van “Herinnering”.",
+    "Wochenbericht aktiv": "Weekoverzicht actief",
+    "Wochentag": "Weekdag",
+    "Vorschau": "Voorbeeld",
+    "Datenbank": "Database",
+    "{} · {} Zeilen in {} Tabellen · frei {} · letzte Sicherung: {}": "{} · {} rijen in {} tabellen · vrij {} · laatste back-up: {}",
+    "Prüfen und verdichten": "Controleren en comprimeren",
+    "Prüfung läuft …": "Controle bezig …",
+    "Verdichtet: {} → {}": "Gecomprimeerd: {} → {}",
+    "Datenbank ist in Ordnung.": "De database is in orde.",
+    "Datenbank prüfen: {}": "Databasecontrole: {}",
+    "Auch erkennen, wenn so viele Kalorien verbrannt wurden (kcal, 0 = aus)": "Ook herkennen vanaf zoveel verbrande calorieën (kcal, 0 = uit)",
+    "Wochentag ungültig": "Ongeldige weekdag",
   },
   it: {
     "Ernährung": "Alimentazione",
@@ -4024,6 +4081,20 @@ Object.assign(LANGS, {
     "Keine Einträge": "Nessuna voce",
     "Home Assistant nicht erreichbar (gesendet: {})": "Home Assistant non raggiungibile (inviate: {})",
     "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren, ändern nur Du)": "Offri nella libreria familiare condivisa (gli altri possono usarlo e copiarlo, solo tu puoi modificarlo)",
+    "Wochenbericht": "Riepilogo settimanale",
+    "Einmal pro Woche eine Zusammenfassung der letzten sieben Tage per Benachrichtigung. Nutzt den Benachrichtigungsdienst aus „Erinnerung“.": "Una volta a settimana un riepilogo degli ultimi sette giorni come notifica. Usa il servizio di notifica di “Promemoria”.",
+    "Wochenbericht aktiv": "Riepilogo settimanale attivo",
+    "Wochentag": "Giorno della settimana",
+    "Vorschau": "Anteprima",
+    "Datenbank": "Database",
+    "{} · {} Zeilen in {} Tabellen · frei {} · letzte Sicherung: {}": "{} · {} righe in {} tabelle · libero {} · ultimo backup: {}",
+    "Prüfen und verdichten": "Controlla e compatta",
+    "Prüfung läuft …": "Controllo in corso …",
+    "Verdichtet: {} → {}": "Compattato: {} → {}",
+    "Datenbank ist in Ordnung.": "Il database è a posto.",
+    "Datenbank prüfen: {}": "Controllo del database: {}",
+    "Auch erkennen, wenn so viele Kalorien verbrannt wurden (kcal, 0 = aus)": "Riconosci anche a partire da queste calorie bruciate (kcal, 0 = disattivato)",
+    "Wochentag ungültig": "Giorno della settimana non valido",
   },
 });
 
@@ -4562,6 +4633,8 @@ async function suggestSettings(back) {
         h("span", {}, "Trigger tragen den Shake mit den berechneten Mengen ein")),
       h("label", { class: "pick" }, h("input", { type: "checkbox", checked: tr.dinner_protein, onchange: e => { tr.dinner_protein = e.target.checked; } }),
         h("span", {}, "Abendessen sollen das Eiweißziel möglichst erreichen")),
+      state.features.activity ? [h("label", {}, "Auch erkennen, wenn so viele Kalorien verbrannt wurden (kcal, 0 = aus)"),
+        h("input", { type: "number", step: "10", min: "0", placeholder: "0", value: tr.activity_kcal || "", onchange: e => { tr.activity_kcal = Number(e.target.value) || 0; } })] : null,
       h("label", { class: "pick" }, h("input", { type: "checkbox", checked: tr.always, onchange: e => { tr.always = e.target.checked; } }),
         h("span", {}, "Knopf „Trainingstag“ an jedem Tag zeigen (sonst nur, wenn der Shake eingetragen oder per Trigger gebucht wurde)")),
       excluded.length ? [h("label", { style: "margin-top:12px" }, "Ausgeschlossen"),
@@ -6804,8 +6877,8 @@ function wireCalc(f, boxes, info) {
 }
 
 async function renderSettings() {
-  const [goal, day, triggers, rules, runs, tstat, bk, rem, ext] = await Promise.all([api("goal"), api("day/" + state.day), api("triggers"), api("meal-triggers"), api("trigger-runs?limit=15"),
-    api("triggers/status"), api("backups"), api("reminder"), api("ext/info")]);
+  const [goal, day, triggers, rules, runs, tstat, bk, rem, ext, wk] = await Promise.all([api("goal"), api("day/" + state.day), api("triggers"), api("meal-triggers"), api("trigger-runs?limit=15"),
+    api("triggers/status"), api("backups"), api("reminder"), api("ext/info"), api("weekly-report")]);
   const root = $("#settings");
   root.replaceChildren();
 
@@ -7184,6 +7257,21 @@ async function renderSettings() {
       catch (e) { remMsg.className = "err"; remMsg.textContent = e.message; }
     } }, "Speichern"))));
 
+  // weekly report
+  const wkOn = h("input", { type: "checkbox", checked: wk.enabled });
+  const wkDay = h("select", { style: "width:auto" }, ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"].map((d, i) => h("option", { value: i, selected: i === wk.weekday }, d)));
+  const wkTime = h("input", { type: "time", value: wk.time, style: "width:auto" });
+  const wkMsg = h("div", { class: "muted" });
+  root.append(h("div", { class: "card" }, h("h2", {}, "Wochenbericht"),
+    h("div", { class: "muted" }, "Einmal pro Woche eine Zusammenfassung der letzten sieben Tage per Benachrichtigung. Nutzt den Benachrichtigungsdienst aus „Erinnerung“."),
+    h("label", { class: "pick" }, wkOn, "Wochenbericht aktiv"),
+    h("label", {}, "Wochentag"), wkDay, h("label", {}, "Uhrzeit"), wkTime,
+    h("label", {}, "Vorschau"), h("div", { class: "muted" }, `${wk.preview.title}: ${wk.preview.text}`), wkMsg,
+    h("div", { class: "actions" }, h("button", { onclick: async () => {
+      try { await send("PUT", "weekly-report", { enabled: wkOn.checked, weekday: Number(wkDay.value), time: wkTime.value }); wkMsg.className = "muted"; wkMsg.textContent = "Gespeichert ✓"; }
+      catch (e) { wkMsg.className = "err"; wkMsg.textContent = e.message; }
+    } }, "Speichern"))));
+
   // automatic backups
   root.append(h("details", { class: "card" }, h("summary", {}, "Automatische Sicherung"),
     h("div", { class: "muted" }, bk.auto
@@ -7322,8 +7410,24 @@ async function shareDialog(e) {
 async function adminCard(root) {
   const users = await api("admin/users");
   const fmt = s => (s ? parse(s.slice(0, 10)).toLocaleDateString(I18N.locale) : "–");
+  const dbo = await api("admin/db").catch(() => null);
+  const size = b => (b >= 1048576 ? `${(b / 1048576).toLocaleString(I18N.locale, { maximumFractionDigits: 1 })} MB` : `${Math.max(1, Math.round(b / 1024))} KB`);
+  const dbMsg = h("div", { class: "muted" });
+  const dbCheck = async vacuum => {
+    dbMsg.className = "muted"; dbMsg.textContent = "Prüfung läuft …";
+    try {
+      const r = await send("POST", "admin/db/check", { vacuum });
+      dbMsg.className = r.ok ? "muted" : "err";
+      dbMsg.textContent = r.ok ? (r.vacuumed ? `Verdichtet: ${size(r.size_before)} → ${size(r.size_after)}` : "Datenbank ist in Ordnung.") : `Datenbank prüfen: ${r.result.join("; ")}`;
+    } catch (e) { dbMsg.className = "err"; dbMsg.textContent = e.message; }
+  };
   root.append(h("div", { class: "card" }, h("h2", {}, "Benutzerverwaltung"),
     h("div", { class: "muted" }, "Nur für Administratoren sichtbar (Add-on-Option „admin_users“; leer = der erste Benutzer)."),
+    dbo ? [h("label", {}, "Datenbank"),
+      h("div", { class: "muted" }, `${size(dbo.size)} · ${dbo.rows} Zeilen in ${Object.keys(dbo.tables).length} Tabellen · frei ${size(dbo.free)} · letzte Sicherung: ${dbo.last_backup || "–"}`),
+      h("div", { class: "actions", style: "justify-content:flex-start" },
+        h("button", { class: "flat", onclick: () => dbCheck(false) }, "Prüfen"), h("button", { class: "flat", onclick: () => dbCheck(true) }, "Prüfen und verdichten")),
+      dbMsg] : null,
     h("div", { class: "lk-wrap" }, h("table", { class: "lk" },
       h("thead", {}, h("tr", {}, ["Benutzer", "Einträge", "Tage", "Lebensmittel", "Zuletzt", ""].map(x => h("th", {}, x)))),
       h("tbody", {}, users.map(u => h("tr", {},

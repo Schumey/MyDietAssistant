@@ -55,6 +55,10 @@ On training days the app works out the amount of your post-workout shake and the
 
 **When the button appears:** In the diary, “Training day” shows up once the shake is entered for the day or a trigger booked it, that is on days with training. As long as the training day is not set up, the button is always there. With the checkbox “Show the “Training day” button every day” it appears on all days.
 
+**Detect it through activity:** With the “Activity” feature on, enter a threshold in the training-day settings under “Also detect when this many calories were burned”, for example 400. From that many burned calories the day counts as a training day.
+
+**Sensors:** `training_day` (`yes`/`no`) and `training_shake` (the calculated amounts as text) allow automations, for example a notification “Shake today: Whey 35 g, Milk 370 g” (see [Sensors](sensors.md)).
+
 **Protein:** With “Dinners should reach the protein goal as far as possible” (on by default) the dinner suggestions prefer amounts that reach the day’s protein goal.
 
 **With a trigger:** If a trigger (e.g. “at the gym”) enters the shake, tick “Triggers enter the shake with the calculated amounts” in the settings. The trigger then uses the calculated instead of the saved amounts today. For planned days in the future the saved amounts stay.

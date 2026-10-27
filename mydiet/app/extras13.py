@@ -11,7 +11,7 @@ import extras
 import suggest
 from extras import feature_on, first_meal, get_pref, note_use, set_pref
 from extras import SavedItemIn, pack_range, saved_meal_rows
-from main import app, check_day, check_time, day_totals, food_scope, get_goal, publish, user_from
+from main import SENSOR_HOOKS, app, check_day, check_time, day_totals, food_scope, get_goal, publish, user_from
 
 HISTORY_DAYS = 180
 HISTORY_MIN_COUNT = 2     # a combination must have been eaten this often to become a candidate
@@ -45,7 +45,8 @@ def training_clean(t) -> dict:
             "target": {k: pos((t.get("target") or {}).get(k)) for k in suggest.KEYS},
             "shake_meal_id": t.get("shake_meal_id") if isinstance(t.get("shake_meal_id"), int) else None,
             "dinner_meal_id": t.get("dinner_meal_id") if isinstance(t.get("dinner_meal_id"), int) else None,
-            "auto": bool(t.get("auto")), "always": bool(t.get("always")), "dinner_protein": bool(t.get("dinner_protein", True))}
+            "auto": bool(t.get("auto")), "always": bool(t.get("always")), "dinner_protein": bool(t.get("dinner_protein", True)),
+            "activity_kcal": pos(t.get("activity_kcal")) or 0.0}
 
 
 class ConfigIn(BaseModel):
@@ -362,6 +363,7 @@ class TrainingIn(BaseModel):
     auto: bool = False                    # a trigger that enters the shake uses the fitted amounts
     always: bool = False                  # show the training-day button on every day, not only on training days
     dinner_protein: bool = True           # dinners must reach the day's protein goal as far as possible
+    activity_kcal: float = 0              # burned kcal from which a day counts as a training day (needs "Activity"; 0 = off)
 
 
 @app.put("/api/suggest/training")
@@ -449,11 +451,42 @@ def suggest_training_status(day: str, x_remote_user_id: str | None = Header(None
     if not t["saved_meal_id"]:
         return {"configured": False, "show": True}      # not set up yet: keep the button so the setup can be found
     with db.conn() as c:
-        cand = next((cd for cd in saved_candidates(c, owner) if cd["saved_meal_id"] == t["saved_meal_id"]), None)
-        ran = c.execute("SELECT 1 FROM trigger_runs r JOIN triggers x ON x.id=r.trigger_id WHERE r.owner=? AND r.day=? AND r.undone=0"
-                        " AND x.saved_meal_id=?", (owner, day, t["saved_meal_id"])).fetchone()
-        show = t["always"] or bool(ran) or bool(cand and shake_eaten(c, owner, day, cand))
-    return {"configured": True, "show": show}
+        return {"configured": True, "show": t["always"] or is_training_day(c, owner, day, t)}
+
+
+def is_training_day(c, owner: str, day: str, t: dict) -> bool:
+    """The shake is in the diary, a trigger entered it, or (with the activity feature) enough kcal were burned."""
+    cand = next((cd for cd in saved_candidates(c, owner) if cd["saved_meal_id"] == t["saved_meal_id"]), None)
+    if cand and shake_eaten(c, owner, day, cand):
+        return True
+    if c.execute("SELECT 1 FROM trigger_runs r JOIN triggers x ON x.id=r.trigger_id WHERE r.owner=? AND r.day=? AND r.undone=0"
+                 " AND x.saved_meal_id=?", (owner, day, t["saved_meal_id"])).fetchone():
+        return True
+    if t["activity_kcal"] and feature_on(owner, "activity"):
+        import extras9
+        return extras9.burned(c, owner, day)["kcal"] >= t["activity_kcal"]
+    return False
+
+
+def training_sensor(owner: str) -> list:
+    """sensor.mydiet_<name>_training_day (yes/no) and _training_shake (the amounts the shake would get now, e.g. "Whey 35 g, Milch 370 g"; none once it is eaten)."""
+    if not feature_on(owner, "suggest"):
+        return []
+    cfg = suggest_config(owner)
+    t = cfg["training"]
+    if not t["saved_meal_id"]:
+        return []
+    day = date.today().isoformat()
+    with db.conn() as c:
+        training = is_training_day(c, owner, day, t)
+        got = fit_shake(c, owner, cfg, remaining_for(c, owner, day))
+        cand = got and got[0]
+        eaten = bool(cand and shake_eaten(c, owner, day, cand))
+    text = ", ".join(f"{i['name']} {i['grams']:.0f} g" for i in got[2]["items"])[:250] if got and not eaten else "none"
+    return [("training_day", "yes" if training else "no", ""), ("training_shake", text, "")]
+
+
+SENSOR_HOOKS.append(training_sensor)
 
 
 def auto_fit(c, owner: str, sid: int, day: str, meal_id: int | None, stamp: str | None):

@@ -2,6 +2,13 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.16.0
+
+### Neu
+- **Wochenbericht per Benachrichtigung:** Einmal pro Woche (Wochentag und Uhrzeit einstellbar) eine Zusammenfassung der letzten sieben Tage: Ø Kalorien gegen das Ziel, Tage mit erreichtem Eiweißziel, erfasste Tage, Gewichtsänderung. Nutzt den Benachrichtigungsdienst der Erinnerung, kommt in der gewählten Sprache und hat eine Vorschau in den Einstellungen. Läuft nur im Add-on und ist dort ungeprüft.
+- **Trainingstag erweitert:** Sensoren `training_day` (`yes`/`no`) und `training_shake` (berechnete Mengen als Text) für Automationen. Außerdem lässt sich ein Trainingstag über die Aktivität erkennen (Schwelle für verbrannte Kalorien, braucht „Aktivität“).
+- **Datenbank-Gesundheitscheck:** Die Benutzerverwaltung zeigt Größe, Zeilen, freien Platz und die letzte Sicherung. „Prüfen“ führt eine Integritätsprüfung durch, „Prüfen und verdichten“ packt die Datei neu zusammen (VACUUM). Nur für Administratoren.
+
 ## 1.15.0
 
 ### Neu

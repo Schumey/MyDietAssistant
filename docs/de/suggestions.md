@@ -55,6 +55,10 @@ Für Tage mit Training rechnet die App die Menge deines Post-Workout-Shakes aus 
 
 **Wann der Knopf erscheint:** Im Tagebuch steht „Trainingstag“ erst, wenn der Shake für den Tag eingetragen ist oder ein Trigger ihn gebucht hat, also an Tagen mit Training. Solange der Trainingstag nicht eingerichtet ist, ist der Knopf immer da. Mit dem Häkchen „Knopf „Trainingstag“ an jedem Tag zeigen“ erscheint er an allen Tagen.
 
+**Über die Aktivität erkennen:** Ist die Zusatzfunktion „Aktivität“ an, trägst Du in den Trainingstag-Einstellungen bei „Auch erkennen, wenn so viele Kalorien verbrannt wurden“ eine Schwelle ein, zum Beispiel 400. Ab dieser Zahl verbrannter Kalorien gilt der Tag als Trainingstag.
+
+**Sensoren:** `training_day` (`yes`/`no`) und `training_shake` (die berechneten Mengen als Text) erlauben Automationen, etwa eine Benachrichtigung „Shake heute: Whey 35 g, Milch 370 g“ (siehe [Sensoren](sensors.md)).
+
 **Eiweiß:** Mit „Abendessen sollen das Eiweißziel möglichst erreichen“ (standardmäßig an) bevorzugen die Abendessen-Vorschläge Mengen, die das Eiweißziel des Tages erreichen.
 
 **Mit Trigger:** Trägt ein Trigger (z. B. „im Fitnessstudio“) den Shake ein, setze in den Einstellungen das Häkchen „Trigger tragen den Shake mit den berechneten Mengen ein“. Dann nutzt der Trigger heute die berechneten statt der gespeicherten Mengen. Für geplante Tage in der Zukunft bleiben die gespeicherten Mengen.

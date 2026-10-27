@@ -55,5 +55,7 @@ Nur Administratoren sehen die Karte **Benutzerverwaltung** unter *Einstellungen*
 2. Die Tabelle zeigt je Benutzer Einträge, Tage, Lebensmittel und den letzten Eintrag.
 3. **Export** lädt die Daten eines Benutzers als JSON herunter.
 4. **Löschen** entfernt alle Daten eines Benutzers unwiderruflich. Zur Bestätigung musst Du den Namen eintippen.
+5. Unter **Datenbank** stehen Größe, Zeilen, freier Platz und die letzte Sicherung. **Prüfen** führt eine Integritätsprüfung durch, **Prüfen und verdichten** packt die Datei danach neu zusammen (spart Platz nach großen Löschungen). Mach vorher am besten eine Sicherung.
+5. Unter **Datenbank** stehen Größe, Zeilen, freier Platz und die letzte Sicherung. **Prüfen** führt eine Integritätsprüfung durch, **Prüfen und verdichten** packt die Datei danach neu zusammen (spart Platz nach großen Löschungen). Mach vorher am besten eine Sicherung.
 
 Export und Import in *Einstellungen → Daten* betreffen immer nur das eigene Konto.

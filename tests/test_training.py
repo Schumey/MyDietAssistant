@@ -134,3 +134,29 @@ def test_dinners_aim_for_the_protein_goal_when_asked(user):
     off = c.get(f"/api/suggest/training?day={DAY}").json()
     assert r["items"] and off["items"]
     assert r["items"][0]["totals"]["protein"] >= off["items"][0]["totals"]["protein"]
+
+
+def test_activity_can_mark_a_training_day(user):
+    from datetime import date
+    c, shake, mids = shake_setup(user)
+    c.put("/api/settings", json={"features": {"activity": True}})
+    today = date.today().isoformat()
+    status = lambda: c.get(f"/api/suggest/training/status?day={today}").json()["show"]
+    c.put("/api/suggest/training", json={"saved_meal_id": shake, "target": {"protein": 40}, "activity_kcal": 400})
+    c.put(f"/api/activity/{today}", json={"steps": 3000, "kcal": 250})
+    assert not status()
+    c.put(f"/api/activity/{today}", json={"steps": 9000, "kcal": 550})
+    assert status()
+    assert c.get("/api/suggest/config").json()["training"]["activity_kcal"] == 400
+
+
+def test_training_sensors(user):
+    import extras13
+    from datetime import date
+    c, shake, mids = shake_setup(user)
+    out = {k: v for k, v, _ in extras13.training_sensor(c.uid)}
+    assert out["training_day"] == "no" and "Whey" in out["training_shake"] and out["training_shake"] != "none"
+    c.post(f"/api/saved-meals/{shake}/add", json={"day": date.today().isoformat(), "meal_id": mids[0]})
+    out = {k: v for k, v, _ in extras13.training_sensor(c.uid)}
+    assert out == {"training_day": "yes", "training_shake": "none"}
+    assert extras13.training_sensor(user().uid) == []

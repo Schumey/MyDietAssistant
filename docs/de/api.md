@@ -142,4 +142,14 @@ Das Add-on schickt einmal pro Tag eine Nachricht, wenn bis zu einer Uhrzeit noch
 
 Der gleiche Benachrichtigungsdienst wird vom [Mahlzeiten-Zeitplan](schedule.md) genutzt. Die Erinnerung läuft nur im Home-Assistant-Add-on.
 
+## Wochenbericht
+
+Einmal pro Woche schickt das Add-on eine Zusammenfassung der letzten sieben Tage, zum Beispiel „Ø 2.012 kcal pro Tag (Ziel 2100), Eiweißziel an 5/7 Tagen, 7/7 Tage erfasst, Gewicht -0.4 kg.“
+
+1. Richte zuerst die **Erinnerung** ein (der Benachrichtigungsdienst wird mitbenutzt).
+2. Öffne *Einstellungen → Wochenbericht*, schalte **Wochenbericht aktiv** ein und wähle **Wochentag** und **Uhrzeit**. Unter **Vorschau** siehst Du den Text, den die Nachricht heute hätte.
+3. Tippe auf **Speichern**.
+
+Der Wochenbericht erscheint in der gewählten Sprache und läuft nur im Home-Assistant-Add-on.
+
 Weiter mit [Fehlersuche](troubleshooting.md), wenn nichts ankommt.
