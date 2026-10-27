@@ -10,26 +10,26 @@
 <div id="win">
 <header class="appbar">
   <h1>Ernährung</h1>
-  <nav id="tabs">
-    <button data-tab="diary" class="active">Tagebuch</button>
-    <button data-tab="foods">Lebensmittel</button>
-    <button data-tab="meals">Mahlzeiten</button>
-    <button data-tab="recipes" hidden>Rezepte</button>
-    <button data-tab="weight">Gewicht</button>
-    <button data-tab="stats">Statistik</button>
-    <button data-tab="settings">Einstellungen</button>
+  <nav id="tabs" role="tablist" aria-label="Hauptmenü">
+    <button data-tab="diary" class="active" role="tab" aria-selected="true">Tagebuch</button>
+    <button data-tab="foods" role="tab" aria-selected="false" tabindex="-1">Lebensmittel</button>
+    <button data-tab="meals" role="tab" aria-selected="false" tabindex="-1">Mahlzeiten</button>
+    <button data-tab="recipes" role="tab" aria-selected="false" tabindex="-1" hidden>Rezepte</button>
+    <button data-tab="weight" role="tab" aria-selected="false" tabindex="-1">Gewicht</button>
+    <button data-tab="stats" role="tab" aria-selected="false" tabindex="-1">Statistik</button>
+    <button data-tab="settings" role="tab" aria-selected="false" tabindex="-1">Einstellungen</button>
   </nav>
   <span id="who" class="muted"></span>
 </header>
 
 <main>
-  <section id="diary"></section>
-  <section id="foods" hidden></section>
-  <section id="meals" hidden></section>
-  <section id="recipes" hidden></section>
-  <section id="weight" hidden></section>
-  <section id="stats" hidden></section>
-  <section id="settings" hidden></section>
+  <section id="diary" role="tabpanel"></section>
+  <section id="foods" role="tabpanel" hidden></section>
+  <section id="meals" role="tabpanel" hidden></section>
+  <section id="recipes" role="tabpanel" hidden></section>
+  <section id="weight" role="tabpanel" hidden></section>
+  <section id="stats" role="tabpanel" hidden></section>
+  <section id="settings" role="tabpanel" hidden></section>
 </main>
 </div>
 

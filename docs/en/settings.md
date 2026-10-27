@@ -73,6 +73,8 @@ Everything that not everyone needs is off by default.
 | N | add food in the diary |
 | / | jump to the list’s search field |
 
+In the tab bar (Diary, Foods …) ← / → move between the tabs, Home and End jump to the first and last one. Keyboard focus is clearly visible on every control, dialogs close with Esc, and fields, icon buttons and error messages have names for screen readers.
+
 ## Add-on options
 
 Options like `api_key`, `mqtt_discovery` or `admin_users` live in Home Assistant, not in the interface: see [Installation](installation.md#add-on-options).

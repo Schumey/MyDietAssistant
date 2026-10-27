@@ -2,6 +2,18 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.19.0
+
+### Neu
+- **Eintragen ohne Verbindung:** Reißt die Verbindung ab, während die App offen ist, merkt sich der Browser neue Tagebucheinträge, Schnelleingaben und Gewichtswerte und sendet sie nach, sobald es wieder geht (Hinweisleiste oben, Wiederholung alle 30 Sekunden und beim Wechsel auf „online“). Alles andere meldet weiter einen Fehler. Eine frisch geöffnete App ohne Verbindung startet nicht (kein Service Worker, da Ingress das nicht zulässt).
+- **Barrierefreiheit:** Felder ohne Beschriftung bekommen einen Namen (aus Platzhalter, Titel oder der Beschriftung daneben), Symbolknöpfe nehmen ihren Titel, Fehlermeldungen werden vorgelesen, der Dialog wird durch seine Überschrift benannt, die Tab-Leiste hat Rollen und Pfeiltasten (← → Pos1 Ende), und der Tastaturfokus ist an allen Bedienelementen sichtbar (auch im Windows-95-Look).
+
+### Behoben
+- Die Pfeiltasten in der Tab-Leiste wechselten im Tagebuch zusätzlich den Tag.
+
+### Geändert
+- **Mehr Browser-Tests:** Barcode-Dialog (Abfrage und fehlender Scanner), Handy-Ansicht (kein seitliches Scrollen auf fünf Reitern), Windows-Look, Tastaturbedienung, Namen aller Felder und Symbolknöpfe auf jedem Reiter sowie die Offline-Warteschlange.
+
 ## 1.18.0
 
 ### Neu

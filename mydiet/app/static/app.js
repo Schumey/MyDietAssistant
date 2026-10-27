@@ -534,6 +534,13 @@ const EN = {
   "Rezepttext": "Recipe text",
   "Im Text wurden keine Zutaten gefunden (Zeilen mit Mengen, z. B. „200 g Mehl“).": "No ingredients found in the text (lines with amounts, e.g. “200 g flour”).",
   "Der Text ist zu lang.": "The text is too long.",
+  "Offline: 1 Eintrag wartet auf Verbindung.": "Offline: 1 entry is waiting for a connection.",
+  "Offline: {} Einträge warten auf Verbindung.": "Offline: {} entries are waiting for a connection.",
+  "Hauptmenü": "Main menu",
+  "Zeitraum A, von": "Period A, from",
+  "Zeitraum A, bis": "Period A, to",
+  "Zeitraum B, von": "Period B, from",
+  "Zeitraum B, bis": "Period B, to",
 };
 
 // Languages: German is the source text; every other language is a dictionary German -> language (EN, FR, ES ...).
@@ -1448,6 +1455,13 @@ Object.assign(LANGS, {
     "Rezepttext": "Texte de la recette",
     "Im Text wurden keine Zutaten gefunden (Zeilen mit Mengen, z. B. „200 g Mehl“).": "Aucun ingrédient trouvé dans le texte (lignes avec quantités, p. ex. « 200 g de farine »).",
     "Der Text ist zu lang.": "Le texte est trop long.",
+    "Offline: 1 Eintrag wartet auf Verbindung.": "Hors ligne : 1 entrée attend une connexion.",
+    "Offline: {} Einträge warten auf Verbindung.": "Hors ligne : {} entrées attendent une connexion.",
+    "Hauptmenü": "Menu principal",
+    "Zeitraum A, von": "Période A, du",
+    "Zeitraum A, bis": "Période A, au",
+    "Zeitraum B, von": "Période B, du",
+    "Zeitraum B, bis": "Période B, au",
   },
   es: {
     "Ernährung": "Alimentación",
@@ -2354,6 +2368,13 @@ Object.assign(LANGS, {
     "Rezepttext": "Texto de la receta",
     "Im Text wurden keine Zutaten gefunden (Zeilen mit Mengen, z. B. „200 g Mehl“).": "No se encontraron ingredientes en el texto (líneas con cantidades, p. ej. «200 g de harina»).",
     "Der Text ist zu lang.": "El texto es demasiado largo.",
+    "Offline: 1 Eintrag wartet auf Verbindung.": "Sin conexión: 1 entrada espera conexión.",
+    "Offline: {} Einträge warten auf Verbindung.": "Sin conexión: {} entradas esperan conexión.",
+    "Hauptmenü": "Menú principal",
+    "Zeitraum A, von": "Periodo A, desde",
+    "Zeitraum A, bis": "Periodo A, hasta",
+    "Zeitraum B, von": "Periodo B, desde",
+    "Zeitraum B, bis": "Periodo B, hasta",
   },
   nl: {
     "Ernährung": "Voeding",
@@ -3272,6 +3293,13 @@ Object.assign(LANGS, {
     "Rezepttext": "Receptentekst",
     "Im Text wurden keine Zutaten gefunden (Zeilen mit Mengen, z. B. „200 g Mehl“).": "Geen ingrediënten gevonden in de tekst (regels met hoeveelheden, bijv. “200 g bloem”).",
     "Der Text ist zu lang.": "De tekst is te lang.",
+    "Offline: 1 Eintrag wartet auf Verbindung.": "Offline: 1 item wacht op verbinding.",
+    "Offline: {} Einträge warten auf Verbindung.": "Offline: {} items wachten op verbinding.",
+    "Hauptmenü": "Hoofdmenu",
+    "Zeitraum A, von": "Periode A, van",
+    "Zeitraum A, bis": "Periode A, tot",
+    "Zeitraum B, von": "Periode B, van",
+    "Zeitraum B, bis": "Periode B, tot",
   },
   it: {
     "Ernährung": "Alimentazione",
@@ -4190,6 +4218,13 @@ Object.assign(LANGS, {
     "Rezepttext": "Testo della ricetta",
     "Im Text wurden keine Zutaten gefunden (Zeilen mit Mengen, z. B. „200 g Mehl“).": "Nel testo non sono stati trovati ingredienti (righe con quantità, es. “200 g di farina”).",
     "Der Text ist zu lang.": "Il testo è troppo lungo.",
+    "Offline: 1 Eintrag wartet auf Verbindung.": "Offline: 1 voce attende la connessione.",
+    "Offline: {} Einträge warten auf Verbindung.": "Offline: {} voci attendono la connessione.",
+    "Hauptmenü": "Menu principale",
+    "Zeitraum A, von": "Periodo A, dal",
+    "Zeitraum A, bis": "Periodo A, al",
+    "Zeitraum B, von": "Periodo B, dal",
+    "Zeitraum B, bis": "Periodo B, al",
   },
 });
 
@@ -4281,8 +4316,50 @@ const h = (tag, attrs = {}, ...kids) => {
   if ((tag === "h2" || tag === "summary") && typeof kids[0] === "string") e.dataset.src = kids[0];   // the German title, whatever the display language
   return e;
 };
+// Offline queue: diary entries and weights typed while there is no connection (e.g. in a shop with bad reception) wait in the
+// browser and are sent once the connection is back. Only these few safe requests are queued; everything else fails as usual.
+const QUEUE_KEY = "mda_offline_queue";
+const queueable = (method, path) => (method === "POST" && (path === "entries" || path === "entries/quick")) || (method === "PUT" && /^weights\/\d{4}-\d{2}-\d{2}$/.test(path));
+const readQueue = () => { try { return JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]"); } catch { return []; } };
+const writeQueue = q => { try { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); } catch { /* storage unavailable: nothing is kept */ } showQueue(); };
+function showQueue() {
+  const n = readQueue().length;
+  let bar = document.getElementById("offline-bar");
+  if (!n) { if (bar) bar.remove(); return; }
+  if (!bar) { bar = h("div", { id: "offline-bar", class: "offline-bar", role: "status" }); document.body.prepend(bar); }
+  bar.textContent = n === 1 ? "Offline: 1 Eintrag wartet auf Verbindung." : `Offline: ${n} Einträge warten auf Verbindung.`;
+}
+let flushing = false;
+async function flushQueue() {
+  if (flushing) return;
+  flushing = true;
+  try {
+    let q = readQueue(), sent = 0;
+    while (q.length) {
+      let r;
+      try { r = await fetch("api/" + q[0].path, { method: q[0].method, headers: { "Content-Type": "application/json" }, body: q[0].body }); }
+      catch { break; }                                             // still offline: keep the rest
+      q = readQueue().slice(1);                                    // sent, or refused by the server (a retry would not help): drop it
+      writeQueue(q);
+      if (r.ok) sent++;
+    }
+    if (sent && state.tab === "diary" && !document.querySelector("dialog[open]")) renderDiary();
+  } finally { flushing = false; }
+}
+window.addEventListener("online", flushQueue);
+setInterval(() => { if (readQueue().length) flushQueue(); }, 30000);
+
 const api = async (path, opts) => {
-  const r = await fetch("api/" + path, opts);
+  let r;
+  try { r = await fetch("api/" + path, opts); }
+  catch (e) {
+    const method = (opts && opts.method) || "GET";
+    if (e instanceof TypeError && queueable(method, path) && opts.body) {      // no connection: keep it for later
+      writeQueue([...readQueue(), { method, path, body: opts.body, at: Date.now() }]);
+      return { queued: true };
+    }
+    throw e;
+  }
   if (!r.ok) {
     let msg = r.status;
     try { const d = (await r.json()).detail; msg = Array.isArray(d) ? d.map(x => (x.loc || []).slice(1).join(".") + ": " + x.msg).join("; ") : d || msg; } catch { /* keep status */ }
@@ -4403,10 +4480,45 @@ $("#tabs").addEventListener("click", e => {
 });
 function show(tab) {
   state.tab = tab;
-  for (const b of document.querySelectorAll("#tabs button")) b.classList.toggle("active", b.dataset.tab === tab);
+  for (const b of document.querySelectorAll("#tabs button")) {
+    b.classList.toggle("active", b.dataset.tab === tab);
+    b.setAttribute("aria-selected", b.dataset.tab === tab ? "true" : "false");
+    b.tabIndex = b.dataset.tab === tab ? 0 : -1;
+  }
   for (const s of document.querySelectorAll("main > section")) s.hidden = s.id !== tab;
   return ({ diary: renderDiary, foods: renderFoods, meals: renderMeals, weight: renderWeight, stats: renderStats, settings: renderSettings, recipes: renderRecipes })[tab]();
 }
+
+// ---------------------------------------------------------------- accessibility
+// The interface is built from plain elements, so names and roles are added in one place: fields without a label get one from their
+// placeholder, title or the label next to them, icon buttons take their title, errors are announced, the dialog is named by its heading.
+let a11yTimer = 0;
+function a11yPass() {
+  a11yTimer = 0;
+  for (const el of document.querySelectorAll("input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([aria-label]), select:not([aria-label]), textarea:not([aria-label]), input[type=checkbox]:not([aria-label]), input[type=radio]:not([aria-label])")) {
+    if ((el.labels && el.labels.length) || el.closest("label")) continue;
+    let name = el.getAttribute("title") || el.getAttribute("placeholder");
+    if (!name) { const prev = el.previousElementSibling; if (prev && prev.tagName === "LABEL") name = prev.textContent; }
+    if (!name && el.parentElement) { const lab = el.parentElement.querySelector(":scope > .grow, :scope > label"); if (lab && lab !== el) name = lab.textContent; }
+    if (name && name.trim()) el.setAttribute("aria-label", name.trim().slice(0, 120));
+  }
+  for (const b of document.querySelectorAll("button:not([aria-label])")) {
+    if (b.title && (!b.textContent.trim() || b.classList.contains("icon"))) b.setAttribute("aria-label", b.title);
+  }
+  for (const e of document.querySelectorAll(".err:not([role])")) e.setAttribute("role", "alert");
+  const h2 = dlg.querySelector("h2");
+  if (h2) { h2.id = "dlg-title"; dlg.setAttribute("aria-labelledby", "dlg-title"); } else dlg.removeAttribute("aria-labelledby");
+}
+new MutationObserver(() => { if (!a11yTimer) a11yTimer = requestAnimationFrame(a11yPass); }).observe(document.body, { childList: true, subtree: true });
+// Arrow keys move between the tabs (tablist pattern).
+$("#tabs").addEventListener("keydown", e => {
+  if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+  const tabs = [...document.querySelectorAll("#tabs button:not([hidden])")];
+  const i = tabs.indexOf(document.activeElement);
+  if (i < 0) return;
+  const next = e.key === "Home" ? tabs[0] : e.key === "End" ? tabs[tabs.length - 1] : tabs[(i + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length];
+  e.preventDefault(); next.focus(); next.click();
+});
 
 // ---------------------------------------------------------------- categories
 const cat = { all: [], hidden: [] };
@@ -4445,7 +4557,7 @@ async function renderDiary() {
 
   const label = parse(state.day).toLocaleDateString(I18N.locale,
     { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-  const picker = h("input", { type: "date", value: state.day, onchange: e => {
+  const picker = h("input", { type: "date", value: state.day, "aria-label": "Datum", onchange: e => {
     if (e.target.value) { state.day = e.target.value; renderDiary(); }
   } });
   root.append(h("div", { class: "daynav" },
@@ -6563,7 +6675,8 @@ function compareCard() {
   const preset = n => { const [f, t] = span(n); const [bf, bt] = before(f, n); return { a_from: f, a_to: t, b_from: bf, b_to: bt }; };
   state.cmp = state.cmp || preset(7);
   const body = h("div");
-  const field = (key) => h("input", { type: "date", value: state.cmp[key], onchange: e => { if (e.target.value) { state.cmp[key] = e.target.value; load(); } } });
+  const NAMES = { a_from: "Zeitraum A, von", a_to: "Zeitraum A, bis", b_from: "Zeitraum B, von", b_to: "Zeitraum B, bis" };
+  const field = (key) => h("input", { type: "date", value: state.cmp[key], "aria-label": NAMES[key], onchange: e => { if (e.target.value) { state.cmp[key] = e.target.value; load(); } } });
   const inputsNew = () => h("div", { class: "cmp-range" }, ...[["A", "a_from", "a_to"], ["B", "b_from", "b_to"]].flatMap(([l, f, t]) =>
     [h("span", { class: "muted" }, l), field(f), "–", field(t)]));
   const wrap = h("div", { class: "card" }, h("h2", {}, "Bericht & Zeitraum-Vergleich"),
@@ -7294,7 +7407,7 @@ async function renderSettings() {
   const sched = state.features.schedule ? await api("schedule").catch(() => null) : null;
   const mealMsg = h("div", { class: "err" });
   const mealList = h("div", { class: "list" }, meals.map((m, i) => {
-    const name = h("input", { value: m.name, onchange: async () => {
+    const name = h("input", { value: m.name, "aria-label": "Name der Mahlzeit", onchange: async () => {
       if (name.value.trim()) await send("PUT", "meals/" + m.id, { name: name.value });
     } });
     const move = async dir => {
@@ -7637,7 +7750,7 @@ async function restoreDialog(data) {
 document.addEventListener("keydown", e => {
   if (e.ctrlKey || e.metaKey || e.altKey || dlg.open) return;
   const el = document.activeElement;
-  if (el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
+  if (el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.closest("#tabs"))) return;   // the tab bar has its own arrow keys
   const diary = state.tab === "diary";
   if (diary && e.key === "ArrowLeft") { e.preventDefault(); shiftDay(-1); }
   else if (diary && e.key === "ArrowRight") { e.preventDefault(); shiftDay(1); }

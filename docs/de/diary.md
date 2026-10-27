@@ -112,3 +112,13 @@ Im Reiter **Statistik** zeigt die Karte **Nährwert-Lücken (7 Tage)**, wie Dein
 | T | heute |
 | N | Nahrungsmittel hinzufügen |
 | / | ins Suchfeld der Liste springen |
+
+In der Tab-Leiste (Tagebuch, Lebensmittel …) wechseln ← / → zwischen den Reitern, Pos1 und Ende springen zum ersten und letzten. Der Tastaturfokus ist an allen Bedienelementen deutlich sichtbar, Dialoge lassen sich mit Esc schließen, und Felder, Symbolknöpfe und Fehlermeldungen haben Namen für Screenreader.
+
+## Ohne Verbindung eintragen
+
+Reißt die Verbindung ab, während die App offen ist (zum Beispiel im Supermarkt mit schlechtem Empfang), merkt sich der Browser neue Tagebucheinträge, Schnelleingaben und Gewichtswerte. Oben erscheint „Offline: 1 Eintrag wartet auf Verbindung.“ Sobald die Verbindung zurück ist (oder nach höchstens 30 Sekunden), werden die Einträge gesendet und das Tagebuch aktualisiert sich.
+
+- Gewartet wird nur auf neue Einträge und Gewichtswerte. Alles andere (Lebensmittel anlegen, Einstellungen …) braucht die Verbindung und meldet einen Fehler.
+- Die gemerkten Einträge liegen im Browser dieses Geräts. Wird der Browser-Speicher gelöscht, bevor sie gesendet wurden, gehen sie verloren.
+- Die App selbst muss geladen sein: Eine frisch geöffnete App ohne Verbindung startet nicht.

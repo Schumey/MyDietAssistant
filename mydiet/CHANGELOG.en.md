@@ -2,6 +2,18 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.19.0
+
+### New
+- **Logging without a connection:** If the connection drops while the app is open, the browser keeps new diary entries, quick entries and weight values and sends them once it works again (notice bar at the top, retry every 30 seconds and when the browser goes “online”). Everything else still reports an error. A freshly opened app without a connection does not start (no service worker, which ingress does not allow).
+- **Accessibility:** Fields without a label get a name (from the placeholder, title or the label next to them), icon buttons take their title, error messages are announced, the dialog is named by its heading, the tab bar has roles and arrow keys (← → Home End), and keyboard focus is visible on every control (also in the Windows 95 look).
+
+### Fixed
+- The arrow keys in the tab bar also changed the day in the diary.
+
+### Changed
+- **More browser tests:** barcode dialog (lookup and missing scanner), phone view (no sideways scrolling on five tabs), Windows look, keyboard use, names of all fields and icon buttons on every tab, and the offline queue.
+
 ## 1.18.0
 
 ### New

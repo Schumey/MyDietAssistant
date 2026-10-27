@@ -88,6 +88,11 @@ input, select {
 }
 input:hover, select:hover { border-bottom-color: var(--input-hover-line-color, var(--input-idle-line-color, var(--divider-color))); }
 input:focus, select:focus { outline: 0; border-bottom-color: var(--primary-color); }
+/* keyboard focus: a visible ring on everything that can be operated (fields keep their coloured underline and get a ring as well) */
+button:focus-visible, summary:focus-visible, a:focus-visible, select:focus-visible, textarea:focus-visible, input:focus-visible,
+[tabindex]:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 2px; }
+html[data-skin="win"] button:focus-visible, html[data-skin="win"] summary:focus-visible, html[data-skin="win"] a:focus-visible,
+html[data-skin="win"] [tabindex]:focus-visible { outline: 1px dotted var(--w-text); outline-offset: -4px; }
 label { display: block; font-size: 12px; color: var(--secondary-text-color); margin-bottom: 2px; }
 /* buttons follow HA's own button tokens (webawesome brand colours, radius, bevel) */
 button {
@@ -400,6 +405,9 @@ html[data-skin="win"] #tip { border-radius: 0; background: #ffffe1; color: #000;
 .list > div.unmatched { border-left: 3px solid var(--error-color); padding-left: 6px; }
 .list > div.guess { border-left: 3px solid var(--warning-color); padding-left: 6px; }
 .warn-note { color: var(--warning-color); margin: 6px 0; }
+.offline-bar { position: sticky; top: 0; z-index: 20; padding: 8px 12px; text-align: center; font-weight: 600;
+  background: var(--warning-color, #b36b00); color: #fff; }
+html[data-skin="win"] .offline-bar { background: var(--w-face); color: var(--w-text); box-shadow: var(--w-raised); font-weight: 400; border: 0; }
 ol.steps { margin: 4px 0 0; padding-left: 20px; }
 #dlg textarea { width: 100%; margin-top: 2px; }
 #dlg .preview + label { display: block; margin-top: 12px; }

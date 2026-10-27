@@ -16,7 +16,7 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 ## Technik und Qualität
 
-- **Mehr Browser-Tests** (M): Barcode-Dialog, Handy-Ansicht und Windows-Look ergänzen (Haushaltsansicht, Trainingstag, Einkaufsliste und Italienisch sind seit 1.13–1.15 abgedeckt).
+- **Browser-Tests vertiefen** (M): die Kamera-Abfrage des Barcode-Scanners mit einer simulierten Kamera, weitere Dialoge in der Handy-Ansicht und Windows-Look-Details ergänzen.
 - **Wörterbücher prüfen lassen** (S): Muttersprachler für Französisch, Spanisch, Niederländisch und Italienisch, bisher maschinell erstellt und nur formal geprüft (gleiche Schlüssel, gleiche Platzhalter).
-- **Offline-Eingabe** (M): Einträge ohne Verbindung zwischenspeichern und nachsenden, nützlich unterwegs mit schlechtem Empfang.
-- **Barrierefreiheit prüfen** (S–M): Tastaturbedienung der Dialoge, Fokusreihenfolge, Kontraste im Windows-95-Look.
+- **Offline-Start der App** (M): die App selbst ohne Verbindung öffnen können (Service Worker, mit Ingress schwierig); Eintragen ohne Verbindung geht seit 1.19, solange die App offen ist.
+- **Barrierefreiheit mit Screenreader prüfen** (S): Namen, Rollen und Tastaturbedienung sind seit 1.19 getestet; offen sind ein Durchgang mit echten Screenreadern und Kontrastmessungen (besonders Windows-95-Look).

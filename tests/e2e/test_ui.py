@@ -301,3 +301,134 @@ def test_recipe_from_pasted_text_opens_in_the_editor(page):
     page.click("#dlg >> text=Speichern")
     page.wait_for_selector("#recipes >> text=Pfannkuchen")
     assert page.errors == []
+
+
+def test_entries_typed_offline_are_kept_and_sent_when_the_connection_returns(page):
+    from datetime import date
+    settings(page.base, lang="de", features={})
+    fid = httpx.post(page.base + "/api/foods", json={"name": "Offline-Apfel", "kcal": 52, "protein": 0, "carbs": 14, "fat": 0}).json()["id"]
+    page.goto(page.base + "/")
+    page.wait_for_selector("#diary .daynav")
+    page.context.set_offline(True)
+    result = page.evaluate("send('POST', 'entries', {day: state.day, meal_id: null, food_id: %d, grams: 150})" % fid)
+    assert result == {"queued": True}
+    page.wait_for_selector("#offline-bar:has-text('1 Eintrag wartet auf Verbindung')")
+    day = date.today().isoformat()
+    assert httpx.get(f"{page.base}/api/day/{day}").json()["entries"] == [] or all(e["name"] != "Offline-Apfel" for e in httpx.get(f"{page.base}/api/day/{day}").json()["entries"])
+    page.context.set_offline(False)
+    page.evaluate("flushQueue()")
+    page.wait_for_selector("#offline-bar", state="detached")
+    names = [e["name"] for e in httpx.get(f"{page.base}/api/day/{day}").json()["entries"]]
+    assert "Offline-Apfel" in names
+    page.context.set_offline(True)
+    assert page.evaluate("send('PUT', 'goal', {kcal: 1}).then(() => 'queued', () => 'failed')") == "failed"      # other requests are not queued
+    page.context.set_offline(False)
+    assert page.errors == []
+
+
+# --- accessibility, barcode dialog, phone view, Windows look ---------------------------------------
+
+ALL_FEATURES = {k: True for k in ("weekday_goals", "trackers", "micros", "notes", "body", "recipes", "sources", "household", "activity", "schedule", "suggest", "shopping")}
+UNNAMED = """() => {
+  const visible = el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+  const named = el => el.getAttribute('aria-label') || (el.labels && el.labels.length) || el.closest('label') || el.getAttribute('aria-labelledby');
+  const fields = [...document.querySelectorAll('main input:not([type=hidden]), main select, main textarea, dialog[open] input:not([type=hidden]), dialog[open] select, dialog[open] textarea')]
+    .filter(visible).filter(el => !named(el)).map(el => el.tagName + ':' + (el.type || '') + ':' + (el.placeholder || el.name || el.id || el.outerHTML.slice(0, 60)));
+  const buttons = [...document.querySelectorAll('main button, dialog[open] button')].filter(visible)
+    .filter(b => !b.textContent.trim() && !b.getAttribute('aria-label')).map(b => b.outerHTML.slice(0, 80));
+  return {fields, buttons};
+}"""
+
+
+def test_every_visible_field_and_icon_button_has_a_name_on_every_tab(page):
+    settings(page.base, lang="de", features=ALL_FEATURES)
+    page.goto(page.base + "/")
+    page.wait_for_selector("#diary .daynav")
+    for tab in ("diary", "foods", "meals", "recipes", "weight", "stats", "settings"):
+        page.click(f'#tabs button[data-tab="{tab}"]')
+        page.wait_for_timeout(500)
+        found = page.evaluate(UNNAMED)
+        assert found == {"fields": [], "buttons": []}, (tab, found)
+    assert page.errors == []
+
+
+def test_tabs_work_with_arrow_keys_and_the_dialog_is_named_and_closes_with_escape(page):
+    settings(page.base, lang="de", features={"suggest": True})
+    page.goto(page.base + "/")
+    page.wait_for_selector("#diary .daynav")
+    assert page.get_attribute('#tabs button[data-tab="diary"]', "aria-selected") == "true"
+    page.focus('#tabs button[data-tab="diary"]')
+    page.keyboard.press("ArrowRight")
+    page.wait_for_selector("#foods:not([hidden])")
+    assert page.get_attribute('#tabs button[data-tab="foods"]', "aria-selected") == "true"
+    page.keyboard.press("End")
+    page.wait_for_selector("#settings:not([hidden])")
+    page.click('#tabs button[data-tab="diary"]')
+    page.click("#diary >> text=Mahlzeit vorschlagen")
+    page.wait_for_selector("dialog[open]")
+    page.wait_for_function("document.getElementById('dlg').getAttribute('aria-labelledby') === 'dlg-title'")
+    assert page.inner_text("#dlg-title") == "Mahlzeit vorschlagen"
+    page.keyboard.press("Escape")
+    page.wait_for_selector("dialog[open]", state="detached")
+
+
+def test_barcode_lookup_fills_the_food_form_and_reports_a_missing_scanner(page):
+    import json
+    settings(page.base, lang="de", features={})
+    page.route("**/api/off/barcode/**", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(
+        {"name": "Testmüsli", "brand": "Marke", "kcal": 380, "protein": 9, "carbs": 62, "fat": 8, "fiber": 7, "sugar": 12, "salt": 0.1, "sat_fat": 1.2})))
+    page.goto(page.base + "/")
+    page.click('#tabs button[data-tab="foods"]')
+    page.click("text=+ Neues Lebensmittel")
+    page.fill('#dlg input[placeholder="Barcode"]', "4001234567890")
+    page.click("#dlg >> text=Suchen >> nth=0")
+    page.wait_for_function("document.querySelector('#nf-name') && document.querySelector('#nf-name').value === 'Testmüsli'")
+    assert page.input_value("#nf-kcal") == "380"
+    page.evaluate("delete window.BarcodeDetector")
+    page.click("#dlg >> text=Scannen (Kamera)")
+    page.wait_for_selector("#dlg .err:not(:empty), #dlg .scan-box:not(:empty)")
+    assert page.errors == []
+
+
+@pytest.mark.parametrize("tab", ["diary", "foods", "weight", "stats", "settings"])
+def test_phone_view_has_no_horizontal_scrolling(browser, server, tab):
+    settings(server, lang="de", features=ALL_FEATURES)
+    ctx = browser.new_context(viewport={"width": 375, "height": 812}, is_mobile=True, has_touch=True)
+    pg = ctx.new_page()
+    errors = []
+    pg.on("pageerror", lambda e: errors.append(str(e)))
+    pg.goto(server + "/")
+    pg.wait_for_selector("#diary .daynav")
+    pg.click(f'#tabs button[data-tab="{tab}"]')
+    pg.wait_for_timeout(600)
+    widths = pg.evaluate("({page: document.documentElement.scrollWidth, view: window.innerWidth})")
+    assert widths["page"] <= widths["view"] + 1, (tab, widths)
+    assert errors == []
+    ctx.close()
+
+
+def test_windows_look_renders_bevels_and_dialogs_without_errors(page):
+    settings(page.base, lang="de", skin="win", features={"suggest": True})
+    page.goto(page.base + "/")
+    page.wait_for_selector("#diary .daynav")
+    assert page.evaluate("document.documentElement.dataset.skin") == "win"
+    shadow = page.evaluate("getComputedStyle(document.querySelector('#tabs button')).boxShadow")
+    assert shadow and shadow != "none"
+    page.click("#diary >> text=Mahlzeit vorschlagen")
+    page.wait_for_selector("dialog[open]")
+    assert page.evaluate("getComputedStyle(document.querySelector('#dlg button')).boxShadow") != "none"
+    page.keyboard.press("Escape")
+    assert page.errors == []
+    settings(page.base, skin="auto")
+
+
+def test_arrow_keys_on_the_tab_bar_do_not_also_change_the_day(page):
+    settings(page.base, lang="de", features={})
+    page.goto(page.base + "/")
+    page.wait_for_selector("#diary .daynav")
+    before = page.input_value("#diary .daynav input[type=date]")
+    page.focus('#tabs button[data-tab="foods"]')
+    page.keyboard.press("ArrowLeft")                                  # back to the diary tab
+    page.wait_for_selector("#diary:not([hidden])")
+    page.wait_for_timeout(300)
+    assert page.input_value("#diary .daynav input[type=date]") == before

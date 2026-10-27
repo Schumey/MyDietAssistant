@@ -112,3 +112,13 @@ In the **Statistics** tab the card **Nutrient gaps (7 days)** shows how your las
 | T | today |
 | N | add food |
 | / | jump to the list’s search field |
+
+In the tab bar (Diary, Foods …) ← / → move between the tabs, Home and End jump to the first and last one. Keyboard focus is clearly visible on every control, dialogs close with Esc, and fields, icon buttons and error messages have names for screen readers.
+
+## Logging without a connection
+
+If the connection drops while the app is open (for example in a shop with bad reception), the browser keeps new diary entries, quick entries and weight values. “Offline: 1 entry is waiting for a connection.” appears at the top. As soon as the connection is back (or after 30 seconds at most) the entries are sent and the diary refreshes.
+
+- Only new entries and weight values wait. Everything else (creating foods, settings …) needs the connection and reports an error.
+- The kept entries live in the browser of this device. If the browser storage is cleared before they are sent, they are lost.
+- The app itself has to be loaded: a freshly opened app without a connection does not start.
