@@ -2,6 +2,15 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.17.0
+
+### Neu
+- **Nährwert-Lücken:** Mit „Weitere Nährwerte“ zeigt die Statistik die Karte „Nährwert-Lücken (7 Tage)“: Ø der letzten sieben Tage für Ballaststoffe, Zucker, Salz und gesättigte Fettsäuren gegen Richtwerte (30 g mindestens, 50 g, 6 g und 20 g höchstens), mit der Abweichung in Prozent. Tage ohne Angaben zum Nährwert zählen nicht, bei zu vielen fehlenden Tagen steht „nicht genug Angaben“. Die Ziele sind einstellbar.
+- **Gemeinsam bearbeiten:** Rezepte und gespeicherte Mahlzeiten lassen sich in der gemeinsamen Bibliothek zusätzlich zum Ändern freigeben („Andere dürfen es auch ändern“). Löschen, Trigger und das Freigeben selbst bleiben beim Besitzer.
+
+### Geändert
+- Datenbank: `shared` bei Rezepten und gespeicherten Mahlzeiten kennt jetzt die Werte 0, 1 (nutzen und kopieren) und 2 (auch ändern); bestehende Freigaben bleiben unverändert.
+
 ## 1.16.0
 
 ### Neu

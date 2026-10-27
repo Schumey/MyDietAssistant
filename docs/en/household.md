@@ -43,9 +43,9 @@ Everyone else with “Household” sees it marked “from <Name>” in their lis
 Recipes and saved meals can be offered to the household as well:
 
 1. Open the recipe or meal for editing (**✎**).
-2. Turn on **Offer in the shared household library (others may use and copy it, only you can change it)** and save.
+2. Turn on **Offer in the shared household library (others may use and copy it)**, optionally also **Others may change it as well**, and save.
 
-The others see the recipe under **Recipes** and the meal under **Meals**, marked “from <Name>”. They may log it (recipes also appear as a food with “1 portion”), add it to the [shopping list](shopping.md) and make their own copy with **⧉**. Editing, deleting, triggers and the sharing itself stay with the owner, unlike foods. Both sides must have “Household” switched on. If you stop offering a recipe, its food leaves the shared library as well. Copies already made and amounts already logged stay.
+The others see the recipe under **Recipes** and the meal under **Meals**, marked “from <Name>”. They may log it (recipes also appear as a food with “1 portion”), add it to the [shopping list](shopping.md) and make their own copy with **⧉**. Editing, deleting, triggers and the sharing itself stay with the owner at first. With the second checkbox **Others may change it as well** the other members may edit it too (name, ingredients, amounts, for recipes also portions and instructions); deleting, triggers and the sharing itself still stay with the owner. Both sides must have “Household” switched on. If you stop offering a recipe, its food leaves the shared library as well. Copies already made and amounts already logged stay.
 
 ## User administration
 

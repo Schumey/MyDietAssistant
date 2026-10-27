@@ -375,7 +375,12 @@ def food_scope(c, owner: str) -> tuple[str, list]:
         others = [r["id"] for r in c.execute("SELECT id FROM users WHERE id<>?", (owner,)) if feature_on(r["id"], "household")]
     if not others:
         return "owner=?", [owner]
-    return f"(owner=? OR (shared=1 AND owner IN ({','.join('?' * len(others))})))", [owner, *others]
+    return f"(owner=? OR (shared>=1 AND owner IN ({','.join('?' * len(others))})))", [owner, *others]
+
+
+def share_level(v) -> int:
+    """Sharing of recipes and saved meals: 0 = private, 1 = others may use and copy it, 2 = others may change it as well."""
+    return 2 if v == 2 else (1 if v else 0)
 
 
 def owner_names(c, rows: list, owner: str):
@@ -691,6 +696,7 @@ from extras13 import *  # noqa: E402,F401,F403  (meal suggestions)
 from extras14 import *  # noqa: E402,F401,F403  (enter food from a sentence, external API)
 from extras15 import *  # noqa: E402,F401,F403  (shopping list)
 from extras16 import *  # noqa: E402,F401,F403  (weekly report, database health)
+from extras17 import *  # noqa: E402,F401,F403  (nutrient gaps)
 
 
 @app.get("/")

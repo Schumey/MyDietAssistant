@@ -94,3 +94,37 @@ def test_shopping_list_can_use_shared_recipes(user):
     a.put(f"/api/recipes/{rid}", json={"name": "Linsensuppe", "portions": 2, "shared": True, "items": a.get("/api/recipes").json()[0]["items"]})
     r = b.post("/api/shopping/list", json={"recipes": [{"id": rid, "amount": 4}]}).json()["items"]
     assert r == [{"name": "Linsen", "grams": 400.0}]
+
+
+def test_members_may_change_what_is_offered_for_changing(user):
+    a, b = user("Anna", ("household", "recipes")), user("Ben", ("household", "recipes"))
+    rid = make_recipe(a)
+    mine = lambda c, path: [r for r in c.get(path).json() if r["mine"]]
+    items = mine(a, "/api/recipes")[0]["items"]
+    body = {"name": "Linsensuppe", "portions": 2, "items": items}
+    a.put(f"/api/recipes/{rid}", json={**body, "shared": 1})
+    assert b.put(f"/api/recipes/{rid}", json={**body, "name": "Neu"}).status_code == 404           # offered for use only
+    a.put(f"/api/recipes/{rid}", json={**body, "shared": 2})
+    changed = [{**items[0], "grams": 400, "kcal": 1400}]
+    assert b.put(f"/api/recipes/{rid}", json={**body, "name": "Linsensuppe XL", "shared": 0, "items": changed}).status_code == 200
+    seen = mine(a, "/api/recipes")[0]
+    assert seen["name"] == "Linsensuppe XL" and seen["items"][0]["grams"] == 400 and seen["shared"] == 2 and seen["mine"]      # the share level stays with Anna
+    food = [f for f in a.get("/api/foods?q=Linsensuppe XL").json() if f["owner"] == a.uid][0]
+    assert food["name"] == "Linsensuppe XL" and food["shared"] == 1                                    # the recipe's food follows, owned by Anna
+    b.delete(f"/api/recipes/{rid}")
+    assert len(mine(a, "/api/recipes")) == 1                                                            # deleting stays with the owner
+
+
+def test_editable_saved_meals(user):
+    a, b = user("Anna", ("household",)), user("Ben", ("household",))
+    sid = make_meal(a, "Änderbares Müsli")
+    mine = lambda c: [m for m in c.get("/api/saved-meals").json() if m["mine"]]
+    a.put(f"/api/saved-meals/{sid}", json={"name": "Änderbares Müsli", "shared": 1})
+    b.put(f"/api/saved-meals/{sid}", json={"name": "Geändert"})
+    assert names(mine(a)) == ["Änderbares Müsli"]
+    a.put(f"/api/saved-meals/{sid}", json={"name": "Änderbares Müsli", "shared": 2})
+    items = mine(a)[0]["items"]
+    assert b.put(f"/api/saved-meals/{sid}", json={"name": "Geändert", "shared": 0, "items": items}).status_code == 200
+    got = mine(a)[0]
+    assert got["name"] == "Geändert" and got["shared"] == 2
+    assert b.put(f"/api/saved-meals/{sid}", json={"name": "Geändert", "items": []}).status_code == 400          # at least one component, as always

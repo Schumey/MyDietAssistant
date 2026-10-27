@@ -43,9 +43,9 @@ Alle anderen mit „Haushalt“ sehen es mit dem Vermerk „von <Name>“ in ihr
 Auch Rezepte und gespeicherte Mahlzeiten lassen sich für den Haushalt anbieten:
 
 1. Öffne das Rezept oder die Mahlzeit zum Bearbeiten (**✎**).
-2. Schalte **In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren, ändern nur Du)** ein und speichere.
+2. Schalte **In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren)** ein, auf Wunsch zusätzlich **Andere dürfen es auch ändern**, und speichere.
 
-Die anderen sehen das Rezept im Reiter **Rezepte** und die Mahlzeit im Reiter **Mahlzeiten**, jeweils mit „von <Name>“. Sie dürfen es eintragen (Rezepte erscheinen auch als Lebensmittel mit „1 Portion“), in die [Einkaufsliste](shopping.md) aufnehmen und mit **⧉** als eigene Kopie anlegen. Ändern, Löschen, Trigger und das Freigeben bleiben beim Besitzer, anders als bei Lebensmitteln. Beide Seiten müssen „Haushalt“ eingeschaltet haben. Wer das Anbieten zurücknimmt, nimmt auch das zugehörige Lebensmittel eines Rezepts aus der gemeinsamen Bibliothek. Bereits angelegte Kopien und eingetragene Mengen bleiben.
+Die anderen sehen das Rezept im Reiter **Rezepte** und die Mahlzeit im Reiter **Mahlzeiten**, jeweils mit „von <Name>“. Sie dürfen es eintragen (Rezepte erscheinen auch als Lebensmittel mit „1 Portion“), in die [Einkaufsliste](shopping.md) aufnehmen und mit **⧉** als eigene Kopie anlegen. Ändern, Löschen, Trigger und das Freigeben bleiben zunächst beim Besitzer. Mit dem zweiten Häkchen **Andere dürfen es auch ändern** dürfen auch die anderen Mitglieder es bearbeiten (Name, Zutaten, Mengen, bei Rezepten auch Portionen und Zubereitung); Löschen, Trigger und die Freigabe selbst bleiben trotzdem beim Besitzer. Beide Seiten müssen „Haushalt“ eingeschaltet haben. Wer das Anbieten zurücknimmt, nimmt auch das zugehörige Lebensmittel eines Rezepts aus der gemeinsamen Bibliothek. Bereits angelegte Kopien und eingetragene Mengen bleiben.
 
 ## Benutzerverwaltung
 

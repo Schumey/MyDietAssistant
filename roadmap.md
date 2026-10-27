@@ -11,8 +11,6 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 ## Lebensmittel und Eingabe
 
 - **Rezept-Import aus Text und Foto** (L): Rezepte aus eingefügtem Text oder einem Foto lesen, wenn die Seite keine Rezeptdaten mitliefert.
-- **Mikronährstoff-Lücken** (M): Wochenübersicht über Ballaststoffe, Eiweiß, Salz und Zucker gegen Ziele, mit einer Zeile wie „Ballaststoffe diese Woche 30 % unter Ziel“.
-- **Gemeinsam bearbeiten** (M): geteilte Rezepte und Mahlzeiten (seit 1.15 nur nutzen und kopieren) optional von allen im Haushalt änderbar machen, wie bei Lebensmitteln.
 - **Weitere Sprachen** (S je Sprache): zum Beispiel Portugiesisch oder Polnisch; ein Wörterbuch in `static/app.js` (über 870 Texte), ein Eintrag in `LANGS` (`extras.py`), Berichts- und Push-Texte in `extras6.py` und `extras2.py`, `translations/<sprache>.yaml` für die Add-on-Optionen und die Sprachauswahl.
 - **Weitere Datenquellen** (M): zum Beispiel die Österreichische Nährwerttabelle oder USDA-Dateiexporte über den Tabellen-Import (Spaltenkürzel ergänzen). CIQUAL und die Schweizer Datenbank sind seit 1.1 erkannt, bisher nur gegen Beispielzeilen geprüft.
 

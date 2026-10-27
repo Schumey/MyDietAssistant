@@ -2,6 +2,15 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.17.0
+
+### New
+- **Nutrient gaps:** With “More nutrients” the statistics show the card “Nutrient gaps (7 days)”: the average of the last seven days for fiber, sugar, salt and saturated fat against reference values (at least 30 g, at most 50 g, 6 g and 20 g), with the deviation in percent. Days without values for a nutrient do not count; with too many missing days “not enough data” is shown. The goals are adjustable.
+- **Edit together:** Recipes and saved meals in the shared library can now also be offered for changing (“Others may change it as well”). Deleting, triggers and the sharing itself stay with the owner.
+
+### Changed
+- Database: `shared` for recipes and saved meals now knows the values 0, 1 (use and copy) and 2 (change as well); existing sharing is unchanged.
+
 ## 1.16.0
 
 ### New

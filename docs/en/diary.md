@@ -96,6 +96,14 @@ With the optional feature “Water and supplements” the diary gets counters wi
 
 With “More nutrients” you also record fiber, sugar, salt and saturated fat for foods; they are evaluated in the diary and the statistics. Open Food Facts provides them during the online search.
 
+### Nutrient gaps
+
+In the **Statistics** tab the card **Nutrient gaps (7 days)** shows how your last seven days fit reference values. Example: “Fiber: Ø 22.0 g (at least 30.0 g) – 27 % below the goal”. Only days with values for the nutrient count; if they are missing on more than half of the days, “not enough data” is shown.
+
+- Fiber should be reached (default at least 30 g).
+- Sugar (at most 50 g), salt (at most 6 g) and saturated fat (at most 20 g) are upper limits.
+- Use **Change goals** to set your own values. A deviation of up to 5 % counts as on target.
+
 ## Keyboard shortcuts
 
 | Key | Effect |

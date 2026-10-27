@@ -15,7 +15,7 @@ from fastapi.responses import Response
 from pydantic import BaseModel
 
 import db
-from main import SUPERVISOR_TOKEN, app, check_day, check_time, day_totals, food_scope, get_goal, owner_names, publish, user_from
+from main import SUPERVISOR_TOKEN, app, check_day, check_time, day_totals, food_scope, get_goal, owner_names, publish, share_level, user_from
 
 KCAL_PER_KG = 7700
 
@@ -331,7 +331,7 @@ class SavedMealEdit(BaseModel):
     items: list[SavedItemIn] | None = None   # replaces all components when given
     min_scale: float | None = None           # suggestions: factor range (None keeps, 0 = default)
     max_scale: float | None = None
-    shared: bool | None = None               # household: offer in the shared library (owner only; None keeps)
+    shared: bool | int | None = None         # household: 0 private, 1 offered (use, copy), 2 others may change it too (owner only; None keeps)
 
 
 class UseSavedIn(BaseModel):
@@ -400,16 +400,19 @@ def edit_saved(sid: int, s: SavedMealEdit, x_remote_user_id: str | None = Header
     if s.items is not None and not s.items:
         raise HTTPException(400, "Mahlzeit braucht mindestens eine Komponente")
     with db.conn() as c:
-        c.execute("UPDATE saved_meals SET name=?, category=? WHERE id=? AND owner=?",
-                  (s.name.strip(), s.category.strip(), sid, owner))
-        if s.shared is not None:
-            c.execute("UPDATE saved_meals SET shared=? WHERE id=? AND owner=?", (int(s.shared), sid, owner))
+        scope, sp = food_scope(c, owner)
+        row = c.execute(f"SELECT owner, shared FROM saved_meals WHERE id=? AND {scope}", (sid, *sp)).fetchone()
+        if not row or (row["owner"] != owner and row["shared"] != 2):      # others may only change what is offered for changing
+            return {"ok": True}
+        c.execute("UPDATE saved_meals SET name=?, category=? WHERE id=?", (s.name.strip(), s.category.strip(), sid))
+        if s.shared is not None and row["owner"] == owner:
+            c.execute("UPDATE saved_meals SET shared=? WHERE id=?", (share_level(s.shared), sid))
         if s.min_scale is not None or s.max_scale is not None:
             lo, hi = (max(0, s.min_scale or 0), max(0, s.max_scale or 0))
             if lo and hi and lo > hi:
                 raise HTTPException(400, "Kleinster Faktor ist größer als der größte")
-            c.execute("UPDATE saved_meals SET min_scale=?, max_scale=? WHERE id=? AND owner=?", (lo, hi, sid, owner))
-        if s.items is not None and c.execute("SELECT 1 FROM saved_meals WHERE id=? AND owner=?", (sid, owner)).fetchone():
+            c.execute("UPDATE saved_meals SET min_scale=?, max_scale=? WHERE id=?", (lo, hi, sid))
+        if s.items is not None:
             c.execute("DELETE FROM saved_meal_items WHERE saved_meal_id=?", (sid,))
             c.executemany(
                 "INSERT INTO saved_meal_items(saved_meal_id,name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,mode,tol,pack_g,step_g,pack_min,pack_max)"

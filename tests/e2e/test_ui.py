@@ -265,3 +265,23 @@ def test_household_sees_shared_recipes_and_meals_but_cannot_change_them(browser,
     assert errors == []
     ctx.close()
     assert rid
+
+
+def test_nutrient_gaps_card_in_the_statistics(page):
+    from datetime import date
+    settings(page.base, lang="de", features={"micros": True})
+    fid = httpx.post(page.base + "/api/foods", json={"name": "Gaps-Müsli", "kcal": 380, "protein": 10, "carbs": 60, "fat": 6,
+                                                      "fiber": 10, "sugar": 20, "salt": 1, "sat_fat": 2}).json()["id"]
+    httpx.post(page.base + "/api/entries", json={"day": date.today().isoformat(), "food_id": fid, "grams": 200})
+    page.goto(page.base + "/")
+    page.click('#tabs button[data-tab="stats"]')
+    card = page.wait_for_selector('#stats .card:has(h2:text-is("Nährwert-Lücken (7 Tage)"))')
+    text = card.inner_text()
+    assert "Ballaststoffe" in text and "unter dem Ziel" in text and "mind. 30,0 g" in text.replace(".", ",") or "mind." in text
+    settings(page.base, lang="en")
+    page.reload()
+    page.click('#tabs button[data-tab="stats"]')
+    card = page.wait_for_selector('#stats .card:has(h2:text-is("Nutrient gaps (7 days)"))')
+    assert "below the goal" in card.inner_text() and "at least" in card.inner_text()
+    assert page.errors == []
+    settings(page.base, lang="de")

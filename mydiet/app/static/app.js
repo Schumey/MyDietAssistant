@@ -499,7 +499,7 @@ const EN = {
   "Todo-Liste fehlt": "To-do list missing",
   "Keine Einträge": "No items",
   "Home Assistant nicht erreichbar (gesendet: {})": "Home Assistant not reachable (sent: {})",
-  "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren, ändern nur Du)": "Offer in the shared household library (others may use and copy it, only you can change it)",
+  "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren)": "Offer in the shared household library (others may use and copy it)",
   "Wochenbericht": "Weekly report",
   "Einmal pro Woche eine Zusammenfassung der letzten sieben Tage per Benachrichtigung. Nutzt den Benachrichtigungsdienst aus „Erinnerung“.": "Once a week a summary of the last seven days as a notification. Uses the notification service from “Reminder”.",
   "Wochenbericht aktiv": "Weekly report active",
@@ -515,6 +515,19 @@ const EN = {
   "Datenbank prüfen: {}": "Database check: {}",
   "Auch erkennen, wenn so viele Kalorien verbrannt wurden (kcal, 0 = aus)": "Also detect when this many calories were burned (kcal, 0 = off)",
   "Wochentag ungültig": "Invalid weekday",
+  "Andere dürfen es auch ändern": "Others may change it as well",
+  "Nährwert-Lücken (7 Tage)": "Nutrient gaps (7 days)",
+  "Durchschnitt der letzten 7 Tage (nur Tage mit Angaben) gegen Richtwerte; {} von {} Tagen erfasst.": "Average of the last 7 days (only days with values) against reference goals; {} of {} days logged.",
+  "nicht genug Angaben": "not enough data",
+  "Ziele ändern": "Change goals",
+  "Ziele für weitere Nährwerte": "Goals for more nutrients",
+  "Richtwerte pro Tag in g. Ballaststoffe sollen erreicht werden, bei Zucker, Salz und gesättigten Fettsäuren ist es eine Obergrenze.": "Reference values per day in g. Fiber should be reached; for sugar, salt and saturated fat it is an upper limit.",
+  "Weitere Nährwerte sind nicht aktiviert": "More nutrients are not enabled",
+  "Ziele müssen zwischen 0 und 1000 liegen": "Goals must be between 0 and 1000",
+  "Ø {} g (mind. {} g) – im Ziel": "Ø {} g (at least {} g) – on target",
+  "Ø {} g (mind. {} g) – {} % unter dem Ziel": "Ø {} g (at least {} g) – {} % below the goal",
+  "Ø {} g (höchstens {} g) – im Ziel": "Ø {} g (at most {} g) – on target",
+  "Ø {} g (höchstens {} g) – {} % über dem Ziel": "Ø {} g (at most {} g) – {} % above the goal",
 };
 
 // Languages: German is the source text; every other language is a dictionary German -> language (EN, FR, ES ...).
@@ -1395,7 +1408,7 @@ Object.assign(LANGS, {
     "Todo-Liste fehlt": "Liste de tâches manquante",
     "Keine Einträge": "Aucun élément",
     "Home Assistant nicht erreichbar (gesendet: {})": "Home Assistant injoignable (envoyés : {})",
-    "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren, ändern nur Du)": "Proposer dans la bibliothèque partagée du foyer (les autres peuvent l’utiliser et le copier, seul toi peux le modifier)",
+    "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren)": "Proposer dans la bibliothèque partagée du foyer (les autres peuvent l’utiliser et le copier)",
     "Wochenbericht": "Bilan hebdomadaire",
     "Einmal pro Woche eine Zusammenfassung der letzten sieben Tage per Benachrichtigung. Nutzt den Benachrichtigungsdienst aus „Erinnerung“.": "Une fois par semaine, un résumé des sept derniers jours en notification. Utilise le service de notification de « Rappel ».",
     "Wochenbericht aktiv": "Bilan hebdomadaire actif",
@@ -1410,6 +1423,19 @@ Object.assign(LANGS, {
     "Datenbank prüfen: {}": "Vérification de la base : {}",
     "Auch erkennen, wenn so viele Kalorien verbrannt wurden (kcal, 0 = aus)": "Détecter aussi à partir de ce nombre de calories brûlées (kcal, 0 = désactivé)",
     "Wochentag ungültig": "Jour de la semaine invalide",
+    "Andere dürfen es auch ändern": "Les autres peuvent aussi le modifier",
+    "Nährwert-Lücken (7 Tage)": "Lacunes nutritionnelles (7 jours)",
+    "Durchschnitt der letzten 7 Tage (nur Tage mit Angaben) gegen Richtwerte; {} von {} Tagen erfasst.": "Moyenne des 7 derniers jours (seulement les jours avec valeurs) par rapport aux valeurs de référence ; {} jours sur {} saisis.",
+    "nicht genug Angaben": "pas assez de données",
+    "Ziele ändern": "Modifier les objectifs",
+    "Ziele für weitere Nährwerte": "Objectifs pour les autres nutriments",
+    "Richtwerte pro Tag in g. Ballaststoffe sollen erreicht werden, bei Zucker, Salz und gesättigten Fettsäuren ist es eine Obergrenze.": "Valeurs de référence par jour en g. Les fibres doivent être atteintes ; pour le sucre, le sel et les acides gras saturés, c’est une limite maximale.",
+    "Weitere Nährwerte sind nicht aktiviert": "Les autres nutriments ne sont pas activés",
+    "Ziele müssen zwischen 0 und 1000 liegen": "Les objectifs doivent être compris entre 0 et 1000",
+    "Ø {} g (mind. {} g) – im Ziel": "Ø {} g (au moins {} g) – dans l’objectif",
+    "Ø {} g (mind. {} g) – {} % unter dem Ziel": "Ø {} g (au moins {} g) – {} % sous l’objectif",
+    "Ø {} g (höchstens {} g) – im Ziel": "Ø {} g (au plus {} g) – dans l’objectif",
+    "Ø {} g (höchstens {} g) – {} % über dem Ziel": "Ø {} g (au plus {} g) – {} % au-dessus de l’objectif",
   },
   es: {
     "Ernährung": "Alimentación",
@@ -2282,7 +2308,7 @@ Object.assign(LANGS, {
     "Todo-Liste fehlt": "Falta la lista de tareas",
     "Keine Einträge": "Sin elementos",
     "Home Assistant nicht erreichbar (gesendet: {})": "Home Assistant no es accesible (enviados: {})",
-    "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren, ändern nur Du)": "Ofrecer en la biblioteca compartida del hogar (los demás pueden usarlo y copiarlo, solo tú puedes cambiarlo)",
+    "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren)": "Ofrecer en la biblioteca compartida del hogar (los demás pueden usarlo y copiarlo)",
     "Wochenbericht": "Resumen semanal",
     "Einmal pro Woche eine Zusammenfassung der letzten sieben Tage per Benachrichtigung. Nutzt den Benachrichtigungsdienst aus „Erinnerung“.": "Una vez a la semana, un resumen de los últimos siete días como notificación. Usa el servicio de notificación de «Recordatorio».",
     "Wochenbericht aktiv": "Resumen semanal activo",
@@ -2297,6 +2323,19 @@ Object.assign(LANGS, {
     "Datenbank prüfen: {}": "Comprobación de la base de datos: {}",
     "Auch erkennen, wenn so viele Kalorien verbrannt wurden (kcal, 0 = aus)": "Detectar también a partir de estas calorías quemadas (kcal, 0 = desactivado)",
     "Wochentag ungültig": "Día de la semana no válido",
+    "Andere dürfen es auch ändern": "Los demás también pueden cambiarlo",
+    "Nährwert-Lücken (7 Tage)": "Carencias de nutrientes (7 días)",
+    "Durchschnitt der letzten 7 Tage (nur Tage mit Angaben) gegen Richtwerte; {} von {} Tagen erfasst.": "Media de los últimos 7 días (solo días con valores) frente a valores de referencia; {} de {} días registrados.",
+    "nicht genug Angaben": "datos insuficientes",
+    "Ziele ändern": "Cambiar objetivos",
+    "Ziele für weitere Nährwerte": "Objetivos para más nutrientes",
+    "Richtwerte pro Tag in g. Ballaststoffe sollen erreicht werden, bei Zucker, Salz und gesättigten Fettsäuren ist es eine Obergrenze.": "Valores de referencia por día en g. La fibra debe alcanzarse; para el azúcar, la sal y las grasas saturadas es un límite superior.",
+    "Weitere Nährwerte sind nicht aktiviert": "Más nutrientes no está activado",
+    "Ziele müssen zwischen 0 und 1000 liegen": "Los objetivos deben estar entre 0 y 1000",
+    "Ø {} g (mind. {} g) – im Ziel": "Ø {} g (al menos {} g) – en el objetivo",
+    "Ø {} g (mind. {} g) – {} % unter dem Ziel": "Ø {} g (al menos {} g) – {} % por debajo del objetivo",
+    "Ø {} g (höchstens {} g) – im Ziel": "Ø {} g (como máximo {} g) – en el objetivo",
+    "Ø {} g (höchstens {} g) – {} % über dem Ziel": "Ø {} g (como máximo {} g) – {} % por encima del objetivo",
   },
   nl: {
     "Ernährung": "Voeding",
@@ -3181,7 +3220,7 @@ Object.assign(LANGS, {
     "Todo-Liste fehlt": "Takenlijst ontbreekt",
     "Keine Einträge": "Geen items",
     "Home Assistant nicht erreichbar (gesendet: {})": "Home Assistant niet bereikbaar (verstuurd: {})",
-    "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren, ändern nur Du)": "Aanbieden in de gedeelde huishoudbibliotheek (anderen mogen het gebruiken en kopiëren, alleen jij kunt het wijzigen)",
+    "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren)": "Aanbieden in de gedeelde huishoudbibliotheek (anderen mogen het gebruiken en kopiëren)",
     "Wochenbericht": "Weekoverzicht",
     "Einmal pro Woche eine Zusammenfassung der letzten sieben Tage per Benachrichtigung. Nutzt den Benachrichtigungsdienst aus „Erinnerung“.": "Eén keer per week een samenvatting van de laatste zeven dagen als melding. Gebruikt de meldingsdienst van “Herinnering”.",
     "Wochenbericht aktiv": "Weekoverzicht actief",
@@ -3196,6 +3235,19 @@ Object.assign(LANGS, {
     "Datenbank prüfen: {}": "Databasecontrole: {}",
     "Auch erkennen, wenn so viele Kalorien verbrannt wurden (kcal, 0 = aus)": "Ook herkennen vanaf zoveel verbrande calorieën (kcal, 0 = uit)",
     "Wochentag ungültig": "Ongeldige weekdag",
+    "Andere dürfen es auch ändern": "Anderen mogen het ook wijzigen",
+    "Nährwert-Lücken (7 Tage)": "Voedingstekorten (7 dagen)",
+    "Durchschnitt der letzten 7 Tage (nur Tage mit Angaben) gegen Richtwerte; {} von {} Tagen erfasst.": "Gemiddelde van de laatste 7 dagen (alleen dagen met waarden) tegen richtwaarden; {} van {} dagen geregistreerd.",
+    "nicht genug Angaben": "te weinig gegevens",
+    "Ziele ändern": "Doelen wijzigen",
+    "Ziele für weitere Nährwerte": "Doelen voor meer voedingswaarden",
+    "Richtwerte pro Tag in g. Ballaststoffe sollen erreicht werden, bei Zucker, Salz und gesättigten Fettsäuren ist es eine Obergrenze.": "Richtwaarden per dag in g. Vezels moeten worden gehaald; voor suiker, zout en verzadigd vet is het een bovengrens.",
+    "Weitere Nährwerte sind nicht aktiviert": "Meer voedingswaarden is niet ingeschakeld",
+    "Ziele müssen zwischen 0 und 1000 liegen": "Doelen moeten tussen 0 en 1000 liggen",
+    "Ø {} g (mind. {} g) – im Ziel": "Ø {} g (minstens {} g) – op doel",
+    "Ø {} g (mind. {} g) – {} % unter dem Ziel": "Ø {} g (minstens {} g) – {} % onder het doel",
+    "Ø {} g (höchstens {} g) – im Ziel": "Ø {} g (hoogstens {} g) – op doel",
+    "Ø {} g (höchstens {} g) – {} % über dem Ziel": "Ø {} g (hoogstens {} g) – {} % boven het doel",
   },
   it: {
     "Ernährung": "Alimentazione",
@@ -4080,7 +4132,7 @@ Object.assign(LANGS, {
     "Todo-Liste fehlt": "Lista di cose da fare mancante",
     "Keine Einträge": "Nessuna voce",
     "Home Assistant nicht erreichbar (gesendet: {})": "Home Assistant non raggiungibile (inviate: {})",
-    "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren, ändern nur Du)": "Offri nella libreria familiare condivisa (gli altri possono usarlo e copiarlo, solo tu puoi modificarlo)",
+    "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren)": "Offri nella libreria familiare condivisa (gli altri possono usarlo e copiarlo)",
     "Wochenbericht": "Riepilogo settimanale",
     "Einmal pro Woche eine Zusammenfassung der letzten sieben Tage per Benachrichtigung. Nutzt den Benachrichtigungsdienst aus „Erinnerung“.": "Una volta a settimana un riepilogo degli ultimi sette giorni come notifica. Usa il servizio di notifica di “Promemoria”.",
     "Wochenbericht aktiv": "Riepilogo settimanale attivo",
@@ -4095,6 +4147,19 @@ Object.assign(LANGS, {
     "Datenbank prüfen: {}": "Controllo del database: {}",
     "Auch erkennen, wenn so viele Kalorien verbrannt wurden (kcal, 0 = aus)": "Riconosci anche a partire da queste calorie bruciate (kcal, 0 = disattivato)",
     "Wochentag ungültig": "Giorno della settimana non valido",
+    "Andere dürfen es auch ändern": "Anche gli altri possono modificarlo",
+    "Nährwert-Lücken (7 Tage)": "Carenze di nutrienti (7 giorni)",
+    "Durchschnitt der letzten 7 Tage (nur Tage mit Angaben) gegen Richtwerte; {} von {} Tagen erfasst.": "Media degli ultimi 7 giorni (solo giorni con valori) rispetto ai valori di riferimento; {} giorni su {} registrati.",
+    "nicht genug Angaben": "dati insufficienti",
+    "Ziele ändern": "Modifica gli obiettivi",
+    "Ziele für weitere Nährwerte": "Obiettivi per altri nutrienti",
+    "Richtwerte pro Tag in g. Ballaststoffe sollen erreicht werden, bei Zucker, Salz und gesättigten Fettsäuren ist es eine Obergrenze.": "Valori di riferimento al giorno in g. Le fibre vanno raggiunte; per zuccheri, sale e grassi saturi è un limite massimo.",
+    "Weitere Nährwerte sind nicht aktiviert": "Altri nutrienti non sono attivati",
+    "Ziele müssen zwischen 0 und 1000 liegen": "Gli obiettivi devono essere tra 0 e 1000",
+    "Ø {} g (mind. {} g) – im Ziel": "Ø {} g (almeno {} g) – in linea con l’obiettivo",
+    "Ø {} g (mind. {} g) – {} % unter dem Ziel": "Ø {} g (almeno {} g) – {} % sotto l’obiettivo",
+    "Ø {} g (höchstens {} g) – im Ziel": "Ø {} g (al massimo {} g) – in linea con l’obiettivo",
+    "Ø {} g (höchstens {} g) – {} % über dem Ziel": "Ø {} g (al massimo {} g) – {} % sopra l’obiettivo",
   },
 });
 
@@ -5793,9 +5858,15 @@ async function shareLibrary(kind, item) {
 // ---------------------------------------------------------------- saved meals page
 const sharedFrom = o => h("span", { class: "shared-tag", title: "Gemeinsame Haushaltsbibliothek" }, `von ${o.owner_name}`);
 const sharedMark = o => (o.shared ? h("span", { class: "shared-tag", title: "Für den Haushalt freigegeben" }, "geteilt") : null);
-const shareBox = (draft, obj) => (state.features.household && (!obj || obj.mine !== false)
-  ? h("label", { class: "pick", style: "margin-top:12px" }, h("input", { type: "checkbox", checked: !!draft.shared, onchange: e => { draft.shared = e.target.checked; } }),
-    "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren, ändern nur Du)") : null);
+const shareBox = (draft, obj) => {
+  if (!state.features.household || (obj && obj.mine === false)) return null;
+  const edit = h("input", { type: "checkbox", checked: draft.shared === 2, disabled: !draft.shared, onchange: e => { draft.shared = e.target.checked ? 2 : 1; } });
+  const offer = h("input", { type: "checkbox", checked: !!draft.shared, onchange: e => {
+    draft.shared = e.target.checked ? (edit.checked ? 2 : 1) : 0; edit.disabled = !e.target.checked; if (!e.target.checked) edit.checked = false;
+  } });
+  return [h("label", { class: "pick", style: "margin-top:12px" }, offer, "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und kopieren)"), h("label", { class: "pick" }, edit, "Andere dürfen es auch ändern")];
+};
+const canEdit = o => o.mine !== false || o.shared === 2;
 
 async function renderMeals() {
   const [saved] = await Promise.all([api("saved-meals"), loadCats()]);
@@ -5805,7 +5876,7 @@ async function renderMeals() {
   const chips = h("div");
 
   // Edit name/category and the components of a saved meal: change amounts, swap or remove foods, add new ones.
-  const editSaved = (s, draft = { name: s.name, category: s.category, items: s.items.map(i => ({ ...i })), min_scale: s.min_scale || 0, max_scale: s.max_scale || 0, shared: !!s.shared }) => {
+  const editSaved = (s, draft = { name: s.name, category: s.category, items: s.items.map(i => ({ ...i })), min_scale: s.min_scale || 0, max_scale: s.max_scale || 0, shared: s.shared || 0 }) => {
     const name = h("input", { value: draft.name, oninput: () => { draft.name = name.value; } });
     const category = h("input", { list: "cat-list", value: draft.category, oninput: () => { draft.category = category.value; } });
     const msg = h("div", { class: "err" });
@@ -5860,7 +5931,7 @@ async function renderMeals() {
           if (!draft.name.trim()) { msg.textContent = "Bitte einen Namen angeben."; return; }
           try {
             await send("PUT", "saved-meals/" + s.id, { name: draft.name, category: draft.category, min_scale: draft.min_scale || 0, max_scale: draft.max_scale || 0,
-              shared: state.features.household && s.mine !== false ? !!draft.shared : undefined,
+              shared: state.features.household && s.mine !== false ? draft.shared || 0 : undefined,
               items: draft.items.map(i => ({
                 name: i.name, grams: i.grams, kcal: i.kcal, protein: i.protein, carbs: i.carbs, fat: i.fat,
                 fiber: i.fiber || 0, sugar: i.sugar || 0, salt: i.salt || 0, sat_fat: i.sat_fat || 0,
@@ -5881,7 +5952,7 @@ async function renderMeals() {
         h("div", { class: "muted" }, s.items.map(entryLabel).join(" · "))),
       s.mine === false ? null : h("button", { class: "icon", title: "Trigger anlegen", "aria-label": "Trigger anlegen", onclick: () => triggerDialog({ item: "s:" + s.id }) }, "⚡"),
       state.features.household && s.mine !== false ? h("button", { class: "icon", title: "Mit dem Haushalt teilen", "aria-label": "Teilen", onclick: () => shareLibrary("saved-meals", s) }, "⇪") : null,
-      s.mine === false ? null : h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => editSaved(s) }, "✎"),
+      !canEdit(s) ? null : h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => editSaved(s) }, "✎"),
       h("button", { class: "icon", title: "Kopie anlegen", "aria-label": "Kopieren", onclick: async () => {
         const { id } = await send("POST", `saved-meals/${s.id}/copy`);
         await renderMeals();
@@ -5966,7 +6037,7 @@ async function renderRecipes() {
   const list = h("div", { class: "list" });
   const chips = h("div");
 
-  const editRecipe = (r, draft = r ? { name: r.name, category: r.category, portions: r.portions, cooked_g: r.cooked_g, source: r.source || "", instructions: r.instructions || "", shared: !!r.shared, items: r.items.map(i => ({ ...i })) }
+  const editRecipe = (r, draft = r ? { name: r.name, category: r.category, portions: r.portions, cooked_g: r.cooked_g, source: r.source || "", instructions: r.instructions || "", shared: r.shared || 0, items: r.items.map(i => ({ ...i })) }
     : { name: "", category: "", portions: 2, cooked_g: null, source: "", instructions: "", items: [] }) => {
     const name = h("input", { value: draft.name, oninput: () => { draft.name = name.value; } });
     const category = h("input", { list: "cat-list", value: draft.category, oninput: () => { draft.category = category.value; } });
@@ -6028,7 +6099,7 @@ async function renderRecipes() {
             source: draft.source || "", instructions: draft.instructions || "",
             items: draft.items.map(i => ({ name: i.name, grams: i.grams, kcal: i.kcal, protein: i.protein, carbs: i.carbs, fat: i.fat,
               fiber: i.fiber || 0, sugar: i.sugar || 0, salt: i.salt || 0, sat_fat: i.sat_fat || 0 })) };
-          if (state.features.household && (!r || r.mine !== false)) body.shared = !!draft.shared;
+          if (state.features.household && (!r || r.mine !== false)) body.shared = draft.shared || 0;
           try { await send(r ? "PUT" : "POST", "recipes" + (r ? "/" + r.id : ""), body); dlg.close(); renderRecipes(); }
           catch (e) { msg.textContent = e.message; }
         } }, "Speichern")));
@@ -6096,7 +6167,7 @@ async function renderRecipes() {
         r.instructions ? h("details", {}, h("summary", { class: "muted" }, "Zubereitung"), h("ol", { class: "steps" }, ...r.instructions.split("\n").filter(x => x.trim()).map(x => h("li", {}, x)))) : null,
         /^https?:\/\//.test(r.source || "") ? h("div", { class: "muted" }, h("a", { href: r.source, target: "_blank", rel: "noopener noreferrer" }, new URL(r.source).hostname.replace(/^www\./, ""))) : null),
       h("button", { class: "icon", title: "Trigger anlegen", "aria-label": "Trigger anlegen", disabled: !r.food_id, onclick: () => triggerDialog({ item: "f:" + r.food_id }) }, "⚡"),
-      r.mine === false ? null : h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => editRecipe(r) }, "✎"),
+      !canEdit(r) ? null : h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => editRecipe(r) }, "✎"),
       h("button", { class: "icon", title: "Kopie anlegen", "aria-label": "Kopieren", onclick: async () => {
         const { id } = await send("POST", `recipes/${r.id}/copy`);
         await renderRecipes();
@@ -6346,6 +6417,39 @@ function goalAdvice(b, goal) {
       } }, "Als Tagesziel übernehmen")) : null);
 }
 
+// Nutrient gaps (optional "More nutrients"): average of the last 7 days against everyday reference goals.
+async function microGapsCard() {
+  let r;
+  try { r = await api("micros/gaps"); } catch { return null; }
+  if (!r.logged) return null;
+  const label = Object.fromEntries(MICROS.map(([k, name]) => [k, name]));
+  const line = i => {
+    const name = label[i.key];
+    if (i.status === "unknown") return h("div", { class: "muted" }, h("b", {}, name), " ", "nicht genug Angaben");
+    const text = i.kind === "min"
+      ? (i.status === "ok" ? `Ø ${n1(i.avg)} g (mind. ${n1(i.goal)} g) – im Ziel` : `Ø ${n1(i.avg)} g (mind. ${n1(i.goal)} g) – ${Math.abs(i.delta_pct)} % unter dem Ziel`)
+      : (i.status === "ok" ? `Ø ${n1(i.avg)} g (höchstens ${n1(i.goal)} g) – im Ziel` : `Ø ${n1(i.avg)} g (höchstens ${n1(i.goal)} g) – ${i.delta_pct} % über dem Ziel`);
+    return h("div", { class: i.status === "ok" ? "" : "over" }, h("b", {}, name), " ", text);
+  };
+  const edit = async () => {
+    const g = { ...r.goals };
+    const fields = MICROS.map(([k, name]) => [k, h("input", { type: "number", step: "0.1", min: "0.1", value: g[k], onchange: e => { g[k] = Number(e.target.value) || g[k]; } }), name]);
+    const msg = h("div", { class: "err" });
+    setDlg(h("h2", {}, "Ziele für weitere Nährwerte"),
+      h("div", { class: "muted" }, "Richtwerte pro Tag in g. Ballaststoffe sollen erreicht werden, bei Zucker, Salz und gesättigten Fettsäuren ist es eine Obergrenze."),
+      ...fields.flatMap(([, input, name]) => [h("label", {}, name), input]), msg,
+      h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
+        h("button", { onclick: async () => {
+          try { await send("PUT", "micros/goals", g); dlg.close(); renderStats(); } catch (e) { msg.textContent = e.message; }
+        } }, "Speichern")));
+    dlg.showModal();
+  };
+  return h("div", { class: "card" }, h("h2", {}, "Nährwert-Lücken (7 Tage)"),
+    h("div", { class: "muted" }, `Durchschnitt der letzten 7 Tage (nur Tage mit Angaben) gegen Richtwerte; ${r.logged} von ${r.days} Tagen erfasst.`),
+    h("div", { class: "list" }, r.items.map(line)),
+    h("div", { class: "actions", style: "justify-content:flex-start" }, h("button", { class: "flat", onclick: edit }, "Ziele ändern")));
+}
+
 async function renderStats() {
   const [{ days, goal, balance }, weights, trk] = await Promise.all([api("stats?days=" + state.range), api("weights?days=" + state.range),
     state.features.trackers ? api("trackers/stats?days=" + state.range) : []]);
@@ -6392,6 +6496,7 @@ async function renderStats() {
         h("span", { style: "--c:var(--error-color)" }, `Fett ${logged.length ? pct(kc.f) : 0} %`))));
   if (state.features.micros && logged.length) root.append(h("div", { class: "card" }, h("h2", {}, "Weitere Nährwerte (Ø pro Tag)"),
     h("div", { class: "stat-tiles" }, MICROS.map(([k, label, u]) => tile(label, `${n1(avg(k))} ${u}`)))));
+  if (state.features.micros) { const gc = await microGapsCard(); if (gc) root.append(gc); }
   root.append(compareCard());
   if (trk.some(t => t.logged)) {
     const fmt = v => (Math.round(v * 10) / 10).toLocaleString(I18N.locale);

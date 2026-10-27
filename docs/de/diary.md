@@ -96,6 +96,14 @@ Mit der Zusatzfunktion „Wasser und Nahrungsergänzung“ bekommt das Tagebuch 
 
 Mit „Weitere Nährwerte“ erfasst Du bei Lebensmitteln zusätzlich Ballaststoffe, Zucker, Salz und gesättigte Fettsäuren; sie werden im Tagebuch und in der Statistik ausgewertet. Open Food Facts liefert sie bei der Online-Suche mit.
 
+### Nährwert-Lücken
+
+Im Reiter **Statistik** zeigt die Karte **Nährwert-Lücken (7 Tage)**, wie Deine letzten sieben Tage zu Richtwerten passen. Beispiel: „Ballaststoffe: Ø 22,0 g (mind. 30,0 g) – 27 % unter dem Ziel“. Gezählt werden nur Tage, an denen für den Nährwert Angaben vorliegen; fehlen sie an mehr als der Hälfte der Tage, steht „nicht genug Angaben“ da.
+
+- Ballaststoffe sollen erreicht werden (Standard mindestens 30 g).
+- Zucker (höchstens 50 g), Salz (höchstens 6 g) und gesättigte Fettsäuren (höchstens 20 g) sind Obergrenzen.
+- Mit **Ziele ändern** stellst Du eigene Werte ein. Eine Abweichung bis 5 % gilt als im Ziel.
+
 ## Tastenkürzel
 
 | Taste | Wirkung |
