@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.22.1
+
+### Behoben
+- **Windows-Look: Hintergrundbild durchgehend:** Der Desktop-Hintergrund (z. B. Bliss bei HomeAssistantXP) wurde doppelt gezeichnet und brach unterhalb des Fensters ab. Er füllt jetzt den ganzen Bildschirm.
+
 ## 1.22.0
 
 ### Neu

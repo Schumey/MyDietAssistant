@@ -272,7 +272,9 @@ html[data-skin="win"][data-tone="dark"] {
   --w-b0: #000; --w-b1: #2b2b2b; --w-b2: #4f4f4f; --w-b3: #808080;
   --w-bad: #ff7b7b; --w-good: #7ddf7d;
 }
-html[data-skin="win"], html[data-skin="win"] body { background: var(--ha95-desktop, #008080); }
+/* the desktop is painted once, by html, over the whole viewport (body is only as tall as its content) */
+html[data-skin="win"] { background: var(--ha95-desktop, #008080) fixed no-repeat; background-size: 100% 100%; min-height: 100%; }
+html[data-skin="win"] body { background: transparent; }
 html[data-skin="win"] body { font-size: 13px; line-height: 1.35; }
 
 /* the window: title bar + tabs on top, tab panel below */
