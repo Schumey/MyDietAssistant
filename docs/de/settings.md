@@ -68,9 +68,10 @@ Alles, was nicht jeder braucht, ist standardmäßig aus.
 1. Öffne *Einstellungen → Darstellung*.
 2. **Tagebuch:** „Feste Mahlzeiten (Frühstück, Mittagessen, …)“ oder „Uhrzeiten (08:47 …, 11:30 …)“. Bestehende Einträge bleiben erhalten.
 3. **Optik:**
-   - *Automatisch*: Windows-Look, wenn das HA-Theme „HA 95“ oder „HA 98“ heißt, sonst Standard.
+   - *Automatisch*: Windows-Look, wenn das HA-Theme „HA 95“ oder „HA 98“ heißt, XP-Look bei „HomeAssistantXP“ oder „Windows XP“, sonst Standard.
    - *Standard (HA-Theme)*: übernimmt das aktive Theme von Home Assistant.
    - *Windows-Look*: erzwingt den Windows-95-Stil.
+   - *Windows-XP-Look*: erzwingt den XP-Stil (Luna).
 4. **Auf diesem Gerät beim Öffnen direkt den Barcode-Scanner starten:** gilt nur für dieses Gerät, siehe [Barcode-Scanner](barcode.md#scanner-per-homescreen-verknüpfung-companion-app).
 
 ## Tastenkürzel

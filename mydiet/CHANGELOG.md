@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.22.0
+
+### Neu
+- **Windows-XP-Look (Luna):** Passend zum Theme [HomeAssistantXP](https://github.com/Schumey/HomeAssistantXP) gibt es eine XP-Variante des Windows-Looks mit blauem Fensterrahmen, Luna-Titelleiste samt Fensterknöpfen, runden Tabs und Knöpfen und grünem Fortschrittsbalken. Sie schaltet sich bei Themes namens „HomeAssistantXP“ oder „Windows XP“ automatisch ein und lässt sich unter *Einstellungen → Darstellung → Optik* erzwingen. Die Farben kommen aus dem Theme, sodass auch Olive, Silver, Royale Noir und Dark passen.
+
 ## 1.21.1
 
 ### Behoben

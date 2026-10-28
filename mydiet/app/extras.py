@@ -131,8 +131,8 @@ def write_settings(s: SettingsIn, x_remote_user_id: str | None = Header(None)):
     if s.goal_rate is not None:
         set_pref(owner, "goal_rate", max(0.0, min(float(s.goal_rate), 2.0)))
     if s.skin is not None:
-        if s.skin not in ("auto", "default", "win"):
-            raise HTTPException(400, "skin must be auto, default or win")
+        if s.skin not in ("auto", "default", "win", "xp"):
+            raise HTTPException(400, "skin must be auto, default, win or xp")
         set_pref(owner, "skin", s.skin)
     if s.frequent is not None:
         if s.frequent not in ("foods", "meals", "both"):
@@ -792,7 +792,7 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
     if d.get("settings", {}).get("goal_mode") in GOAL_MODES:
         set_pref(owner, "goal_mode", d["settings"]["goal_mode"])
         set_pref(owner, "goal_rate", d["settings"].get("goal_rate", 0.5))
-    if d.get("settings", {}).get("skin") in ("auto", "default", "win"):
+    if d.get("settings", {}).get("skin") in ("auto", "default", "win", "xp"):
         set_pref(owner, "skin", d["settings"]["skin"])
     if isinstance(d.get("reminder"), dict):
         set_pref(owner, "reminder", d["reminder"])

@@ -383,6 +383,85 @@ html[data-skin="win"] .dlg-body { padding: 12px; }
   html[data-skin="win"] main { padding: 6px; }
   html[data-skin="win"] .card { margin: 0 0 10px; padding: 10px 6px; }
 }
+
+/* Windows XP (Luna) variant of the Windows look: html[data-skin="win"][data-variant="xp"].
+   Palette comes from the HomeAssistantXP theme (--xp-*), with Luna blue fallbacks. */
+html[data-skin="win"][data-variant="xp"] {
+  --x-frame: var(--xp-frame-color, #0831d9);
+  --x-border: var(--xp-border, #003c74);
+  --x-line: var(--xp-border-field, #7f9db9);
+  --x-hot: var(--xp-hot, #f5a623);
+  --w-face: var(--xp-face, #ece9d8);
+  --w-field: var(--xp-window, #fff);
+  --w-ink: var(--xp-window-text, #000);
+  --w-text: var(--xp-text, #000);
+  --w-b1: var(--xp-shadow, #aca899); --w-b2: var(--xp-light, #f7f6ee); --w-b3: var(--xp-highlight, #fff);
+  --w-title: var(--xp-title-bar, linear-gradient(180deg, #3d95ff 0%, #0a5ae8 8%, #0054e3 50%, #0a63f0 90%, #0840c0 100%));
+  --w-raised: inset 0 0 0 1px var(--x-border), inset 0 0 0 2px var(--w-b3), inset 0 -5px 4px -3px var(--w-b1);
+  --w-pressed: inset 0 0 0 1px var(--x-border), inset 1px 2px 3px rgba(0, 0, 0, .25);
+  --w-sunken: inset 0 0 0 1px var(--x-line), inset 1px 2px 3px rgba(0, 0, 0, .15);
+  --w-etched: 0 0 0 1px var(--w-b1);
+  font-family: var(--xp-font, Tahoma, "Segoe UI", Verdana, sans-serif);
+}
+html[data-skin="win"][data-variant="xp"] body { font-family: inherit; }
+html[data-skin="win"][data-variant="xp"] #win {
+  padding: 0 3px 3px; background: var(--x-frame); border-radius: 8px 8px 0 0; box-shadow: 2px 3px 8px #0006;
+}
+html[data-skin="win"][data-variant="xp"] .appbar { background: var(--x-frame); }
+html[data-skin="win"][data-variant="xp"] .appbar h1 {
+  margin: 0 -3px; padding: 5px 8px; border-radius: 7px 7px 0 0; text-shadow: 1px 1px #0f1089;
+  font-family: var(--xp-font-title, "Trebuchet MS", Tahoma, sans-serif); font-size: 14px;
+  background: var(--xp-title-buttons, none) no-repeat right 5px center / 67px 21px, var(--w-title);
+}
+html[data-skin="win"][data-variant="xp"] .appbar #who { padding-right: 80px; text-shadow: 1px 1px #0f1089; }
+html[data-skin="win"][data-variant="xp"] .appbar::after { display: none; }
+html[data-skin="win"][data-variant="xp"] nav { background: var(--w-face); padding: 6px 4px 0; }
+html[data-skin="win"][data-variant="xp"] nav button {
+  border-radius: 3px 3px 0 0; box-shadow: inset 0 0 0 1px var(--x-line); background: linear-gradient(180deg, var(--w-b3), var(--w-face));
+}
+html[data-skin="win"][data-variant="xp"] nav button.active {
+  background: var(--w-b3); box-shadow: inset 0 0 0 1px var(--x-line), inset 0 3px 0 var(--x-hot); margin: -2px -1px 0;
+}
+html[data-skin="win"][data-variant="xp"] main { background: var(--w-b3); box-shadow: inset 0 0 0 1px var(--x-line); }
+html[data-skin="win"][data-variant="xp"] .card { background: var(--w-face); border-radius: 4px; box-shadow: 0 0 0 1px #d0d0bf; }
+html[data-skin="win"][data-variant="xp"] .tile, html[data-skin="win"][data-variant="xp"] .tag { border-radius: 3px; }
+html[data-skin="win"][data-variant="xp"] .bar, html[data-skin="win"][data-variant="xp"] .macro-split { border-radius: 3px; height: 18px; }
+html[data-skin="win"][data-variant="xp"] .bar > i {
+  border-radius: 2px; background: repeating-linear-gradient(90deg, var(--xp-progress, #2fb52f) 0 7px, transparent 7px 9px);
+}
+html[data-skin="win"][data-variant="xp"] .bar > i.over { background: repeating-linear-gradient(90deg, var(--error-color) 0 7px, transparent 7px 9px); }
+html[data-skin="win"][data-variant="xp"] button {
+  border-radius: 3px; background: linear-gradient(180deg, var(--w-b3), var(--w-face) 86%, var(--w-b1));
+}
+html[data-skin="win"][data-variant="xp"] button:hover:not(:disabled) {
+  box-shadow: inset 0 0 0 1px var(--x-border), inset 0 0 0 2px var(--x-hot), inset 0 0 0 3px var(--w-b3);
+}
+html[data-skin="win"][data-variant="xp"] button:active:not(:disabled) { box-shadow: var(--w-pressed); padding: 5px 14px; }
+html[data-skin="win"][data-variant="xp"] button.flat, html[data-skin="win"][data-variant="xp"] button.flat.danger { background: linear-gradient(180deg, var(--w-b3), var(--w-face) 86%, var(--w-b1)); }
+html[data-skin="win"][data-variant="xp"] button.icon { background: transparent; border-radius: 3px; }
+html[data-skin="win"][data-variant="xp"] button.icon:hover:not(:disabled) { background: linear-gradient(180deg, var(--w-b3), var(--w-face)); }
+html[data-skin="win"][data-variant="xp"] button:disabled { color: var(--xp-disabled, #aca899); text-shadow: none; }
+html[data-skin="win"][data-variant="xp"] input, html[data-skin="win"][data-variant="xp"] select,
+html[data-skin="win"][data-variant="xp"] textarea { box-shadow: none; border: 1px solid var(--x-line); border-radius: 0; }
+html[data-skin="win"][data-variant="xp"] .range button.active { background: var(--w-face); box-shadow: var(--w-pressed); }
+html[data-skin="win"][data-variant="xp"] .daynav .date { box-shadow: none; border: 1px solid var(--x-line); }
+html[data-skin="win"][data-variant="xp"] .results { box-shadow: none; border: 1px solid var(--x-line); }
+html[data-skin="win"][data-variant="xp"] .results button.food:hover,
+html[data-skin="win"][data-variant="xp"] .diary tbody tr.item td:first-child:hover { background: var(--xp-select, #316ac5); color: var(--xp-select-text, #fff); }
+html[data-skin="win"][data-variant="xp"] .note { border-left-color: var(--xp-select, #316ac5); border-radius: 3px; }
+html[data-skin="win"][data-variant="xp"] dialog {
+  padding: 0 3px 3px; background: var(--x-frame); border-radius: 8px 8px 0 0; box-shadow: none; filter: drop-shadow(3px 4px 6px #0008);
+}
+html[data-skin="win"][data-variant="xp"] dialog > h2:first-child {
+  margin: 0 -3px; padding: 5px 8px; border-radius: 7px 7px 0 0; text-shadow: 1px 1px #0f1089;
+  font-family: var(--xp-font-title, "Trebuchet MS", Tahoma, sans-serif); font-size: 14px;
+}
+html[data-skin="win"][data-variant="xp"] .dlg-body { background: var(--w-face); }
+html[data-skin="win"][data-variant="xp"] #tip { border-radius: 4px; box-shadow: 2px 2px 3px #0005; border-color: var(--w-b1); }
+@media (max-width: 560px) {
+  html[data-skin="win"][data-variant="xp"] #win { border-radius: 0; }
+}
+
 .results.suggest { max-height: none; margin-bottom: 0; }
 
 /* v0.10 */

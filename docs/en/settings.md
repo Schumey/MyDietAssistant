@@ -68,9 +68,10 @@ Everything that not everyone needs is off by default.
 1. Open *Settings → Appearance*.
 2. **Diary:** “Fixed meals (breakfast, lunch, …)” or “Times (08:47 …, 11:30 …)”. Existing entries are kept.
 3. **Look:**
-   - *Automatic*: Windows look if the HA theme is named “HA 95” or “HA 98”, otherwise default.
+   - *Automatic*: Windows look if the HA theme is named “HA 95” or “HA 98”, XP look for “HomeAssistantXP” or “Windows XP”, otherwise default.
    - *Default (HA theme)*: follows the active Home Assistant theme.
    - *Windows look*: forces the Windows 95 style.
+   - *Windows XP look*: forces the XP (Luna) style.
 4. **Start the barcode scanner right away when opening on this device:** applies to this device only, see [Barcode scanner](barcode.md#scanner-via-a-home-screen-shortcut-companion-app).
 
 ## Keyboard shortcuts

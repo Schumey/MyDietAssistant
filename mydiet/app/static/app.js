@@ -190,7 +190,7 @@ const EN = {
   "„{}“ samt Verlauf löschen?": "Delete “{}” including its history?", "Neu, z. B. Magnesium": "New, e.g. magnesium",
   "Pro Zeile: Name, Einheit, Tagesziel und Schrittweite der +/− Knöpfe im Tagebuch.": "Per row: name, unit, daily goal and step size of the +/− buttons in the diary.",
   "Feste Mahlzeiten (Frühstück, Mittagessen, …)": "Fixed meals (breakfast, lunch, …)", "Uhrzeiten (08:47 …, 11:30 …)": "Times (08:47 …, 11:30 …)",
-  "Automatisch (Windows-Look bei HA-95/98-Theme)": "Automatic (Windows look with HA 95/98 theme)", "Standard (HA-Theme)": "Default (HA theme)", "Windows-Look": "Windows look",
+  "Automatisch (Windows-Look bei HA-95/98/XP-Theme)": "Automatic (Windows look with HA 95/98/XP theme)", "Standard (HA-Theme)": "Default (HA theme)", "Windows-Look": "Windows look", "Windows-XP-Look": "Windows XP look",
   "Darstellung": "Appearance", "Bestehende Einträge bleiben erhalten; ohne Uhrzeit erscheinen sie in der Zeitansicht am Ende.": "Existing entries are kept; entries without a time appear at the end in the time view.",
   "Auf diesem Gerät beim Öffnen direkt den Barcode-Scanner starten": "Start the barcode scanner right away when opening on this device",
   "Für ein Homescreen-Widget der Companion-App: Lege dort eine Verknüpfung auf dieses Panel an, dann öffnet sich die Kamera sofort.": "For a Companion app home screen widget: create a shortcut to this panel there and the camera opens right away.",
@@ -977,9 +977,10 @@ Object.assign(LANGS, {
     "Pro Zeile: Name, Einheit, Tagesziel und Schrittweite der +/− Knöpfe im Tagebuch.": "Par ligne : nom, unité, objectif quotidien et pas des boutons +/− dans le journal.",
     "Feste Mahlzeiten (Frühstück, Mittagessen, …)": "Repas fixes (petit-déjeuner, déjeuner, …)",
     "Uhrzeiten (08:47 …, 11:30 …)": "Heures (08:47 …, 11:30 …)",
-    "Automatisch (Windows-Look bei HA-95/98-Theme)": "Automatique (look Windows avec le thème HA 95/98)",
+    "Automatisch (Windows-Look bei HA-95/98/XP-Theme)": "Automatique (look Windows avec le thème HA 95/98/XP)",
     "Standard (HA-Theme)": "Par défaut (thème HA)",
     "Windows-Look": "Look Windows",
+    "Windows-XP-Look": "Look Windows XP",
     "Darstellung": "Apparence",
     "Bestehende Einträge bleiben erhalten; ohne Uhrzeit erscheinen sie in der Zeitansicht am Ende.": "Les entrées existantes sont conservées ; sans heure, elles apparaissent à la fin dans la vue horaire.",
     "Auf diesem Gerät beim Öffnen direkt den Barcode-Scanner starten": "Lancer directement le lecteur de codes-barres à l'ouverture sur cet appareil",
@@ -1891,9 +1892,10 @@ Object.assign(LANGS, {
     "Pro Zeile: Name, Einheit, Tagesziel und Schrittweite der +/− Knöpfe im Tagebuch.": "Por fila: nombre, unidad, objetivo diario y paso de los botones +/− del diario.",
     "Feste Mahlzeiten (Frühstück, Mittagessen, …)": "Comidas fijas (desayuno, almuerzo, …)",
     "Uhrzeiten (08:47 …, 11:30 …)": "Horas (08:47 …, 11:30 …)",
-    "Automatisch (Windows-Look bei HA-95/98-Theme)": "Automático (aspecto Windows con el tema HA 95/98)",
+    "Automatisch (Windows-Look bei HA-95/98/XP-Theme)": "Automático (aspecto Windows con el tema HA 95/98/XP)",
     "Standard (HA-Theme)": "Predeterminado (tema de HA)",
     "Windows-Look": "Aspecto Windows",
+    "Windows-XP-Look": "Aspecto Windows XP",
     "Darstellung": "Apariencia",
     "Bestehende Einträge bleiben erhalten; ohne Uhrzeit erscheinen sie in der Zeitansicht am Ende.": "Las entradas existentes se conservan; las que no tienen hora aparecen al final en la vista por horas.",
     "Auf diesem Gerät beim Öffnen direkt den Barcode-Scanner starten": "Iniciar el lector de códigos de barras al abrir en este dispositivo",
@@ -2811,9 +2813,10 @@ Object.assign(LANGS, {
     "Pro Zeile: Name, Einheit, Tagesziel und Schrittweite der +/− Knöpfe im Tagebuch.": "Per rij: naam, eenheid, dagdoel en stapgrootte van de +/− knoppen in het dagboek.",
     "Feste Mahlzeiten (Frühstück, Mittagessen, …)": "Vaste maaltijden (ontbijt, lunch, …)",
     "Uhrzeiten (08:47 …, 11:30 …)": "Tijdstippen (08:47 …, 11:30 …)",
-    "Automatisch (Windows-Look bei HA-95/98-Theme)": "Automatisch (Windows-look bij HA 95/98-thema)",
+    "Automatisch (Windows-Look bei HA-95/98/XP-Theme)": "Automatisch (Windows-look bij HA 95/98/XP-thema)",
     "Standard (HA-Theme)": "Standaard (HA-thema)",
     "Windows-Look": "Windows-look",
+    "Windows-XP-Look": "Windows XP-look",
     "Darstellung": "Weergave",
     "Bestehende Einträge bleiben erhalten; ohne Uhrzeit erscheinen sie in der Zeitansicht am Ende.": "Bestaande items blijven behouden; items zonder tijdstip verschijnen in de tijdweergave aan het eind.",
     "Auf diesem Gerät beim Öffnen direkt den Barcode-Scanner starten": "Op dit apparaat bij het openen meteen de barcodescanner starten",
@@ -3737,9 +3740,10 @@ Object.assign(LANGS, {
     "Pro Zeile: Name, Einheit, Tagesziel und Schrittweite der +/− Knöpfe im Tagebuch.": "Per riga: nome, unità, obiettivo giornaliero e passo dei pulsanti +/− nel diario.",
     "Feste Mahlzeiten (Frühstück, Mittagessen, …)": "Pasti fissi (colazione, pranzo, …)",
     "Uhrzeiten (08:47 …, 11:30 …)": "Orari (08:47 …, 11:30 …)",
-    "Automatisch (Windows-Look bei HA-95/98-Theme)": "Automatico (aspetto Windows con tema HA 95/98)",
+    "Automatisch (Windows-Look bei HA-95/98/XP-Theme)": "Automatico (aspetto Windows con tema HA 95/98/XP)",
     "Standard (HA-Theme)": "Predefinito (tema HA)",
     "Windows-Look": "Aspetto Windows",
+    "Windows-XP-Look": "Aspetto Windows XP",
     "Darstellung": "Aspetto",
     "Bestehende Einträge bleiben erhalten; ohne Uhrzeit erscheinen sie in der Zeitansicht am Ende.": "Le voci esistenti vengono mantenute; le voci senza ora compaiono alla fine nella vista per orario.",
     "Auf diesem Gerät beim Öffnen direkt den Barcode-Scanner starten": "Avvia subito lo scanner di codici a barre all’apertura su questo dispositivo",
@@ -4663,9 +4667,10 @@ Object.assign(LANGS, {
     "Pro Zeile: Name, Einheit, Tagesziel und Schrittweite der +/− Knöpfe im Tagebuch.": "Por linha: nome, unidade, meta diária e tamanho do passo dos botões +/− no diário.",
     "Feste Mahlzeiten (Frühstück, Mittagessen, …)": "Refeições fixas (café da manhã, almoço, …)",
     "Uhrzeiten (08:47 …, 11:30 …)": "Horários (08:47 …, 11:30 …)",
-    "Automatisch (Windows-Look bei HA-95/98-Theme)": "Automático (aparência Windows com tema HA 95/98)",
+    "Automatisch (Windows-Look bei HA-95/98/XP-Theme)": "Automático (aparência Windows com tema HA 95/98/XP)",
     "Standard (HA-Theme)": "Padrão (tema do HA)",
     "Windows-Look": "Aparência Windows",
+    "Windows-XP-Look": "Aparência Windows XP",
     "Darstellung": "Aparência",
     "Bestehende Einträge bleiben erhalten; ohne Uhrzeit erscheinen sie in der Zeitansicht am Ende.": "Os registros existentes são mantidos; registros sem hora aparecem no fim na visão por horário.",
     "Auf diesem Gerät beim Öffnen direkt den Barcode-Scanner starten": "Iniciar o leitor de códigos de barras ao abrir neste dispositivo",
@@ -5589,9 +5594,10 @@ Object.assign(LANGS, {
     "Pro Zeile: Name, Einheit, Tagesziel und Schrittweite der +/− Knöpfe im Tagebuch.": "W wierszu: nazwa, jednostka, dzienny cel i wielkość kroku przycisków +/− w dzienniku.",
     "Feste Mahlzeiten (Frühstück, Mittagessen, …)": "Stałe posiłki (śniadanie, obiad, …)",
     "Uhrzeiten (08:47 …, 11:30 …)": "Godziny (08:47 …, 11:30 …)",
-    "Automatisch (Windows-Look bei HA-95/98-Theme)": "Automatyczny (wygląd Windows z motywem HA 95/98)",
+    "Automatisch (Windows-Look bei HA-95/98/XP-Theme)": "Automatyczny (wygląd Windows z motywem HA 95/98/XP)",
     "Standard (HA-Theme)": "Domyślny (motyw HA)",
     "Windows-Look": "Wygląd Windows",
+    "Windows-XP-Look": "Wygląd Windows XP",
     "Darstellung": "Wygląd",
     "Bestehende Einträge bleiben erhalten; ohne Uhrzeit erscheinen sie in der Zeitansicht am Ende.": "Istniejące wpisy zostają; wpisy bez godziny pojawiają się na końcu w widoku godzin.",
     "Auf diesem Gerät beim Öffnen direkt den Barcode-Scanner starten": "Uruchom skaner kodów kreskowych od razu po otwarciu na tym urządzeniu",
@@ -6310,10 +6316,14 @@ const setDlg = (...kids) => {
 
 // Optik: "auto" switches to the Windows look when the HA theme is called HA 95/98 (see theme.js).
 const SKIN_RE = /ha[\s_-]*9[58]|windows|win[\s_-]*9[58]/i;
+// HomeAssistantXP (and Windows XP themes) get the Luna variant of the Windows look.
+const XP_RE = /ha[\s_-]*xp|homeassistant[\s_-]*xp|(windows|win)[\s_-]*xp/i;
 function applySkin() {
   const name = document.documentElement.dataset.themeName || "";
-  const win = state.skin === "win" || (state.skin !== "default" && SKIN_RE.test(name));
+  const xp = state.skin === "xp" || (state.skin === "auto" && XP_RE.test(name));
+  const win = xp || state.skin === "win" || (state.skin !== "default" && SKIN_RE.test(name));
   document.documentElement.dataset.skin = win ? "win" : "default";
+  if (xp) document.documentElement.dataset.variant = "xp"; else delete document.documentElement.dataset.variant;
   applyTone();
 }
 // Light or dark HA theme, from the resolved card colour: the Windows look needs it for fields, ink and bevels.
@@ -9261,9 +9271,10 @@ async function renderSettings() {
   const skin = h("select", { onchange: async () => {
     await send("PUT", "settings", { skin: skin.value }); state.skin = skin.value; applySkin();
   } },
-    h("option", { value: "auto" }, "Automatisch (Windows-Look bei HA-95/98-Theme)"),
+    h("option", { value: "auto" }, "Automatisch (Windows-Look bei HA-95/98/XP-Theme)"),
     h("option", { value: "default" }, "Standard (HA-Theme)"),
-    h("option", { value: "win" }, "Windows-Look"));
+    h("option", { value: "win" }, "Windows-Look"),
+    h("option", { value: "xp" }, "Windows-XP-Look"));
   skin.value = state.skin;
   const scanOpen = h("input", { type: "checkbox", checked: scanOnOpen(), onchange: () => scanOnOpen(scanOpen.checked) });
   root.append(h("div", { class: "card" }, h("h2", {}, "Darstellung"),
