@@ -54,6 +54,7 @@ Alles, was nicht jeder braucht, ist standardmäßig aus.
 | Wasser und Nahrungsergänzung | Zähler mit Tagesziel | [Tagebuch](diary.md#wasser-und-nahrungsergänzung) |
 | Rezepte | Rezepte, Import aus Web und Mealie | [Rezepte](recipes.md) |
 | Weitere Datenquellen | Open Food Facts und USDA | [Lebensmittel](foods.md#online-suche-weitere-datenquellen) |
+| Stufenplan (Reverse-Diät) | Ziel steigt oder sinkt in festen Schritten | [Ziele](goals-and-stats.md#stufenplan-reverse-diät) |
 | Aktivität | Schritte und Kalorien erhöhen das Ziel | [Aktivität](activity.md) |
 | Waage (Sensor) | Gewicht aus einem HA-Sensor | [Gewicht](weight.md#waage-als-sensor) |
 | Mahlzeiten-Zeitplan | Zeitfenster pro Mahlzeit | [Zeitplan](schedule.md) |

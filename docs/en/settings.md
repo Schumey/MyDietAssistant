@@ -54,6 +54,7 @@ Everything that not everyone needs is off by default.
 | Water and supplements | counters with a daily goal | [Diary](diary.md#water-and-supplements) |
 | Recipes | recipes, import from web and Mealie | [Recipes](recipes.md) |
 | More data sources | Open Food Facts and USDA | [Foods](foods.md#online-search-more-data-sources) |
+| Step plan (reverse diet) | goal rises or falls in fixed steps | [Goals](goals-and-stats.md#step-plan-reverse-diet) |
 | Activity | steps and calories raise the goal | [Activity](activity.md) |
 | Scale (sensor) | weight from an HA sensor | [Weight](weight.md#scale-as-a-sensor) |
 | Meal schedule | time window per meal | [Schedule](schedule.md) |

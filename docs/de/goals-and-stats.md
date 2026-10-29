@@ -31,6 +31,21 @@ Das Standard-Tagesziel stellst Du unter *Einstellungen → Tagesziele* ein. Die 
 
 Das Profil geht vor dem Wochentagsziel. Mit [Aktivität](activity.md) erhöht sich das Ziel zusätzlich.
 
+## Stufenplan (Reverse-Diät)
+
+**Voraussetzung:** Zusatzfunktion „Stufenplan (Reverse-Diät)“.
+
+Das Tagesziel steigt oder sinkt in festen Schritten, z. B. nach einer Diät +100 kcal pro Woche, bis Dein Erhaltungsbedarf erreicht ist (Reverse-Diät), oder -5 g Kohlenhydrate pro Woche bei einer schrittweisen Absenkung.
+
+1. Schalte *Einstellungen → Zusatzfunktionen → Stufenplan (Reverse-Diät)* ein.
+2. Öffne die Karte **Stufenplan**.
+3. Wähle das **Startdatum** und den **Abstand (Tage)** zwischen zwei Stufen.
+4. Trage die Schritte ein: **Schritt Kalorien (kcal)**, Protein, Kohlenhydrate und Fett. Positive Werte erhöhen das Ziel, negative senken es. Leere Felder bleiben unverändert.
+5. Mit **Anzahl Schritte** begrenzt Du den Plan; bei 0 läuft er unbegrenzt weiter.
+6. Tippe auf **Plan speichern**. Die **Vorschau** zeigt, ab wann welches Ziel gilt.
+
+Bis zum Ende des ersten Abstands gilt Dein normales Ziel (Stufe 0), danach steigt es mit jedem Abstand um einen Schritt. Der Plan baut auf dem Standard-Tagesziel, dem Wochentagsziel oder Profil auf und wirkt zusätzlich zur [Aktivität](activity.md). Makros ohne Ziel bleiben ohne Ziel, nichts sinkt unter 0. **Plan beenden** setzt das Ziel zurück. Wenn Du das Standard-Tagesziel änderst, verschiebt sich der ganze Plan mit.
+
 ## Statistik
 
 Der Reiter **Statistik** zeigt Auswertungen für 7, 14, 30, 90, 180 Tage oder 1 Jahr:

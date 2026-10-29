@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.23.0
+
+### Neu
+- **Stufenplan (Reverse-Diät):** Neue Zusatzfunktion. Das Tagesziel steigt oder sinkt alle paar Tage um feste Schritte für Kalorien, Protein, Kohlenhydrate und Fett, z. B. +100 kcal pro Woche nach einer Diät. Startdatum, Abstand und Anzahl der Stufen sind einstellbar, eine Vorschau zeigt den Verlauf. Der Plan wirkt auf Standardziel, Wochentagsziel und Profil und zusätzlich zur Aktivität. Schnittstelle: `/api/ramp`.
+
 ## 1.22.1
 
 ### Behoben

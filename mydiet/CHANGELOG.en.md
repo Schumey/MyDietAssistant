@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.23.0
+
+### New
+- **Step plan (reverse diet):** new extra. The daily goal rises or falls by fixed steps for calories, protein, carbohydrates and fat every few days, e.g. +100 kcal per week after a diet. Start date, interval and number of steps are adjustable, and a preview shows the course. The plan applies to the standard goal, weekday goal and profile and works on top of activity. Endpoint: `/api/ramp`.
+
 ## 1.22.1
 
 ### Fixed

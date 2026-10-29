@@ -31,6 +31,21 @@ You set the default daily goal under *Settings → Daily goals*. The steps are i
 
 The profile takes precedence over the weekday goal. With [Activity](activity.md) the goal rises further.
 
+## Step plan (reverse diet)
+
+**Prerequisite:** the “Step plan (reverse diet)” extra.
+
+The daily goal rises or falls in fixed steps, for example +100 kcal per week after a diet until you reach maintenance (reverse diet), or -5 g carbohydrates per week for a gradual decrease.
+
+1. Switch on *Settings → Extra features → Step plan (reverse diet)*.
+2. Open the **Step plan** card.
+3. Choose the **Start date** and the **Interval (days)** between two steps.
+4. Enter the steps: **Step calories (kcal)**, protein, carbohydrates and fat. Positive values raise the goal, negative values lower it. Empty fields stay unchanged.
+5. **Number of steps** limits the plan; with 0 it keeps going without end.
+6. Tap **Save plan**. The **Preview** shows which goal applies from when.
+
+Your normal goal applies until the first interval is over (step 0); after that it grows by one step per interval. The plan builds on the standard daily goal, the weekday goal or the profile and works on top of [Activity](activity.md). Macros without a goal stay without one, and nothing drops below 0. **End plan** resets the goal. If you change the standard daily goal, the whole plan shifts with it.
+
 ## Statistics
 
 The **Statistics** tab shows evaluations for 7, 14, 30, 90, 180 days or 1 year:

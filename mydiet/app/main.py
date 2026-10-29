@@ -697,6 +697,7 @@ from extras14 import *  # noqa: E402,F401,F403  (enter food from a sentence, ext
 from extras15 import *  # noqa: E402,F401,F403  (shopping list)
 from extras16 import *  # noqa: E402,F401,F403  (weekly report, database health)
 from extras17 import *  # noqa: E402,F401,F403  (nutrient gaps)
+from extras18 import *  # noqa: E402,F401,F403  (step plan / reverse diet)
 
 
 @app.get("/")
