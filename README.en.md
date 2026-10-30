@@ -18,7 +18,7 @@ The interface runs through ingress in the HA sidebar, adopts the active HA theme
 - **Diary** with freely named meals (breakfast, night shift, PWO …) or by time of day; calories, carbs, fat, protein, daily goal and remaining; save, copy and share meals; swipe between days on a phone
 - **Foods** with categories, portion sizes, favorites, barcode (camera, photo or typing, with a fallback scanner for iPhone and Firefox); table import (BLS, CSV, Excel)
 - **Goals:** lose, maintain or gain; goals per weekday and profiles, switchable by trigger
-- **Statistics** from 7 days to 1 year: calorie and macro history with goal lines, **calorie balance** from weight trend and intake, forecast to the target weight
+- **Statistics** from 7 days to 2 years: calorie and macro history with goal lines, **calorie balance** from weight trend and intake, forecast to the target weight
 - **Triggers:** log foods or meals automatically, show meals only on certain days, depending on HA states, calendar or time of day
 - **Recipes** with preparation steps; **import from web pages** (schema.org data, ingredients converted to grams and matched to your foods)
 - **HA sensors** for calories, macros, remaining, weekly average, weight, balance and the current meal (plain states or MQTT discovery); an interface for automations (scale, voice assistant)

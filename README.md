@@ -18,7 +18,7 @@ Die Oberfläche läuft per Ingress im HA-Seitenmenü, übernimmt das aktive HA-T
 - **Tagebuch** mit frei benennbaren Mahlzeiten (Frühstück, Nachtschicht, PWO …) oder nach Uhrzeiten; Kalorien, Kohlenhydrate, Fett, Eiweiß, Tagesziel und Verbleibend; Mahlzeiten speichern, kopieren, teilen; Wischen zwischen Tagen auf dem Handy
 - **Lebensmittel** mit Kategorien, Portionsgrößen, Favoriten, Barcode (Kamera, Foto oder Eingabe, mit Rückfall-Scanner für iPhone und Firefox); Tabellenimport (BLS, CSV, Excel)
 - **Ziele:** Abnehmen, Halten oder Zunehmen, Ziele pro Wochentag und Profile, per Trigger umschaltbar
-- **Statistik** von 7 Tagen bis 1 Jahr: Kalorien- und Makroverlauf mit Zielinien, **Kalorienbilanz** aus Gewichtstrend und Aufnahme, Prognose zum Zielgewicht
+- **Statistik** von 7 Tagen bis 2 Jahre: Kalorien- und Makroverlauf mit Zielinien, **Kalorienbilanz** aus Gewichtstrend und Aufnahme, Prognose zum Zielgewicht
 - **Trigger:** Lebensmittel oder Mahlzeiten automatisch eintragen, Mahlzeiten nur an bestimmten Tagen zeigen, abhängig von HA-Zuständen, Kalender oder Uhrzeit
 - **HA-Sensoren** für Kalorien, Makros, Rest, Wochenschnitt, Gewicht und Bilanz; Schnittstelle für Automationen (Waage, Sprachassistent)
 - **Import/Export:** JSON-Sicherung, CSV, MyFitnessPal, Cronometer, FDDB, Yazio, Apple Health, Google Fit; Bericht und Tabelle für Berater und Trainer

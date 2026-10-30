@@ -655,7 +655,7 @@ def del_weight(day: str, x_remote_user_id: str | None = Header(None)):
 
 @app.get("/api/stats")
 def stats(days: int = 30, x_remote_user_id: str | None = Header(None)):
-    days = max(1, min(days, 365))
+    days = max(1, min(days, 730))
     owner = user_from(x_remote_user_id)
     start = date.today() - timedelta(days=days - 1)
     with db.conn() as c:

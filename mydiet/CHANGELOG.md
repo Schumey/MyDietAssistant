@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.24.0
+
+### Neu
+- **Zeitraum "2 Jahre"** in Statistik (neben 1 Jahr) und Gewichtsverlauf.
+
 ## 1.23.0
 
 ### Neu
