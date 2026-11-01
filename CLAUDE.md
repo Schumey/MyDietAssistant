@@ -50,12 +50,13 @@ MYDIET_DB=/tmp/t.db python -m uvicorn main:app --port 8099
 
 ## Release-Ablauf (nach jedem Stapel)
 
+0. **Vor Arbeitsbeginn** `git pull` (bzw. `git fetch` und `git status -sb`): Es wird auch von anderen Rechnern/Sitzungen gepusht; ein veralteter Stand führt zu Arbeit auf alter Basis und abgelehntem Push.
 1. `mydiet/config.yaml`: Version erhöhen.
 2. `mydiet/CHANGELOG.md`: neuer Abschnitt oben (Neu / Geändert / Behoben).
 3. `roadmap.md`: Erledigtes entfernen, Neues ergänzen. `docs/de` und `docs/en` (je Seite beide Sprachen) bei neuen Optionen, Sensoren, Schnittstellen oder Bedienschritten; `mydiet/DOCS.md` nur, wenn sich Optionen oder Seiten ändern. `python -m pytest` muss grün sein.
 4. Commit (englische Betreffzeile, `v<Version>: ...`), `git push` nach `Schumey/MyDietAssistant`, Branch `main`.
 4a. Für fertige Images (nur wenn `image:` aktiv ist): `git tag v<Version>` und `git push --tags`, danach die Actions abwarten.
-5. **Nicht mehr per Samba einspielen:** Der Nutzer installiert das Add-on aus der App-Version (Repository/Images); nichts nach `\\homeassistant\addons\mydiet` kopieren.
+5. **Nicht mehr per Samba einspielen:** HA installiert das Add-on aus diesem GitHub-Repository (Slug `eeb2daa3_mydiet`); der Push nach `main` ist die Auslieferung. Nichts nach `\\homeassistant\addons\mydiet` kopieren (der Ordner ist leer, eine Kopie würde ein zweites, lokales Add-on anlegen).
 6. Dem Nutzer sagen, dass er in HA „Nach Updates suchen“ anstoßen und das Add-on aktualisieren muss. Änderungen an `config.yaml` (Optionen, `map`) greifen nur nach einem Neubau.
 
 ## Stolperfallen
