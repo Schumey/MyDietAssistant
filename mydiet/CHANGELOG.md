@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.25.1
+
+### Behoben
+- Windows-/XP-Optik: Lebensmittelnamen im Tagebuch klebten am linken Rand der weißen Zeile; jetzt mit Innenabstand.
+- Handy: Die Spalte mit dem Entfernen-Knopf war 4 px zu schmal und ragte über die Zeile hinaus.
+
 ## 1.25.0
 
 ### Geändert

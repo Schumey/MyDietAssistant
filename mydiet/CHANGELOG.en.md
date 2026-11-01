@@ -2,6 +2,12 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.25.1
+
+### Fixed
+- Windows/XP look: food names in the diary sat on the left edge of the white row; they now have inner spacing.
+- Phones: the column with the remove button was 4 px too narrow and stuck out of the row.
+
 ## 1.25.0
 
 ### Changed

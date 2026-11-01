@@ -271,6 +271,7 @@ dialog h2 { margin-bottom: 12px; font-size: 18px; }
   .diary th, .diary td { width: auto !important; padding: 2px 4px; }
   .diary th:first-child, .diary td:first-child { grid-column: 1 / 5; padding: 8px 0 0; }
   .diary tbody tr.item td:last-child { grid-column: 5; grid-row: 1; }
+  .diary th:last-child, .diary td:last-child { padding: 0; }
   .diary tbody tr.item { padding-bottom: 8px; }
   .daynav .date { font-size: 17px; padding: 6px 8px; }
   .diary thead th:first-child, .diary tfoot th:first-child { display: none; }
@@ -441,6 +442,8 @@ html[data-skin="win"] .macro .bar { height: 14px; }
 html[data-skin="win"] .macro .bar > i:not(.over) { background: repeating-linear-gradient(90deg, var(--mc) 0 8px, transparent 8px 10px); }
 html[data-skin="win"] .diary caption { font-size: 14px; font-weight: 700; }
 html[data-skin="win"] .diary tbody tr.item td { border-top: 0; }
+/* rows are white fields here, so the name needs inner spacing instead of sitting on the field's edge */
+html[data-skin="win"] .diary th:first-child, html[data-skin="win"] .diary td:first-child { padding-left: 6px; }
 html[data-skin="win"] .diary tfoot th, html[data-skin="win"] .diary tfoot td { border-top: 1px solid var(--w-b1); color: var(--w-text); }
 html[data-skin="win"] .diary tr.item button.icon { opacity: 1; }
 html[data-skin="win"] .meal-actions { margin: 8px 0 0; gap: 6px; }
