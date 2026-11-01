@@ -45,6 +45,9 @@ body {
 [hidden] { display: none !important; }
 .muted { color: var(--secondary-text-color); }
 h2, h3 { margin: 0; font-weight: 500; }
+/* figures line up in columns everywhere numbers are compared */
+table, .tile b, .budget, .stat-tiles { font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 
 /* app bar + tabs */
 .appbar {
@@ -59,11 +62,12 @@ h2, h3 { margin: 0; font-weight: 500; }
 nav { display: flex; gap: 4px; overflow-x: auto; }
 nav button {
   background: none; border: 0; border-bottom: 3px solid transparent; border-radius: 0; box-shadow: none;
-  color: inherit; opacity: .75; padding: 16px 12px 13px; font: inherit; font-weight: 500;
-  text-transform: uppercase; letter-spacing: .03em; cursor: pointer; white-space: nowrap;
+  color: inherit; opacity: .78; padding: 17px 12px 14px; font: inherit; font-size: 15px; font-weight: 500;
+  cursor: pointer; white-space: nowrap;
 }
 nav button:hover { opacity: 1; }
 nav button.active { opacity: 1; border-bottom-color: currentColor; }
+nav button:focus-visible { outline-color: currentColor; outline-offset: -4px; }
 
 main { max-width: 860px; margin: 0 auto; padding: 16px; }
 
@@ -117,41 +121,80 @@ button:disabled { opacity: .4; cursor: default; }
 .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
 .err { color: var(--error-color); }
 
-/* day navigation */
-.daynav { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px; }
+/* day navigation: the date reads as the page title, the arrows stay quiet */
+.daynav { display: flex; align-items: center; justify-content: center; gap: 4px; margin: 4px 0 16px; }
 .daynav .date {
-  flex: 1; max-width: 360px; text-align: center; padding: 10px;
-  background: var(--wa-color-brand-fill-loud, var(--primary-color)); color: var(--wa-color-brand-on-loud, var(--text-primary-color));
-  border-radius: var(--ha-button-border-radius, 8px); box-shadow: var(--ha-button-box-shadow, none); font-size: 16px; font-weight: 500; cursor: pointer; position: relative;
+  flex: 0 1 auto; min-width: 0; text-align: center; padding: 6px 14px;
+  font-size: 20px; font-weight: 500; letter-spacing: -.01em; cursor: pointer; position: relative;
+  border-radius: var(--ha-button-border-radius, 18px);
 }
+.daynav .date:hover { background: var(--secondary-background-color); }
+.daynav .date:focus-within { outline: 2px solid var(--primary-color); outline-offset: 2px; }
 .daynav .date input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .daynav .date input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; }
-.daynav button.step { padding: 8px 14px; border-radius: var(--ha-button-border-radius, 8px); font-size: 16px; }
+.daynav button.step {
+  width: 40px; height: 40px; padding: 0; border-radius: 50%; font-size: 22px; line-height: 1;
+  background: none; color: var(--primary-text-color); box-shadow: none;
+}
+.daynav button.step:hover { background: var(--secondary-background-color); }
+.daynav button.today { margin-left: 4px; }
 
-/* diary tables (MyFitnessPal style) */
+/* the day's budget: goal − eaten = left, calorie bar split by meal, macro meters */
+.budget { padding: 16px 20px 18px; }
+.budget .eq { display: flex; align-items: flex-end; gap: 6px 14px; flex-wrap: wrap; }
+.budget .eq > i { font-style: normal; font-size: 24px; line-height: 1.2; align-self: flex-start; color: var(--secondary-text-color); }
+.budget .term.left { align-self: flex-end; }
+.budget .eq { align-items: flex-start; }
+.budget .term b { display: block; font-size: 24px; font-weight: 500; line-height: 1.2; }
+.budget .term span { display: block; font-size: 12px; color: var(--secondary-text-color); }
+.budget .term.left { margin-left: auto; text-align: right; }
+.budget .term.left b { font-size: 40px; font-weight: 600; letter-spacing: -.02em; line-height: 1.05; }
+.budget .term.left.over b { color: var(--error-color); }
+.budget .term.left.under b { color: var(--success-color); }
+.meal-bar {
+  position: relative; display: flex; gap: 2px; height: 12px; margin: 14px 0 6px;
+  background: var(--secondary-background-color); border-radius: var(--ha-border-radius-pill, 6px); overflow: hidden;
+}
+/* meals get successively lighter shades of the theme colour, in diary order */
+.meal-bar > i, .legend.meals span::before { --c: color-mix(in srgb, var(--primary-color) calc(100% - var(--i) * 18%), var(--card-background-color)); }
+.meal-bar > i { display: block; height: 100%; background: var(--c); }
+.meal-bar.over > i { --c: color-mix(in srgb, var(--error-color) calc(100% - var(--i) * 15%), var(--card-background-color)); }
+.meal-bar .goal-mark { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--primary-text-color); }
+.legend.meals { gap: 4px 14px; }
+.legend.meals b { font-weight: 500; color: var(--primary-text-color); }
+.macros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 20px; margin-top: 14px; }
+.macro-head { display: flex; justify-content: space-between; gap: 6px; font-size: 12px; margin-bottom: 4px; color: var(--secondary-text-color); }
+.macro-head span:last-child { color: var(--primary-text-color); white-space: nowrap; }
+.macro .bar { height: 6px; }
+.macro.m-carbs { --mc: var(--warning-color); }
+.macro.m-fat { --mc: var(--error-color); }
+.macro.m-protein { --mc: var(--info-color); }
+.macro .bar > i { background: var(--mc); }
+.macro .bar > i.over { background: repeating-linear-gradient(135deg, currentColor 0 3px, transparent 3px 6px); color: var(--error-color); }
+.macro-head .over { color: var(--error-color); }
+
+/* diary tables: one card per meal, caption = meal name, actions below */
 table { width: 100%; border-collapse: collapse; }
-.diary th, .diary td { padding: 6px 10px; text-align: right; white-space: nowrap; }
-.diary th:first-child, .diary td:first-child { text-align: left; white-space: normal; width: 100%; }
-.diary thead th {
-  background: var(--primary-color); color: var(--text-primary-color);
-  font-weight: 500; font-size: 12px; line-height: 1.2; padding: 6px 10px;
-}
-.diary thead th small { display: block; font-weight: 400; opacity: .8; }
-.diary thead th.title {
-  background: none; color: var(--primary-text-color); font-size: 18px; padding-left: 0;
-}
-.diary tbody tr.item td { background: var(--secondary-background-color); border-bottom: 1px solid var(--card-background-color); }
+.diary { table-layout: fixed; }
+.diary caption { text-align: left; font-size: 18px; font-weight: 500; padding: 0 0 8px; }
+.diary th, .diary td { padding: 9px 10px; text-align: right; white-space: nowrap; }
+.diary th:first-child, .diary td:first-child { text-align: left; white-space: normal; width: 100%; padding-left: 0; }
+.diary th:nth-child(n+2), .diary td:nth-child(n+2) { width: 98px; }
+.diary th:last-child, .diary td:last-child { width: 40px !important; padding: 0 0 0 4px; text-align: center; }
+.diary thead th { overflow: hidden; text-overflow: ellipsis; padding-left: 0; font-size: 12px; }
+.diary .short { display: none; }
+.diary tbody tr.item td { border-top: 1px solid var(--divider-color); }
 .diary tbody tr.item td:first-child { cursor: pointer; }
 .diary tbody tr.item td:first-child:hover { color: var(--primary-color); }
-.diary tbody tr.foot td { color: var(--primary-color); font-weight: 600; border-bottom: 1px solid var(--divider-color); }
-.diary tbody tr.foot td:first-child { font-weight: 500; }
-.diary tbody tr.foot td:last-child, .diary tbody tr.item td:last-child { width: 1%; text-align: center; padding: 0 4px; }
-.diary { table-layout: fixed; }
-.diary th:nth-child(n+2), .diary td:nth-child(n+2) { width: 98px; }
-.diary th:last-child, .diary td:last-child { width: 36px !important; }
-.diary thead th:nth-child(3) { font-size: 11px; }
-.diary thead th { overflow: hidden; text-overflow: ellipsis; }
-.card:has(> .diary) { padding-bottom: 8px; }
+.diary .qty { color: var(--secondary-text-color); margin-left: 8px; white-space: nowrap; }
+.diary tr.item button.icon { opacity: .55; }
+.diary tr.item:hover button.icon, .diary tr.item button.icon:focus-visible { opacity: 1; }
+.diary tfoot th, .diary tfoot td { border-top: 1px solid var(--primary-text-color); font-weight: 600; }
+.diary tfoot th { font-weight: 500; color: var(--secondary-text-color); }
+.meal-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; margin: 8px -10px -6px; }
+.meal-actions button.flat.clear { margin-left: auto; color: var(--secondary-text-color); }
+.meal-actions button.flat.clear:hover { color: var(--error-color); }
+.card.meal > .note { margin: 8px 0 0; }
 
 table.summary { width: 100%; table-layout: fixed; }
 table.summary th, table.summary td { text-align: right; padding: 6px 10px; white-space: nowrap; }
@@ -220,11 +263,35 @@ dialog h2 { margin-bottom: 12px; font-size: 18px; }
 
 @media (max-width: 560px) {
   main { padding: 8px; }
-  .card { padding: 12px 8px; }
-  .diary th:nth-child(n+2), .diary td:nth-child(n+2) { width: 58px; }
-  .diary th, .diary td { padding: 5px 3px; }
-  .diary thead th { font-size: 10px; }
-  .diary thead th.title { font-size: 16px; }
+  .card { padding: 12px 10px; }
+  /* phones: the food name gets the full width, its numbers sit on a line below under the column labels */
+  .diary, .diary tbody, .diary thead, .diary tfoot { display: block; }
+  .diary caption { display: block; font-size: 17px; }
+  .diary tr { display: grid; grid-template-columns: repeat(4, 1fr) 44px; align-items: center; }
+  .diary th, .diary td { width: auto !important; padding: 2px 4px; }
+  .diary th:first-child, .diary td:first-child { grid-column: 1 / 5; padding: 8px 0 0; }
+  .diary tbody tr.item td:last-child { grid-column: 5; grid-row: 1; }
+  .diary tbody tr.item { padding-bottom: 8px; }
+  .daynav .date { font-size: 17px; padding: 6px 8px; }
+  .diary thead th:first-child, .diary tfoot th:first-child { display: none; }
+  .diary tbody tr.item td { border-top: 0; }
+  .diary tbody tr.item { border-top: 1px solid var(--divider-color); }
+  .diary tbody tr.item td:nth-child(n+2) { color: var(--secondary-text-color); font-size: 13px; }
+  .diary tbody tr.item td:nth-child(2) { color: var(--primary-text-color); }
+  .diary tfoot tr { border-top: 1px solid var(--primary-text-color); padding: 4px 0; }
+  .diary tfoot td { border-top: 0; }
+  .diary .long { display: none; }
+  .diary .short { display: inline; }
+  .diary thead th { font-size: 11px; }
+  .budget { padding: 14px 14px 16px; }
+  .budget .eq { gap: 4px 10px; }
+  .budget .term b { font-size: 18px; }
+  .budget .eq > i { font-size: 18px; }
+  .budget .term.left b { font-size: 32px; }
+  .macros { gap: 10px 12px; }
+  .macro-head { flex-direction: column; gap: 0; }
+  .meal-actions { margin: 6px -8px -6px; }
+  html:not([data-skin="win"]) .appbar #who { display: none; }
   table.summary th:nth-child(n+2), table.summary td:nth-child(n+2) { width: 58px; }
   table.summary th, table.summary td { padding: 6px 3px; }
   table.summary thead th { font-size: 10px; }
@@ -255,7 +322,7 @@ button.flat.danger { color: var(--error-color); }
 html[data-skin="win"] {
   --w-face: var(--card-background-color, #c0c0c0);
   --w-field: var(--input-fill-color, #fff);
-  --w-ink: var(--w-ink);
+  --w-ink: var(--input-ink-color, #000);
   --w-text: var(--primary-text-color, #000);
   --w-b0: #0a0a0a; --w-b1: #808080; --w-b2: #dfdfdf; --w-b3: #fff;      /* bevel: darkest, dark, light, lightest */
   --w-bad: #d00000; --w-good: #007000;
@@ -356,7 +423,31 @@ html[data-skin="win"] .range button.active { box-shadow: var(--w-pressed); font-
 html[data-skin="win"] .daynav .date {
   background: var(--w-field); color: var(--w-text); border-radius: 0; box-shadow: var(--w-sunken); font-weight: 400;
 }
-html[data-skin="win"] .daynav button.step { border-radius: 0; }
+html[data-skin="win"] .daynav button.step { border-radius: 0; background: var(--w-face); color: var(--w-text); box-shadow: var(--w-raised); width: 32px; height: 28px; font-size: 16px; }
+html[data-skin="win"] .daynav button.step:active { box-shadow: var(--w-pressed); }
+html[data-skin="win"] .daynav .date { font-size: 14px; padding: 5px 14px; }
+html[data-skin="win"] .daynav .date:hover { background: var(--w-field); }
+
+/* budget: sunken readout with a segmented progress bar */
+html[data-skin="win"] .budget .term.left { background: var(--w-field); box-shadow: var(--w-sunken); padding: 4px 8px; }
+html[data-skin="win"] .budget .term.left b { font-size: 28px; font-weight: 700; }
+html[data-skin="win"] .budget .term.left.over b { color: var(--w-bad); }
+html[data-skin="win"] .budget .term.left.under b { color: var(--w-good); }
+html[data-skin="win"] .budget .term b { font-weight: 700; }
+html[data-skin="win"] .meal-bar { border-radius: 0; background: var(--w-field); box-shadow: var(--w-sunken); padding: 2px; height: 18px; gap: 1px; }
+html[data-skin="win"] .meal-bar > i { background: repeating-linear-gradient(90deg, var(--c) 0 8px, transparent 8px 10px); }
+html[data-skin="win"] .legend.meals span::before { border-radius: 0; }
+html[data-skin="win"] .macro .bar { height: 14px; }
+html[data-skin="win"] .macro .bar > i:not(.over) { background: repeating-linear-gradient(90deg, var(--mc) 0 8px, transparent 8px 10px); }
+html[data-skin="win"] .diary caption { font-size: 14px; font-weight: 700; }
+html[data-skin="win"] .diary tbody tr.item td { border-top: 0; }
+html[data-skin="win"] .diary tfoot th, html[data-skin="win"] .diary tfoot td { border-top: 1px solid var(--w-b1); color: var(--w-text); }
+html[data-skin="win"] .diary tr.item button.icon { opacity: 1; }
+html[data-skin="win"] .meal-actions { margin: 8px 0 0; gap: 6px; }
+html[data-skin="win"] .meal-actions .clear { color: var(--w-text); }
+html[data-skin="win"] .range.chips button { text-decoration: line-through; color: var(--w-b1); border: 0; }
+html[data-skin="win"] .range.chips button.active { text-decoration: none; color: var(--w-text); background: var(--w-face); box-shadow: var(--w-pressed); }
+
 
 /* diary tables look like list views */
 html[data-skin="win"] .diary thead th.title { color: var(--w-text); font-size: 14px; font-weight: 700; background: none; }
@@ -447,6 +538,8 @@ html[data-skin="win"][data-variant="xp"] input, html[data-skin="win"][data-varia
 html[data-skin="win"][data-variant="xp"] textarea { box-shadow: none; border: 1px solid var(--x-line); border-radius: 0; }
 html[data-skin="win"][data-variant="xp"] .range button.active { background: var(--w-face); box-shadow: var(--w-pressed); }
 html[data-skin="win"][data-variant="xp"] .daynav .date { box-shadow: none; border: 1px solid var(--x-line); }
+html[data-skin="win"][data-variant="xp"] .daynav button.step { border-radius: 3px; background: linear-gradient(180deg, var(--w-b3), var(--w-face) 86%, var(--w-b1)); }
+html[data-skin="win"][data-variant="xp"] .meal-bar, html[data-skin="win"][data-variant="xp"] .budget .term.left { border-radius: 3px; box-shadow: none; border: 1px solid var(--x-line); }
 html[data-skin="win"][data-variant="xp"] .results { box-shadow: none; border: 1px solid var(--x-line); }
 html[data-skin="win"][data-variant="xp"] .results button.food:hover,
 html[data-skin="win"][data-variant="xp"] .diary tbody tr.item td:first-child:hover { background: var(--xp-select, #316ac5); color: var(--xp-select-text, #fff); }
@@ -514,13 +607,23 @@ table.cmp th:last-child, table.cmp td:last-child { width: auto; padding: 6px 10p
   background: none; color: var(--secondary-text-color); font-size: 12px; font-weight: 500;
   padding-top: 2px; padding-bottom: 4px; border-bottom: 1px solid var(--divider-color);
 }
-.diary thead th small { display: inline; margin-left: 3px; opacity: .7; font-size: 10px; }
-.diary thead th.title { color: var(--primary-text-color); border-bottom-color: var(--divider-color); }
+.diary thead th { border-bottom: 0; }
 html[data-skin="win"] .diary thead th, html[data-skin="win"] table.summary thead th, html[data-skin="win"] table.cmp thead th {
   background: none; color: var(--w-text); border-bottom: 1px solid var(--w-b1);
 }
-html[data-skin="win"] .diary thead th.title { color: var(--w-text); }
-@media (max-width: 520px) { .diary thead th small { display: none; } }
+
+/* category chips: on/off toggles, quieter than action buttons */
+.range.chips button {
+  background: none; color: var(--secondary-text-color); box-shadow: none; padding: 4px 12px;
+  border: 1px solid var(--divider-color); text-decoration: line-through; text-decoration-color: var(--disabled-text-color);
+}
+.range.chips button.active {
+  background: color-mix(in srgb, var(--primary-color) 14%, transparent); color: var(--primary-text-color);
+  border-color: color-mix(in srgb, var(--primary-color) 45%, transparent); text-decoration: none;
+}
+.range.chips { flex-wrap: wrap; margin-top: 10px; gap: 6px; }
+/* symbol buttons: text glyphs, never colour emoji, so every icon has the same weight */
+button.icon { font-variant-emoji: text; font-family: "Segoe UI Symbol", var(--ha-font-family-body, system-ui), sans-serif; }
 
 .note { margin: 6px 4px 2px; padding: 6px 10px; border-left: 3px solid var(--primary-color); background: var(--secondary-background-color); border-radius: 4px; white-space: pre-wrap; cursor: pointer; font-size: 14px; }
 .hint .note { flex: 1; }
@@ -588,7 +691,6 @@ svg.chart .avg-line { fill: none; stroke: var(--primary-text-color); stroke-widt
   .list > div { padding: 10px 0; }
   .results button.food { min-height: 48px; }
   .daynav .step { min-width: 56px; min-height: 48px; font-size: 22px; }
-  .diary tbody tr.item td:first-child { padding-top: 10px; padding-bottom: 10px; }
   nav { -webkit-overflow-scrolling: touch; }
 }
 html[data-skin="win"] .diary tbody tr.item td:first-child { min-height: 0; }

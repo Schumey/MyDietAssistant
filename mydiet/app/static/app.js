@@ -565,6 +565,12 @@ const EN = {
   "Zeitraum A, bis": "Period A, to",
   "Zeitraum B, von": "Period B, from",
   "Zeitraum B, bis": "Period B, to",
+  "Gegessen": "Eaten",
+  "Übrig": "Left",
+  "Zu viel": "Over",
+  "Summe": "Total",
+  "Ziel inkl. {} kcal Aktivität": "Goal incl. {} kcal activity",
+  "{} von {} g": "{} of {} g",
 };
 
 // Languages: German is the source text; every other language is a dictionary German -> language (EN, FR, ES ...).
@@ -1512,6 +1518,12 @@ Object.assign(LANGS, {
     "Zeitraum A, bis": "Période A, au",
     "Zeitraum B, von": "Période B, du",
     "Zeitraum B, bis": "Période B, au",
+    "Gegessen": "Consommé",
+    "Übrig": "Restant",
+    "Zu viel": "En trop",
+    "Summe": "Total",
+    "Ziel inkl. {} kcal Aktivität": "Objectif avec {} kcal d’activité",
+    "{} von {} g": "{} sur {} g",
   },
   es: {
     "Stufenplan (Reverse-Diät)": "Plan por escalones (dieta inversa)",
@@ -2451,6 +2463,12 @@ Object.assign(LANGS, {
     "Zeitraum A, bis": "Periodo A, hasta",
     "Zeitraum B, von": "Periodo B, desde",
     "Zeitraum B, bis": "Periodo B, hasta",
+    "Gegessen": "Consumido",
+    "Übrig": "Restante",
+    "Zu viel": "De más",
+    "Summe": "Total",
+    "Ziel inkl. {} kcal Aktivität": "Objetivo con {} kcal de actividad",
+    "{} von {} g": "{} de {} g",
   },
   nl: {
     "Stufenplan (Reverse-Diät)": "Stappenplan (reverse diet)",
@@ -3402,6 +3420,12 @@ Object.assign(LANGS, {
     "Zeitraum A, bis": "Periode A, tot",
     "Zeitraum B, von": "Periode B, van",
     "Zeitraum B, bis": "Periode B, tot",
+    "Gegessen": "Gegeten",
+    "Übrig": "Over",
+    "Zu viel": "Te veel",
+    "Summe": "Totaal",
+    "Ziel inkl. {} kcal Aktivität": "Doel incl. {} kcal activiteit",
+    "{} von {} g": "{} van {} g",
   },
   it: {
     "Stufenplan (Reverse-Diät)": "Piano a gradini (reverse diet)",
@@ -4353,6 +4377,12 @@ Object.assign(LANGS, {
     "Zeitraum A, bis": "Periodo A, al",
     "Zeitraum B, von": "Periodo B, dal",
     "Zeitraum B, bis": "Periodo B, al",
+    "Gegessen": "Mangiato",
+    "Übrig": "Rimanente",
+    "Zu viel": "In eccesso",
+    "Summe": "Totale",
+    "Ziel inkl. {} kcal Aktivität": "Obiettivo con {} kcal di attività",
+    "{} von {} g": "{} di {} g",
   },
   pt: {
     "Stufenplan (Reverse-Diät)": "Plano em degraus (dieta reversa)",
@@ -5304,6 +5334,12 @@ Object.assign(LANGS, {
     "Zeitraum A, bis": "Período A, até",
     "Zeitraum B, von": "Período B, de",
     "Zeitraum B, bis": "Período B, até",
+    "Gegessen": "Consumido",
+    "Übrig": "Restante",
+    "Zu viel": "Em excesso",
+    "Summe": "Total",
+    "Ziel inkl. {} kcal Aktivität": "Meta com {} kcal de atividade",
+    "{} von {} g": "{} de {} g",
   },
   pl: {
     "Stufenplan (Reverse-Diät)": "Plan stopniowy (reverse diet)",
@@ -6255,6 +6291,12 @@ Object.assign(LANGS, {
     "Zeitraum A, bis": "Okres A, do",
     "Zeitraum B, von": "Okres B, od",
     "Zeitraum B, bis": "Okres B, do",
+    "Gegessen": "Zjedzone",
+    "Übrig": "Pozostało",
+    "Zu viel": "Za dużo",
+    "Summe": "Suma",
+    "Ziel inkl. {} kcal Aktivität": "Cel z {} kcal aktywności",
+    "{} von {} g": "{} z {} g",
   },
 });
 
@@ -6564,10 +6606,10 @@ const catList = () => h("datalist", { id: "cat-list" }, cat.all.map(c => h("opti
 function catChips(onchange) {
   if (!cat.all.length) return null;
   return h("div", { class: "range chips" }, h("span", { class: "muted" }, "Kategorien:"), cat.all.map(c => {
-    const b = h("button", { class: cat.hidden.includes(c) ? "" : "active", title: "Ein-/ausblenden", onclick: async () => {
+    const b = h("button", { class: cat.hidden.includes(c) ? "" : "active", "aria-pressed": String(!cat.hidden.includes(c)), title: "Ein-/ausblenden", onclick: async () => {
       cat.hidden = cat.hidden.includes(c) ? cat.hidden.filter(x => x !== c) : [...cat.hidden, c];
       await send("PUT", "categories/hidden", { hidden: cat.hidden });
-      b.classList.toggle("active", !cat.hidden.includes(c));
+      b.classList.toggle("active", !cat.hidden.includes(c)); b.setAttribute("aria-pressed", String(!cat.hidden.includes(c)));
       onchange();
     } }, c);
     return b;
@@ -6589,15 +6631,18 @@ async function renderDiary() {
   const root = $("#diary");
   root.replaceChildren();
 
-  const label = parse(state.day).toLocaleDateString(I18N.locale,
-    { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  // the year only when it is not the current one, so the date fits on one line on phones
+  const label = parse(state.day).toLocaleDateString(I18N.locale, { weekday: "long", day: "numeric", month: "long",
+    year: state.day.slice(0, 4) === iso(new Date()).slice(0, 4) ? undefined : "numeric" });
   const picker = h("input", { type: "date", value: state.day, "aria-label": "Datum", onchange: e => {
     if (e.target.value) { state.day = e.target.value; renderDiary(); }
   } });
   root.append(h("div", { class: "daynav" },
-    h("button", { class: "step", onclick: () => shiftDay(-1), "aria-label": "Vortag" }, "‹"),
+    h("button", { class: "step", onclick: () => shiftDay(-1), "aria-label": "Vortag", title: "Vortag" }, "‹"),
     h("div", { class: "date" }, label, picker),
-    h("button", { class: "step", onclick: () => shiftDay(1), "aria-label": "Folgetag" }, "›")));
+    h("button", { class: "step", onclick: () => shiftDay(1), "aria-label": "Folgetag", title: "Folgetag" }, "›"),
+    isToday ? null : h("button", { class: "flat today", onclick: () => { state.day = iso(new Date()); renderDiary(); } }, "Heute")));
+  root.append(budgetCard(d));
 
   // meal schedule (optional): which meal is due now
   if (sched && !times) {
@@ -6615,36 +6660,35 @@ async function renderDiary() {
     const sum = k => items.reduce((a, e) => a + e[k], 0);
     const rows = items.map(e => h("tr", { class: "item" },
       h("td", { onclick: () => editEntry(e, times), title: "Bearbeiten" },
-        times ? h("span", { class: "time" }, e.time || "––:––") : null, entryLabel(e)),
+        times ? h("span", { class: "time" }, e.time || "––:––") : null, e.name,
+        e.grams > 0 ? h("span", { class: "qty" }, gText(e.grams)) : null),
       h("td", {}, n0(e.kcal)), h("td", {}, n0(e.carbs)), h("td", {}, n0(e.fat)), h("td", {}, n0(e.protein)),
       h("td", {}, h("button", { class: "icon", title: "Entfernen", "aria-label": "Entfernen", onclick: async () => {
         await api("entries/" + e.id, { method: "DELETE" });
         renderDiary();
       } }, "✕"))));
     const note = d.notes[meal ? meal.id : 0];
-    return h("div", { class: "card" + (meal && sched && meal.id === sched.current ? " now" : "") }, h("table", { class: "diary" },
-      h("thead", {}, h("tr", {},
-        h("th", { class: "title" }, title),
-        h("th", {}, "Kalorien", h("small", {}, "kcal")),
-        h("th", {}, "Kohlenhydrate", h("small", {}, "g")),
-        h("th", {}, "Fette", h("small", {}, "g")),
-        h("th", {}, "Eiweiß", h("small", {}, "g")),
-        h("th", {}))),
-      h("tbody", {}, rows, h("tr", { class: "foot" },
-        h("td", {},
-          h("button", { class: "flat", onclick: () => openAdd(meal) }, "+ Nahrungsmittel hinzufügen"),
-          state.features.notes ? h("button", { class: "flat", title: "Notiz zur Mahlzeit", onclick: () => noteDialog(meal ? meal.id : 0, meal ? meal.name : "Tag") },
-            d.notes[meal ? meal.id : 0] ? "Notiz ändern" : "Notiz") : null,
-          items.length ? [
-            h("button", { class: "flat", onclick: () => copyDialog(meal, items, times) }, "Speichern / Kopieren")] : null),
-        h("td", {}, items.length ? n0(sum("kcal")) : ""), h("td", {}, items.length ? n0(sum("carbs")) : ""),
-        h("td", {}, items.length ? n0(sum("fat")) : ""), h("td", {}, items.length ? n0(sum("protein")) : ""),
-        h("td", {}, items.length ? h("button", { class: "icon", title: meal ? "Mahlzeit leeren" : "Tag leeren",
-          "aria-label": "Mahlzeit leeren", onclick: async () => {
-            if (!confirm(meal ? `Alle Einträge von „${meal.name}“ löschen?` : "Alle Einträge dieses Tages löschen?")) return;
-            await api(`day/${state.day}/entries` + (meal ? "?meal_id=" + meal.id : ""), { method: "DELETE" });
-            renderDiary();
-          } }, "✕") : null)))), note && state.features.notes ? h("div", { class: "note", onclick: () => noteDialog(meal ? meal.id : 0, meal ? meal.name : "Tag") }, note) : null);
+    // column labels: full words on wide screens, short ones on phones (CSS picks)
+    const col = (long, short) => h("th", { scope: "col" }, h("span", { class: "long" }, long), h("span", { class: "short", "aria-hidden": "true" }, short));
+    return h("div", { class: "card meal" + (meal && sched && meal.id === sched.current ? " now" : "") },
+      h("table", { class: "diary" },
+        h("caption", {}, title),
+        items.length ? h("thead", {}, h("tr", {}, h("th", { scope: "col" }),
+          col("Kalorien", "kcal"), col("Kohlenhydrate", "KH"), col("Fette", "Fett"), col("Eiweiß", "Eiweiß"), h("th"))) : null,
+        h("tbody", {}, rows),
+        items.length > 1 ? h("tfoot", {}, h("tr", { class: "foot" }, h("th", { scope: "row" }, "Summe"),
+          h("td", {}, n0(sum("kcal"))), h("td", {}, n0(sum("carbs"))), h("td", {}, n0(sum("fat"))), h("td", {}, n0(sum("protein"))), h("td"))) : null),
+      note && state.features.notes ? h("div", { class: "note", onclick: () => noteDialog(meal ? meal.id : 0, meal ? meal.name : "Tag") }, note) : null,
+      h("div", { class: "meal-actions" },
+        h("button", { class: "flat add", onclick: () => openAdd(meal) }, "+ Nahrungsmittel hinzufügen"),
+        state.features.notes ? h("button", { class: "flat", title: "Notiz zur Mahlzeit", onclick: () => noteDialog(meal ? meal.id : 0, meal ? meal.name : "Tag") },
+          note ? "Notiz ändern" : "Notiz") : null,
+        items.length ? h("button", { class: "flat", onclick: () => copyDialog(meal, items, times) }, "Speichern / Kopieren") : null,
+        items.length ? h("button", { class: "flat danger clear", onclick: async () => {
+          if (!confirm(meal ? `Alle Einträge von „${meal.name}“ löschen?` : "Alle Einträge dieses Tages löschen?")) return;
+          await api(`day/${state.day}/entries` + (meal ? "?meal_id=" + meal.id : ""), { method: "DELETE" });
+          renderDiary();
+        } }, meal ? "Mahlzeit leeren" : "Tag leeren") : null));
   };
 
   if (times) {
@@ -6661,26 +6705,7 @@ async function renderDiary() {
     } }, showAll ? "Ausgeblendete Mahlzeiten wieder verbergen" : [h("span", { class: "num" }, hidden.length), `leere/ausgeblendete Mahlzeit${hidden.length > 1 ? "en" : ""} anzeigen`])));
   }
 
-  const t = d.totals, g = d.goal;
-  const rem = (goal, total) => {
-    if (!goal) return h("td", { class: "muted" }, "–");
-    const r = goal - total;
-    if (state.goalMode === "gain") return h("td", { class: r <= 0 ? "under" : "" }, n0(r));
-    if (state.goalMode === "maintain") return h("td", { class: Math.abs(r) > goal * 0.1 ? "over" : "under" }, n0(r));
-    return h("td", { class: r < 0 ? "over" : "under" }, n0(r));
-  };
-  const goalCell = v => h("td", {}, v ? n0(v) : "–");
-  root.append(h("div", { class: "card" },
-    h("div", { class: "bar", style: "margin-bottom:12px" },
-      h("i", { class: goalOver(t.kcal, g.kcal) ? "over" : "", style: `width:${Math.min(100, t.kcal / (g.kcal || 1) * 100)}%` })),
-    h("table", { class: "summary" },
-      h("thead", {}, h("tr", {}, h("th"),
-        h("th", {}, "Kalorien"), h("th", {}, "Kohlenhydrate"), h("th", {}, "Fette"), h("th", {}, "Eiweiß"), h("th"))),
-      h("tbody", {},
-        h("tr", {}, h("th", {}, (d.profile ? `Tagesziel (${d.profile})` : "Dein Tagesziel") + (g.activity_bonus ? ` (+${n0(g.activity_bonus)} kcal Aktivität)` : "")), goalCell(g.kcal), goalCell(g.carbs), goalCell(g.fat), goalCell(g.protein), h("td")),
-        h("tr", {}, h("th", {}, "Gesamt"), h("td", {}, n0(t.kcal)), h("td", {}, n0(t.carbs)), h("td", {}, n0(t.fat)), h("td", {}, n0(t.protein)), h("td")),
-        h("tr", {}, h("th", {}, "Verbleibend"), rem(g.kcal, t.kcal), rem(g.carbs, t.carbs), rem(g.fat, t.fat), rem(g.protein, t.protein), h("td"))))));
-
+  const t = d.totals;
   if (act) root.append(activityCard(act));
   if (state.features.micros) root.append(h("div", { class: "card micros" }, h("h2", {}, "Weitere Nährwerte"),
     h("div", { class: "stat-tiles" }, MICROS.map(([k, label, u]) => h("div", { class: "tile" }, h("span", { class: "muted" }, label), h("b", {}, `${n1(t[k] || 0)} ${u}`))))));
@@ -6691,6 +6716,48 @@ async function renderDiary() {
     state.features.suggest && train && train.show ? h("button", { class: "flat", onclick: () => suggestDialog({ training: true }) }, "Trainingstag") : null,
     d.entries.length ? h("button", { class: "flat", onclick: () => dayCopyDialog() }, "Ganzen Tag kopieren") : null));
   if (state.features.trackers && trackers.length) root.append(trackerCard(trackers));
+}
+
+// The day's budget at the top of the diary: goal − eaten = left, a calorie bar split by meal, one meter per macro.
+// "over"/"under" colouring follows the goal mode (lose: staying below is good, gain: reaching it, maintain: ±10 %).
+function budgetCard(d) {
+  const t = d.totals, g = d.goal;
+  const verdict = (goal, total) => {
+    const r = goal - total;
+    if (state.goalMode === "gain") return r <= 0 ? "under" : "";
+    if (state.goalMode === "maintain") return Math.abs(r) > goal * 0.1 ? "over" : "under";
+    return r < 0 ? "over" : "under";
+  };
+  const term = (value, label, cls) => h("div", { class: "term" + (cls ? " " + cls : "") }, h("b", {}, value), h("span", {}, label));
+  const left = g.kcal - t.kcal;
+  const goalLabel = d.profile ? `Tagesziel (${d.profile})` : "Dein Tagesziel";
+  const eq = g.kcal
+    ? h("div", { class: "eq" },
+      term(n0(g.kcal), g.activity_bonus ? `Ziel inkl. ${n0(g.activity_bonus)} kcal Aktivität` : goalLabel),
+      h("i", { "aria-hidden": "true" }, "−"), term(n0(t.kcal), "Gegessen"),
+      h("i", { "aria-hidden": "true" }, "="), term(n0(Math.abs(left)), left < 0 ? "Zu viel" : "Übrig", "left " + verdict(g.kcal, t.kcal)))
+    : h("div", { class: "eq" }, term(n0(t.kcal), "Gegessen"));
+
+  // calorie bar: one segment per meal (time mode: one segment), scaled to the goal or, when over it, to the total
+  const scale = Math.max(g.kcal || 0, t.kcal) || 1;
+  const parts = d.mode === "times" ? [{ name: "Gegessen", kcal: t.kcal }]
+    : d.meals.map(m => ({ name: m.name, kcal: d.entries.filter(e => e.meal_id === m.id).reduce((a, e) => a + e.kcal, 0) })).filter(p => p.kcal > 0);
+  const bar = h("div", { class: "meal-bar" + (goalOver(t.kcal, g.kcal) ? " over" : ""), role: "img",
+    "aria-label": `${n0(t.kcal)} / ${n0(g.kcal || t.kcal)} kcal` },
+    parts.map((p, i) => h("i", { style: `width:${p.kcal / scale * 100}%;--i:${i}`, title: `${p.name}: ${n0(p.kcal)} kcal` })),
+    g.kcal && t.kcal > g.kcal ? h("b", { class: "goal-mark", style: `left:${g.kcal / scale * 100}%` }) : null);
+  const legend = parts.length > 1 ? h("div", { class: "legend meals" },
+    parts.map((p, i) => h("span", { style: `--i:${i}` }, p.name, " ", h("b", {}, n0(p.kcal))))) : null;
+
+  const macro = (label, key, cls) => {
+    const goal = g[key], total = t[key];
+    return h("div", { class: "macro " + cls },
+      h("div", { class: "macro-head" }, h("span", {}, label),
+        h("span", { class: goal ? verdict(goal, total) : "" }, goal ? `${n0(total)} von ${n0(goal)} g` : `${n0(total)} g`)),
+      goal ? h("div", { class: "bar" }, h("i", { class: goalOver(total, goal) ? "over" : "", style: `width:${Math.min(100, total / goal * 100)}%` })) : null);
+  };
+  return h("div", { class: "card budget" }, eq, bar, legend,
+    h("div", { class: "macros" }, macro("Kohlenhydrate", "carbs", "m-carbs"), macro("Fett", "fat", "m-fat"), macro("Eiweiß", "protein", "m-protein")));
 }
 
 // ---------------------------------------------------------------- meal suggestions (optional)
@@ -7865,7 +7932,7 @@ async function renderFoods() {
         await send("PUT", `foods/${f.id}/favorite`, { favorite: !!f.favorite });
         draw();
       } }, f.favorite ? "★" : "☆"),
-      f.mine === false ? null : h("button", { class: "icon", title: "Trigger anlegen", "aria-label": "Trigger anlegen", onclick: () => triggerDialog({ item: "f:" + f.id }) }, "⚡"),
+      f.mine === false ? null : h("button", { class: "icon", title: "Trigger anlegen", "aria-label": "Trigger anlegen", onclick: () => triggerDialog({ item: "f:" + f.id }) }, "⚡\uFE0E"),
       state.features.household && f.mine !== false ? h("button", { class: "icon", title: "Mit dem Haushalt teilen", "aria-label": "Teilen", onclick: () => shareLibrary("foods", f) }, "⇪") : null,
       h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => openForm(f) }, "✎"),
       f.mine === false ? null : h("button", { class: "icon", title: "Löschen", "aria-label": "Löschen", onclick: async () => {
@@ -8130,7 +8197,7 @@ async function renderMeals() {
       h("div", { class: "grow" }, h("div", {}, s.name, s.mine === false ? sharedFrom(s) : [tag(s.category), sharedMark(s)]),
         h("div", { class: "muted" }, `${n0(s.kcal)} kcal · KH ${n1(s.carbs)} g · Fett ${n1(s.fat)} g · Eiweiß ${n1(s.protein)} g`),
         h("div", { class: "muted" }, s.items.map(entryLabel).join(" · "))),
-      s.mine === false ? null : h("button", { class: "icon", title: "Trigger anlegen", "aria-label": "Trigger anlegen", onclick: () => triggerDialog({ item: "s:" + s.id }) }, "⚡"),
+      s.mine === false ? null : h("button", { class: "icon", title: "Trigger anlegen", "aria-label": "Trigger anlegen", onclick: () => triggerDialog({ item: "s:" + s.id }) }, "⚡\uFE0E"),
       state.features.household && s.mine !== false ? h("button", { class: "icon", title: "Mit dem Haushalt teilen", "aria-label": "Teilen", onclick: () => shareLibrary("saved-meals", s) }, "⇪") : null,
       !canEdit(s) ? null : h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => editSaved(s) }, "✎"),
       h("button", { class: "icon", title: "Kopie anlegen", "aria-label": "Kopieren", onclick: async () => {
@@ -8362,7 +8429,7 @@ async function renderRecipes() {
         h("div", { class: "muted" }, r.items.map(i => `${i.name} ${gText(i.grams)}`).join(" · ")),
         r.instructions ? h("details", {}, h("summary", { class: "muted" }, "Zubereitung"), h("ol", { class: "steps" }, ...r.instructions.split("\n").filter(x => x.trim()).map(x => h("li", {}, x)))) : null,
         /^https?:\/\//.test(r.source || "") ? h("div", { class: "muted" }, h("a", { href: r.source, target: "_blank", rel: "noopener noreferrer" }, new URL(r.source).hostname.replace(/^www\./, ""))) : null),
-      h("button", { class: "icon", title: "Trigger anlegen", "aria-label": "Trigger anlegen", disabled: !r.food_id, onclick: () => triggerDialog({ item: "f:" + r.food_id }) }, "⚡"),
+      h("button", { class: "icon", title: "Trigger anlegen", "aria-label": "Trigger anlegen", disabled: !r.food_id, onclick: () => triggerDialog({ item: "f:" + r.food_id }) }, "⚡\uFE0E"),
       !canEdit(r) ? null : h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => editRecipe(r) }, "✎"),
       h("button", { class: "icon", title: "Kopie anlegen", "aria-label": "Kopieren", onclick: async () => {
         const { id } = await send("POST", `recipes/${r.id}/copy`);
@@ -9508,7 +9575,7 @@ async function renderSettings() {
       sched ? [from, "–", to, !m.from_time && slot && slot.window ? h("span", { class: "muted", title: "Standardfenster" }, `(${slot.window.join("–")})`) : null] : null,
       h("button", { class: "icon", disabled: i === 0, title: "Nach oben", onclick: () => move(-1) }, "↑"),
       h("button", { class: "icon", disabled: i === meals.length - 1, title: "Nach unten", onclick: () => move(1) }, "↓"),
-      h("button", { class: "icon", title: "Nur an bestimmten Tagen anzeigen", onclick: () => mealRuleDialog(m) }, "⚡"),
+      h("button", { class: "icon", title: "Nur an bestimmten Tagen anzeigen", onclick: () => mealRuleDialog(m) }, "⚡\uFE0E"),
       h("button", { class: "icon", title: m.archived ? "Wieder einblenden" : "Ausblenden (nur noch an Tagen mit Einträgen sichtbar)",
         "aria-label": m.archived ? "Wieder einblenden" : "Ausblenden", onclick: async () => {
           await send("PUT", `meals/${m.id}/archived`, { archived: !m.archived }); renderSettings();

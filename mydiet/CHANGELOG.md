@@ -2,6 +2,18 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.25.0
+
+### Geändert
+- **Tagebuch überarbeitet:** Oben steht jetzt die Kalorien-Rechnung des Tages (Tagesziel − gegessen = übrig), darunter ein Balken, der die Kalorien nach Mahlzeiten aufteilt, und je ein Balken für Kohlenhydrate, Fett und Eiweiß mit „x von y g“. Die bisherige Tabelle „Tagesziel / Gesamt / Verbleibend“ am Ende entfällt.
+- **Mahlzeiten-Karten ruhiger:** Mahlzeitname als Überschrift, Menge grau neben dem Namen, Trennlinien statt grauer Zeilen, Summenzeile erst ab zwei Einträgen, Aktionen (Hinzufügen, Notiz, Speichern/Kopieren, Mahlzeit leeren) in einer eigenen Zeile darunter.
+- **Handy:** Lebensmittelnamen bekommen die volle Breite, die Zahlen stehen in einer Zeile darunter unter kurzen Spaltenköpfen (kcal, KH, Fett, Eiweiß); nichts bricht mehr mitten im Namen oder in den Aktionen um. Das Datum steht ohne Jahr (nur bei anderen Jahren mit), die Benutzeranzeige in der Kopfzeile entfällt auf schmalen Bildschirmen.
+- **Datumsnavigation:** Datum als Seitentitel, schlichte Pfeile, „Heute“-Knopf, wenn ein anderer Tag angezeigt wird.
+- Reiter in normaler Schreibweise statt GROSSBUCHSTABEN, Kategorie-Chips als ruhige Umschalter (ausgeblendete durchgestrichen), Symbolknöpfe einheitlich als Textzeichen (kein buntes ⚡-Emoji mehr, auch im XP-Look), gleich breite Ziffern in Tabellen, reduzierte Bewegung wird respektiert.
+
+### Behoben
+- Windows-95-Optik: Eingabefelder übernahmen die Schriftfarbe nicht (zirkuläre CSS-Variable).
+
 ## 1.24.0
 
 ### Neu

@@ -2,6 +2,18 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.25.0
+
+### Changed
+- **Diary redesigned:** the day's calorie sum now sits at the top (daily goal − eaten = left), with a bar that splits the calories by meal and one bar each for carbs, fat and protein showing "x of y g". The old "goal / total / remaining" table at the bottom is gone.
+- **Calmer meal cards:** meal name as heading, amount in grey next to the food name, dividers instead of grey rows, a total row only from two entries on, and the actions (add, note, save/copy, clear meal) on their own line below.
+- **Phones:** food names get the full width and their numbers sit on a line below under short column labels (kcal, carbs, fat, protein); nothing wraps in the middle of a name or the actions anymore. The date drops the year (shown only for other years), and the user name in the header is hidden on narrow screens.
+- **Date navigation:** the date reads as the page title, with plain arrows and a "Today" button when another day is shown.
+- Tabs in sentence case instead of ALL CAPS, category chips as quiet toggles (hidden ones struck through), symbol buttons rendered as text glyphs (no more colour ⚡ emoji), tabular figures in tables, reduced motion respected.
+
+### Fixed
+- Windows 95 look: input fields did not pick up the text colour (circular CSS variable).
+
 ## 1.24.0
 
 ### New
