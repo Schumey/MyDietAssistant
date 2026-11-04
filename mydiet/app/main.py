@@ -267,7 +267,25 @@ def get_day(day: str, x_remote_user_id: str | None = Header(None)):
                 "totals": day_totals(c, owner, day), "goal": get_goal(c, owner, day),
                 "profile": (day_profile(c, owner, day) or {"name": None})["name"] if feature_on(owner, "weekday_goals") else None,
                 "notes": {str(r["meal_id"]): r["text"] for r in c.execute(
-                    "SELECT meal_id, text FROM day_notes WHERE owner=? AND day=?", (owner, day))}}
+                    "SELECT meal_id, text FROM day_notes WHERE owner=? AND day=?", (owner, day))},
+                "incomplete": bool(db.incomplete_days(c, owner, day, day))}
+
+
+class IncompleteIn(BaseModel):
+    incomplete: bool
+
+
+@app.put("/api/day/{day}/incomplete")
+def set_incomplete(day: str, b: IncompleteIn, x_remote_user_id: str | None = Header(None)):
+    """Mark a day as not fully logged: it stays in the diary but is left out of averages, trends and reports."""
+    check_day(day)
+    owner = user_from(x_remote_user_id)
+    with db.conn() as c:
+        if b.incomplete:
+            c.execute("INSERT OR IGNORE INTO incomplete_days(owner,day) VALUES(?,?)", (owner, day))
+        else:
+            c.execute("DELETE FROM incomplete_days WHERE owner=? AND day=?", (owner, day))
+    return {"ok": True, "incomplete": b.incomplete}
 
 
 @app.post("/api/entries")
@@ -663,6 +681,7 @@ def stats(days: int = 30, x_remote_user_id: str | None = Header(None)):
             "SELECT day, SUM(kcal) kcal, SUM(protein) protein, SUM(carbs) carbs, SUM(fat) fat, SUM(fiber) fiber,"
             " SUM(sugar) sugar, SUM(salt) salt, SUM(sat_fat) sat_fat"
             " FROM entries WHERE owner=? AND day>=? GROUP BY day", (owner, start.isoformat()))}
+        skip = db.incomplete_days(c, owner, start.isoformat(), date.today().isoformat())
         goal = get_goal(c, owner)
         day_goals = {}   # weekday goals, day profiles and activity can differ per day
         with pref_cache():
@@ -674,7 +693,7 @@ def stats(days: int = 30, x_remote_user_id: str | None = Header(None)):
         d = (start + timedelta(days=i)).isoformat()
         r = rows.get(d)
         g = day_goals.get(d, goal)
-        out.append({"day": d, "logged": bool(r), "goal_kcal": g["kcal"], "goal_protein": g["protein"], "goal_carbs": g["carbs"],
+        out.append({"day": d, "logged": bool(r) and d not in skip, "incomplete": d in skip, "goal_kcal": g["kcal"], "goal_protein": g["protein"], "goal_carbs": g["carbs"],
                     "goal_fat": g["fat"], **{k: (r[k] if r else 0) for k in ("kcal", "protein", "carbs", "fat", *db.MICROS)}})
     return {"days": out, "goal": goal, "balance": energy_balance(owner, out),
             "mode": get_pref(owner, "goal_mode", "lose"), "rate": get_pref(owner, "goal_rate", 0.5)}

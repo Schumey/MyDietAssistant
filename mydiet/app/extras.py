@@ -569,9 +569,10 @@ def sensor_extras(owner: str) -> list:
     with db.conn() as c:
         goal = get_goal(c, owner, today.isoformat())
         eaten = day_totals(c, owner, today.isoformat())["kcal"]
+        skip = db.incomplete_days(c, owner, (today - timedelta(days=29)).isoformat(), today.isoformat())
         week = [r["k"] for r in c.execute(
-            "SELECT SUM(kcal) k FROM entries WHERE owner=? AND day>? AND day<=? GROUP BY day",
-            (owner, (today - timedelta(days=7)).isoformat(), today.isoformat()))]
+            "SELECT day, SUM(kcal) k FROM entries WHERE owner=? AND day>? AND day<=? GROUP BY day",
+            (owner, (today - timedelta(days=7)).isoformat(), today.isoformat())) if r["day"] not in skip]
         weights = [(r["day"], r["kg"]) for r in c.execute("SELECT day, kg FROM weights WHERE owner=? ORDER BY day", (owner,))]
     if goal["kcal"]:
         out.append(("kcal_remaining", round(goal["kcal"] - eaten), "kcal"))
@@ -586,7 +587,7 @@ def sensor_extras(owner: str) -> list:
     with db.conn() as c:
         rows = {r["day"]: r["k"] for r in c.execute(
             "SELECT day, SUM(kcal) k FROM entries WHERE owner=? AND day>=? GROUP BY day", (owner, start.isoformat()))}
-    days = [{"day": (start + timedelta(days=i)).isoformat(), "logged": (start + timedelta(days=i)).isoformat() in rows,
+    days = [{"day": (start + timedelta(days=i)).isoformat(), "logged": (start + timedelta(days=i)).isoformat() in rows and (start + timedelta(days=i)).isoformat() not in skip,
              "kcal": rows.get((start + timedelta(days=i)).isoformat(), 0)} for i in range(30)]
     b = energy_balance(owner, days)
     if b and b["balance"] is not None:
@@ -625,6 +626,7 @@ def dump(owner: str) -> dict:
             "features": features(owner),
             "goal_weekdays": q("SELECT wd,kcal,protein,carbs,fat FROM goal_weekdays WHERE owner=?", owner),
             "notes": q("SELECT day,meal_id,text FROM day_notes WHERE owner=?", owner),
+            "incomplete_days": [r["day"] for r in q("SELECT day FROM incomplete_days WHERE owner=? ORDER BY day", owner)],
             "recipes": [{**r, "items": q("SELECT name,grams,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat FROM recipe_items WHERE recipe_id=?", r["id"])}
                         for r in q("SELECT id,name,portions,cooked_g,category,food_id,source,instructions FROM recipes WHERE owner=?", owner)],
             "body_measures": q("SELECT day,name,value FROM body_measures WHERE owner=? ORDER BY day,name", owner),
@@ -687,6 +689,9 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
         c.execute("DELETE FROM triggers WHERE owner=?", (owner,))
         c.execute("DELETE FROM goal_weekdays WHERE owner=?", (owner,))
         c.execute("DELETE FROM day_notes WHERE owner=?", (owner,))
+        c.execute("DELETE FROM incomplete_days WHERE owner=?", (owner,))
+        for day in d.get("incomplete_days", []):
+            c.execute("INSERT OR IGNORE INTO incomplete_days(owner,day) VALUES(?,?)", (owner, day))
         c.execute("DELETE FROM body_measures WHERE owner=?", (owner,))
         c.execute("DELETE FROM activity_days WHERE owner=?", (owner,))
         for a in d.get("activity_days", []):
@@ -1428,9 +1433,12 @@ def period_report(c, owner: str, start: date, end: date) -> dict:
     rows = {r["day"]: dict(r) for r in c.execute(
         "SELECT day, SUM(kcal) kcal, SUM(protein) protein, SUM(carbs) carbs, SUM(fat) fat FROM entries"
         " WHERE owner=? AND day BETWEEN ? AND ? GROUP BY day", (owner, start.isoformat(), end.isoformat()))}
+    skip = db.incomplete_days(c, owner, start.isoformat(), end.isoformat())
     logged = []
     with pref_cache():
         for d, r in sorted(rows.items()):
+            if d in skip:
+                continue
             g = get_goal(c, owner, d)
             logged.append({**r, "goal_kcal": g["kcal"], "goal_protein": g["protein"]})
     avg = lambda k: round(sum(r[k] for r in logged) / len(logged), 1) if logged else 0
@@ -1441,7 +1449,7 @@ def period_report(c, owner: str, start: date, end: date) -> dict:
                   (owner, start.isoformat(), end.isoformat())).fetchall()
     pick = lambda r: {"day": r["day"], "kcal": round(r["kcal"]), "goal": round(r["goal_kcal"])} if r else None
     return {
-        "from": start.isoformat(), "to": end.isoformat(), "days": n, "logged": len(logged),
+        "from": start.isoformat(), "to": end.isoformat(), "days": n - len(skip), "logged": len(logged), "incomplete": len(skip),
         "kcal": avg("kcal"), "protein": avg("protein"), "carbs": avg("carbs"), "fat": avg("fat"),
         "goal_kcal": round(sum(r["goal_kcal"] for r in logged) / len(logged)) if logged else 0,
         "protein_days": sum(1 for r in logged if r["goal_protein"] and r["protein"] >= r["goal_protein"]),

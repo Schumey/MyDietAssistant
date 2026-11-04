@@ -34,7 +34,7 @@ const EN = {
   "Gewicht": "Weight", "Statistik": "Statistics", "Einstellungen": "Settings", "Lokal": "Local",
 
   // diary
-  "Kategorien:": "Categories:", "Ein-/ausblenden": "Show/hide", "Vortag": "Previous day", "Folgetag": "Next day",
+  "Kategorien:": "Categories:", "Ein-/ausblenden": "Show/hide", "Vortag": "Previous day", "Folgetag": "Next day", "Tag unvollständig (zählt nicht in der Statistik)": "Mark day as incomplete (not counted in statistics)", "unvollständig (nicht gezählt)": "incomplete (not counted)",
   "Bearbeiten": "Edit", "Entfernen": "Remove", "Kalorien": "Calories", "Kohlenhydrate": "Carbohydrates", "Fette": "Fats", "Eiweiß": "Protein",
   "+ Nahrungsmittel hinzufügen": "+ Add food", "Notiz zur Mahlzeit": "Note for this meal", "Tag": "Day", "Notiz ändern": "Edit note", "Notiz": "Note",
   "Speichern / Kopieren": "Save / Copy", "Mahlzeit leeren": "Clear meal", "Tag leeren": "Clear day",
@@ -616,7 +616,7 @@ Object.assign(LANGS, {
     "Kategorien:": "Catégories :",
     "Ein-/ausblenden": "Afficher/masquer",
     "Vortag": "Jour précédent",
-    "Folgetag": "Jour suivant",
+    "Folgetag": "Jour suivant", "Tag unvollständig (zählt nicht in der Statistik)": "Journée incomplète (non comptée dans les statistiques)", "unvollständig (nicht gezählt)": "incomplète (non comptée)",
     "Bearbeiten": "Modifier",
     "Entfernen": "Retirer",
     "Kalorien": "Calories",
@@ -1561,7 +1561,7 @@ Object.assign(LANGS, {
     "Kategorien:": "Categorías:",
     "Ein-/ausblenden": "Mostrar/ocultar",
     "Vortag": "Día anterior",
-    "Folgetag": "Día siguiente",
+    "Folgetag": "Día siguiente", "Tag unvollständig (zählt nicht in der Statistik)": "Día incompleto (no cuenta en las estadísticas)", "unvollständig (nicht gezählt)": "incompleto (no contado)",
     "Bearbeiten": "Editar",
     "Entfernen": "Quitar",
     "Kalorien": "Calorías",
@@ -2506,7 +2506,7 @@ Object.assign(LANGS, {
     "Kategorien:": "Categorieën:",
     "Ein-/ausblenden": "Tonen/verbergen",
     "Vortag": "Vorige dag",
-    "Folgetag": "Volgende dag",
+    "Folgetag": "Volgende dag", "Tag unvollständig (zählt nicht in der Statistik)": "Dag onvolledig (telt niet mee in de statistieken)", "unvollständig (nicht gezählt)": "onvolledig (niet meegeteld)",
     "Bearbeiten": "Bewerken",
     "Entfernen": "Verwijderen",
     "Kalorien": "Calorieën",
@@ -3463,7 +3463,7 @@ Object.assign(LANGS, {
     "Kategorien:": "Categorie:",
     "Ein-/ausblenden": "Mostra/nascondi",
     "Vortag": "Giorno precedente",
-    "Folgetag": "Giorno successivo",
+    "Folgetag": "Giorno successivo", "Tag unvollständig (zählt nicht in der Statistik)": "Giorno incompleto (non conta nelle statistiche)", "unvollständig (nicht gezählt)": "incompleto (non conteggiato)",
     "Bearbeiten": "Modifica",
     "Entfernen": "Rimuovi",
     "Kalorien": "Calorie",
@@ -4420,7 +4420,7 @@ Object.assign(LANGS, {
     "Kategorien:": "Categorias:",
     "Ein-/ausblenden": "Mostrar/ocultar",
     "Vortag": "Dia anterior",
-    "Folgetag": "Próximo dia",
+    "Folgetag": "Próximo dia", "Tag unvollständig (zählt nicht in der Statistik)": "Dia incompleto (não conta nas estatísticas)", "unvollständig (nicht gezählt)": "incompleto (não contado)",
     "Bearbeiten": "Editar",
     "Entfernen": "Remover",
     "Kalorien": "Calorias",
@@ -5377,7 +5377,7 @@ Object.assign(LANGS, {
     "Kategorien:": "Kategorie:",
     "Ein-/ausblenden": "Pokaż/ukryj",
     "Vortag": "Poprzedni dzień",
-    "Folgetag": "Następny dzień",
+    "Folgetag": "Następny dzień", "Tag unvollständig (zählt nicht in der Statistik)": "Dzień niekompletny (nie liczy się do statystyk)", "unvollständig (nicht gezählt)": "niekompletny (nie liczony)",
     "Bearbeiten": "Edytuj",
     "Entfernen": "Usuń",
     "Kalorien": "Kalorie",
@@ -6643,6 +6643,10 @@ async function renderDiary() {
     h("button", { class: "step", onclick: () => shiftDay(1), "aria-label": "Folgetag", title: "Folgetag" }, "›"),
     isToday ? null : h("button", { class: "flat today", onclick: () => { state.day = iso(new Date()); renderDiary(); } }, "Heute")));
   root.append(budgetCard(d));
+  root.append(h("label", { class: "pick incomplete-pick" }, h("input", { type: "checkbox", checked: !!d.incomplete, onchange: async e => {
+      await send("PUT", `day/${state.day}/incomplete`, { incomplete: e.target.checked });
+      renderDiary();
+    } }), h("span", {}, "Tag unvollständig (zählt nicht in der Statistik)")));
 
   // meal schedule (optional): which meal is due now
   if (sched && !times) {
@@ -7724,7 +7728,7 @@ function macroChart(days, key, cls) {
   if (pts.length > 1) s += `<polyline class="avg-line" points="${pts.join(" ")}"/>`;
   days.forEach((d, i) => {
     const text = d.logged ? `${longDate(d.day)}\n${n0(d[key])} g${goals[i] ? ` (Ziel ${n0(goals[i])} g)` : ""}` + (avg[i] != null ? `\nØ 7 Tage ${n0(avg[i])} g` : "")
-      : `${longDate(d.day)}\nnicht erfasst`;
+      : `${longDate(d.day)}\n${d.incomplete ? "unvollständig (nicht gezählt)" : "nicht erfasst"}`;
     s += `<rect class="hit" x="${L + i * bw}" y="${T}" width="${bw}" height="${H - T - B}" data-tip="${esc(text)}"/>`;
   });
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Makro-Verlauf">${s}</svg>`;
@@ -7770,7 +7774,7 @@ function barChart(days, goal) {
   days.forEach((d, i) => {
     const text = d.logged
       ? `${longDate(d.day)}\n${n0(d.kcal)} kcal${goals[i] ? ` (Ziel ${n0(goals[i])})` : ""}\nKH ${n0(d.carbs)} g · Fett ${n0(d.fat)} g · Eiweiß ${n0(d.protein)} g`
-      : `${longDate(d.day)}\nnicht erfasst`;
+      : `${longDate(d.day)}\n${d.incomplete ? "unvollständig (nicht gezählt)" : "nicht erfasst"}`;
     s += `<rect class="hit" x="${L + i * bw}" y="${T}" width="${bw}" height="${H - T - B}" data-tip="${esc(text)}"/>`;
   });
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Kalorien pro Tag">${s}</svg>`;
@@ -7849,7 +7853,7 @@ function comboChart(days, weights) {
   const byDay = new Map(pts.map(p => [p.day, p]));
   days.forEach((d, i) => {
     const p = byDay.get(d.day);
-    const text = `${longDate(d.day)}\n${d.logged ? n0(d.kcal) + " kcal" : "nicht erfasst"}` + (p ? `\n${n1(p.v)} ${wUnit()} · Trend ${n1(p.t)} ${wUnit()}` : "");
+    const text = `${longDate(d.day)}\n${d.logged ? n0(d.kcal) + " kcal" : d.incomplete ? "unvollständig (nicht gezählt)" : "nicht erfasst"}` + (p ? `\n${n1(p.v)} ${wUnit()} · Trend ${n1(p.t)} ${wUnit()}` : "");
     s += `<rect class="hit" x="${L + i * bw}" y="${T}" width="${bw}" height="${H - T - B}" data-tip="${esc(text)}"/>`;
   });
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Kalorien und Gewicht">${s}</svg>`;

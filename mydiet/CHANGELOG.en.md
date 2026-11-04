@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.26.0
+
+### New
+- **Incomplete day:** mark a day as incomplete in the diary. It stays visible but is left out of statistics, averages, energy balance, reports, the weekly report, nutrient gaps and the 7-day sensor. Included in export and import. API: `PUT /api/day/{day}/incomplete`.
+
 ## 1.25.1
 
 ### Fixed

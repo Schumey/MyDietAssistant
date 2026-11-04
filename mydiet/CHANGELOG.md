@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.26.0
+
+### Neu
+- **Tag unvollständig:** Im Tagebuch lässt sich ein Tag als unvollständig markieren. Er bleibt sichtbar, zählt aber nicht in Statistik, Durchschnitten, Energiebilanz, Berichten, Wochenbericht, Nährstofflücken und dem 7-Tage-Sensor. Teil von Export und Import. Schnittstelle: `PUT /api/day/{Tag}/incomplete`.
+
 ## 1.25.1
 
 ### Behoben

@@ -57,6 +57,8 @@ The **Statistics** tab shows evaluations for 7, 14, 30, 90, 180 days, 1 year or 
 
 The statistics use the goal that applies to each day (weekday, profile, activity).
 
+**Incomplete day:** If you did not log a day completely, tick **Mark day as incomplete (not counted in statistics)** under the date in the diary. The day stays in the diary but no longer counts in averages, energy balance, reports, the weekly report or nutrient gaps; charts show it as "incomplete (not counted)". Today's sensors are unchanged. Untick to undo.
+
 ## Report for a dietitian or trainer
 
 See [Data, import and backup](data.md#report-for-a-dietitian-or-trainer).

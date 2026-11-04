@@ -163,6 +163,11 @@ CREATE TABLE IF NOT EXISTS day_notes (        -- free text per day (meal_id 0) o
   text TEXT NOT NULL,
   PRIMARY KEY (owner, day, meal_id)
 );
+CREATE TABLE IF NOT EXISTS incomplete_days (  -- days marked "not fully logged": left out of statistics and reports
+  owner TEXT NOT NULL,
+  day TEXT NOT NULL,
+  PRIMARY KEY (owner, day)
+);
 CREATE TABLE IF NOT EXISTS recipes (          -- optional: ingredients + portions, mirrored into a food
   id INTEGER PRIMARY KEY,
   owner TEXT NOT NULL,
@@ -352,7 +357,12 @@ def _m7_v115(c):
     c.execute("CREATE INDEX IF NOT EXISTS recipes_shared ON recipes(shared)")
 
 
-MIGRATIONS = (_m1_legacy, _m2_v1, _m3_v11, _m4_v17, _m5_v171, _m6_v176, _m7_v115)
+def _m8_v125(c):
+    """v1.25: days can be marked incomplete (kept out of averages, trends and reports)."""
+    c.execute("CREATE TABLE IF NOT EXISTS incomplete_days (owner TEXT NOT NULL, day TEXT NOT NULL, PRIMARY KEY (owner, day))")
+
+
+MIGRATIONS = (_m1_legacy, _m2_v1, _m3_v11, _m4_v17, _m5_v171, _m6_v176, _m7_v115, _m8_v125)
 
 
 def init():
@@ -372,6 +382,11 @@ def init():
             m(c)
         if todo:
             c.execute(f"PRAGMA user_version = {len(MIGRATIONS)}")
+
+
+def incomplete_days(c, owner: str, start: str, end: str) -> set:
+    """Days between start and end (ISO, inclusive) the user marked as not fully logged."""
+    return {r["day"] for r in c.execute("SELECT day FROM incomplete_days WHERE owner=? AND day BETWEEN ? AND ?", (owner, start, end))}
 
 
 def schema_version() -> int:

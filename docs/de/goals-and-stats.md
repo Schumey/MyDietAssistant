@@ -57,6 +57,8 @@ Der Reiter **Statistik** zeigt Auswertungen für 7, 14, 30, 90, 180 Tage, 1 Jahr
 
 Die Statistik rechnet mit dem jeweils gültigen Tagesziel (Wochentag, Profil, Aktivität).
 
+**Tag unvollständig:** Hast Du einen Tag nicht vollständig eingetragen, setze im Tagebuch unter dem Datum den Haken **Tag unvollständig (zählt nicht in der Statistik)**. Der Tag bleibt im Tagebuch, zählt aber nicht mehr in Durchschnitten, Energiebilanz, Berichten, Wochenbericht und Nährstofflücken; in den Diagrammen erscheint er als „unvollständig“. Die Sensoren für heute bleiben unverändert. Haken entfernen macht es rückgängig.
+
 ## Bericht für Berater und Trainer
 
 Siehe [Daten, Import und Sicherung](data.md#bericht-für-berater-und-trainer).

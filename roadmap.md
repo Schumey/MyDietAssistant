@@ -8,6 +8,15 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 - **Sprach-Eintrag mit Rückfragen** (M): bei mehrdeutigen Treffern („Apfel“ oder „Apfelsaft“?) nachfragen und Synonyme für Lebensmittel pflegen; nötig sind echte Sätze aus dem Alltag.
 
+## Tagebuch und Statistik
+
+- **Mahlzeit-Vorschläge überarbeiten, besonders für Sporttage** (M): offen ist, was an heutigen Vorschlägen nicht passt (zu wenige kcal/Kohlenhydrate, falsche Verteilung auf die restlichen Mahlzeiten, Aktivität nicht berücksichtigt?); Grundlage sind `suggest.py` und `extras13.py` (Trainingsmodus vorhanden).
+- **X zum Löschen in der Companion-App** (S): Darstellung der Löschen-Schaltfläche im Tagebuch bei schmaler Ansicht (HomeAssistantXP-Look) überarbeiten; Zeilenumbruch und Spaltenbreiten prüfen.
+
+## Plattformen
+
+- **Eigene Android-App** (L): siehe Überlegungen im Chat; Vorschlag zuerst eine PWA bzw. dünne WebView-Hülle (Capacitor/TWA) um die bestehende Oberfläche, später native Teile (Barcode-Kamera, Health Connect, Widgets).
+
 ## Lebensmittel und Eingabe
 
 - **Rezept-Import aus einem Foto** (L): braucht eine Texterkennung (lokal oder über einen Dienst); Text einfügen geht seit 1.18.

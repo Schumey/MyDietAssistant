@@ -100,11 +100,12 @@ def collect(owner: str, start: date, end: date) -> dict:
             "SELECT e.day, e.time, m.name meal, e.name, e.grams, e.kcal, e.protein, e.carbs, e.fat FROM entries e LEFT JOIN meals m ON m.id=e.meal_id"
             " WHERE e.owner=? AND e.day BETWEEN ? AND ? ORDER BY e.day, e.time, e.id", (owner, s, e))]
         days = []
+        skip = db.incomplete_days(c, owner, s, e)
         with pref_cache():
             for i in range((end - start).days + 1):
                 d = (start + timedelta(days=i)).isoformat()
                 g = get_goal(c, owner, d)
-                days.append({"day": d, "logged": d in rows, **{k: (rows[d][k] if d in rows else 0) for k in ("kcal", "protein", "carbs", "fat", "fiber", "sugar", "salt", "sat_fat")},
+                days.append({"day": d, "logged": d in rows and d not in skip, "incomplete": d in skip, **{k: (rows[d][k] if d in rows else 0) for k in ("kcal", "protein", "carbs", "fat", "fiber", "sugar", "salt", "sat_fat")},
                              "goal_kcal": g["kcal"], "goal_protein": g["protein"], "weight": weights.get(d), "note": notes.get(d, "")})
     return {"days": days, "body": body, "entries": entries}
 

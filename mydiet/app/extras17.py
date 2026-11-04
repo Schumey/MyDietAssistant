@@ -23,8 +23,9 @@ def gaps(c, owner: str, end: date, days: int) -> dict:
     """Average per logged day (only days where the nutrient is known, i.e. above 0) against the goal."""
     start = end - timedelta(days=days - 1)
     goals = micro_goals(owner)
-    rows = c.execute("SELECT day, SUM(fiber) fiber, SUM(sugar) sugar, SUM(salt) salt, SUM(sat_fat) sat_fat, COUNT(*) n FROM entries"
-                     " WHERE owner=? AND day BETWEEN ? AND ? GROUP BY day", (owner, start.isoformat(), end.isoformat())).fetchall()
+    skip = db.incomplete_days(c, owner, start.isoformat(), end.isoformat())
+    rows = [r for r in c.execute("SELECT day, SUM(fiber) fiber, SUM(sugar) sugar, SUM(salt) salt, SUM(sat_fat) sat_fat, COUNT(*) n FROM entries"
+                     " WHERE owner=? AND day BETWEEN ? AND ? GROUP BY day", (owner, start.isoformat(), end.isoformat())) if r["day"] not in skip]
     items = []
     for key, kind in MICRO_KINDS.items():
         known = [r[key] for r in rows if (r[key] or 0) > 0]

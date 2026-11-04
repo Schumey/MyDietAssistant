@@ -266,7 +266,7 @@ DATA_PARTS = {
     "diary": ("DELETE FROM tracker_log WHERE tracker_id IN (SELECT id FROM trackers WHERE owner=?)",
               "DELETE FROM trigger_log WHERE trigger_id IN (SELECT id FROM triggers WHERE owner=?)",
               "DELETE FROM meal_trigger_log WHERE meal_trigger_id IN (SELECT id FROM meal_triggers WHERE owner=?)",
-              "DELETE FROM trigger_runs WHERE owner=?", "DELETE FROM entries WHERE owner=?", "DELETE FROM day_notes WHERE owner=?",
+              "DELETE FROM trigger_runs WHERE owner=?", "DELETE FROM entries WHERE owner=?", "DELETE FROM day_notes WHERE owner=?", "DELETE FROM incomplete_days WHERE owner=?",
               "DELETE FROM activity_days WHERE owner=?", "DELETE FROM day_flags WHERE owner=?", "DELETE FROM day_profile WHERE owner=?"),
     "foods": ("DELETE FROM food_portions WHERE food_id IN (SELECT id FROM foods WHERE owner=?)", "DELETE FROM suggest_addons WHERE owner=?",
               "DELETE FROM foods WHERE owner=?"),
