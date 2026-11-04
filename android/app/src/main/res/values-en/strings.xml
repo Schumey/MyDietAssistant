@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setup_title">Connect to Home Assistant</string>
+    <string name="setup_url_label">Home Assistant address</string>
+    <string name="setup_slug_label">Add-on identifier (slug)</string>
+    <string name="setup_connect">Connect</string>
+    <string name="setup_url_invalid">Please enter a valid address, e.g. http://homeassistant.local:8123</string>
+    <string name="error_title">No connection</string>
+    <string name="error_text">Home Assistant is not reachable. Check Wi-Fi/VPN and the address.</string>
+    <string name="retry">Try again</string>
+    <string name="change_server">Change server</string>
+    <string name="download_started">Download started</string>
+</resources>

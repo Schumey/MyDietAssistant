@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MyDietAssistant</string>
+    <string name="setup_title">Mit Home Assistant verbinden</string>
+    <string name="setup_url_hint">http://homeassistant.local:8123</string>
+    <string name="setup_url_label">Adresse von Home Assistant</string>
+    <string name="setup_slug_label">Add-on-Kennung (Slug)</string>
+    <string name="setup_connect">Verbinden</string>
+    <string name="setup_url_invalid">Bitte eine gültige Adresse eingeben, z. B. http://homeassistant.local:8123</string>
+    <string name="error_title">Keine Verbindung</string>
+    <string name="error_text">Home Assistant ist nicht erreichbar. Prüfe WLAN/VPN und die Adresse.</string>
+    <string name="retry">Erneut versuchen</string>
+    <string name="change_server">Server ändern</string>
+    <string name="download_started">Download gestartet</string>
+</resources>
