@@ -15,7 +15,7 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 ## Plattformen
 
-- **Eigene Android-App** (L): siehe Überlegungen im Chat; Vorschlag zuerst eine PWA bzw. dünne WebView-Hülle (Capacitor/TWA) um die bestehende Oberfläche, später native Teile (Barcode-Kamera, Health Connect, Widgets).
+- **Eigene Android-App** (L): Kotlin-App in einem eigenen Ordner `android/`. Verbindung über HA-Login (OAuth, kein neuer Port): Anmeldung bei HA, Ingress-Sitzung über die Supervisor-Schnittstelle holen, Oberfläche im WebView laden (wie die Companion-App). Danach eine JavaScript-Brücke für native Teile: Barcode-Kamera (ML Kit), Homescreen-Widget mit Kalorienstand und Schnelleingabe, Health Connect (Gewicht, Aktivität). Risiken: Ingress-Sitzung verlangt vermutlich Admin-Rechte in HA (Add-on-Panel); Anmeldung und Token-Erneuerung außerhalb des Heimnetzes; Veröffentlichung nur als APK von Hand (kein Play Store). Reihenfolge: 1) Hülle mit Anmeldung, 2) Barcode, 3) Widget, 4) Health Connect.
 
 ## Lebensmittel und Eingabe
 
