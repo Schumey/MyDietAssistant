@@ -6562,6 +6562,9 @@ function show(tab) {
     b.tabIndex = b.dataset.tab === tab ? 0 : -1;
   }
   for (const s of document.querySelectorAll("main > section")) s.hidden = s.id !== tab;
+  const on = document.querySelector(`#tabs [data-tab="${tab}"]`);
+  if (on && on.scrollIntoView) on.scrollIntoView({ block: "nearest", inline: "center" });
+  window.scrollTo(0, 0);
   return ({ diary: renderDiary, foods: renderFoods, meals: renderMeals, weight: renderWeight, stats: renderStats, settings: renderSettings, recipes: renderRecipes })[tab]();
 }
 
@@ -9885,18 +9888,27 @@ async function restoreDialog(data) {
   dlg.showModal();
 }
 
-// Touch: swipe left/right in the diary changes the day (tapping an entry edits it).
+// Touch: swipe left/right changes the page (tab); in the diary a swipe on the date bar changes the day instead.
 (() => {
-  let x0 = 0, y0 = 0, t0 = 0, track = false;
-  const diary = $("#diary");
-  diary.addEventListener("touchstart", e => {
-    track = e.touches.length === 1 && !e.target.closest("input, select, textarea, button, .hit, svg");
+  let x0 = 0, y0 = 0, t0 = 0, track = false, onDate = false;
+  const main = document.querySelector("main");
+  const scrollsSideways = el => {   // wide tables and chart frames scroll horizontally: leave their swipes alone
+    for (let n = el; n && n !== main; n = n.parentElement) if (n.scrollWidth > n.clientWidth + 2 && /auto|scroll/.test(getComputedStyle(n).overflowX)) return true;
+    return false;
+  };
+  main.addEventListener("touchstart", e => {
+    track = e.touches.length === 1 && !dlg.open && !e.target.closest("input, select, textarea, button, .hit, svg, .range, [contenteditable]") && !scrollsSideways(e.target);
+    onDate = !!e.target.closest(".daynav");
     x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now();
   }, { passive: true });
-  diary.addEventListener("touchend", e => {
-    if (!track || state.tab !== "diary" || dlg.open) return;
+  main.addEventListener("touchend", e => {
+    if (!track || dlg.open) return;
     const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
-    if (Math.abs(dx) > 70 && Math.abs(dy) < 50 && Date.now() - t0 < 600) shiftDay(dx < 0 ? 1 : -1);
+    if (!(Math.abs(dx) > 70 && Math.abs(dy) < 50 && Math.abs(dx) > Math.abs(dy) * 2 && Date.now() - t0 < 600)) return;
+    if (state.tab === "diary" && onDate) return void shiftDay(dx < 0 ? 1 : -1);
+    const tabs = [...document.querySelectorAll("#tabs button")].filter(b => !b.hidden);
+    const i = tabs.findIndex(b => b.dataset.tab === state.tab), next = tabs[i + (dx < 0 ? 1 : -1)];
+    if (next) show(next.dataset.tab);
   }, { passive: true });
 })();
 

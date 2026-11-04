@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.27.0
+
+### New
+- **Swipe between tabs:** on a phone, swiping left/right changes the page (Diary, Foods, …). In the diary a swipe on the date bar still changes the day.
+
 ## 1.26.0
 
 ### New

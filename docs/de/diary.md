@@ -113,6 +113,8 @@ Im Reiter **Statistik** zeigt die Karte **Nährwert-Lücken (7 Tage)**, wie Dein
 | N | Nahrungsmittel hinzufügen |
 | / | ins Suchfeld der Liste springen |
 
+Auf dem Handy wechselst Du mit einer Wischgeste nach links oder rechts zwischen den Reitern; im Tagebuch wischst Du dafür neben dem Datum (auf der Datumsleiste wechselt die Wischgeste den Tag). Tabellen und Diagramme, die selbst seitlich scrollen, bleiben davon unberührt.
+
 In der Tab-Leiste (Tagebuch, Lebensmittel …) wechseln ← / → zwischen den Reitern, Pos1 und Ende springen zum ersten und letzten. Der Tastaturfokus ist an allen Bedienelementen deutlich sichtbar, Dialoge lassen sich mit Esc schließen, und Felder, Symbolknöpfe und Fehlermeldungen haben Namen für Screenreader.
 
 ## Ohne Verbindung eintragen

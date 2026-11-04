@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.27.0
+
+### Neu
+- **Wischen zwischen den Reitern:** Auf dem Handy wechselt eine Wischgeste nach links/rechts die Seite (Tagebuch, Lebensmittel, …). Im Tagebuch wechselt die Wischgeste auf der Datumsleiste weiter den Tag.
+
 ## 1.26.0
 
 ### Neu

@@ -113,6 +113,8 @@ In the **Statistics** tab the card **Nutrient gaps (7 days)** shows how your las
 | N | add food |
 | / | jump to the list’s search field |
 
+On a phone, swipe left or right to move between the tabs; in the diary swipe anywhere except the date bar (on the date bar the swipe changes the day). Tables and charts that scroll sideways themselves are left alone.
+
 In the tab bar (Diary, Foods …) ← / → move between the tabs, Home and End jump to the first and last one. Keyboard focus is clearly visible on every control, dialogs close with Esc, and fields, icon buttons and error messages have names for screen readers.
 
 ## Logging without a connection
