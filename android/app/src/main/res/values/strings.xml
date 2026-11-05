@@ -21,4 +21,6 @@
     <string name="widget_as_of">Stand %1$s</string>
     <string name="widget_scan">Scannen</string>
     <string name="widget_add">Eintragen</string>
+    <string name="privacy_title">Datenschutz</string>
+    <string name="privacy_text">MyDietAssistant liest aus Health Connect nur Gewicht, Schritte und aktive Kalorien, und nur wenn Du in den Einstellungen „Aus Health Connect übernehmen“ wählst oder die automatische Übernahme einschaltest.\n\nDie Werte gehen ausschließlich an Deinen eigenen Home-Assistant-Server (die Adresse, die Du in der App eingetragen hast) und werden dort in der Datenbank von MyDietAssistant gespeichert. Es gibt keinen anderen Server, keine Werbung und keine Weitergabe an Dritte.\n\nDie App schreibt nichts in Health Connect. Den Zugriff entziehst Du jederzeit in den Android-Einstellungen unter Health Connect → App-Berechtigungen.</string>
 </resources>

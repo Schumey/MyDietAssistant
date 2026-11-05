@@ -45,8 +45,27 @@ Tap **Scan barcode** in the interface as usual. In the app, Google's scanner ope
 
 The widget has no connection of its own to Home Assistant. It takes the numbers whenever the app shows today's diary. After midnight it says **Open the app for today's numbers** until you open the app once. Entries you make on another device only show up after the next time you open the app.
 
+## Health Connect (weight, steps, calories)
+
+From app version 0.3.0, MyDietAssistant takes values from Health Connect, Android's health store. Data from scales, watches and fitness apps (Samsung Health, Fitbit, Withings, Google Fit …) ends up there.
+
+1. Open *Settings → Android app*. The card only exists in the app.
+2. Tap **Import from Health Connect (30 days)**.
+3. The first time, Android asks what MyDietAssistant may access. Choose **Allow all** and **Allow**. The app only reads weight, steps and active calories and writes nothing into Health Connect.
+4. Below the button you then see how many values were imported.
+5. Turn on **Import automatically when the app opens (last 7 days)** so this happens by itself every time you open the app.
+
+Rules:
+- **Weight** is only taken for days on which MyDietAssistant has no value yet. A value you typed or one from the scale in Home Assistant wins. With several measurements on one day, the last one counts.
+- **Steps and active calories** need the optional feature “Activity” (*Settings → Optional features*), see [Activity](activity.md). Days you entered by hand stay unchanged.
+- Health Connect only hands new apps the data of the last 30 days before access was granted.
+
+Revoke access in the Android settings under *Health Connect → App permissions → MyDietAssistant*.
+
+## Print the report
+
+*Settings → Export for dietitian and trainer → Open report (print / PDF)* opens the report in the app. **Print / save as PDF** opens Android's print dialog; choose a printer or **Save as PDF** there. The back button takes you back into the app.
+
 ## Known limits
 
-- Downloads the interface creates itself (for example some exports) do not start in the app yet; use the browser for those.
-- The app does not read health data (Health Connect) yet. Weight from a scale works through an HA sensor, see [Weight and body measurements](weight.md).
 - The APK is not in the Play Store and is signed with a developer key. Only install updates from this repository's releases page.

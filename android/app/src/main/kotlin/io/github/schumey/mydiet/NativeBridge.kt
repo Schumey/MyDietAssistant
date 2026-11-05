@@ -1,6 +1,8 @@
 package io.github.schumey.mydiet
 
 import android.app.Activity
+import android.print.PrintAttributes
+import android.print.PrintManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import com.google.mlkit.vision.barcode.common.Barcode
@@ -17,7 +19,7 @@ import org.json.JSONObject
  * - `summary(json)`: the diary of today hands over its totals; the home screen widget shows them.
  * - `pendingAction()`: "scan" or "add" once, when the app was opened from a widget button.
  */
-class NativeBridge(private val activity: Activity, private val web: WebView) {
+class NativeBridge(private val activity: Activity, private val web: WebView, private val health: Health) {
     @Volatile var pending: String = ""
 
     @JavascriptInterface
@@ -50,6 +52,32 @@ class NativeBridge(private val activity: Activity, private val web: WebView) {
         }
     }
 
+    /** Health Connect: "ok", "update" or "unavailable". */
+    @JavascriptInterface
+    fun healthStatus(): String = try { health.status() } catch (_: Exception) { "unavailable" }
+
+    /** Reads the last [days] days; answers through `window.mdaHealthResult(json, error)`. [ask]: may show the permission dialog. */
+    @JavascriptInterface
+    fun healthRead(days: Int, ask: Boolean) {
+        activity.runOnUiThread {
+            health.read(days.coerceIn(1, 400), ask) { json, error ->
+                activity.runOnUiThread {
+                    web.evaluateJavascript("window.mdaHealthResult && window.mdaHealthResult(${JSONObject.quote(json)}, ${JSONObject.quote(error)})", null)
+                }
+            }
+        }
+    }
+
+    /** `window.print()` does nothing in a WebView: the page's print button lands here (Android print dialog, also "Save as PDF"). */
+    @JavascriptInterface
+    fun print(title: String) {
+        activity.runOnUiThread {
+            val name = title.ifBlank { "MyDietAssistant" }
+            val pm = activity.getSystemService(Activity.PRINT_SERVICE) as PrintManager
+            pm.print(name, web.createPrintDocumentAdapter(name), PrintAttributes.Builder().build())
+        }
+    }
+
     @JavascriptInterface
     fun pendingAction(): String {
         val a = pending
@@ -70,5 +98,9 @@ class NativeBridge(private val activity: Activity, private val web: WebView) {
 
     companion object {
         const val NAME = "MDAApp"
+
+        /** Run on every page of the add-on: routes window.print() to [print]. */
+        const val PRINT_HOOK = "if (window.$NAME && !window.__mdaPrint) { window.__mdaPrint = true; " +
+            "window.print = function () { $NAME.print(document.title || ''); }; }"
     }
 }

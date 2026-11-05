@@ -717,6 +717,7 @@ from extras15 import *  # noqa: E402,F401,F403  (shopping list)
 from extras16 import *  # noqa: E402,F401,F403  (weekly report, database health)
 from extras17 import *  # noqa: E402,F401,F403  (nutrient gaps)
 from extras18 import *  # noqa: E402,F401,F403  (step plan / reverse diet)
+from extras19 import *  # noqa: E402,F401,F403  (health data from the Android app)
 
 
 @app.get("/")

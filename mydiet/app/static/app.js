@@ -36,6 +36,17 @@ const EN = {
   // diary
   "Kategorien:": "Categories:", "Ein-/ausblenden": "Show/hide", "Vortag": "Previous day", "Folgetag": "Next day", "Tag unvollständig (zählt nicht in der Statistik)": "Mark day as incomplete (not counted in statistics)", "unvollständig (nicht gezählt)": "incomplete (not counted)",
   "Bearbeiten": "Edit", "Entfernen": "Remove", "Kalorien": "Calories", "Kohlenhydrate": "Carbohydrates", "Fette": "Fats", "Eiweiß": "Protein",
+  "Android-App": "Android app",
+  "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Take over weight, steps and active calories from Health Connect on the phone. Weight only for days without a value of their own, steps and calories only with the optional feature “Activity”.",
+  "Aus Health Connect übernehmen (30 Tage)": "Import from Health Connect (30 days)",
+  "Beim Öffnen automatisch übernehmen (letzte 7 Tage)": "Import automatically when the app opens (last 7 days)",
+  "Lese Health Connect …": "Reading Health Connect …",
+  "Übernommen: {} Gewichtswerte, {} Tage Aktivität.": "Imported: {} weight values, {} days of activity.",
+  "Schritte und Kalorien nicht übernommen: Die Zusatzfunktion „Aktivität“ ist aus.": "Steps and calories not imported: the optional feature “Activity” is off.",
+  "Health Connect ist auf diesem Handy nicht verfügbar.": "Health Connect is not available on this phone.",
+  "Health Connect muss installiert oder aktualisiert werden.": "Health Connect needs to be installed or updated.",
+  "Kein Zugriff auf Health Connect. Erlaube ihn in den Android-Einstellungen unter Health Connect → App-Berechtigungen.": "No access to Health Connect. Allow it in the Android settings under Health Connect → App permissions.",
+  "Health Connect konnte nicht gelesen werden.": "Health Connect could not be read.",
   "+ Nahrungsmittel hinzufügen": "+ Add food", "Notiz zur Mahlzeit": "Note for this meal", "Tag": "Day", "Notiz ändern": "Edit note", "Notiz": "Note",
   "Speichern / Kopieren": "Save / Copy", "Mahlzeit leeren": "Clear meal", "Tag leeren": "Clear day",
   "Alle Einträge von „{}“ löschen?": "Delete all entries of “{}”?", "Alle Einträge dieses Tages löschen?": "Delete all entries of this day?",
@@ -619,6 +630,17 @@ Object.assign(LANGS, {
     "Folgetag": "Jour suivant", "Tag unvollständig (zählt nicht in der Statistik)": "Journée incomplète (non comptée dans les statistiques)", "unvollständig (nicht gezählt)": "incomplète (non comptée)",
     "Bearbeiten": "Modifier",
     "Entfernen": "Retirer",
+    "Android-App": "Application Android",
+    "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Reprendre le poids, les pas et les calories actives depuis Health Connect sur le téléphone. Le poids seulement pour les jours sans valeur propre, les pas et calories seulement avec la fonction « Activité ».",
+    "Aus Health Connect übernehmen (30 Tage)": "Importer depuis Health Connect (30 jours)",
+    "Beim Öffnen automatisch übernehmen (letzte 7 Tage)": "Importer automatiquement à l’ouverture (7 derniers jours)",
+    "Lese Health Connect …": "Lecture de Health Connect …",
+    "Übernommen: {} Gewichtswerte, {} Tage Aktivität.": "Importé : {} valeurs de poids, {} jours d’activité.",
+    "Schritte und Kalorien nicht übernommen: Die Zusatzfunktion „Aktivität“ ist aus.": "Pas et calories non importés : la fonction « Activité » est désactivée.",
+    "Health Connect ist auf diesem Handy nicht verfügbar.": "Health Connect n’est pas disponible sur ce téléphone.",
+    "Health Connect muss installiert oder aktualisiert werden.": "Health Connect doit être installé ou mis à jour.",
+    "Kein Zugriff auf Health Connect. Erlaube ihn in den Android-Einstellungen unter Health Connect → App-Berechtigungen.": "Pas d’accès à Health Connect. Autorisez-le dans les réglages Android sous Health Connect → Autorisations des applications.",
+    "Health Connect konnte nicht gelesen werden.": "Impossible de lire Health Connect.",
     "Kalorien": "Calories",
     "Kohlenhydrate": "Glucides",
     "Fette": "Lipides",
@@ -1564,6 +1586,17 @@ Object.assign(LANGS, {
     "Folgetag": "Día siguiente", "Tag unvollständig (zählt nicht in der Statistik)": "Día incompleto (no cuenta en las estadísticas)", "unvollständig (nicht gezählt)": "incompleto (no contado)",
     "Bearbeiten": "Editar",
     "Entfernen": "Quitar",
+    "Android-App": "App de Android",
+    "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Tomar el peso, los pasos y las calorías activas de Health Connect en el teléfono. El peso solo para días sin valor propio, pasos y calorías solo con la función «Actividad».",
+    "Aus Health Connect übernehmen (30 Tage)": "Importar de Health Connect (30 días)",
+    "Beim Öffnen automatisch übernehmen (letzte 7 Tage)": "Importar automáticamente al abrir (últimos 7 días)",
+    "Lese Health Connect …": "Leyendo Health Connect …",
+    "Übernommen: {} Gewichtswerte, {} Tage Aktivität.": "Importado: {} valores de peso, {} días de actividad.",
+    "Schritte und Kalorien nicht übernommen: Die Zusatzfunktion „Aktivität“ ist aus.": "Pasos y calorías no importados: la función «Actividad» está desactivada.",
+    "Health Connect ist auf diesem Handy nicht verfügbar.": "Health Connect no está disponible en este teléfono.",
+    "Health Connect muss installiert oder aktualisiert werden.": "Hay que instalar o actualizar Health Connect.",
+    "Kein Zugriff auf Health Connect. Erlaube ihn in den Android-Einstellungen unter Health Connect → App-Berechtigungen.": "Sin acceso a Health Connect. Permítelo en los ajustes de Android en Health Connect → Permisos de apps.",
+    "Health Connect konnte nicht gelesen werden.": "No se pudo leer Health Connect.",
     "Kalorien": "Calorías",
     "Kohlenhydrate": "Carbohidratos",
     "Fette": "Grasas",
@@ -2509,6 +2542,17 @@ Object.assign(LANGS, {
     "Folgetag": "Volgende dag", "Tag unvollständig (zählt nicht in der Statistik)": "Dag onvolledig (telt niet mee in de statistieken)", "unvollständig (nicht gezählt)": "onvolledig (niet meegeteld)",
     "Bearbeiten": "Bewerken",
     "Entfernen": "Verwijderen",
+    "Android-App": "Android-app",
+    "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Gewicht, stappen en actieve calorieën overnemen uit Health Connect op de telefoon. Gewicht alleen voor dagen zonder eigen waarde, stappen en calorieën alleen met de extra functie ‘Activiteit’.",
+    "Aus Health Connect übernehmen (30 Tage)": "Overnemen uit Health Connect (30 dagen)",
+    "Beim Öffnen automatisch übernehmen (letzte 7 Tage)": "Automatisch overnemen bij openen (laatste 7 dagen)",
+    "Lese Health Connect …": "Health Connect lezen …",
+    "Übernommen: {} Gewichtswerte, {} Tage Aktivität.": "Overgenomen: {} gewichtswaarden, {} dagen activiteit.",
+    "Schritte und Kalorien nicht übernommen: Die Zusatzfunktion „Aktivität“ ist aus.": "Stappen en calorieën niet overgenomen: de extra functie ‘Activiteit’ staat uit.",
+    "Health Connect ist auf diesem Handy nicht verfügbar.": "Health Connect is niet beschikbaar op deze telefoon.",
+    "Health Connect muss installiert oder aktualisiert werden.": "Health Connect moet worden geïnstalleerd of bijgewerkt.",
+    "Kein Zugriff auf Health Connect. Erlaube ihn in den Android-Einstellungen unter Health Connect → App-Berechtigungen.": "Geen toegang tot Health Connect. Sta het toe in de Android-instellingen onder Health Connect → App-rechten.",
+    "Health Connect konnte nicht gelesen werden.": "Health Connect kon niet worden gelezen.",
     "Kalorien": "Calorieën",
     "Kohlenhydrate": "Koolhydraten",
     "Fette": "Vetten",
@@ -3466,6 +3510,17 @@ Object.assign(LANGS, {
     "Folgetag": "Giorno successivo", "Tag unvollständig (zählt nicht in der Statistik)": "Giorno incompleto (non conta nelle statistiche)", "unvollständig (nicht gezählt)": "incompleto (non conteggiato)",
     "Bearbeiten": "Modifica",
     "Entfernen": "Rimuovi",
+    "Android-App": "App Android",
+    "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Riprendi peso, passi e calorie attive da Health Connect sul telefono. Il peso solo per i giorni senza un valore proprio, passi e calorie solo con la funzione «Attività».",
+    "Aus Health Connect übernehmen (30 Tage)": "Importa da Health Connect (30 giorni)",
+    "Beim Öffnen automatisch übernehmen (letzte 7 Tage)": "Importa automaticamente all’apertura (ultimi 7 giorni)",
+    "Lese Health Connect …": "Lettura di Health Connect …",
+    "Übernommen: {} Gewichtswerte, {} Tage Aktivität.": "Importati: {} valori di peso, {} giorni di attività.",
+    "Schritte und Kalorien nicht übernommen: Die Zusatzfunktion „Aktivität“ ist aus.": "Passi e calorie non importati: la funzione «Attività» è disattivata.",
+    "Health Connect ist auf diesem Handy nicht verfügbar.": "Health Connect non è disponibile su questo telefono.",
+    "Health Connect muss installiert oder aktualisiert werden.": "Health Connect deve essere installato o aggiornato.",
+    "Kein Zugriff auf Health Connect. Erlaube ihn in den Android-Einstellungen unter Health Connect → App-Berechtigungen.": "Nessun accesso a Health Connect. Consentilo nelle impostazioni Android in Health Connect → Autorizzazioni app.",
+    "Health Connect konnte nicht gelesen werden.": "Impossibile leggere Health Connect.",
     "Kalorien": "Calorie",
     "Kohlenhydrate": "Carboidrati",
     "Fette": "Grassi",
@@ -4423,6 +4478,17 @@ Object.assign(LANGS, {
     "Folgetag": "Próximo dia", "Tag unvollständig (zählt nicht in der Statistik)": "Dia incompleto (não conta nas estatísticas)", "unvollständig (nicht gezählt)": "incompleto (não contado)",
     "Bearbeiten": "Editar",
     "Entfernen": "Remover",
+    "Android-App": "App Android",
+    "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Trazer peso, passos e calorias ativas do Health Connect no celular. Peso só para dias sem valor próprio, passos e calorias só com a função «Atividade».",
+    "Aus Health Connect übernehmen (30 Tage)": "Importar do Health Connect (30 dias)",
+    "Beim Öffnen automatisch übernehmen (letzte 7 Tage)": "Importar automaticamente ao abrir (últimos 7 dias)",
+    "Lese Health Connect …": "Lendo o Health Connect …",
+    "Übernommen: {} Gewichtswerte, {} Tage Aktivität.": "Importado: {} valores de peso, {} dias de atividade.",
+    "Schritte und Kalorien nicht übernommen: Die Zusatzfunktion „Aktivität“ ist aus.": "Passos e calorias não importados: a função «Atividade» está desligada.",
+    "Health Connect ist auf diesem Handy nicht verfügbar.": "O Health Connect não está disponível neste celular.",
+    "Health Connect muss installiert oder aktualisiert werden.": "O Health Connect precisa ser instalado ou atualizado.",
+    "Kein Zugriff auf Health Connect. Erlaube ihn in den Android-Einstellungen unter Health Connect → App-Berechtigungen.": "Sem acesso ao Health Connect. Permita nas configurações do Android em Health Connect → Permissões de apps.",
+    "Health Connect konnte nicht gelesen werden.": "Não foi possível ler o Health Connect.",
     "Kalorien": "Calorias",
     "Kohlenhydrate": "Carboidratos",
     "Fette": "Gorduras",
@@ -5380,6 +5446,17 @@ Object.assign(LANGS, {
     "Folgetag": "Następny dzień", "Tag unvollständig (zählt nicht in der Statistik)": "Dzień niekompletny (nie liczy się do statystyk)", "unvollständig (nicht gezählt)": "niekompletny (nie liczony)",
     "Bearbeiten": "Edytuj",
     "Entfernen": "Usuń",
+    "Android-App": "Aplikacja na Androida",
+    "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Przejmij wagę, kroki i aktywne kalorie z Health Connect na telefonie. Wagę tylko dla dni bez własnej wartości, kroki i kalorie tylko z funkcją „Aktywność”.",
+    "Aus Health Connect übernehmen (30 Tage)": "Importuj z Health Connect (30 dni)",
+    "Beim Öffnen automatisch übernehmen (letzte 7 Tage)": "Importuj automatycznie przy otwarciu (ostatnie 7 dni)",
+    "Lese Health Connect …": "Odczyt Health Connect …",
+    "Übernommen: {} Gewichtswerte, {} Tage Aktivität.": "Zaimportowano: {} wartości wagi, {} dni aktywności.",
+    "Schritte und Kalorien nicht übernommen: Die Zusatzfunktion „Aktivität“ ist aus.": "Nie zaimportowano kroków i kalorii: funkcja „Aktywność” jest wyłączona.",
+    "Health Connect ist auf diesem Handy nicht verfügbar.": "Health Connect nie jest dostępne na tym telefonie.",
+    "Health Connect muss installiert oder aktualisiert werden.": "Health Connect trzeba zainstalować lub zaktualizować.",
+    "Kein Zugriff auf Health Connect. Erlaube ihn in den Android-Einstellungen unter Health Connect → App-Berechtigungen.": "Brak dostępu do Health Connect. Zezwól na niego w ustawieniach Androida w Health Connect → Uprawnienia aplikacji.",
+    "Health Connect konnte nicht gelesen werden.": "Nie udało się odczytać Health Connect.",
     "Kalorien": "Kalorie",
     "Kohlenhydrate": "Węglowodany",
     "Fette": "Tłuszcze",
@@ -7369,6 +7446,37 @@ function nativeScan() {
     };
     try { app.scanBarcode(); } catch { window.mdaScanResult = null; resolve(null); }
   });
+}
+
+// Inside the Android app: weight, steps and active calories from Health Connect (read on the phone, stored through
+// /api/health/import). null outside the app or with an app version without it.
+const healthApp = () => (window.MDAApp && typeof window.MDAApp.healthRead === "function" ? window.MDAApp : null);
+const HEALTH_ERRORS = {
+  unavailable: "Health Connect ist auf diesem Handy nicht verfügbar.",
+  update: "Health Connect muss installiert oder aktualisiert werden.",
+  denied: "Kein Zugriff auf Health Connect. Erlaube ihn in den Android-Einstellungen unter Health Connect → App-Berechtigungen.",
+  failed: "Health Connect konnte nicht gelesen werden.",
+};
+function healthRead(days, ask) {
+  const app = healthApp();
+  if (!app || window.top !== window) return Promise.reject(new Error(HEALTH_ERRORS.unavailable));
+  return new Promise((resolve, reject) => {
+    window.mdaHealthResult = (json, err) => {
+      window.mdaHealthResult = null;
+      if (err) reject(new Error(HEALTH_ERRORS[err] || HEALTH_ERRORS.failed));
+      else { try { resolve(JSON.parse(json)); } catch { reject(new Error(HEALTH_ERRORS.failed)); } }
+    };
+    try { app.healthRead(days, !!ask); } catch { window.mdaHealthResult = null; reject(new Error(HEALTH_ERRORS.failed)); }
+  });
+}
+const healthImport = async (days, ask) => send("POST", "health/import", await healthRead(days, ask));
+// per device, like the scanner flag: "take over Health Connect data when the app opens"
+function healthAuto(on) {
+  try {
+    if (on === undefined) return localStorage.getItem("mda.healthAuto") === "1";
+    if (on) localStorage.setItem("mda.healthAuto", "1"); else localStorage.removeItem("mda.healthAuto");
+  } catch { /* storage blocked */ }
+  return !!on;
 }
 
 // Resolves with the barcode text, rejects with a readable Error. `box` receives the video preview and a cancel button.
@@ -9581,6 +9689,27 @@ async function renderSettings() {
     h("label", { class: "pick", style: "margin-top:12px" }, scanOpen, "Auf diesem Gerät beim Öffnen direkt den Barcode-Scanner starten"),
     h("div", { class: "muted" }, "Für ein Homescreen-Widget der Companion-App: Lege dort eine Verknüpfung auf dieses Panel an, dann öffnet sich die Kamera sofort.")));
 
+  // Android app only: Health Connect
+  if (healthApp()) {
+    const hMsg = h("div", { class: "muted", role: "status" });
+    const hErr = h("div", { class: "err" });
+    const hAuto = h("input", { type: "checkbox", checked: healthAuto(), onchange: () => healthAuto(hAuto.checked) });
+    const hBtn = h("button", { onclick: async () => {
+      hBtn.disabled = true; hErr.textContent = ""; hMsg.textContent = "Lese Health Connect …";
+      try {
+        const r = await healthImport(30, true);
+        hMsg.textContent = `Übernommen: ${r.weights} Gewichtswerte, ${r.activity} Tage Aktivität.`;
+        if (r.activity_off) hErr.textContent = "Schritte und Kalorien nicht übernommen: Die Zusatzfunktion „Aktivität“ ist aus.";
+      } catch (e) { hMsg.textContent = ""; hErr.textContent = e.message; }
+      hBtn.disabled = false;
+    } }, "Aus Health Connect übernehmen (30 Tage)");
+    root.append(h("div", { class: "card" }, h("h2", {}, "Android-App"),
+      h("div", { class: "muted" }, "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“."),
+      h("div", { class: "actions", style: "justify-content:flex-start;margin-top:8px" }, hBtn),
+      hMsg, hErr,
+      h("label", { class: "pick", style: "margin-top:12px" }, hAuto, "Beim Öffnen automatisch übernehmen (letzte 7 Tage)")));
+  }
+
   // meals
   const meals = day.meals;
   const sched = state.features.schedule ? await api("schedule").catch(() => null) : null;
@@ -9971,6 +10100,10 @@ api("me").then(m => { $("#who").textContent = m.name; state.admin = !!m.admin; }
   let pending = "";
   try { pending = window.MDAApp && typeof window.MDAApp.pendingAction === "function" ? window.MDAApp.pendingAction() : ""; } catch { /* old app */ }
   // per device (a phone shortcut to the panel), so it lives in the browser and not in the user's settings
+  // Android app: quietly take over the last days from Health Connect (only with permission already granted)
+  if (healthApp() && healthAuto()) {
+    healthImport(7, false).then(r => { if ((r.weights || r.activity) && state.tab !== "settings" && !dlg.open) show(state.tab); }).catch(() => { /* no permission or no Health Connect */ });
+  }
   if (pending) window.mdaAction(pending);
   else if (scanOnOpen()) openAdd(state.data.mode === "times" ? null : state.data.meals.find(m => !m.hidden && !m.archived) || state.data.meals[0], { scan: true });
 })();

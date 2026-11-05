@@ -2,6 +2,16 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.29.0
+
+### New
+- **Health Connect (Android app 0.3.0):** take over weight, steps and active calories from the phone under *Settings → Android app* (the card only exists in the app), optionally every time the app opens. Weight only for days without a value of their own, steps and calories only with the optional feature “Activity” and never over manual entries. API: `POST /api/health/import`.
+- **Report in the Android app:** “Open report” opens the report in the app, “Print / save as PDF” opens Android's print dialog.
+
+### Fixed
+- **Windows XP look with a dark theme or dark mode** (e.g. Companion app): numbers in the calorie budget, macro values and meal headings were light grey on beige and hard to read.
+- **Remove button on phones in the Windows look:** each entry is now one white field with the X centred next to it instead of a loose box beside the name; no more stray line next to the header and total rows.
+
 ## 1.28.0
 
 ### New

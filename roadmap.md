@@ -11,12 +11,11 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 ## Tagebuch und Statistik
 
 - **Mahlzeit-Vorschläge überarbeiten, besonders für Sporttage** (M): offen ist, was an heutigen Vorschlägen nicht passt (zu wenige kcal/Kohlenhydrate, falsche Verteilung auf die restlichen Mahlzeiten, Aktivität nicht berücksichtigt?); Grundlage sind `suggest.py` und `extras13.py` (Trainingsmodus vorhanden).
-- **X zum Löschen in der Companion-App** (S): Darstellung der Löschen-Schaltfläche im Tagebuch bei schmaler Ansicht (HomeAssistantXP-Look) überarbeiten; Zeilenumbruch und Spaltenbreiten prüfen.
 
 ## Plattformen
 
-- **Android-App: Health Connect** (M): Gewicht und Aktivität (Schritte, Kalorien) aus Health Connect lesen und über die JavaScript-Brücke (`NativeBridge.kt`) an die Oberfläche geben, die sie wie Waage/Aktivität speichert. Braucht Berechtigungsdialog und eine Datenschutz-Erklärung in der App.
-- **Android-App: offene Prüfungen und Lücken** (S): am echten HA prüfen: echter Barcode-Scan mit dem System-Scanner, Sitzungserneuerung nach 40 Minuten, Datei-Upload, Download, Verhalten ohne Admin-Rechte und ohne Play-Dienste. `blob:`-Downloads (Exporte aus der Oberfläche) über die Brücke als Datei speichern. Widget aktualisiert sich nur, wenn die App das Tagebuch zeigt; denkbar ist ein Abruf im Hintergrund (WorkManager), dafür bräuchte die App eine eigene Sitzung.
+- **Android-App: offene Prüfungen** (S): am echten HA und Handy prüfen: echter Barcode-Scan mit dem System-Scanner, Health Connect mit echten Daten (Waage, Uhr), Sitzungserneuerung nach 40 Minuten, Datei-Upload, Download, Verhalten ohne Admin-Rechte und ohne Play-Dienste.
+- **Android-App: Widget im Hintergrund aktualisieren** (M): das Widget aktualisiert sich nur, wenn die App das Tagebuch zeigt; ein Abruf im Hintergrund (WorkManager) bräuchte eine eigene Sitzung bei HA. Ebenso Health Connect im Hintergrund übernehmen.
 - **Android-App: eigener Signierschlüssel** (S): die APK ist mit dem Debug-Schlüssel eines Rechners signiert; ein Release-Keystore (als GitHub-Secret) und ein Workflow, der die APK bei `android-v*`-Tags baut, würden Updates unabhängig vom Rechner machen.
 
 ## Lebensmittel und Eingabe

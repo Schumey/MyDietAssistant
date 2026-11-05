@@ -45,8 +45,27 @@ Tippe in der Oberfläche wie gewohnt auf **Barcode scannen**. In der App öffnet
 
 Das Widget hat keine eigene Verbindung zu Home Assistant. Es übernimmt die Zahlen jedes Mal, wenn die App das heutige Tagebuch zeigt. Nach Mitternacht steht dort **Öffne die App für den Stand von heute**, bis Du die App einmal geöffnet hast. Einträge, die Du an einem anderen Gerät machst, sieht das Widget erst nach dem nächsten Öffnen.
 
+## Health Connect (Gewicht, Schritte, Kalorien)
+
+Ab App-Version 0.3.0 übernimmt MyDietAssistant Werte aus Health Connect, dem Gesundheitsspeicher von Android. Dort landen zum Beispiel Daten von Waagen, Uhren und Fitness-Apps (Samsung Health, Fitbit, Withings, Google Fit …).
+
+1. Öffne *Einstellungen → Android-App*. Die Karte gibt es nur in der App.
+2. Tippe auf **Aus Health Connect übernehmen (30 Tage)**.
+3. Beim ersten Mal fragt Android, worauf MyDietAssistant zugreifen darf. Wähle **Alle zulassen** und **Zulassen**. Die App liest nur Gewicht, Schritte und aktive Kalorien und schreibt nichts in Health Connect.
+4. Danach steht unter dem Knopf, wie viele Werte übernommen wurden.
+5. Schalte **Beim Öffnen automatisch übernehmen (letzte 7 Tage)** ein, damit das bei jedem Öffnen der App von selbst passiert.
+
+Regeln:
+- **Gewicht** wird nur für Tage übernommen, an denen MyDietAssistant noch keinen Wert hat. Ein eingetippter Wert oder einer von der Waage in Home Assistant hat Vorrang. Bei mehreren Messungen an einem Tag zählt die letzte.
+- **Schritte und aktive Kalorien** braucht die Zusatzfunktion „Aktivität“ (*Einstellungen → Zusatzfunktionen*), siehe [Aktivität](activity.md). Tage, die Du von Hand eingetragen hast, bleiben unverändert.
+- Health Connect gibt neuen Apps nur die Daten der letzten 30 Tage vor der Freigabe heraus.
+
+Den Zugriff entziehst Du in den Android-Einstellungen unter *Health Connect → App-Berechtigungen → MyDietAssistant*.
+
+## Bericht drucken
+
+*Einstellungen → Export für Berater und Trainer → Bericht öffnen (Drucken / PDF)* öffnet den Bericht in der App. **Drucken / als PDF speichern** öffnet den Druckdialog von Android; dort wählst Du einen Drucker oder **Als PDF speichern**. Mit der Zurück-Taste kommst Du wieder in die App.
+
 ## Bekannte Grenzen
 
-- Downloads, die die Oberfläche selbst erzeugt (zum Beispiel manche Exporte), startet die App noch nicht; nutze dafür den Browser.
-- Gesundheitsdaten (Health Connect) übernimmt die App noch nicht. Gewicht von einer Waage geht über einen HA-Sensor, siehe [Gewicht und Körpermaße](weight.md).
 - Die APK ist nicht im Play Store und mit einem Entwicklerschlüssel signiert. Installiere Updates deshalb nur von der Releases-Seite dieses Repositorys.

@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
+import android.os.Message
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -31,6 +32,8 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 
 /**
  * Shell around the MyDietAssistant web interface.
@@ -44,6 +47,8 @@ class MainActivity : Activity() {
     private lateinit var web: WebView
     private lateinit var errorBox: View
     private lateinit var native: NativeBridge
+    private lateinit var health: Health
+    private val scope = MainScope()
     private val handler = Handler(Looper.getMainLooper())
 
     private var inIngress = false
@@ -82,11 +87,15 @@ class MainActivity : Activity() {
             mediaPlaybackRequiresUserGesture = false
             cacheMode = WebSettings.LOAD_DEFAULT
             mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+            // window.open (e.g. "open report") ends up in Chrome.onCreateWindow and is loaded in this WebView
+            setSupportMultipleWindows(true)
+            javaScriptCanOpenWindowsAutomatically = true
         }
         CookieManager.getInstance().setAcceptCookie(true)
         CookieManager.getInstance().setAcceptThirdPartyCookies(web, false)
         web.addJavascriptInterface(Bridge(), Ingress.BRIDGE)
-        native = NativeBridge(this, web)
+        health = Health(this, scope)
+        native = NativeBridge(this, web, health)
         native.pending = intent.getStringExtra(EXTRA_ACTION) ?: ""
         web.addJavascriptInterface(native, NativeBridge.NAME)
         web.webViewClient = Client()
@@ -129,6 +138,7 @@ class MainActivity : Activity() {
 
     override fun onDestroy() {
         handler.removeCallbacksAndMessages(null)
+        scope.cancel()
         if (::web.isInitialized) web.destroy()
         super.onDestroy()
     }
@@ -142,13 +152,8 @@ class MainActivity : Activity() {
 
     private inner class Client : WebViewClient() {
         override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-            val target = request.url
-            val base = Uri.parse(prefs.baseUrl)
-            if (target.host == base.host && target.port == base.port) return false
-            try {   // other sites (food databases, recipe links) open in the browser, not in this shell
-                startActivity(Intent(Intent.ACTION_VIEW, target))
-            } catch (_: Exception) {
-            }
+            if (isOwnHost(request.url)) return false
+            open(request.url)
             return true
         }
 
@@ -159,7 +164,10 @@ class MainActivity : Activity() {
         override fun onPageFinished(view: WebView, url: String) {
             val path = Uri.parse(url).path ?: ""
             when {
-                path.startsWith(Ingress.PATH_PREFIX) -> inIngress = true
+                path.startsWith(Ingress.PATH_PREFIX) -> {
+                    inIngress = true
+                    view.evaluateJavascript(NativeBridge.PRINT_HOOK, null)
+                }
                 path.startsWith("/auth") -> inIngress = false   // HA login screen: nothing to do until it is done
                 else -> {
                     inIngress = false
@@ -190,6 +198,23 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun isOwnHost(target: Uri): Boolean {
+        val base = Uri.parse(prefs.baseUrl)
+        return target.host == base.host && target.port == base.port
+    }
+
+    /** Pages of this Home Assistant stay in the app; other sites (food databases, recipe links) open in the browser. */
+    private fun open(target: Uri) {
+        if (isOwnHost(target)) {
+            web.loadUrl(target.toString())
+            return
+        }
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, target))
+        } catch (_: Exception) {
+        }
+    }
+
     // --- camera, file upload, downloads ---------------------------------------------------------
 
     private inner class Chrome : WebChromeClient() {
@@ -207,6 +232,31 @@ class MainActivity : Activity() {
                     }
                 }
             }
+        }
+
+        /** window.open: a throwaway WebView catches the target URL, which then opens here (same host) or in the browser. */
+        override fun onCreateWindow(view: WebView, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message): Boolean {
+            val catcher = WebView(this@MainActivity)
+            catcher.webViewClient = object : WebViewClient() {
+                private var done = false
+                private fun take(v: WebView, url: Uri) {
+                    if (done) return
+                    done = true
+                    v.stopLoading()
+                    handler.post { v.destroy() }
+                    open(url)
+                }
+                override fun shouldOverrideUrlLoading(v: WebView, request: WebResourceRequest): Boolean {
+                    take(v, request.url)
+                    return true
+                }
+                override fun onPageStarted(v: WebView, url: String, favicon: Bitmap?) {
+                    if (url != "about:blank") take(v, Uri.parse(url))
+                }
+            }
+            (resultMsg.obj as WebView.WebViewTransport).webView = catcher
+            resultMsg.sendToTarget()
+            return true
         }
 
         override fun onShowFileChooser(view: WebView, callback: ValueCallback<Array<Uri>>, params: FileChooserParams): Boolean {
@@ -228,6 +278,8 @@ class MainActivity : Activity() {
         if (requestCode == REQ_FILE) {
             fileCallback?.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data))
             fileCallback = null
+        } else if (requestCode == Health.REQ_HEALTH && ::health.isInitialized) {
+            health.onResult(resultCode, data)
         } else {
             @Suppress("DEPRECATION")
             super.onActivityResult(requestCode, resultCode, data)
@@ -240,6 +292,8 @@ class MainActivity : Activity() {
             pendingPermission = null
             if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) request?.grant(arrayOf(PermissionRequest.RESOURCE_VIDEO_CAPTURE))
             else request?.deny()
+        } else if (requestCode == Health.REQ_HEALTH && ::health.isInitialized) {
+            health.onPermissions(grantResults)
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }

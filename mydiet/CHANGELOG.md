@@ -2,6 +2,16 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.29.0
+
+### Neu
+- **Health Connect (Android-App 0.3.0):** Gewicht, Schritte und aktive Kalorien vom Handy übernehmen, unter *Einstellungen → Android-App* (die Karte gibt es nur in der App), auf Wunsch automatisch bei jedem Öffnen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“ und nie über Handeingaben. Schnittstelle: `POST /api/health/import`.
+- **Bericht in der Android-App:** „Bericht öffnen“ öffnet den Bericht in der App, „Drucken / als PDF speichern“ den Druckdialog von Android.
+
+### Behoben
+- **Windows-XP-Look bei dunklem Theme oder Dunkelmodus** (z. B. Companion-App): Zahlen im Kalorienbudget, Makrowerte und Mahlzeit-Überschriften waren hellgrau auf beige und kaum lesbar.
+- **Löschen-X auf dem Handy im Windows-Look:** Jeder Eintrag ist jetzt ein weißes Feld, das X steht mittig daneben statt als loses Kästchen neben dem Namen; keine Linie mehr rechts neben Kopf- und Summenzeile.
+
 ## 1.28.0
 
 ### Neu

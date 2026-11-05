@@ -17,4 +17,6 @@
     <string name="widget_as_of">As of %1$s</string>
     <string name="widget_scan">Scan</string>
     <string name="widget_add">Add</string>
+    <string name="privacy_title">Privacy</string>
+    <string name="privacy_text">MyDietAssistant reads only weight, steps and active calories from Health Connect, and only when you choose \"Import from Health Connect\" in the settings or turn on the automatic import.\n\nThe values go only to your own Home Assistant server (the address you entered in the app) and are stored there in the MyDietAssistant database. There is no other server, no advertising and no sharing with third parties.\n\nThe app writes nothing into Health Connect. You can revoke access at any time in the Android settings under Health Connect → App permissions.</string>
 </resources>
