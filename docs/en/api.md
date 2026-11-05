@@ -8,7 +8,7 @@ With `api_key` set, Home Assistant automations (scale, voice assistant, messages
 
 ### Set up
 
-1. Open *Settings → Add-ons → MyDietAssistant → Configuration*.
+1. Open *Settings → Apps → MyDietAssistant → Configuration*.
 2. Enter a long random key for `api_key` and save. The add-on restarts. If the field stays empty, the interface is off.
 3. Check the host name on the add-on page under **Hostname** (usually `local-mydiet`; for repository add-ons it can be `<prefix>-mydiet`).
 4. Read your user ID under *Settings → Interface for automations* (field `user`). Without it the local user `default` applies.

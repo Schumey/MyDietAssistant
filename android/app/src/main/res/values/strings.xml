@@ -4,7 +4,7 @@
     <string name="setup_title">Mit Home Assistant verbinden</string>
     <string name="setup_url_hint">http://homeassistant.local:8123</string>
     <string name="setup_url_label">Adresse von Home Assistant</string>
-    <string name="setup_slug_label">Add-on-Kennung (Slug)</string>
+    <string name="setup_slug_label">App-Kennung (Slug, früher Add-on)</string>
     <string name="setup_connect">Verbinden</string>
     <string name="setup_url_invalid">Bitte eine gültige Adresse eingeben, z. B. http://homeassistant.local:8123</string>
     <string name="error_title">Keine Verbindung</string>
@@ -12,4 +12,13 @@
     <string name="retry">Erneut versuchen</string>
     <string name="change_server">Server ändern</string>
     <string name="download_started">Download gestartet</string>
+    <string name="widget_description">Kalorien von heute, Barcode scannen und Eintragen</string>
+    <string name="widget_no_data">Öffne die App für den Stand von heute</string>
+    <string name="widget_kcal_goal">%1$s / %2$s kcal</string>
+    <string name="widget_kcal">%1$s kcal</string>
+    <string name="widget_left">noch %1$s kcal</string>
+    <string name="widget_over">%1$s kcal über dem Ziel</string>
+    <string name="widget_as_of">Stand %1$s</string>
+    <string name="widget_scan">Scannen</string>
+    <string name="widget_add">Eintragen</string>
 </resources>

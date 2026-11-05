@@ -43,6 +43,7 @@ class MainActivity : Activity() {
     private lateinit var prefs: Prefs
     private lateinit var web: WebView
     private lateinit var errorBox: View
+    private lateinit var native: NativeBridge
     private val handler = Handler(Looper.getMainLooper())
 
     private var inIngress = false
@@ -85,11 +86,23 @@ class MainActivity : Activity() {
         CookieManager.getInstance().setAcceptCookie(true)
         CookieManager.getInstance().setAcceptThirdPartyCookies(web, false)
         web.addJavascriptInterface(Bridge(), Ingress.BRIDGE)
+        native = NativeBridge(this, web)
+        native.pending = intent.getStringExtra(EXTRA_ACTION) ?: ""
+        web.addJavascriptInterface(native, NativeBridge.NAME)
         web.webViewClient = Client()
         web.webChromeClient = Chrome()
         web.setDownloadListener { url, userAgent, disposition, mime, _ -> download(url, userAgent, disposition, mime) }
 
         if (savedInstanceState != null) web.restoreState(savedInstanceState) else web.loadUrl(prefs.baseUrl + "/")
+    }
+
+    /** Widget buttons while the app is already open (launchMode singleTask). */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        val action = intent.getStringExtra(EXTRA_ACTION) ?: ""
+        if (::native.isInitialized && action.isNotEmpty()) {
+            if (inIngress) native.runAction(action) else native.pending = action
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -269,9 +282,10 @@ class MainActivity : Activity() {
         }
     }
 
-    private companion object {
-        const val REQ_FILE = 1
-        const val REQ_CAMERA = 2
-        const val SESSION_REFRESH_MS = 40L * 60 * 1000
+    companion object {
+        const val EXTRA_ACTION = "mda_action"
+        private const val REQ_FILE = 1
+        private const val REQ_CAMERA = 2
+        private const val SESSION_REFRESH_MS = 40L * 60 * 1000
     }
 }

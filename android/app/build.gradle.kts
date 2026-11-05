@@ -11,8 +11,12 @@ android {
         minSdk = 26
         // Sideloaded APK: target 34 keeps the WebView below the system bars (no forced edge-to-edge).
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.2.0"
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
@@ -22,4 +26,9 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+}
+
+dependencies {
+    // Google code scanner: the camera UI runs in Play services, so the app needs no camera code of its own for barcodes.
+    implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
 }

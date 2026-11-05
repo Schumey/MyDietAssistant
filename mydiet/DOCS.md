@@ -10,7 +10,7 @@ Die ausführliche Anleitung mit Schritt-für-Schritt-Beschreibungen steht in ein
 
 ## Schnellstart / Quick start
 
-1. Add-on starten und **In Seitenleiste anzeigen** einschalten, dann **MyDietAssistant** öffnen. / Start the add-on, turn on **Show in sidebar**, then open **MyDietAssistant**.
+1. App starten und **In Seitenleiste anzeigen** einschalten, dann **MyDietAssistant** öffnen. / Start the app, turn on **Show in sidebar**, then open **MyDietAssistant**.
 2. Einstellungen → Tagesziele festlegen. / Set your goals under Settings → Daily goals.
 3. Im Tagebuch **+ Nahrungsmittel hinzufügen**. / In the diary tap **+ Add food**.
 
@@ -29,7 +29,7 @@ Details: [Erste Schritte](https://github.com/Schumey/MyDietAssistant/blob/main/d
 | `usda_api_key` | eigener USDA-Schlüssel (optional) / your own USDA key (optional) |
 | `admin_users` | Administratoren der Benutzerverwaltung / administrators |
 
-Erklärungen / Details: [Installation](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/installation.md#add-on-optionen) · [Installation (EN)](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/installation.md#add-on-options)
+Erklärungen / Details: [Installation](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/installation.md#app-optionen) · [Installation (EN)](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/installation.md#app-options)
 
 ## Anleitungen
 
@@ -39,7 +39,7 @@ Erklärungen / Details: [Installation](https://github.com/Schumey/MyDietAssistan
 | Erste Schritte / First steps | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/first-steps.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/first-steps.md) |
 | Tagebuch / Diary | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/diary.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/diary.md) |
 | Lebensmittel / Foods | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/foods.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/foods.md) |
-| Barcode-Scanner | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/barcode.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/barcode.md) |
+| Android-App / Android app | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/android.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/android.md) | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/barcode.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/barcode.md) |
 | Rezepte / Recipes | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/recipes.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/recipes.md) |
 | Gewicht / Weight | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/weight.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/weight.md) |
 | Ziele und Statistik / Goals and statistics | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/goals-and-stats.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/goals-and-stats.md) |

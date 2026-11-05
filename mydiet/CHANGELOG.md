@@ -2,6 +2,16 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.28.0
+
+### Neu
+- **Android-App 0.2.0** ([Anleitung](../docs/de/android.md), APK unter den GitHub-Releases): Barcode-Scanner des Systems (Google-Play-Dienste, ohne HTTPS und ohne Kamera-Berechtigung) und ein Widget für den Startbildschirm mit den Kalorien von heute und den Knöpfen „Scannen“ und „Eintragen“.
+- Die Oberfläche spricht mit der Android-App: „Barcode scannen“ nutzt dort den System-Scanner (sonst wie bisher die Kamera im Browser), das Tagebuch von heute schickt seine Summen an das Widget, Widget-Knöpfe öffnen den Eintragen-Dialog oder den Scanner.
+
+### Geändert
+- Anleitungen und README nutzen die neuen Begriffe von Home Assistant: **Apps** statt Add-ons (seit HA 2026.2). Hinweis, dass MyDietAssistant nicht über den **Marketplace** (Nachfolger von HACS seit 2026.11) installiert wird, sondern über den App-Store.
+- README neu gegliedert, mit Abschnitt zur Android-App und Download-Link.
+
 ## 1.27.0
 
 ### Neu

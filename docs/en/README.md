@@ -8,7 +8,8 @@ This guide is split into separate pages. Each page covers one topic and walks yo
 
 | Page | Contents |
 |---|---|
-| [Installation](installation.md) | Install, start and update the add-on, add-on options |
+| [Installation](installation.md) | Install, start and update the app, app options |
+| [Android app](android.md) | App for your phone: full screen, system scanner, widget |
 | [First steps](first-steps.md) | Set a goal, log your first meal, record your weight |
 | [Settings](settings.md) | Language, units, appearance, optional features, keyboard |
 

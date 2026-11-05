@@ -8,7 +8,8 @@ Diese Anleitung ist in einzelne Seiten aufgeteilt. Jede Seite beschreibt ein The
 
 | Seite | Inhalt |
 |---|---|
-| [Installation](installation.md) | Add-on installieren, starten, aktualisieren, Add-on-Optionen |
+| [Installation](installation.md) | App installieren, starten, aktualisieren, App-Optionen |
+| [Android-App](android.md) | App fürs Handy: Vollbild, System-Scanner, Widget |
 | [Erste Schritte](first-steps.md) | Ziel festlegen, erste Mahlzeit eintragen, Gewicht erfassen |
 | [Einstellungen](settings.md) | Sprache, Einheiten, Darstellung, Zusatzfunktionen, Tastatur |
 

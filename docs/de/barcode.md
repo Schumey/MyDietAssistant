@@ -22,6 +22,8 @@ Der Browser-eigene Leser (Chrome/Android) wird genutzt, wo es ihn gibt. Sonst sp
 
 **Die Kamera braucht eine HTTPS-Verbindung** (Nabu Casa oder eigenes Zertifikat). Ein Foto geht immer.
 
+In der [Android-App](android.md) öffnet **Barcode scannen** stattdessen den Scanner des Systems (Google-Play-Dienste). Der braucht kein HTTPS. Das Widget der App hat zusätzlich einen Knopf **Scannen**, der direkt den Scanner öffnet.
+
 ## Scanner per Homescreen-Verknüpfung (Companion-App)
 
 Ein echtes Widget mit Kamera gibt es in der Companion-App nicht. Mit einer Verknüpfung auf das Panel öffnet sich der Scanner trotzdem mit einem Tipp.

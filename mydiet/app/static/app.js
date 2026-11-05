@@ -6630,6 +6630,10 @@ async function renderDiary() {
     state.features.activity ? api("activity?day=" + state.day).catch(() => null) : null, loadCats(),
     state.features.suggest ? api("suggest/training/status?day=" + state.day).catch(() => ({ show: true })) : null]);
   state.data = d;
+  // the Android app's home screen widget shows today's numbers
+  if (isToday && window.MDAApp && typeof window.MDAApp.summary === "function") {
+    try { window.MDAApp.summary(JSON.stringify({ day: state.day, kcal: d.totals.kcal || 0, goal: d.goal.kcal || 0 })); } catch { /* old app */ }
+  }
   const times = d.mode === "times";
   const root = $("#diary");
   root.replaceChildren();
@@ -7351,8 +7355,26 @@ async function barcodeReader() {
   };
 }
 
+// Inside the Android app (window.MDAApp): the system's code scanner. Resolves with the code, null when it is not available.
+function nativeScan() {
+  const app = window.MDAApp;
+  // the answer goes to the top page, so not when the app runs inside the HA panel (fallback without admin rights)
+  if (!app || typeof app.scanBarcode !== "function" || window.top !== window) return Promise.resolve(null);
+  return new Promise((resolve, reject) => {
+    window.mdaScanResult = (code, err) => {
+      window.mdaScanResult = null;
+      if (code) resolve(code);
+      else if (err === "cancel") reject(new Error("Abgebrochen"));
+      else resolve(null);   // "unavailable": no Play services, use the web scanner
+    };
+    try { app.scanBarcode(); } catch { window.mdaScanResult = null; resolve(null); }
+  });
+}
+
 // Resolves with the barcode text, rejects with a readable Error. `box` receives the video preview and a cancel button.
 async function scanBarcode(box) {
+  const nat = await nativeScan();
+  if (nat) return nat;
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error("Kein Kamerazugriff (die Seite braucht HTTPS). Nutze „Foto“ oder tippe die Nummer ein.");
   const read = await barcodeReader();
   return new Promise((resolve, reject) => {
@@ -9940,6 +9962,15 @@ api("me").then(m => { $("#who").textContent = m.name; state.admin = !!m.admin; }
   applySkin();
   applyTabs();
   await show("diary");
+  // widget buttons of the Android app: "scan" opens the scanner, "add" the add dialog of the current meal
+  window.mdaAction = async action => {
+    if (state.tab !== "diary" || state.day !== iso(new Date())) { state.day = iso(new Date()); await show("diary"); }
+    if (dlg.open) dlg.close();
+    openAdd(state.data.mode === "times" ? null : state.data.meals.find(m => !m.hidden && !m.archived) || state.data.meals[0], { scan: action === "scan" });
+  };
+  let pending = "";
+  try { pending = window.MDAApp && typeof window.MDAApp.pendingAction === "function" ? window.MDAApp.pendingAction() : ""; } catch { /* old app */ }
   // per device (a phone shortcut to the panel), so it lives in the browser and not in the user's settings
-  if (scanOnOpen()) openAdd(state.data.mode === "times" ? null : state.data.meals.find(m => !m.hidden && !m.archived) || state.data.meals[0], { scan: true });
+  if (pending) window.mdaAction(pending);
+  else if (scanOnOpen()) openAdd(state.data.mode === "times" ? null : state.data.meals.find(m => !m.hidden && !m.archived) || state.data.meals[0], { scan: true });
 })();

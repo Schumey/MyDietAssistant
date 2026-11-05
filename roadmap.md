@@ -15,7 +15,9 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 ## Plattformen
 
-- **Eigene Android-App** (L): Kotlin-App in einem eigenen Ordner `android/`. Verbindung über HA-Login (OAuth, kein neuer Port): Anmeldung bei HA, Ingress-Sitzung über die Supervisor-Schnittstelle holen, Oberfläche im WebView laden (wie die Companion-App). Danach eine JavaScript-Brücke für native Teile: Barcode-Kamera (ML Kit), Homescreen-Widget mit Kalorienstand und Schnelleingabe, Health Connect (Gewicht, Aktivität). Risiken: Ingress-Sitzung verlangt vermutlich Admin-Rechte in HA (Add-on-Panel); Anmeldung und Token-Erneuerung außerhalb des Heimnetzes; Veröffentlichung nur als APK von Hand (kein Play Store). Stand: Schritt 1 (Hülle mit Anmeldung) liegt in `android/`, am echten HA noch ungeprüft (Debug-APK ist auf dem Pixel 7 installiert, Rückmeldung: sieht gut aus; geprüft noch: Admin-Rechte, Sitzungserneuerung, Kamera, Upload, Download; `blob:`-Downloads gehen nicht). Fake-HA zum Testen: `android/tools/fakeha.py`. Weiter: 2) Barcode, 3) Widget, 4) Health Connect.
+- **Android-App: Health Connect** (M): Gewicht und Aktivität (Schritte, Kalorien) aus Health Connect lesen und über die JavaScript-Brücke (`NativeBridge.kt`) an die Oberfläche geben, die sie wie Waage/Aktivität speichert. Braucht Berechtigungsdialog und eine Datenschutz-Erklärung in der App.
+- **Android-App: offene Prüfungen und Lücken** (S): am echten HA prüfen: echter Barcode-Scan mit dem System-Scanner, Sitzungserneuerung nach 40 Minuten, Datei-Upload, Download, Verhalten ohne Admin-Rechte und ohne Play-Dienste. `blob:`-Downloads (Exporte aus der Oberfläche) über die Brücke als Datei speichern. Widget aktualisiert sich nur, wenn die App das Tagebuch zeigt; denkbar ist ein Abruf im Hintergrund (WorkManager), dafür bräuchte die App eine eigene Sitzung.
+- **Android-App: eigener Signierschlüssel** (S): die APK ist mit dem Debug-Schlüssel eines Rechners signiert; ein Release-Keystore (als GitHub-Secret) und ein Workflow, der die APK bei `android-v*`-Tags baut, würden Updates unabhängig vom Rechner machen.
 
 ## Lebensmittel und Eingabe
 

@@ -88,4 +88,4 @@ In the tab bar (Diary, Foods …) ← / → move between the tabs, Home and End 
 
 ## Add-on options
 
-Options like `api_key`, `mqtt_discovery` or `admin_users` live in Home Assistant, not in the interface: see [Installation](installation.md#add-on-options).
+Options like `api_key`, `mqtt_discovery` or `admin_users` live in Home Assistant, not in the interface: see [Installation](installation.md#app-options).

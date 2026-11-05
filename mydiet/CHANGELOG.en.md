@@ -2,6 +2,16 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.28.0
+
+### New
+- **Android app 0.2.0** ([guide](../docs/en/android.md), APK on the GitHub releases): system barcode scanner (Google Play services, no HTTPS and no camera permission needed) and a home screen widget with today's calories and the buttons “Scan” and “Add”.
+- The interface talks to the Android app: “Scan barcode” uses the system scanner there (otherwise the browser camera as before), today's diary sends its totals to the widget, widget buttons open the add dialog or the scanner.
+
+### Changed
+- Guides and README use Home Assistant's new terms: **apps** instead of add-ons (since HA 2026.2). Note that MyDietAssistant is not installed through the **Marketplace** (successor of HACS since 2026.11) but through the app store.
+- README restructured, with a section on the Android app and a download link.
+
 ## 1.27.0
 
 ### New

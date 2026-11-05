@@ -3,56 +3,89 @@
 [English](README.en.md) · **Deutsch**
 
 [![Tests](https://github.com/Schumey/MyDietAssistant/actions/workflows/test.yml/badge.svg)](https://github.com/Schumey/MyDietAssistant/actions/workflows/test.yml)
-[![Add-on lint](https://github.com/Schumey/MyDietAssistant/actions/workflows/lint.yml/badge.svg)](https://github.com/Schumey/MyDietAssistant/actions/workflows/lint.yml)
+[![App lint](https://github.com/Schumey/MyDietAssistant/actions/workflows/lint.yml/badge.svg)](https://github.com/Schumey/MyDietAssistant/actions/workflows/lint.yml)
 
-[![Öffne Deine Home-Assistant-Instanz und füge dieses Add-on-Repository hinzu.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FSchumey%2FMyDietAssistant)
+**Dein Ernährungstagebuch in Home Assistant.** Kalorien, Makros und Gewicht erfassen wie bei MyFitnessPal, nur ohne Cloud-Konto: Alles liegt in einer SQLite-Datei auf Deinem Home-Assistant-Gerät und ist im normalen HA-Backup enthalten. Home Assistant liefert Sensoren, Trigger und Automationen dazu. Für Android gibt es eine eigene App mit Barcode-Scanner und Widget.
 
-Lokales Ernährungstagebuch im Stil von MyFitnessPal als **Home-Assistant-Add-on**. Kalorien, Makros, Gewicht, Trigger aus Home Assistant und Auswertungen, alles bleibt bei Dir: die Daten liegen in einer SQLite-Datei im Add-on-Speicher und sind im HA-Backup enthalten. Internet brauchen nur die optionalen Online-Datenbanken (Open Food Facts, USDA).
-
-Die Oberfläche läuft per Ingress im HA-Seitenmenü, übernimmt das aktive HA-Theme (bei Themes namens „HA 95/98“ und „HomeAssistantXP“ automatisch im Windows-Look, einstellbar), gibt es auf Deutsch, Englisch, Französisch, Spanisch, Niederländisch, Italienisch, Portugiesisch und Polnisch (metrisch und imperial) und trennt Benutzer anhand ihres HA-Kontos.
+[![Öffne Deine Home-Assistant-Instanz und füge dieses App-Repository hinzu.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FSchumey%2FMyDietAssistant)
 
 <p align="center"><img src="docs/screenshots/de/diary.png" alt="Tagebuch mit Mahlzeiten, Einträgen und Tagesziel" width="640"></p>
 
+## Auf einen Blick
+
+| | |
+|---|---|
+| **Was** | Home-Assistant-App (früher „Add-on“) mit Weboberfläche im HA-Seitenmenü |
+| **Wo laufen die Daten** | nur lokal: `/data/mydiet.db`, dazu tägliche JSON-Sicherungen |
+| **Wer** | jedes HA-Konto hat sein eigenes Tagebuch; Haushalte können Einträge und Lebensmittel teilen |
+| **Wie** | Browser, Companion-App oder die [Android-App](#android-app) |
+| **Sprachen** | Deutsch, Englisch, Französisch, Spanisch, Niederländisch, Italienisch, Portugiesisch, Polnisch; metrisch und imperial |
+| **Internet** | nur für die optionalen Online-Datenbanken (Open Food Facts, USDA) und den Rezept-Import |
+
 ## Funktionen
 
-- **Tagebuch** mit frei benennbaren Mahlzeiten (Frühstück, Nachtschicht, PWO …) oder nach Uhrzeiten; Kalorien, Kohlenhydrate, Fett, Eiweiß, Tagesziel und Verbleibend; Mahlzeiten speichern, kopieren, teilen; Wischen zwischen Tagen auf dem Handy
-- **Lebensmittel** mit Kategorien, Portionsgrößen, Favoriten, Barcode (Kamera, Foto oder Eingabe, mit Rückfall-Scanner für iPhone und Firefox); Tabellenimport (BLS, CSV, Excel)
-- **Ziele:** Abnehmen, Halten oder Zunehmen, Ziele pro Wochentag und Profile, per Trigger umschaltbar
-- **Statistik** von 7 Tagen bis 2 Jahre: Kalorien- und Makroverlauf mit Zielinien, **Kalorienbilanz** aus Gewichtstrend und Aufnahme, Prognose zum Zielgewicht
-- **Trigger:** Lebensmittel oder Mahlzeiten automatisch eintragen, Mahlzeiten nur an bestimmten Tagen zeigen, abhängig von HA-Zuständen, Kalender oder Uhrzeit
-- **HA-Sensoren** für Kalorien, Makros, Rest, Wochenschnitt, Gewicht und Bilanz; Schnittstelle für Automationen (Waage, Sprachassistent)
-- **Import/Export:** JSON-Sicherung, CSV, MyFitnessPal, Cronometer, FDDB, Yazio, Apple Health, Google Fit; Bericht und Tabelle für Berater und Trainer
-- **Optionale Zusatzfunktionen** (standardmäßig aus): Wochentagsziele, Wasser und Ergänzungen, Rezepte, weitere Nährwerte, Notizen, Körpermaße und Fortschrittsfotos, Online-Datenbanken mit Abgleich, Aktivität, Waage (Gewicht aus einem HA-Sensor), Mahlzeiten-Zeitplan, Mahlzeiten-Vorschläge nach offenen Makros, Einkaufsliste (auch an eine Todo-Liste in Home Assistant), Haushalt (mehrere Benutzer teilen Einträge, Lebensmittel und Mahlzeiten)
-- **Benutzerverwaltung** für Administratoren, automatische Sicherungen, Erinnerung per Benachrichtigung
+**Tägliches Eintragen**
+- Tagebuch mit frei benennbaren Mahlzeiten (Frühstück, Nachtschicht, PWO …) oder nach Uhrzeiten, Kalorienbudget oben, Wischen zwischen Tagen und Reitern auf dem Handy
+- Lebensmittel mit Kategorien, Portionsgrößen und Favoriten; Barcode per Kamera, Foto oder Eingabe; Online-Suche in Open Food Facts und USDA
+- Mahlzeiten speichern, kopieren und teilen; Rezepte anlegen oder von Webseiten und aus Mealie importieren
+- Schnelleingabe nur mit kcal, Sprach-Eintrag über Home Assistant („zwei Äpfel und 200 g Skyr“)
+
+**Ziele und Auswertung**
+- Abnehmen, Halten oder Zunehmen; Ziele pro Wochentag und Profile, per Trigger umschaltbar
+- Statistik von 7 Tagen bis 2 Jahre: Kalorien und Makros mit Ziellinien, **Kalorienbilanz** aus Gewichtstrend und Aufnahme, Prognose zum Zielgewicht
+- Tage als unvollständig markieren, damit sie die Statistik nicht verfälschen
+
+**Home Assistant**
+- Sensoren für Kalorien, Makros, Rest, Wochenschnitt, Gewicht und Bilanz (auch per MQTT Discovery)
+- Trigger: Lebensmittel oder Mahlzeiten automatisch eintragen oder einblenden, abhängig von Zuständen, Kalender oder Uhrzeit
+- Schnittstelle für Automationen (Waage, Sprachassistent), Erinnerung per Benachrichtigung, Einkaufsliste an eine HA-Todo-Liste
+
+**Optional** (standardmäßig aus, in den Einstellungen einschaltbar): Wochentagsziele, Wasser und Ergänzungen, Rezepte, weitere Nährwerte, Notizen, Körpermaße und Fortschrittsfotos, Online-Abgleich, Aktivität, Waage, Mahlzeiten-Zeitplan, Mahlzeiten-Vorschläge, Einkaufsliste, Haushalt
+
+**Daten:** Import aus MyFitnessPal, Cronometer, FDDB, Yazio, Apple Health und Google Fit; Export als JSON und CSV; Bericht für Berater und Trainer; automatische Sicherungen.
 
 <p align="center">
   <img src="docs/screenshots/de/foods.png" alt="Lebensmittelbibliothek" width="49%">
-  <img src="docs/screenshots/de/weight.png" alt="Gewichtsverlauf" width="49%">
+  <img src="docs/screenshots/de/stats.png" alt="Statistik und Kalorienbilanz" width="49%">
 </p>
 <p align="center">
   <img src="docs/screenshots/de/recipe-import.png" alt="Rezept-Import von einer Webseite" width="49%">
-  <img src="docs/screenshots/de/stats.png" alt="Statistik und Kalorienbilanz" width="49%">
+  <img src="docs/screenshots/de/weight.png" alt="Gewichtsverlauf" width="49%">
 </p>
-<p align="center"><img src="docs/screenshots/de/diary-mobile.png" alt="Tagebuch auf dem Handy" width="260"></p>
 
-Die Bilder zeigen das Standard-Theme von Home Assistant mit Beispieldaten (erzeugt mit `docs/make_screenshots.py`).
-
-**Dokumentation mit Schritt-für-Schritt-Anleitungen:** [docs/de](docs/de/README.md) ([English](docs/en/README.md)). Änderungen: [mydiet/CHANGELOG.md](mydiet/CHANGELOG.md) ([English](mydiet/CHANGELOG.en.md)). Ideen: [roadmap.md](roadmap.md).
+Die Bilder zeigen das Standard-Theme von Home Assistant mit Beispieldaten. Die Oberfläche übernimmt Dein HA-Theme; zu Retro-Themes wie „HA 95/98“ gibt es einen passenden Windows-Look.
 
 ## Installation
 
-1. Repository hinzufügen: mit dem Knopf oben (öffnet Deine Home-Assistant-Instanz über my.home-assistant.io) oder von Hand: HA → Einstellungen → Add-ons → Add-on-Store → ⋮ → **Repositories** → `https://github.com/Schumey/MyDietAssistant`. (Bei einem privaten Repository alternativ den Ordner `mydiet` nach `/addons` kopieren.)
-2. **MyDietAssistant** installieren und starten, „In Seitenleiste anzeigen“ aktivieren.
+MyDietAssistant ist eine **App** (bis HA 2026.1 „Add-on“) und braucht Home Assistant OS oder Supervised. Im **Marketplace** (seit HA 2026.11, Nachfolger von HACS) findest Du sie nicht: Der Marketplace installiert Integrationen, Karten und Themes, aber keine Apps.
 
-Nach Updates: Add-on-Store neu laden und das Add-on aktualisieren (bei lokalen Add-ons neu bauen).
+1. Repository hinzufügen: mit dem Knopf oben oder von Hand unter **Einstellungen → Apps → App installieren → ⋮ → Repositories** → `https://github.com/Schumey/MyDietAssistant`.
+2. **MyDietAssistant** installieren, starten und **In Seitenleiste anzeigen** einschalten.
+3. Öffnen, Ziel festlegen, loslegen. Die [Ersten Schritte](docs/de/first-steps.md) führen durch die Einrichtung.
 
-### Fertige Images (optional)
+Updates erscheinen unter **Einstellungen → Updates**. Ausführlich: [Installation](docs/de/installation.md).
 
-Standardmäßig baut Home Assistant das Add-on bei der Installation selbst. Der Workflow `.github/workflows/build.yml` kann stattdessen fertige Images (amd64, aarch64) in die GitHub Container Registry legen: `git tag v<Version>` und `git push --tags` (die Version muss der in `mydiet/config.yaml` entsprechen), oder von Hand unter Actions → „Build images“. Danach die Pakete `mydiet-amd64` und `mydiet-aarch64` unter GitHub → Packages auf **öffentlich** stellen und in `mydiet/config.yaml` die Zeile `image: ghcr.io/schumey/mydiet-{arch}` ergänzen. Ab dann laden Installation und Updates nur noch das Image (schneller, kein Bauen auf dem HA-Gerät). Die Zeile erst setzen, wenn die Images der jeweiligen Version existieren, sonst scheitert die Installation.
+## Android-App
+
+<p align="center"><img src="docs/screenshots/de/diary-mobile.png" alt="Tagebuch auf dem Handy" width="260"></p>
+
+Die Weboberfläche läuft auch in der Companion-App. Die eigene Android-App bietet zusätzlich:
+
+- **Vollbild** ohne HA-Seitenleiste, Anmeldung über die normale HA-Anmeldeseite
+- **Barcode-Scanner des Systems** (schnell, ohne HTTPS und ohne Kamera-Berechtigung)
+- **Widget** für den Startbildschirm: Kalorien von heute, Rest bis zum Ziel, Knöpfe **Scannen** und **Eintragen**
+
+**[APK herunterladen](https://github.com/Schumey/MyDietAssistant/releases/download/android-v0.2.0/MyDietAssistant-android-0.2.0.apk)** (Version 0.2.0, Android 8 oder neuer) · [alle Versionen](https://github.com/Schumey/MyDietAssistant/releases?q=android&expanded=true) · [Anleitung](docs/de/android.md)
+
+Die App gibt es nicht im Play Store. Android fragt deshalb bei der Installation, ob Du Apps aus dieser Quelle zulassen willst.
+
+## Dokumentation
+
+Schritt-für-Schritt-Anleitungen für jedes Thema: **[docs/de](docs/de/README.md)** ([English](docs/en/README.md)). Häufige Probleme: [Fehlersuche](docs/de/troubleshooting.md). Änderungen: [CHANGELOG](mydiet/CHANGELOG.md). Ideen und Pläne: [roadmap.md](roadmap.md).
 
 ## Daten übernehmen
 
-Einstellungen → Daten: MyFitnessPal-CSV, oder unter „Weitere Importe …“ Cronometer, FDDB, Yazio, Google Fit und Apple Health. Die Spalten werden anhand der Überschriften erkannt und lassen sich vor dem Import korrigieren.
+Unter *Einstellungen → Daten* importierst Du eine MyFitnessPal-CSV, unter „Weitere Importe …“ auch Cronometer, FDDB, Yazio, Google Fit und Apple Health. Die Spalten werden anhand der Überschriften erkannt und lassen sich vor dem Import korrigieren. Mehr: [Daten, Import und Sicherung](docs/de/data.md).
 
 ## Entwicklung
 
@@ -63,14 +96,17 @@ cd mydiet/app
 MYDIET_DB=./dev.db uvicorn main:app --port 8099
 ```
 
-Danach `http://localhost:8099/` öffnen. Ohne Home Assistant gibt es keine Sensoren, Trigger und Entitätsvorschläge; Mahlzeiten mit Einblend-Regeln werden lokal immer angezeigt.
+Danach `http://localhost:8099/` öffnen. Ohne Home Assistant gibt es keine Sensoren, Trigger und Entitätsvorschläge. Browser-Tests (Playwright) laufen mit, sobald `pip install playwright && python -m playwright install chromium` erledigt ist.
 
-Browser-Tests (Playwright, übersprungen ohne Installation): `pip install playwright && python -m playwright install chromium`, danach läuft `python -m pytest` auch `tests/e2e`.
+| Ordner | Inhalt |
+|---|---|
+| `mydiet/` | die App für Home Assistant: `app/main.py` (Kern-API), `app/extras*.py` (je ein Funktionsbereich), `app/db.py` (Schema und Migrationen), `app/static/` (Oberfläche ohne Build-Schritt) |
+| `android/` | Android-App (Kotlin, WebView-Hülle); Bauen siehe [android/README.md](android/README.md) |
+| `docs/` | Anleitungen (de/en) und Screenshots |
+| `tests/` | pytest-Suite, `tests/e2e` mit Playwright |
 
-Struktur: `mydiet/app/main.py` (Kern-API) und `extras*.py` (je ein Funktionsbereich), `db.py` (Schema und Migrationen), `static/` (Oberfläche ohne Build-Schritt), `tests/` (pytest). Hinweise für die Weiterentwicklung stehen in [CLAUDE.md](CLAUDE.md).
-
-Der Barcode-Rückfall nutzt [ZXing](https://github.com/zxing-js/library) (Apache-2.0, Lizenz in `mydiet/app/static/vendor/ZXING-LICENSE.txt`).
+Hinweise für die Weiterentwicklung stehen in [CLAUDE.md](CLAUDE.md). Fertige Container-Images für die HA-App beschreibt [Installation → Fertige Images](docs/de/installation.md#fertige-images-für-entwickler).
 
 ## Lizenz
 
-MIT, siehe [LICENSE](LICENSE). Die mitgelieferte Bibliothek ZXing steht unter Apache-2.0.
+MIT, siehe [LICENSE](LICENSE). Der mitgelieferte Barcode-Rückfall [ZXing](https://github.com/zxing-js/library) steht unter Apache-2.0 (`mydiet/app/static/vendor/ZXING-LICENSE.txt`).

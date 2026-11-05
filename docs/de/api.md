@@ -8,7 +8,7 @@ Mit gesetztem `api_key` können Home-Assistant-Automationen (Waage, Sprachassist
 
 ### Einrichten
 
-1. Öffne *Einstellungen → Add-ons → MyDietAssistant → Konfiguration*.
+1. Öffne *Einstellungen → Apps → MyDietAssistant → Konfiguration*.
 2. Trage bei `api_key` einen langen, zufälligen Schlüssel ein und speichere. Das Add-on startet neu. Bleibt das Feld leer, ist die Schnittstelle aus.
 3. Prüfe den Hostnamen auf der Add-on-Seite unter **Hostname** (meist `local-mydiet`, bei Repository-Add-ons kann er `<Kürzel>-mydiet` lauten).
 4. Lies Deine Benutzer-ID unter *Einstellungen → Schnittstelle für Automationen* ab (Feld `user`). Ohne Angabe gilt der lokale Benutzer `default`.

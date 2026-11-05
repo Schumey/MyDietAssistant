@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-Zuerst: Öffne das **Protokoll** des Add-ons (*Einstellungen → Add-ons → MyDietAssistant → Protokoll*). Die meisten Fehler stehen dort.
+Zuerst: Öffne das **Protokoll** der App (*Einstellungen → Apps → MyDietAssistant → Protokoll*). Die meisten Fehler stehen dort.
 
 ## Das Add-on startet nicht oder zeigt eine leere Seite
 

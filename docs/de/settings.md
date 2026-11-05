@@ -86,4 +86,4 @@ Alles, was nicht jeder braucht, ist standardmäßig aus.
 
 ## Add-on-Optionen
 
-Optionen wie `api_key`, `mqtt_discovery` oder `admin_users` stehen in Home Assistant, nicht in der Oberfläche: siehe [Installation](installation.md#add-on-optionen).
+Optionen wie `api_key`, `mqtt_discovery` oder `admin_users` stehen in Home Assistant, nicht in der Oberfläche: siehe [Installation](installation.md#app-optionen).

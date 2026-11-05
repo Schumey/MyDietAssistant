@@ -2,7 +2,7 @@
 <resources>
     <string name="setup_title">Connect to Home Assistant</string>
     <string name="setup_url_label">Home Assistant address</string>
-    <string name="setup_slug_label">Add-on identifier (slug)</string>
+    <string name="setup_slug_label">App identifier (slug, formerly add-on)</string>
     <string name="setup_connect">Connect</string>
     <string name="setup_url_invalid">Please enter a valid address, e.g. http://homeassistant.local:8123</string>
     <string name="error_title">No connection</string>
@@ -10,4 +10,11 @@
     <string name="retry">Try again</string>
     <string name="change_server">Change server</string>
     <string name="download_started">Download started</string>
+    <string name="widget_description">Today\'s calories, scan a barcode and add an entry</string>
+    <string name="widget_no_data">Open the app for today\'s numbers</string>
+    <string name="widget_left">%1$s kcal left</string>
+    <string name="widget_over">%1$s kcal over the goal</string>
+    <string name="widget_as_of">As of %1$s</string>
+    <string name="widget_scan">Scan</string>
+    <string name="widget_add">Add</string>
 </resources>

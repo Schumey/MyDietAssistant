@@ -2,7 +2,7 @@
 
 [← Overview](README.md)
 
-First: open the add-on **Log** (*Settings → Add-ons → MyDietAssistant → Log*). Most errors show up there.
+First: open the app **Log** (*Settings → Apps → MyDietAssistant → Log*). Most errors show up there.
 
 ## The add-on does not start or shows a blank page
 
