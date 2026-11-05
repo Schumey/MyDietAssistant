@@ -9137,7 +9137,7 @@ async function renderRecipes() {
   const search = h("input", { type: "search", placeholder: "Rezepte suchen…", oninput: draw });
   const sortSel = sortPicker("mda.recipeSort", draw);
   root.append(h("div", { class: "card" },
-    h("div", { class: "grid", style: `grid-template-columns:1fr auto auto auto${mealieCfg?.token_set ? " auto" : ""}` }, h("div", { class: "food-search" }, search, sortSel), h("button", { onclick: () => editRecipe(null) }, "+ Neues Rezept"),
+    h("div", { class: "recipe-bar" }, h("div", { class: "food-search" }, search, sortSel), h("button", { onclick: () => editRecipe(null) }, "+ Neues Rezept"),
       h("button", { class: "flat", onclick: importDialog }, "Von Webseite …"),
       h("button", { class: "flat", onclick: textDialog }, "Aus Text …"),
       mealieCfg?.token_set ? h("button", { class: "flat", onclick: mealieDialog }, "Aus Mealie …") : null),

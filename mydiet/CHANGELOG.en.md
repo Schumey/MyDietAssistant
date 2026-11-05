@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.35.1
+
+### Fixed
+- **Recipes on phones:** search, sort and the buttons “+ New recipe”, “From web page …” and “From text …” were fixed in one row and made the whole card wider than the screen (list and hint cut off, shifted sideways). The buttons now wrap onto a second row.
+
 ## 1.35.0
 
 ### New

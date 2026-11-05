@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.35.1
+
+### Behoben
+- **Rezepte auf dem Handy:** Suche, Sortierung und die Knöpfe „+ Neues Rezept“, „Von Webseite …“ und „Aus Text …“ standen fest in einer Zeile und machten die ganze Karte breiter als den Bildschirm (Liste und Hinweis abgeschnitten, seitlich verschoben). Die Knöpfe rutschen jetzt in eine zweite Zeile.
+
 ## 1.35.0
 
 ### Neu

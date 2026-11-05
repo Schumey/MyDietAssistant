@@ -758,7 +758,12 @@ details.card[open] > summary { margin-bottom: 12px; }
 .range-slider .rs-ticks button:last-child { transform: translateX(calc(-100% + var(--thumb) / 2)); }
 @media (max-width: 480px) { .range-slider .rs-ticks button:nth-child(even):not(.on) { visibility: hidden; } }
 .food-search { display: flex; gap: 8px; }
-.food-search input { flex: 1 1 auto; }
+.food-search input { flex: 1 1 auto; min-width: 0; }
+/* recipes: search + sort, then the buttons; wraps onto a second row on phones instead of widening the card */
+.recipe-bar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.recipe-bar .food-search { flex: 1 1 280px; min-width: 0; }
+.recipe-bar > button { flex: 0 0 auto; }
+@media (max-width: 420px) { .recipe-bar { column-gap: 4px; } .recipe-bar > button.flat { padding-left: 6px; padding-right: 6px; } }
 .food-search select { flex: 0 1 auto; width: auto; max-width: 60%; }
 .stock-tag { margin-left: 6px; font-size: .8em; color: var(--secondary-text-color); }
 .stock-tag.low { color: var(--error-color); font-weight: 700; }
