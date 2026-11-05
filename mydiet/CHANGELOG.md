@@ -2,6 +2,14 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.31.0
+
+### Neu
+- **MyFitnessPal-Dateiexport (ZIP):** Der neuere Export mit *Nährwerte-Übersicht* und *Messwerte-Übersicht* (deutsch oder englisch) lässt sich jetzt direkt als ZIP importieren. Er enthält je Tag und Mahlzeit nur Summen, daher entsteht pro Mahlzeit ein Eintrag; das Gewicht wird mitgelesen. Das Training wird nicht übernommen.
+
+### Behoben
+- **Seitenleisten-Eintrag für alle Benutzer:** Das Add-on ist jetzt in der Seitenleiste auch für Nicht-Administratoren sichtbar (`panel_admin: false`), z. B. für Partner oder Jugendliche im Haushalt. Die Add-on-Administratoren regelt weiter `admin_users`. Greift nach einem Neubau des Add-ons.
+
 ## 1.30.0
 
 ### Neu

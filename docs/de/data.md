@@ -49,9 +49,9 @@ Nur Dein Konto ist betroffen; andere Benutzer und Deine Einstellungen bleiben un
 
 ### MyFitnessPal
 
-1. Exportiere Deine Daten bei MyFitnessPal als CSV.
+1. Exportiere Deine Daten bei MyFitnessPal (CSV oder die ZIP-Datei des Dateiexports).
 2. Öffne *Einstellungen → Daten* und tippe auf **MyFitnessPal-CSV importieren**.
-3. Wähle die Datei, korrigiere die Spaltenzuordnung und starte den Import (komplett oder nur Tagessummen + Gewicht).
+3. Wähle die Datei (bei der ZIP-Datei: unverändert, ohne Entpacken; sie enthält nur Summen je Mahlzeit, Training wird nicht übernommen), korrigiere die Spaltenzuordnung und starte den Import (komplett oder nur Tagessummen + Gewicht).
 
 ### Cronometer, FDDB, Yazio, Google Fit und ähnliche Tabellen
 

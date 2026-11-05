@@ -2,6 +2,14 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.31.0
+
+### New
+- **MyFitnessPal file export (ZIP):** the newer export with *Nutrition Summary* and *Measurement Summary* (German or English) can now be imported directly as a ZIP. It only has totals per day and meal, so each meal becomes one entry; weight is read too. Workouts are not imported.
+
+### Fixed
+- **Sidebar entry for all users:** the add-on is now visible in the sidebar for non-administrators too (`panel_admin: false`), for example partners or teenagers in the household. Add-on administrators are still set by `admin_users`. Takes effect after the add-on is rebuilt.
+
 ## 1.30.0
 
 ### New

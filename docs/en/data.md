@@ -49,9 +49,9 @@ Older backups (without triggers) can still be restored.
 
 ### MyFitnessPal
 
-1. Export your data from MyFitnessPal as CSV.
+1. Export your data from MyFitnessPal (CSV, or the ZIP file of the file export).
 2. Open *Settings → Data* and tap **Import MyFitnessPal CSV**.
-3. Choose the file, correct the column mapping and start the import (complete, or only daily totals + weight).
+3. Choose the file (for the ZIP: as it is, no need to unpack; it only holds totals per meal, workouts are not imported), correct the column mapping and start the import (complete, or only daily totals + weight).
 
 ### Cronometer, FDDB, Yazio, Google Fit and similar tables
 

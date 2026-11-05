@@ -9327,10 +9327,47 @@ async function healthDialog(file) {
       } }, "Importieren")));
 }
 
+// Read all .csv files out of a ZIP in the browser: [{name, text}]
+async function zipCsvTexts(file) {
+  const tail = new DataView(await file.slice(Math.max(0, file.size - 65557)).arrayBuffer());
+  let e = tail.byteLength - 22;
+  while (e >= 0 && tail.getUint32(e, true) !== 0x06054b50) e--;
+  if (e < 0) throw new Error("Keine gültige ZIP-Datei.");
+  const cdSize = tail.getUint32(e + 12, true), cdOff = tail.getUint32(e + 16, true);
+  const cd = new DataView(await file.slice(cdOff, cdOff + cdSize).arrayBuffer());
+  const out = [];
+  for (let o = 0; o + 46 <= cd.byteLength && cd.getUint32(o, true) === 0x02014b50;) {
+    const nameLen = cd.getUint16(o + 28, true), extra = cd.getUint16(o + 30, true), comment = cd.getUint16(o + 32, true);
+    const name = new TextDecoder().decode(new Uint8Array(cd.buffer, o + 46, nameLen));
+    const method = cd.getUint16(o + 10, true), comp = cd.getUint32(o + 20, true), off = cd.getUint32(o + 42, true);
+    o += 46 + nameLen + extra + comment;
+    if (!/\.csv$/i.test(name)) continue;
+    const lh = new DataView(await file.slice(off, off + 30).arrayBuffer());
+    const start = off + 30 + lh.getUint16(26, true) + lh.getUint16(28, true);
+    let raw = file.slice(start, start + comp).stream();
+    if (method === 8) {
+      if (typeof DecompressionStream === "undefined") throw new Error("Keine gültige ZIP-Datei.");
+      raw = raw.pipeThrough(new DecompressionStream("deflate-raw"));
+    } else if (method !== 0) throw new Error("Keine gültige ZIP-Datei.");
+    out.push({ name, text: await new Response(raw).text() });
+  }
+  return out;
+}
+
 async function mfpDialog(file) {
-  const csv = await file.text();
+  let csv, weights_csv = "";
+  try {
+    if (/\.zip$/i.test(file.name)) {
+      // MyFitnessPal file export: Nährwerte-Übersicht (Nutrition Summary) + Messwerte-Übersicht (Measurement Summary)
+      const fs = await zipCsvTexts(file);
+      const nut = fs.find(f => /hrwert|nutrition/i.test(f.name));
+      if (!nut) throw new Error("Das sieht nicht nach einem MyFitnessPal-Export aus.");
+      csv = nut.text;
+      weights_csv = (fs.find(f => /messwert|measurement/i.test(f.name)) || { text: "" }).text;
+    } else csv = await file.text();
+  } catch (e) { alert(e.message); return; }
   let p;
-  try { p = await send("POST", "import/mfp/preview", { csv }); }
+  try { p = await send("POST", "import/mfp/preview", { csv, weights_csv }); }
   catch (e) { alert(e.message); return; }
   const mode = h("select", {},
     h("option", { value: "full" }, "Komplett (alle Einträge mit Mahlzeiten)"),
@@ -9360,7 +9397,7 @@ async function mfpDialog(file) {
       h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
       h("button", { onclick: async () => {
         try {
-          const r = await send("POST", "import/mfp", { csv, mode: mode.value, weights: weights.checked,
+          const r = await send("POST", "import/mfp", { csv, weights_csv, mode: mode.value, weights: weights.checked,
             replace: replace.checked, hide_empty: mode.value === "totals" && hide.checked, meal_map: Object.fromEntries(maps.map(([n, s]) => [n, s.value ? Number(s.value) : null])) });
           dlg.close();
           alert(`Importiert: ${r.days} Tage, ${r.entries} Einträge, ${r.weights} Gewichtswerte.`);
@@ -9913,7 +9950,7 @@ async function renderSettings() {
         try { restoreDialog(JSON.parse(await f.text())); }
         catch (e) { alert("Datei nicht lesbar: " + e.message); }
       }) }, "Sicherung einspielen"),
-      h("button", { onclick: () => pickFile(".csv,text/csv", mfpDialog) }, "MyFitnessPal-CSV importieren"),
+      h("button", { onclick: () => pickFile(".csv,.zip,text/csv,application/zip", mfpDialog) }, "MyFitnessPal-CSV importieren"),
       h("button", { onclick: importMenu }, "Weitere Importe …"),
       h("button", { class: "flat danger", onclick: deleteDataDialog }, "Daten löschen …"))));
 

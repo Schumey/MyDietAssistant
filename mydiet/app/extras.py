@@ -859,7 +859,58 @@ def mfp_grams(food: str) -> float:
     return mfp_num(m[1]) if m else 0.0
 
 
-def parse_mfp(text: str) -> dict:
+def _mfp_col(row: dict, *names: str) -> str:
+    for n in names:
+        if n in row and row[n] is not None:
+            return row[n]
+    return ""
+
+
+def parse_mfp_summary(text: str) -> dict | None:
+    """Newer MyFitnessPal export ('Nährwerte-Übersicht' / 'Nutrition Summary'): one row per day and meal, no foods."""
+    rdr = csv.DictReader(io.StringIO(text.lstrip("﻿")))
+    f = set(rdr.fieldnames or [])
+    if not ({"Datum", "Mahlzeit", "Kalorien"} <= f or {"Date", "Meal", "Calories"} <= f) or "Food" in f:
+        return None
+    items, totals = [], {}
+    for r in rdr:
+        day = mfp_date(_mfp_col(r, "Datum", "Date"))
+        meal = _mfp_col(r, "Mahlzeit", "Meal").strip()
+        if not day or not meal:
+            continue
+        it = {"day": day, "meal": meal, "name": f"{meal} (MyFitnessPal)", "grams": 0.0,
+              "kcal": mfp_num(_mfp_col(r, "Kalorien", "Calories")),
+              "carbs": mfp_num(_mfp_col(r, "Kohlenhydrate (g)", "Carbohydrates (g)", "Carbs (g)")),
+              "fat": mfp_num(_mfp_col(r, "Fett (g)", "Fat (g)")),
+              "protein": mfp_num(_mfp_col(r, "Eiweiß (g)", "Protein (g)"))}
+        items.append(it)
+        t = totals.setdefault(day, {"kcal": 0.0, "carbs": 0.0, "fat": 0.0, "protein": 0.0})
+        for k in ("kcal", "carbs", "fat", "protein"):
+            t[k] += it[k]
+    return {"items": items, "totals": totals, "weights": {}}
+
+
+def parse_mfp_weights(text: str) -> dict:
+    """'Messwerte-Übersicht' / 'Measurement Summary': Date, Weight (kg)."""
+    rdr = csv.DictReader(io.StringIO(text.lstrip("﻿")))
+    out = {}
+    for r in rdr:
+        day = mfp_date(_mfp_col(r, "Datum", "Date"))
+        w = _mfp_col(r, "Gewicht", "Weight")
+        kg = mfp_num(w)
+        if re.search(r"pound|lb", w, re.I):
+            kg *= 0.45359237
+        if day and kg > 0:
+            out[day] = round(kg, 2)
+    return out
+
+
+def parse_mfp(text: str, weights_csv: str = "") -> dict:
+    d = parse_mfp_summary(text)
+    if d is not None:
+        if weights_csv:
+            d["weights"] = parse_mfp_weights(weights_csv)
+        return d
     rdr = csv.DictReader(io.StringIO(text.lstrip("﻿")))
     if not rdr.fieldnames or not {"Date", "Meal", "Food", "Calories"} <= set(rdr.fieldnames):
         raise HTTPException(400, "Das sieht nicht nach einem MyFitnessPal-Export aus.")
@@ -898,15 +949,19 @@ def parse_mfp(text: str) -> dict:
                 t[k] += it[k]
     for t in totals.values():
         t.pop("_sum", None)
+    if weights_csv:
+        weights.update(parse_mfp_weights(weights_csv))
     return {"items": items, "totals": totals, "weights": weights}
 
 
 class MfpPreviewIn(BaseModel):
     csv: str
+    weights_csv: str = ""
 
 
 class MfpImportIn(BaseModel):
     csv: str
+    weights_csv: str = ""
     mode: str = "full"                 # 'full' | 'totals'
     weights: bool = True
     meal_map: dict[str, int | None] = {}  # file meal name -> own meal id (None/missing: create)
@@ -916,7 +971,7 @@ class MfpImportIn(BaseModel):
 
 @app.post("/api/import/mfp/preview")
 def mfp_preview(p: MfpPreviewIn, x_remote_user_id: str | None = Header(None)):
-    d = parse_mfp(p.csv)
+    d = parse_mfp(p.csv, p.weights_csv)
     owner = user_from(x_remote_user_id)
     days = sorted(set(d["totals"]) | set(d["weights"]))
     with db.conn() as c:
@@ -940,7 +995,7 @@ def mfp_preview(p: MfpPreviewIn, x_remote_user_id: str | None = Header(None)):
 @app.post("/api/import/mfp")
 def mfp_import(p: MfpImportIn, x_remote_user_id: str | None = Header(None),
                x_remote_user_display_name: str | None = Header(None)):
-    d = parse_mfp(p.csv)
+    d = parse_mfp(p.csv, p.weights_csv)
     owner = user_from(x_remote_user_id)
     with db.conn() as c:
         db.ensure_meals(c, owner)
