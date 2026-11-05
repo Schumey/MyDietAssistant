@@ -217,7 +217,7 @@ table.summary tbody th { font-weight: 600; }
 svg.chart { width: 100%; height: auto; display: block; }
 svg.chart text { fill: var(--secondary-text-color); font-size: 11px; }
 svg.chart .grid-line { stroke: var(--divider-color); stroke-width: 1; }
-svg.chart .goal-line { stroke: var(--accent-color); stroke-width: 1.5; stroke-dasharray: 5 4; }
+svg.chart .goal-line { fill: none; stroke: var(--accent-color); stroke-width: 1.5; stroke-dasharray: 5 4; }
 svg.chart .bar-k { fill: var(--primary-color); }
 svg.chart .bar-k.over { fill: var(--error-color); }
 svg.chart .line { fill: none; stroke: var(--primary-color); stroke-width: 2; stroke-linejoin: round; }
@@ -745,3 +745,32 @@ details.card[open] > summary { margin-bottom: 12px; }
 .ver-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .list .sug-opts .sug-range-packs input { width: 46px; }
 .sug-range-packs { display: inline-flex; align-items: center; gap: 4px; }
+
+/* v1.34: time span slider (statistics, weight), food sort order, pantry on the food form */
+.range-slider { --thumb: 18px; margin-bottom: 14px; max-width: 560px; }
+.range-slider .rs-head { display: flex; gap: 8px; align-items: baseline; }
+.range-slider input[type="range"] { width: 100%; padding: 0; margin: 6px 0 0; background: transparent; border: 0; accent-color: var(--primary-color); height: 24px; }
+.range-slider .rs-ticks { position: relative; height: 1.6em; margin: 0 calc(var(--thumb) / 2); }
+.range-slider .rs-ticks button { position: absolute; left: calc(var(--k) / var(--n) * 100%); transform: translateX(-50%); white-space: nowrap;
+  background: none; border: 0; box-shadow: none; padding: 0 2px; font-size: 12px; color: var(--secondary-text-color); cursor: pointer; }
+.range-slider .rs-ticks button.on { color: var(--primary-text-color); font-weight: 700; }
+.range-slider .rs-ticks button:first-child { transform: translateX(calc(var(--thumb) / -2)); }
+.range-slider .rs-ticks button:last-child { transform: translateX(calc(-100% + var(--thumb) / 2)); }
+@media (max-width: 480px) { .range-slider .rs-ticks button:nth-child(even):not(.on) { visibility: hidden; } }
+.food-search { display: flex; gap: 8px; }
+.food-search input { flex: 1 1 auto; }
+.food-search select { flex: 0 1 auto; width: auto; max-width: 45%; }
+.stock-tag { margin-left: 6px; font-size: .8em; color: var(--secondary-text-color); }
+.stock-tag.low { color: var(--error-color); font-weight: 700; }
+.pantry-fields { margin-top: 12px; }
+.pantry-box { margin-top: 6px; }
+html[data-skin="win"] .range-slider input[type="range"] { appearance: none; -webkit-appearance: none; box-shadow: none; height: 22px; outline-offset: 0; }
+html[data-skin="win"] .range-slider input[type="range"]::-webkit-slider-runnable-track { height: 4px; background: var(--w-field); box-shadow: var(--w-sunken); }
+html[data-skin="win"] .range-slider input[type="range"]::-moz-range-track { height: 4px; background: var(--w-field); box-shadow: var(--w-sunken); }
+html[data-skin="win"] .range-slider input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 11px; height: 21px; margin-top: -9px; border: 0; border-radius: 0; background: var(--w-face); box-shadow: var(--w-raised); }
+html[data-skin="win"] .range-slider input[type="range"]::-moz-range-thumb { width: 11px; height: 21px; border: 0; border-radius: 0; background: var(--w-face); box-shadow: var(--w-raised); }
+html[data-skin="win"] .range-slider { --thumb: 11px; }
+html[data-skin="win"] .range-slider .rs-ticks button { color: var(--w-text); font-size: 11px; box-shadow: none; background: none; }
+html[data-skin="win"] .range-slider .rs-ticks button.on { text-decoration: underline; }
+html[data-skin="win"] .stock-tag { color: var(--w-text); }
+html[data-skin="win"] .stock-tag.low { color: var(--w-bad); }

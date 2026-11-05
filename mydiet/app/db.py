@@ -252,7 +252,8 @@ CREATE TABLE IF NOT EXISTS pantry (            -- optional: stock of foods; diar
   since_id INTEGER NOT NULL DEFAULT 0,
   min_amount REAL NOT NULL DEFAULT 0,
   pack_g REAL NOT NULL DEFAULT 0,
-  alerted INTEGER NOT NULL DEFAULT 0
+  alerted INTEGER NOT NULL DEFAULT 0,
+  food_id INTEGER                   -- the food whose edit card holds this stock (NULL: legacy item without a food)
 );
 CREATE INDEX IF NOT EXISTS pantry_owner ON pantry(owner);
 CREATE TABLE IF NOT EXISTS activity_days (    -- optional: steps / active kcal per day (from HA sensors or typed in)
@@ -382,7 +383,14 @@ def _m9_v133(c):
     c.execute("CREATE INDEX IF NOT EXISTS pantry_owner ON pantry(owner)")
 
 
-MIGRATIONS = (_m1_legacy, _m2_v1, _m3_v11, _m4_v17, _m5_v171, _m6_v176, _m7_v115, _m8_v125, _m9_v133)
+def _m10_v134(c):
+    """v1.34: pantry items belong to a food (set on its edit card); existing items are linked by name."""
+    _add(c, "pantry", "food_id", "INTEGER")
+    c.execute("UPDATE pantry SET food_id=(SELECT f.id FROM foods f WHERE f.owner=pantry.owner AND f.name=pantry.name COLLATE NOCASE ORDER BY f.id LIMIT 1)"
+              " WHERE food_id IS NULL")
+
+
+MIGRATIONS = (_m1_legacy, _m2_v1, _m3_v11, _m4_v17, _m5_v171, _m6_v176, _m7_v115, _m8_v125, _m9_v133, _m10_v134)
 
 
 def init():

@@ -9,8 +9,8 @@ The pantry remembers how much of a food you have at home. Every matching diary e
 ## Add a pantry item
 
 1. Switch on *Settings → Optional features → Pantry*.
-2. Open the **Foods** tab, tap **Pantry**, then **+ New pantry item**.
-3. Enter the **Name** (e.g. “Skyr”) and the **Stock now** in grams.
+2. Open the **Foods** tab and tap **✎** next to the food.
+3. Tick **Track stock** and enter the **Stock now** in grams. Then **Save**.
 4. **Alert at (g)** is the threshold: when the stock is that low or lower, you are alerted. With 0 the alert only comes when nothing is left.
 5. Optional: **Pack size (g)**. The item then gets a **+ pack** button that raises the stock by one pack after shopping. The size is also part of the to-do item (“Skyr – 500 g”).
 
@@ -22,11 +22,13 @@ Every diary entry whose name contains one of the **words** (capitalisation ignor
 - Editing or deleting an entry corrects the stock by itself.
 - Quick entries without grams do not count.
 - Watch out for words that are too general: “milk” also matches “milk chocolate”.
-- When you have bought or counted something, change **Stock now** with ✎ or tap **+ pack**.
+- When you have bought or counted something, change **Stock now** on the food or tap **+ pack**.
+- The food list shows the current stock next to the name (“300 g left”, red when it is low).
+- To stop tracking a food, untick **Track stock** again.
 
 ## Notification and to-do list
 
-Under **When a food runs low** in the pantry window:
+The card *Settings → Pantry* lists all pantry items (with **+ pack**, ✎ and ✕). Below it, under **When a food runs low**:
 
 1. **Notification:** enter a service such as `notify.mobile_app_pixel` (the suggestions list the services of your Home Assistant). Empty = no notification.
 2. **To-do list:** choose a list such as `todo.bring`. **Bring!** and other shopping-list apps show up in Home Assistant as a to-do list once their integration is set up; the built-in shopping list works the same way. Empty = no item.

@@ -1,4 +1,4 @@
-"""v1.33: pantry (optional feature "pantry"). The stock of a food is the amount entered minus the grams of all diary entries
+"""v1.33: pantry (optional feature "pantry"); since v1.34 each item belongs to a food and is set on the food's edit card. The stock of a food is the amount entered minus the grams of all diary entries
 logged afterwards whose name matches; editing or deleting an entry therefore corrects the stock by itself. When the stock
 reaches the threshold, a push notification and/or an item on a Home Assistant to-do list (e.g. Bring!) is sent once, until
 the stock is raised again."""
@@ -48,11 +48,12 @@ def max_entry_id(c) -> int:
 
 def shown(i: dict) -> dict:
     return {"id": i["id"], "name": i["name"], "match": i["match"], "remaining": max(i["remaining"], 0), "min_amount": i["min_amount"],
-            "pack_g": i["pack_g"], "low": i["low"]}
+            "pack_g": i["pack_g"], "low": i["low"], "food_id": i["food_id"]}
 
 
 class ItemIn(BaseModel):
     name: str
+    food_id: int | None = None
     match: str = ""
     remaining: float | None = None     # set the stock now (new items: start value); None keeps it
     min_amount: float = 0
@@ -82,11 +83,59 @@ def pantry_add(b: ItemIn, x_remote_user_id: str | None = Header(None)):
     need_pantry(owner)
     name, match = clean(b)
     with db.conn() as c:
+        if b.food_id is not None:
+            own_food(c, owner, b.food_id)
         if c.execute("SELECT COUNT(*) FROM pantry WHERE owner=?", (owner,)).fetchone()[0] >= MAX_ITEMS:
             raise HTTPException(400, "Zu viele Einträge")
-        cur = c.execute("INSERT INTO pantry(owner,name,match,amount,since_id,min_amount,pack_g) VALUES(?,?,?,?,?,?,?)",
-                        (owner, name, match, b.remaining or 0, max_entry_id(c), b.min_amount, b.pack_g))
+        cur = c.execute("INSERT INTO pantry(owner,name,match,amount,since_id,min_amount,pack_g,food_id) VALUES(?,?,?,?,?,?,?,?)",
+                        (owner, name, match, b.remaining or 0, max_entry_id(c), b.min_amount, b.pack_g, b.food_id))
         return {"id": cur.lastrowid}
+
+
+# --- stock of one food (edit card of the food; declared before /{item_id}) ---
+
+def own_food(c, owner: str, food_id: int):
+    if not c.execute("SELECT 1 FROM foods WHERE id=? AND owner=?", (food_id, owner)).fetchone():
+        raise HTTPException(404, "food not found")
+
+
+@app.get("/api/pantry/food/{food_id}")
+def pantry_of_food(food_id: int, x_remote_user_id: str | None = Header(None)):
+    """The stock of a food, or {"item": null} when it has none."""
+    owner = user_from(x_remote_user_id)
+    need_pantry(owner)
+    with db.conn() as c:
+        found = [i for i in rows(c, owner) if i["food_id"] == food_id]
+    return {"item": shown(found[0]) if found else None}
+
+
+@app.put("/api/pantry/food/{food_id}")
+def pantry_set_food(food_id: int, b: ItemIn, x_remote_user_id: str | None = Header(None)):
+    """Create or change the stock of a food (remaining None keeps the current stock of an existing item)."""
+    owner = user_from(x_remote_user_id)
+    need_pantry(owner)
+    name, match = clean(b)
+    with db.conn() as c:
+        own_food(c, owner, food_id)
+        old = [i for i in rows(c, owner) if i["food_id"] == food_id]
+        if not old:
+            cur = c.execute("INSERT INTO pantry(owner,name,match,amount,since_id,min_amount,pack_g,food_id) VALUES(?,?,?,?,?,?,?,?)",
+                            (owner, name, match, b.remaining or 0, max_entry_id(c), b.min_amount, b.pack_g, food_id))
+            return {"id": cur.lastrowid}
+        o = old[0]
+        amount, since = (o["amount"], o["since_id"]) if b.remaining is None else (b.remaining, max_entry_id(c))
+        c.execute("UPDATE pantry SET name=?,match=?,amount=?,since_id=?,min_amount=?,pack_g=? WHERE id=?",
+                  (name, match, amount, since, b.min_amount, b.pack_g, o["id"]))
+        return {"id": o["id"]}
+
+
+@app.delete("/api/pantry/food/{food_id}")
+def pantry_drop_food(food_id: int, x_remote_user_id: str | None = Header(None)):
+    owner = user_from(x_remote_user_id)
+    need_pantry(owner)
+    with db.conn() as c:
+        c.execute("DELETE FROM pantry WHERE owner=? AND food_id=?", (owner, food_id))
+    return {"ok": True}
 
 
 # --- alert targets (declared before /{item_id}, so "config" is not read as an id) ---

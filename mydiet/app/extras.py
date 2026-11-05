@@ -785,8 +785,9 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
                        t.get("extra") or "[]", t.get("combine", "and"), t.get("paused_until", "")))
         c.execute("DELETE FROM pantry WHERE owner=?", (owner,))
         for p in d.get("pantry", []):   # the exported amount is the stock at that time; entries are renumbered, so count from now on
-            c.execute("INSERT INTO pantry(owner,name,match,amount,since_id,min_amount,pack_g) VALUES(?,?,?,?,(SELECT COALESCE(MAX(id),0) FROM entries),?,?)",
-                      (owner, p["name"], p.get("match", ""), p.get("amount", 0), p.get("min_amount", 0), p.get("pack_g", 0)))
+            c.execute("INSERT INTO pantry(owner,name,match,amount,since_id,min_amount,pack_g,food_id) VALUES(?,?,?,?,(SELECT COALESCE(MAX(id),0) FROM entries),?,?,"
+                      "(SELECT id FROM foods WHERE owner=? AND name=? COLLATE NOCASE ORDER BY id LIMIT 1))",
+                      (owner, p["name"], p.get("match", ""), p.get("amount", 0), p.get("min_amount", 0), p.get("pack_g", 0), owner, p["name"]))
         c.execute("DELETE FROM meal_triggers WHERE owner=?", (owner,))
         for t in d.get("meal_triggers", []):
             if t.get("meal_id") in mmap:

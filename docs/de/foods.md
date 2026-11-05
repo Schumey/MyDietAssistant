@@ -17,6 +17,7 @@ Das Formular weist auf unplausible Werte hin (zum Beispiel mehr als 100 g Nährs
 ## Suchen, bearbeiten, Favoriten
 
 - Suche mit dem Feld **Lebensmittel suchen…**. Lange Listen laden seitenweise (**Mehr laden**), die Suche läuft auf dem Server.
+- Die Auswahl neben dem Suchfeld sortiert die Liste: **Neueste zuerst**, **Älteste zuerst**, **Name (A–Z)**, **Am häufigsten verwendet**, **Zuletzt verwendet**, **Wenigste Kalorien** oder **Meiste Eiweiß je kcal**. Die Wahl bleibt auf dem Gerät gespeichert. Für „verwendet“ zählen Deine Tagebucheinträge mit genau diesem Namen.
 - **✎** bearbeitet ein Lebensmittel, **✕** löscht es. Bereits eingetragene Mengen im Tagebuch bleiben unverändert (Schnappschüsse).
 - **☆** macht es zum Favoriten (**★**). Favoriten stehen im Hinzufügen-Dialog im Reiter **★ Favoriten**.
 - **⚡** legt einen [Trigger](triggers.md) für das Lebensmittel an.

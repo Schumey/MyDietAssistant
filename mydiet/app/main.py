@@ -413,19 +413,40 @@ def owner_names(c, rows: list, owner: str):
             r["owner_name"] = names[r["owner"]]
 
 
+# sort orders of the food list; "used"/"recent" count the own diary entries with the food's name (entries are snapshots)
+FOOD_SORTS = {
+    "new": "foods.id DESC",
+    "old": "foods.id ASC",
+    "name": "foods.name COLLATE NOCASE, foods.brand COLLATE NOCASE, foods.id",
+    "used": "COALESCE(u.n,0) DESC, foods.name COLLATE NOCASE",
+    "recent": "u.last IS NULL, u.last DESC, foods.name COLLATE NOCASE",
+    "kcal": "foods.kcal ASC, foods.name COLLATE NOCASE",
+    "protein": "CASE WHEN foods.kcal>0 THEN foods.protein/foods.kcal ELSE 0 END DESC, foods.name COLLATE NOCASE",
+}
+
+
 @app.get("/api/foods")
-def list_foods(q: str = "", barcode: str = "", favorite: int = 0, limit: int = 200, offset: int = 0, x_remote_user_id: str | None = Header(None)):
+def list_foods(q: str = "", barcode: str = "", favorite: int = 0, limit: int = 200, offset: int = 0, sort: str = "new",
+               x_remote_user_id: str | None = Header(None)):
     owner = user_from(x_remote_user_id)
     limit, offset = max(1, min(limit, 1000)), max(0, offset)
+    order = FOOD_SORTS.get(sort, FOOD_SORTS["new"])
     with db.conn() as c:
         scope, sp = food_scope(c, owner)
         if barcode:
             rows = c.execute(f"SELECT * FROM foods WHERE {scope} AND barcode=? ORDER BY id DESC LIMIT ? OFFSET ?",
                              (*sp, barcode.strip(), limit, offset))
+        elif sort in ("used", "recent"):
+            rows = c.execute(
+                "SELECT foods.*, COALESCE(u.n,0) AS uses, u.last AS last_used FROM foods"
+                " LEFT JOIN (SELECT name, COUNT(*) AS n, MAX(day) AS last FROM entries WHERE owner=? GROUP BY name) u ON u.name=foods.name"
+                f" WHERE {scope.replace('owner', 'foods.owner').replace('shared>', 'foods.shared>')} AND (foods.name LIKE ? OR foods.brand LIKE ? OR foods.barcode=?)"
+                + (" AND foods.favorite=1 AND foods.owner=?" if favorite else "")
+                + f" ORDER BY {order} LIMIT ? OFFSET ?", (owner, *sp, f"%{q}%", f"%{q}%", q.strip(), *([owner] if favorite else []), limit, offset))
         else:
             rows = c.execute(
                 f"SELECT * FROM foods WHERE {scope} AND (name LIKE ? OR brand LIKE ? OR barcode=?)" + (" AND favorite=1 AND owner=?" if favorite else "")
-                + " ORDER BY id DESC LIMIT ? OFFSET ?", (*sp, f"%{q}%", f"%{q}%", q.strip(), *([owner] if favorite else []), limit, offset))
+                + f" ORDER BY {order} LIMIT ? OFFSET ?", (*sp, f"%{q}%", f"%{q}%", q.strip(), *([owner] if favorite else []), limit, offset))
         foods = [dict(r) for r in rows]
         names = {}
         for f in foods:

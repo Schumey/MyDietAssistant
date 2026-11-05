@@ -17,6 +17,7 @@ The form warns about implausible values (for example more than 100 g of nutrient
 ## Search, edit, favorites
 
 - Search with the **Search foods…** field. Long lists load in pages (**Load more**); the search runs on the server.
+- The selection next to the search field sorts the list: **Newest first**, **Oldest first**, **Name (A–Z)**, **Most used**, **Recently used**, **Fewest calories** or **Most protein per kcal**. The choice is kept on the device. “Used” counts your diary entries with exactly that name.
 - **✎** edits a food, **✕** deletes it. Amounts already logged in the diary stay unchanged (snapshots).
 - **☆** makes it a favorite (**★**). Favorites appear in the add dialog under **★ Favorites**.
 - **⚡** creates a [trigger](triggers.md) for the food.

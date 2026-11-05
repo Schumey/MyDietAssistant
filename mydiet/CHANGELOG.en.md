@@ -2,6 +2,20 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.34.0
+
+### New
+- **Sort foods:** next to the search field you pick the order: newest/oldest first, name (A–Z), most used, recently used, fewest calories, most protein per kcal. With “used”, the list shows the number of entries.
+- **Period as a slider** in Statistics and Weight, snapping to the previous steps.
+
+### Changed
+- **Pantry on the food:** stock, alert threshold and pack size are now on the food's edit card (**Track stock**). Notification and to-do list are set on the new card *Settings → Pantry*, which also lists all items with **+ pack**. The food list shows the stock next to the name. Existing pantry items are linked to their food by name.
+
+### Fixed
+- **“null” above the statistics** when the optional feature “Activity” is off.
+- **Black wedge in the “Calories per day” chart** with daily goals per weekday: the stepped goal line was drawn filled.
+- Switching the period quickly could put an older result over a newer one.
+
 ## 1.33.0
 
 ### New

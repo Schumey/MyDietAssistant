@@ -2,6 +2,20 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.34.0
+
+### Neu
+- **Lebensmittel sortieren:** Neben dem Suchfeld wählst Du die Reihenfolge: Neueste/Älteste zuerst, Name (A–Z), Am häufigsten verwendet, Zuletzt verwendet, Wenigste Kalorien, Meiste Eiweiß je kcal. Bei „verwendet“ steht die Zahl der Einträge in der Liste.
+- **Zeitraum als Schieberegler** in Statistik und Gewicht, mit Rastungen auf den bisherigen Stufen.
+
+### Geändert
+- **Vorrat am Lebensmittel:** Bestand, Meldeschwelle und Packungsgröße stehen jetzt in der Bearbeiten-Karte des Lebensmittels (**Vorrat führen**). Benachrichtigung und Todo-Liste stellst Du auf der neuen Karte *Einstellungen → Vorrat* ein, die auch alle Vorräte mit **+ Packung** zeigt. Die Lebensmittel-Liste zeigt den Bestand am Namen. Bestehende Vorräte werden über den Namen ihrem Lebensmittel zugeordnet.
+
+### Behoben
+- **„null“ über der Statistik**, wenn die Zusatzfunktion „Aktivität“ aus ist.
+- **Schwarzer Keil im Diagramm „Kalorien pro Tag“** bei Tageszielen je Wochentag: Die gestufte Ziellinie wurde gefüllt gezeichnet.
+- Schnelles Wechseln des Zeitraums konnte ein älteres Ergebnis über ein neueres legen.
+
 ## 1.33.0
 
 ### Neu

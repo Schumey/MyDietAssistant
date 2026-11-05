@@ -7,6 +7,17 @@
 // Strings without an entry stay German, so a missing entry never breaks the app.
 const EN = {
     "Vorrat": "Pantry",
+    "Vorrat führen": "Track stock",
+    "Bestand, Meldeschwelle und Packungsgröße stellst Du beim Lebensmittel ein (Lebensmittel → ✎ → Vorrat führen).": "Set the stock, alert threshold and pack size on the food (Foods → ✎ → Track stock).",
+    "Sortierung": "Sort order",
+    "Neueste zuerst": "Newest first",
+    "Älteste zuerst": "Oldest first",
+    "Name (A–Z)": "Name (A–Z)",
+    "Am häufigsten verwendet": "Most used",
+    "Zuletzt verwendet": "Recently used",
+    "Wenigste Kalorien": "Fewest calories",
+    "Meiste Eiweiß je kcal": "Most protein per kcal",
+    "· {}× verwendet": "· used {}×",
     "Bestand von Lebensmitteln festhalten: Tagebucheinträge verringern ihn, unter einer Schwelle kommt eine Benachrichtigung und/oder ein Eintrag auf einer Todo-Liste (z. B. Bring!).": "Keep track of how much of a food you have: diary entries reduce it, and below a threshold you get a notification and/or an item on a to-do list (e.g. Bring!).",
     "Vorrat bearbeiten": "Edit pantry item",
     "Neuer Vorrat": "New pantry item",
@@ -623,6 +634,17 @@ const LANG_LOCALES = { de: "de-DE", en: "en-US", fr: "fr-FR", es: "es-ES", nl: "
 // entry in LANG_LOCALES, in LANGS (extras.py) and in the language selection of the settings.
 Object.assign(LANGS, {
   fr: {
+    "Vorrat führen": "Suivre le stock",
+    "Bestand, Meldeschwelle und Packungsgröße stellst Du beim Lebensmittel ein (Lebensmittel → ✎ → Vorrat führen).": "Le stock, le seuil d’alerte et la taille du paquet se règlent sur l’aliment (Aliments → ✎ → Suivre le stock).",
+    "Sortierung": "Tri",
+    "Neueste zuerst": "Plus récents d’abord",
+    "Älteste zuerst": "Plus anciens d’abord",
+    "Name (A–Z)": "Nom (A–Z)",
+    "Am häufigsten verwendet": "Les plus utilisés",
+    "Zuletzt verwendet": "Utilisés récemment",
+    "Wenigste Kalorien": "Moins de calories",
+    "Meiste Eiweiß je kcal": "Plus de protéines par kcal",
+    "· {}× verwendet": "· utilisé {}×",
     "Vorrat": "Réserve",
     "Bestand von Lebensmitteln festhalten: Tagebucheinträge verringern ihn, unter einer Schwelle kommt eine Benachrichtigung und/oder ein Eintrag auf einer Todo-Liste (z. B. Bring!).": "Suivre le stock d’un aliment : les entrées du journal le réduisent, et sous un seuil vous recevez une notification et/ou un élément sur une liste de tâches (p. ex. Bring!).",
     "Vorrat bearbeiten": "Modifier la réserve",
@@ -1610,6 +1632,17 @@ Object.assign(LANGS, {
     "{} von {} g": "{} sur {} g",
   },
   es: {
+    "Vorrat führen": "Llevar existencias",
+    "Bestand, Meldeschwelle und Packungsgröße stellst Du beim Lebensmittel ein (Lebensmittel → ✎ → Vorrat führen).": "Las existencias, el umbral de aviso y el tamaño del paquete se ajustan en el alimento (Alimentos → ✎ → Llevar existencias).",
+    "Sortierung": "Orden",
+    "Neueste zuerst": "Más recientes primero",
+    "Älteste zuerst": "Más antiguos primero",
+    "Name (A–Z)": "Nombre (A–Z)",
+    "Am häufigsten verwendet": "Más usados",
+    "Zuletzt verwendet": "Usados recientemente",
+    "Wenigste Kalorien": "Menos calorías",
+    "Meiste Eiweiß je kcal": "Más proteína por kcal",
+    "· {}× verwendet": "· usado {}×",
     "Vorrat": "Despensa",
     "Bestand von Lebensmitteln festhalten: Tagebucheinträge verringern ihn, unter einer Schwelle kommt eine Benachrichtigung und/oder ein Eintrag auf einer Todo-Liste (z. B. Bring!).": "Llevar el control de cuánto tienes de un alimento: las entradas del diario lo reducen y, por debajo de un umbral, recibes una notificación y/o un elemento en una lista de tareas (p. ej. Bring!).",
     "Vorrat bearbeiten": "Editar despensa",
@@ -2597,6 +2630,17 @@ Object.assign(LANGS, {
     "{} von {} g": "{} de {} g",
   },
   nl: {
+    "Vorrat führen": "Voorraad bijhouden",
+    "Bestand, Meldeschwelle und Packungsgröße stellst Du beim Lebensmittel ein (Lebensmittel → ✎ → Vorrat führen).": "Voorraad, meldingsdrempel en verpakkingsgrootte stel je in bij het levensmiddel (Levensmiddelen → ✎ → Voorraad bijhouden).",
+    "Sortierung": "Sortering",
+    "Neueste zuerst": "Nieuwste eerst",
+    "Älteste zuerst": "Oudste eerst",
+    "Name (A–Z)": "Naam (A–Z)",
+    "Am häufigsten verwendet": "Meest gebruikt",
+    "Zuletzt verwendet": "Laatst gebruikt",
+    "Wenigste Kalorien": "Minste calorieën",
+    "Meiste Eiweiß je kcal": "Meeste eiwit per kcal",
+    "· {}× verwendet": "· {}× gebruikt",
     "Vorrat": "Voorraad",
     "Bestand von Lebensmitteln festhalten: Tagebucheinträge verringern ihn, unter einer Schwelle kommt eine Benachrichtigung und/oder ein Eintrag auf einer Todo-Liste (z. B. Bring!).": "Houd bij hoeveel je van een product op voorraad hebt: dagboekitems verlagen die, en onder een drempel krijg je een melding en/of een item op een takenlijst (bijv. Bring!).",
     "Vorrat bearbeiten": "Voorraad bewerken",
@@ -3596,6 +3640,17 @@ Object.assign(LANGS, {
     "{} von {} g": "{} van {} g",
   },
   it: {
+    "Vorrat führen": "Gestisci scorta",
+    "Bestand, Meldeschwelle und Packungsgröße stellst Du beim Lebensmittel ein (Lebensmittel → ✎ → Vorrat führen).": "Scorta, soglia di avviso e dimensione della confezione si impostano sull’alimento (Alimenti → ✎ → Gestisci scorta).",
+    "Sortierung": "Ordinamento",
+    "Neueste zuerst": "Più recenti prima",
+    "Älteste zuerst": "Meno recenti prima",
+    "Name (A–Z)": "Nome (A–Z)",
+    "Am häufigsten verwendet": "Più usati",
+    "Zuletzt verwendet": "Usati di recente",
+    "Wenigste Kalorien": "Meno calorie",
+    "Meiste Eiweiß je kcal": "Più proteine per kcal",
+    "· {}× verwendet": "· usato {}×",
     "Vorrat": "Dispensa",
     "Bestand von Lebensmitteln festhalten: Tagebucheinträge verringern ihn, unter einer Schwelle kommt eine Benachrichtigung und/oder ein Eintrag auf einer Todo-Liste (z. B. Bring!).": "Tieni traccia di quanto hai di un alimento: le voci del diario lo riducono e, sotto una soglia, ricevi una notifica e/o una voce in una lista di cose da fare (p. es. Bring!).",
     "Vorrat bearbeiten": "Modifica dispensa",
@@ -4595,6 +4650,17 @@ Object.assign(LANGS, {
     "{} von {} g": "{} di {} g",
   },
   pt: {
+    "Vorrat führen": "Controlar estoque",
+    "Bestand, Meldeschwelle und Packungsgröße stellst Du beim Lebensmittel ein (Lebensmittel → ✎ → Vorrat führen).": "O estoque, o limite de aviso e o tamanho da embalagem são definidos no alimento (Alimentos → ✎ → Controlar estoque).",
+    "Sortierung": "Ordenação",
+    "Neueste zuerst": "Mais recentes primeiro",
+    "Älteste zuerst": "Mais antigos primeiro",
+    "Name (A–Z)": "Nome (A–Z)",
+    "Am häufigsten verwendet": "Mais usados",
+    "Zuletzt verwendet": "Usados recentemente",
+    "Wenigste Kalorien": "Menos calorias",
+    "Meiste Eiweiß je kcal": "Mais proteína por kcal",
+    "· {}× verwendet": "· usado {}×",
     "Vorrat": "Despensa",
     "Bestand von Lebensmitteln festhalten: Tagebucheinträge verringern ihn, unter einer Schwelle kommt eine Benachrichtigung und/oder ein Eintrag auf einer Todo-Liste (z. B. Bring!).": "Acompanhe quanto tem de um alimento: as entradas do diário reduzem-no e, abaixo de um limite, recebe uma notificação e/ou um item numa lista de tarefas (p. ex. Bring!).",
     "Vorrat bearbeiten": "Editar despensa",
@@ -5594,6 +5660,17 @@ Object.assign(LANGS, {
     "{} von {} g": "{} de {} g",
   },
   pl: {
+    "Vorrat führen": "Prowadź zapas",
+    "Bestand, Meldeschwelle und Packungsgröße stellst Du beim Lebensmittel ein (Lebensmittel → ✎ → Vorrat führen).": "Zapas, próg powiadomienia i wielkość opakowania ustawiasz przy produkcie (Produkty → ✎ → Prowadź zapas).",
+    "Sortierung": "Sortowanie",
+    "Neueste zuerst": "Najnowsze najpierw",
+    "Älteste zuerst": "Najstarsze najpierw",
+    "Name (A–Z)": "Nazwa (A–Z)",
+    "Am häufigsten verwendet": "Najczęściej używane",
+    "Zuletzt verwendet": "Ostatnio używane",
+    "Wenigste Kalorien": "Najmniej kalorii",
+    "Meiste Eiweiß je kcal": "Najwięcej białka na kcal",
+    "· {}× verwendet": "· użyto {}×",
     "Vorrat": "Spiżarnia",
     "Bestand von Lebensmitteln festhalten: Tagebucheinträge verringern ihn, unter einer Schwelle kommt eine Benachrichtigung und/oder ein Eintrag auf einer Todo-Liste (z. B. Bring!).": "Śledź, ile masz danego produktu: wpisy w dzienniku zmniejszają zapas, a poniżej progu dostaniesz powiadomienie i/lub pozycję na liście zadań (np. Bring!).",
     "Vorrat bearbeiten": "Edytuj zapas",
@@ -7827,6 +7904,7 @@ function foodForm({ food = null, prefill = {}, onSave, onCancel }) {
   const shareRow = !state.features.household ? null : foreign
     ? h("div", { class: "muted", style: "margin-top:12px" }, `Gehört ${food.owner_name}. Änderungen gelten für alle im Haushalt.`)
     : h("label", { class: "pick", style: "margin-top:12px" }, sharedBox, "In der gemeinsamen Haushaltsbibliothek anbieten (andere dürfen es nutzen und ändern)");
+  const pan = state.features.pantry && !foreign ? pantryFields(food) : null;
   const check = () => {
     const v = { kcal: num(f.kcal.value), carbs: num(f.carbs.value) || 0, fat: num(f.fat.value) || 0, protein: num(f.protein.value) || 0 };
     warn.textContent = v.kcal == null ? "" : plausibility(v) || "";
@@ -7857,6 +7935,7 @@ function foodForm({ food = null, prefill = {}, onSave, onCancel }) {
       MICROS.map(([k, label]) => field(k, `${label} / 100 g`, { type: "number", step: "any", value: 0 }))) : null,
     h("div", { style: "margin-top:12px" }, h("label", {}, "Portionsgrößen (optional)"), pbox,
       h("button", { class: "flat", onclick: () => { portions.push({ name: "", grams: 0 }); drawPortions(); } }, "+ Portion")),
+    pan ? pan.node : null,
     shareRow, warn, msg, catList(),
     h("div", { class: "actions" },
       h("button", { class: "flat", onclick: onCancel }, food ? "Abbrechen" : "Zurück"),
@@ -7871,6 +7950,7 @@ function foodForm({ food = null, prefill = {}, onSave, onCancel }) {
         if (state.features.household && !foreign) body.shared = sharedBox.checked;
         const id = food ? food.id : (await send("POST", "foods", body)).id;
         if (food) await send("PUT", "foods/" + food.id, body);
+        if (pan) try { await pan.save(id, f.name.value.trim()); } catch (e) { alert(e.message); }
         onSave(id);
       } }, food ? "Speichern" : "Speichern & wählen")));
   for (const k of ["kcal", "carbs", "fat", "protein"]) f[k].addEventListener("input", check);
@@ -8237,6 +8317,22 @@ function forecast(pts, target) {
   return { text: when.toLocaleDateString(I18N.locale, { day: "numeric", month: "short", year: "numeric" }), perWeek: slope * 7 };
 }
 
+// Time span as a slider that snaps to the given steps; the page reloads when it is let go (or a label is clicked).
+function rangeSlider(options, current, onpick) {
+  const at = Math.max(0, options.findIndex(([v]) => v === current));
+  const out = h("b", {}, options[at][1]);
+  const id = "rs" + Math.random().toString(36).slice(2, 8);
+  const input = h("input", { type: "range", min: 0, max: options.length - 1, step: 1, value: at, list: id, "aria-label": "Zeitraum",
+    oninput: () => { out.textContent = options[input.value][1]; input.setAttribute("aria-valuetext", options[input.value][1]); },
+    onchange: () => onpick(options[input.value][0]) });
+  input.setAttribute("aria-valuetext", options[at][1]);
+  return h("div", { class: "range-slider", style: `--n:${options.length - 1}` },
+    h("div", { class: "rs-head" }, h("span", { class: "muted" }, "Zeitraum"), out), input,
+    h("datalist", { id }, options.map((_, k) => h("option", { value: k }))),
+    h("div", { class: "rs-ticks" }, options.map(([v, l], k) => h("button", { type: "button", class: k === at ? "on" : "", style: `--k:${k}`,
+      tabindex: "-1", onclick: () => onpick(v) }, l))));
+}
+
 function rangeButtons(options, current, onpick) {
   return h("div", { class: "range" }, options.map(([v, label]) =>
     h("button", { class: v === current ? "active" : "", onclick: () => onpick(v) }, label)));
@@ -8244,10 +8340,15 @@ function rangeButtons(options, current, onpick) {
 
 // ---------------------------------------------------------------- foods page
 const tag = c => (c ? h("span", { class: "tag" }, c) : null);
+const FOOD_SORTS = [["new", "Neueste zuerst"], ["old", "Älteste zuerst"], ["name", "Name (A–Z)"], ["used", "Am häufigsten verwendet"],
+  ["recent", "Zuletzt verwendet"], ["kcal", "Wenigste Kalorien"], ["protein", "Meiste Eiweiß je kcal"]];
 
 async function renderFoods() {
   const PAGE = 200;
-  let [foods] = await Promise.all([api("foods?limit=" + PAGE), loadCats()]);
+  let sort = "new";
+  try { sort = localStorage.getItem("mda.foodSort") || "new"; } catch { /* storage unavailable */ }
+  let [foods, stock] = await Promise.all([api(`foods?limit=${PAGE}&sort=${sort}`), state.features.pantry ? api("pantry").catch(() => null) : null, loadCats()]);
+  const stockOf = new Map((stock ? stock.items : []).filter(i => i.food_id).map(i => [i.food_id, i]));
   let more = foods.length === PAGE, query = "", timer = null;
   const root = $("#foods");
   root.replaceChildren();
@@ -8266,7 +8367,7 @@ async function renderFoods() {
 
   // the library can hold thousands of foods (e.g. after a BLS import): search and paging happen on the server
   const load = async append => {
-    const rows = await api(`foods?limit=${PAGE}&offset=${append ? foods.length : 0}&q=${encodeURIComponent(query)}`);
+    const rows = await api(`foods?limit=${PAGE}&offset=${append ? foods.length : 0}&q=${encodeURIComponent(query)}&sort=${sort}`);
     foods = append ? foods.concat(rows) : rows;
     more = rows.length === PAGE;
     draw();
@@ -8279,8 +8380,10 @@ async function renderFoods() {
     list.replaceChildren(...(shown.length ? shown.map(f => h("div", {},
       h("div", { class: "grow" }, h("div", {}, f.name, f.brand ? ` (${f.brand})` : "", tag(f.category),
         f.mine === false ? h("span", { class: "shared-tag", title: "Gemeinsame Haushaltsbibliothek" }, `von ${f.owner_name}`) : f.shared ? h("span", { class: "shared-tag", title: "Für den Haushalt freigegeben" }, "geteilt") : null,
-        plausibility(f) ? h("span", { class: "warn-mark", title: plausibility(f) }, "⚠") : null),
-        h("div", { class: "muted" }, `${n0(f.kcal)} kcal · KH ${n1(f.carbs)} g · Fett ${n1(f.fat)} g · Eiweiß ${n1(f.protein)} g (pro 100 g)`, f.barcode ? ` · ${f.barcode}` : "")),
+        plausibility(f) ? h("span", { class: "warn-mark", title: plausibility(f) }, "⚠") : null,
+        stockOf.has(f.id) ? h("span", { class: "stock-tag" + (stockOf.get(f.id).low ? " low" : ""), title: "Vorrat" }, `noch ${pgrams(stockOf.get(f.id).remaining)}`) : null),
+        h("div", { class: "muted" }, `${n0(f.kcal)} kcal · KH ${n1(f.carbs)} g · Fett ${n1(f.fat)} g · Eiweiß ${n1(f.protein)} g (pro 100 g)`, f.barcode ? ` · ${f.barcode}` : "",
+          f.uses ? ` · ${f.uses}× verwendet` : "")),
       f.mine === false ? null : h("button", { class: "icon fav" + (f.favorite ? " on" : ""), title: f.favorite ? "Favorit entfernen" : "Als Favorit markieren", "aria-label": "Favorit", onclick: async () => {
         f.favorite = f.favorite ? 0 : 1;
         await send("PUT", `foods/${f.id}/favorite`, { favorite: !!f.favorite });
@@ -8302,12 +8405,17 @@ async function renderFoods() {
     clearTimeout(timer);
     timer = setTimeout(() => { query = search.value.trim(); load(false); }, 250);
   } });
-  root.append(h("div", { class: "card" }, search,
+  const sortSel = h("select", { "aria-label": "Sortierung", class: "food-sort", onchange: () => {
+    sort = sortSel.value;
+    try { localStorage.setItem("mda.foodSort", sort); } catch { /* storage unavailable */ }
+    load(false);
+  } }, FOOD_SORTS.map(([v, l]) => h("option", { value: v }, l)));
+  sortSel.value = sort;
+  root.append(h("div", { class: "card" }, h("div", { class: "food-search" }, search, sortSel),
     h("div", { class: "actions", style: "justify-content:flex-start;flex-wrap:wrap" },
       h("button", { onclick: () => openForm(null) }, "+ Neues Lebensmittel"),
       h("button", { class: "flat", onclick: () => dupDialog(renderFoods) }, "Duplikate suchen"),
       state.features.sources ? h("button", { class: "flat", onclick: foodCheckDialog }, "Werte online prüfen") : null,
-      state.features.pantry ? h("button", { class: "flat", onclick: pantryDialog }, "Vorrat") : null,
       h("button", { class: "flat", onclick: () => pickFile(".csv,.txt,.xlsx,text/csv", foodImportDialog) }, "Tabelle importieren …")),
     chips, list));
   draw();
@@ -8632,69 +8740,109 @@ async function shoppingDialog() {
 
 
 // ---------------------------------------------------------------- pantry (optional)
-// Stock of foods: diary entries with a matching name reduce it (server side); below the threshold the server notifies and/or adds a to-do item.
-async function pantryDialog() {
-  const [data, targets] = await Promise.all([api("pantry"), api("pantry/targets").catch(() => ({ todos: [], notifies: [] }))]);
-  const grams = g => `${Math.round(g).toLocaleString(I18N.locale)} g`;
-  const msg = h("div", { class: "err" });
-  const reload = () => pantryDialog();
+// Stock of foods, set on the food's edit card: diary entries with a matching name reduce it (server side). Below the threshold the
+// server notifies and/or adds a to-do item; where to is set on the settings card "Vorrat", which also lists all stocks.
+const pgrams = g => `${Math.round(g).toLocaleString(I18N.locale)} g`;
 
-  const itemForm = it => {
-    const name = h("input", { value: it?.name || "", maxlength: 100 });
-    const match = h("input", { value: it?.match || "", placeholder: "z. B. skyr, quark" });
-    const stock = h("input", { type: "number", step: "any", min: "0", value: it ? Math.round(it.remaining) : "", placeholder: "0" });
-    const min = h("input", { type: "number", step: "any", min: "0", value: it?.min_amount || "", placeholder: "0" });
-    const pack = h("input", { type: "number", step: "any", min: "0", value: it?.pack_g || "", placeholder: "0" });
+// Part of the food form. save(foodId, name) creates, changes or removes the stock of that food.
+function pantryFields(food) {
+  const on = h("input", { type: "checkbox" });
+  const stock = h("input", { type: "number", step: "any", min: "0", placeholder: "0", oninput: () => { stock.dataset.dirty = "1"; } });
+  const min = h("input", { type: "number", step: "any", min: "0", placeholder: "0" });
+  const pack = h("input", { type: "number", step: "any", min: "0", placeholder: "0" });
+  const match = h("input", { placeholder: "z. B. skyr, quark" });
+  const box = h("div", { class: "pantry-box" },
+    h("div", { class: "grid" },
+      h("div", {}, h("label", {}, "Bestand jetzt (g)"), stock),
+      h("div", {}, h("label", {}, "Melden ab (g)"), min),
+      h("div", {}, h("label", {}, "Packungsgröße (g, optional)"), pack)),
+    h("label", {}, "Suchwörter im Namen der Tagebucheinträge (mit Komma getrennt, leer = Name)"), match,
+    h("div", { class: "muted" }, "Jeder Tagebucheintrag mit passendem Namen verringert den Bestand um seine Gramm (Schnelleingaben ohne Gramm zählen nicht). Fällt er auf die Schwelle, wirst Du einmal gemeldet."));
+  box.hidden = true;
+  on.onchange = () => { box.hidden = !on.checked; };
+  let had = false;
+  if (food) api("pantry/food/" + food.id).then(({ item }) => {
+    if (!item) return;
+    had = true; on.checked = true; box.hidden = false;
+    stock.value = Math.round(item.remaining); min.value = item.min_amount || ""; pack.value = item.pack_g || ""; match.value = item.match;
+  }).catch(() => { /* feature off or offline: the form works without it */ });
+  const save = async (id, name) => {
+    if (!on.checked) { if (had) await api("pantry/food/" + id, { method: "DELETE" }); return; }
+    await send("PUT", "pantry/food/" + id, { name, match: match.value, min_amount: num(min.value) || 0, pack_g: num(pack.value) || 0,
+      remaining: had && !stock.dataset.dirty ? null : num(stock.value) || 0 });
+  };
+  return { node: h("div", { class: "pantry-fields" }, h("label", { class: "pick" }, on, "Vorrat führen"), box), save };
+}
+
+// Settings card: alert targets and the list of all stocks (restock, edit, delete).
+async function pantryCard() {
+  const [data, targets] = await Promise.all([api("pantry").catch(() => null), api("pantry/targets").catch(() => ({ todos: [], notifies: [] }))]);
+  if (!data) return null;
+  const msg = h("div", { class: "err" });
+  const list = h("div", { class: "list" });
+  const reload = async () => { data.items = (await api("pantry")).items; draw(); };
+
+  const editFood = async it => {
+    const f = (await api(`foods?limit=200&q=${encodeURIComponent(it.name)}`)).find(x => x.id === it.food_id);
+    if (!f) { legacyForm(it); return; }
+    setDlg(h("h2", {}, "Lebensmittel bearbeiten"), foodForm({ food: f, onCancel: () => dlg.close(), onSave: () => { dlg.close(); reload(); } }));
+    dlg.showModal();
+  };
+  // items from before v1.34 that no food could be found for keep their own small form
+  const legacyForm = it => {
+    const name = h("input", { value: it.name, maxlength: 100 });
+    const match = h("input", { value: it.match || "", placeholder: "z. B. skyr, quark" });
+    const stock = h("input", { type: "number", step: "any", min: "0", value: Math.round(it.remaining) });
+    const min = h("input", { type: "number", step: "any", min: "0", value: it.min_amount || "", placeholder: "0" });
+    const pack = h("input", { type: "number", step: "any", min: "0", value: it.pack_g || "", placeholder: "0" });
     const err = h("div", { class: "err" });
-    setDlg(h("h2", {}, it ? "Vorrat bearbeiten" : "Neuer Vorrat"),
+    setDlg(h("h2", {}, "Vorrat bearbeiten"),
       h("label", {}, "Name"), name,
       h("label", {}, "Suchwörter im Namen der Tagebucheinträge (mit Komma getrennt, leer = Name)"), match,
       h("label", {}, "Bestand jetzt (g)"), stock,
       h("label", {}, "Melden ab (g)"), min,
-      h("label", {}, "Packungsgröße (g, optional)"), pack,
-      err,
-      h("div", { class: "actions" },
-        it ? h("button", { class: "flat", onclick: async () => {
-          if (!confirm(`Vorrat „${it.name}“ löschen?`)) return;
-          await api("pantry/" + it.id, { method: "DELETE" }); reload();
-        } }, "Löschen") : null,
-        h("button", { class: "flat", onclick: reload }, "Abbrechen"),
+      h("label", {}, "Packungsgröße (g, optional)"), pack, err,
+      h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
         h("button", { onclick: async () => {
           const body = { name: name.value, match: match.value, remaining: num(stock.value), min_amount: num(min.value) || 0, pack_g: num(pack.value) || 0 };
-          if (!it && body.remaining == null) body.remaining = 0;
-          try { await send(it ? "PUT" : "POST", "pantry" + (it ? "/" + it.id : ""), body); reload(); } catch (e) { err.textContent = e.message; }
+          try { await send("PUT", "pantry/" + it.id, body); dlg.close(); reload(); } catch (e) { err.textContent = e.message; }
         } }, "Speichern")));
+    dlg.showModal();
   };
 
   const row = it => h("div", {},
-    h("div", { class: "grow" }, it.name, " ", h("span", { class: "muted" }, `noch ${grams(it.remaining)}`),
+    h("div", { class: "grow" }, it.name, " ", h("span", { class: "muted" }, `noch ${pgrams(it.remaining)}`),
       it.low ? h("span", { class: "err", style: "margin-left:6px" }, "knapp") : null,
-      it.min_amount ? h("div", { class: "muted" }, `Meldung ab ${grams(it.min_amount)}`) : null),
+      it.min_amount ? h("div", { class: "muted" }, `Meldung ab ${pgrams(it.min_amount)}`) : null),
     it.pack_g ? h("button", { class: "flat", onclick: async () => {
       try { await send("POST", `pantry/${it.id}/restock`, {}); reload(); } catch (e) { msg.textContent = e.message; }
-    } }, `+ Packung (${grams(it.pack_g)})`) : null,
-    h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => itemForm(it) }, "✎"));
+    } }, `+ Packung (${pgrams(it.pack_g)})`) : null,
+    h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => (it.food_id ? editFood(it) : legacyForm(it)) }, "✎"),
+    h("button", { class: "icon", title: "Löschen", "aria-label": "Löschen", onclick: async () => {
+      if (!confirm(`Vorrat „${it.name}“ löschen?`)) return;
+      await api("pantry/" + it.id, { method: "DELETE" }); reload();
+    } }, "✕"));
+  const draw = () => list.replaceChildren(...(data.items.length ? data.items.map(row) : [h("div", { class: "muted" }, "Noch nichts im Vorrat.")]));
+  draw();
 
   const cfg = data.config;
   const notify = h("input", { value: cfg.notify, list: "pantry-notify", placeholder: "notify.mobile_app_pixel" });
   const todo = h("input", { value: cfg.todo, list: "pantry-todo", placeholder: "todo.bring" });
-  const lists = [h("datalist", { id: "pantry-notify" }, targets.notifies.map(n => h("option", { value: n }))),
-    h("datalist", { id: "pantry-todo" }, targets.todos.map(t => h("option", { value: t.id }, t.name)))];
-  setDlg(h("h2", {}, "Vorrat"),
-    h("div", { class: "muted" }, "Jeder Tagebucheintrag mit passendem Namen verringert den Bestand um seine Gramm (Schnelleingaben ohne Gramm zählen nicht). Fällt er auf die Schwelle, wirst Du einmal gemeldet."),
-    h("div", { class: "list" }, data.items.length ? data.items.map(row) : [h("div", { class: "muted" }, "Noch nichts im Vorrat.")]),
-    h("div", { class: "actions", style: "justify-content:flex-start" }, h("button", { onclick: () => itemForm(null) }, "+ Neuer Vorrat")),
+  return h("div", { class: "card" }, h("h2", {}, "Vorrat"),
+    h("div", { class: "muted" }, "Bestand, Meldeschwelle und Packungsgröße stellst Du beim Lebensmittel ein (Lebensmittel → ✎ → Vorrat führen)."),
+    list,
     h("label", {}, "Wenn ein Vorrat knapp wird"),
     h("div", { class: "muted" }, "Benachrichtigung über diesen Dienst senden (leer = keine)"), notify,
-    h("div", { class: "muted" }, "Auf diese Todo-Liste setzen, z. B. Bring! oder die Einkaufsliste (leer = nicht)"), todo, lists,
+    h("div", { class: "muted" }, "Auf diese Todo-Liste setzen, z. B. Bring! oder die Einkaufsliste (leer = nicht)"), todo,
+    h("datalist", { id: "pantry-notify" }, targets.notifies.map(n => h("option", { value: n }))),
+    h("datalist", { id: "pantry-todo" }, targets.todos.map(t => h("option", { value: t.id }, t.name))),
     h("div", { class: "muted" }, "Bring! und andere Listen erscheinen in Home Assistant als Todo-Liste, sobald deren Integration eingerichtet ist."),
     msg,
-    h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Schließen"),
+    h("div", { class: "actions", style: "justify-content:flex-start" },
       h("button", { onclick: async e => {
         try { await send("PUT", "pantry/config", { notify: notify.value.trim(), todo: todo.value.trim() }); msg.textContent = ""; e.target.textContent = "Gespeichert ✓"; }
         catch (err) { msg.textContent = err.message; }
       } }, "Meldung speichern")));
-  if (!dlg.open) dlg.showModal();
 }
 
 
@@ -8928,7 +9076,7 @@ async function renderWeight() {
       tile("Ziel", goal.target_weight ? n1(wConv(goal.target_weight)) + " " + wUnit() : "–"),
       goal.target_weight ? tile("Prognose Ziel", fc ? fc.text : "–") : null),
     h("div", { class: "card" },
-      rangeButtons([[30, "30 Tage"], [90, "90 Tage"], [365, "1 Jahr"], [730, "2 Jahre"], [0, "Alle"]], state.wrange,
+      rangeSlider([[30, "30 Tage"], [90, "90 Tage"], [365, "1 Jahr"], [730, "2 Jahre"], [0, "Alle"]], state.wrange,
         v => { state.wrange = v; renderWeight(); }),
       chart,
       h("div", { class: "muted" }, "Dünne Linie und Punkte: Messwerte. Dicke Linie: geglätteter Trend (Tagesschwankungen ausgeblendet).",
@@ -9136,9 +9284,12 @@ async function microGapsCard() {
     h("div", { class: "actions", style: "justify-content:flex-start" }, h("button", { class: "flat", onclick: edit }, "Ziele ändern")));
 }
 
+let statsRun = 0;
 async function renderStats() {
+  const run = ++statsRun;   // a newer call (e.g. the slider moved on) wins; older answers are dropped
   const [{ days: rawDays, goal, balance }, weights, trk] = await Promise.all([api("stats?days=" + state.range), api("weights?days=" + state.range),
     state.features.trackers ? api("trackers/stats?days=" + state.range) : []]);
+  if (run !== statsRun) return;
   const root = $("#stats");
   root.replaceChildren();
   // Net view (optional feature "Activity"): intake minus burned kcal against the goal without the activity bonus
@@ -9160,11 +9311,11 @@ async function renderStats() {
   const combo = h("div");
   combo.innerHTML = comboChart(days, weights);
   tipHandlers(combo);
-  root.append(
+  root.append(...[
     canNet ? h("div", { class: "range" },
       [[false, "Brutto-Kalorien"], [true, "Netto-Kalorien"]].map(([v, label]) =>
         h("button", { class: v === net ? "active" : "", onclick: () => { try { localStorage.setItem("mda.statNet", v ? "1" : "0"); } catch { /* storage unavailable */ } renderStats(); } }, label))) : null,
-    rangeButtons([[7, "7 Tage"], [14, "14 Tage"], [30, "30 Tage"], [90, "90 Tage"], [180, "180 Tage"], [365, "1 Jahr"], [730, "2 Jahre"]], state.range, v => { state.range = v; renderStats(); }),
+    rangeSlider([[7, "7 Tage"], [14, "14 Tage"], [30, "30 Tage"], [90, "90 Tage"], [180, "180 Tage"], [365, "1 Jahr"], [730, "2 Jahre"]], state.range, v => { state.range = v; renderStats(); }),
     h("div", { class: "stat-tiles" },
       tile(net ? "Ø Netto-Kalorien" : "Ø Kalorien", logged.length ? n0(avg("kcal")) + " kcal" : "–"),
       net ? tile("Ø Verbrannt", logged.length ? n0(avg("burned")) + " kcal" : "–") : null,
@@ -9189,7 +9340,7 @@ async function renderStats() {
       h("div", { class: "legend" },
         h("span", { style: "--c:var(--info-color)" }, `Eiweiß ${logged.length ? pct(kc.p) : 0} %`),
         h("span", { style: "--c:var(--warning-color)" }, `Kohlenhydrate ${logged.length ? pct(kc.c) : 0} %`),
-        h("span", { style: "--c:var(--error-color)" }, `Fett ${logged.length ? pct(kc.f) : 0} %`))));
+        h("span", { style: "--c:var(--error-color)" }, `Fett ${logged.length ? pct(kc.f) : 0} %`)))].filter(x => x != null));
   if (state.features.micros && logged.length) root.append(h("div", { class: "card" }, h("h2", {}, "Weitere Nährwerte (Ø pro Tag)"),
     h("div", { class: "stat-tiles" }, MICROS.map(([k, label, u]) => tile(label, `${n1(avg(k))} ${u}`)))));
   if (state.features.micros) { const gc = await microGapsCard(); if (gc) root.append(gc); }
@@ -10221,6 +10372,8 @@ async function renderSettings() {
     h("div", { class: "actions", style: "justify-content:flex-start" },
       h("button", { onclick: () => window.open(`api/export/report?${exQuery()}&entries=${exEntries.checked}`, "_blank") }, "Bericht öffnen (Drucken / PDF)"),
       h("button", { class: "flat", onclick: () => { location.href = `api/export/summary.csv?${exQuery()}`; } }, "Tagesübersicht (CSV)"))));
+
+  if (state.features.pantry) { const pc = await pantryCard(); if (pc) root.append(pc); }
 
   // data
   root.append(h("div", { class: "card" }, h("h2", {}, "Daten"),

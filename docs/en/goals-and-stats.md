@@ -48,7 +48,7 @@ Your normal goal applies until the first interval is over (step 0); after that i
 
 ## Statistics
 
-The **Statistics** tab shows evaluations for 7, 14, 30, 90, 180 days, 1 year or 2 years:
+The **Statistics** tab shows evaluations for 7, 14, 30, 90, 180 days, 1 year or 2 years; choose the span with the **Period** slider (it snaps to these steps, tapping a label jumps straight there):
 
 - **Calories per day** as bars (left axis) with a goal line, together with weight values and the smoothed trend as a line (right axis); the tooltip shows both per day.
 - **Macro history** with goal lines.

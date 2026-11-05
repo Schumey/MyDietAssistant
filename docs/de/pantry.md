@@ -9,8 +9,8 @@ Der Vorrat merkt sich, wie viel Du von einem Lebensmittel zu Hause hast. Jeder p
 ## Vorrat anlegen
 
 1. Schalte *Einstellungen → Zusatzfunktionen → Vorrat* ein.
-2. Öffne den Reiter **Lebensmittel** und tippe auf **Vorrat**, dann auf **+ Neuer Vorrat**.
-3. Trage den **Namen** ein (z. B. „Skyr“) und den **Bestand jetzt** in Gramm.
+2. Öffne den Reiter **Lebensmittel** und tippe beim Lebensmittel auf **✎**.
+3. Setze den Haken **Vorrat führen** und trage den **Bestand jetzt** in Gramm ein. Dann **Speichern**.
 4. Bei **Melden ab (g)** legst Du die Schwelle fest: Ist der Bestand so klein oder kleiner, wirst Du gemeldet. Mit 0 kommt die Meldung erst, wenn nichts mehr da ist.
 5. Optional: **Packungsgröße (g)**. Dann erscheint beim Vorrat die Schaltfläche **+ Packung**, die den Bestand nach dem Einkauf mit einem Tipp um eine Packung erhöht. Die Größe steht auch im Todo-Eintrag („Skyr – 500 g“).
 
@@ -22,11 +22,13 @@ Jeder Tagebucheintrag, dessen Name eines der **Suchwörter** enthält (Groß- un
 - Ändern oder Löschen eines Eintrags korrigiert den Bestand von selbst.
 - Schnelleingaben ohne Gramm zählen nicht.
 - Achte auf zu allgemeine Suchwörter: „Milch“ passt auch auf „Milchschokolade“.
-- Hast Du etwas gekauft oder gezählt, ändere den **Bestand jetzt** über ✎ oder tippe **+ Packung**.
+- Hast Du etwas gekauft oder gezählt, ändere den **Bestand jetzt** beim Lebensmittel oder tippe **+ Packung**.
+- Den aktuellen Bestand siehst Du in der Lebensmittel-Liste neben dem Namen („noch 300 g“, rot, wenn er knapp ist).
+- Um den Vorrat für ein Lebensmittel zu beenden, nimm den Haken **Vorrat führen** wieder heraus.
 
 ## Benachrichtigung und Todo-Liste
 
-Unter **Wenn ein Vorrat knapp wird** im Vorrats-Fenster:
+Die Karte *Einstellungen → Vorrat* listet alle Vorräte (mit **+ Packung**, ✎ und ✕). Darunter, bei **Wenn ein Vorrat knapp wird**:
 
 1. **Benachrichtigung:** Trage einen Dienst wie `notify.mobile_app_pixel` ein (die Vorschlagsliste zeigt die Dienste Deines Home Assistant). Leer = keine Benachrichtigung.
 2. **Todo-Liste:** Wähle eine Liste wie `todo.bring`. **Bring!** und andere Einkaufslisten-Apps erscheinen in Home Assistant als Todo-Liste, sobald ihre Integration eingerichtet ist; die eingebaute Einkaufsliste geht genauso. Leer = kein Eintrag.

@@ -48,7 +48,7 @@ Bis zum Ende des ersten Abstands gilt Dein normales Ziel (Stufe 0), danach steig
 
 ## Statistik
 
-Der Reiter **Statistik** zeigt Auswertungen für 7, 14, 30, 90, 180 Tage, 1 Jahr oder 2 Jahre:
+Der Reiter **Statistik** zeigt Auswertungen für 7, 14, 30, 90, 180 Tage, 1 Jahr oder 2 Jahre; den Zeitraum stellst Du mit dem Schieberegler **Zeitraum** ein (er rastet auf diesen Stufen ein, ein Tipp auf eine Beschriftung springt direkt dorthin):
 
 - **Kalorien pro Tag** als Balken (linke Achse) mit Zielinie, zusammen mit Gewichtswerten und geglättetem Trend als Linie (rechte Achse); der Tooltip zeigt beides je Tag.
 - **Makro-Verlauf** mit Zielinien.

@@ -150,3 +150,36 @@ def test_backup_round_trip_keeps_the_remaining_stock(pan):
     got = items(pan)["Skyr"]
     assert got["remaining"] == 750 and got["min_amount"] == 100 and got["pack_g"] == 500
     assert pan.get("/api/pantry").json()["config"]["todo"] == "todo.bring"
+
+
+# --- v1.34: stock set on the food's edit card ---
+
+def test_stock_of_a_food_is_created_changed_and_removed(pan):
+    assert pan.get(f"/api/pantry/food/{pan.food}").json() == {"item": None}
+    r = pan.put(f"/api/pantry/food/{pan.food}", json={"name": "Skyr Natur", "remaining": 1000, "min_amount": 200, "pack_g": 500})
+    assert r.status_code == 200, r.text
+    eat(pan, 300)
+    item = pan.get(f"/api/pantry/food/{pan.food}").json()["item"]
+    assert item["remaining"] == 700 and item["food_id"] == pan.food
+    # changing the threshold without a new stock keeps the counted stock; there is still only one item
+    pan.put(f"/api/pantry/food/{pan.food}", json={"name": "Skyr Natur", "remaining": None, "min_amount": 800})
+    assert len(pan.get("/api/pantry").json()["items"]) == 1
+    item = pan.get(f"/api/pantry/food/{pan.food}").json()["item"]
+    assert item["remaining"] == 700 and item["low"]
+    pan.delete(f"/api/pantry/food/{pan.food}")
+    assert pan.get("/api/pantry").json()["items"] == []
+
+
+def test_stock_only_for_own_foods(pan, user):
+    other = user(feature=("pantry",))
+    assert other.put(f"/api/pantry/food/{pan.food}", json={"name": "x", "remaining": 1}).status_code == 404
+    assert other.post("/api/pantry", json={"name": "x", "food_id": pan.food}).status_code == 404
+
+
+def test_restore_links_the_stock_to_the_food_by_name(pan):
+    pan.put(f"/api/pantry/food/{pan.food}", json={"name": "Skyr Natur", "remaining": 1000})
+    dump = pan.get("/api/export/json").json()
+    assert pan.post("/api/import/json", json={"data": dump}).status_code == 200
+    item = pan.get("/api/pantry").json()["items"][0]
+    fid = next(f["id"] for f in pan.get("/api/foods").json() if f["name"] == "Skyr Natur")
+    assert item["food_id"] == fid
