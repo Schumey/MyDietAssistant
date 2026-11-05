@@ -36,6 +36,8 @@ const EN = {
   // diary
   "Kategorien:": "Categories:", "Ein-/ausblenden": "Show/hide", "Vortag": "Previous day", "Folgetag": "Next day", "Tag unvollständig (zählt nicht in der Statistik)": "Mark day as incomplete (not counted in statistics)", "unvollständig (nicht gezählt)": "incomplete (not counted)",
   "Bearbeiten": "Edit", "Entfernen": "Remove", "Kalorien": "Calories", "Kohlenhydrate": "Carbohydrates", "Fette": "Fats", "Eiweiß": "Protein",
+  "Nach App-Updates suchen": "Look for app updates",
+  "Installierte App-Version: {}": "Installed app version: {}",
   "Android-App": "Android app",
   "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Take over weight, steps and active calories from Health Connect on the phone. Weight only for days without a value of their own, steps and calories only with the optional feature “Activity”.",
   "Aus Health Connect übernehmen (30 Tage)": "Import from Health Connect (30 days)",
@@ -630,6 +632,8 @@ Object.assign(LANGS, {
     "Folgetag": "Jour suivant", "Tag unvollständig (zählt nicht in der Statistik)": "Journée incomplète (non comptée dans les statistiques)", "unvollständig (nicht gezählt)": "incomplète (non comptée)",
     "Bearbeiten": "Modifier",
     "Entfernen": "Retirer",
+    "Nach App-Updates suchen": "Rechercher des mises à jour de l’application",
+    "Installierte App-Version: {}": "Version de l’application installée : {}",
     "Android-App": "Application Android",
     "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Reprendre le poids, les pas et les calories actives depuis Health Connect sur le téléphone. Le poids seulement pour les jours sans valeur propre, les pas et calories seulement avec la fonction « Activité ».",
     "Aus Health Connect übernehmen (30 Tage)": "Importer depuis Health Connect (30 jours)",
@@ -1586,6 +1590,8 @@ Object.assign(LANGS, {
     "Folgetag": "Día siguiente", "Tag unvollständig (zählt nicht in der Statistik)": "Día incompleto (no cuenta en las estadísticas)", "unvollständig (nicht gezählt)": "incompleto (no contado)",
     "Bearbeiten": "Editar",
     "Entfernen": "Quitar",
+    "Nach App-Updates suchen": "Buscar actualizaciones de la app",
+    "Installierte App-Version: {}": "Versión de la app instalada: {}",
     "Android-App": "App de Android",
     "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Tomar el peso, los pasos y las calorías activas de Health Connect en el teléfono. El peso solo para días sin valor propio, pasos y calorías solo con la función «Actividad».",
     "Aus Health Connect übernehmen (30 Tage)": "Importar de Health Connect (30 días)",
@@ -2542,6 +2548,8 @@ Object.assign(LANGS, {
     "Folgetag": "Volgende dag", "Tag unvollständig (zählt nicht in der Statistik)": "Dag onvolledig (telt niet mee in de statistieken)", "unvollständig (nicht gezählt)": "onvolledig (niet meegeteld)",
     "Bearbeiten": "Bewerken",
     "Entfernen": "Verwijderen",
+    "Nach App-Updates suchen": "Zoeken naar app-updates",
+    "Installierte App-Version: {}": "Geïnstalleerde app-versie: {}",
     "Android-App": "Android-app",
     "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Gewicht, stappen en actieve calorieën overnemen uit Health Connect op de telefoon. Gewicht alleen voor dagen zonder eigen waarde, stappen en calorieën alleen met de extra functie ‘Activiteit’.",
     "Aus Health Connect übernehmen (30 Tage)": "Overnemen uit Health Connect (30 dagen)",
@@ -3510,6 +3518,8 @@ Object.assign(LANGS, {
     "Folgetag": "Giorno successivo", "Tag unvollständig (zählt nicht in der Statistik)": "Giorno incompleto (non conta nelle statistiche)", "unvollständig (nicht gezählt)": "incompleto (non conteggiato)",
     "Bearbeiten": "Modifica",
     "Entfernen": "Rimuovi",
+    "Nach App-Updates suchen": "Cerca aggiornamenti dell’app",
+    "Installierte App-Version: {}": "Versione dell’app installata: {}",
     "Android-App": "App Android",
     "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Riprendi peso, passi e calorie attive da Health Connect sul telefono. Il peso solo per i giorni senza un valore proprio, passi e calorie solo con la funzione «Attività».",
     "Aus Health Connect übernehmen (30 Tage)": "Importa da Health Connect (30 giorni)",
@@ -4478,6 +4488,8 @@ Object.assign(LANGS, {
     "Folgetag": "Próximo dia", "Tag unvollständig (zählt nicht in der Statistik)": "Dia incompleto (não conta nas estatísticas)", "unvollständig (nicht gezählt)": "incompleto (não contado)",
     "Bearbeiten": "Editar",
     "Entfernen": "Remover",
+    "Nach App-Updates suchen": "Procurar atualizações do app",
+    "Installierte App-Version: {}": "Versão do app instalada: {}",
     "Android-App": "App Android",
     "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Trazer peso, passos e calorias ativas do Health Connect no celular. Peso só para dias sem valor próprio, passos e calorias só com a função «Atividade».",
     "Aus Health Connect übernehmen (30 Tage)": "Importar do Health Connect (30 dias)",
@@ -5446,6 +5458,8 @@ Object.assign(LANGS, {
     "Folgetag": "Następny dzień", "Tag unvollständig (zählt nicht in der Statistik)": "Dzień niekompletny (nie liczy się do statystyk)", "unvollständig (nicht gezählt)": "niekompletny (nie liczony)",
     "Bearbeiten": "Edytuj",
     "Entfernen": "Usuń",
+    "Nach App-Updates suchen": "Sprawdź aktualizacje aplikacji",
+    "Installierte App-Version: {}": "Zainstalowana wersja aplikacji: {}",
     "Android-App": "Aplikacja na Androida",
     "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Przejmij wagę, kroki i aktywne kalorie z Health Connect na telefonie. Wagę tylko dla dni bez własnej wartości, kroki i kalorie tylko z funkcją „Aktywność”.",
     "Aus Health Connect übernehmen (30 Tage)": "Importuj z Health Connect (30 dni)",
@@ -9689,8 +9703,20 @@ async function renderSettings() {
     h("label", { class: "pick", style: "margin-top:12px" }, scanOpen, "Auf diesem Gerät beim Öffnen direkt den Barcode-Scanner starten"),
     h("div", { class: "muted" }, "Für ein Homescreen-Widget der Companion-App: Lege dort eine Verknüpfung auf dieses Panel an, dann öffnet sich die Kamera sofort.")));
 
-  // Android app only: Health Connect
-  if (healthApp()) {
+  // Android app only: app version, update check (0.4.0+), Health Connect (0.3.0+)
+  const mdaApp = window.MDAApp;
+  if (mdaApp && window.top === window) {
+    let ver = "";
+    try { ver = typeof mdaApp.version === "function" ? mdaApp.version() : ""; } catch { /* old app */ }
+    const upd = typeof mdaApp.checkUpdate === "function"
+      ? h("button", { class: "flat", onclick: () => { try { mdaApp.checkUpdate(); } catch { /* old app */ } } }, "Nach App-Updates suchen") : null;
+    const hp = healthApp() ? healthPart() : [];
+    root.append(h("div", { class: "card" }, h("h2", {}, "Android-App"),
+      ver ? h("div", { class: "muted" }, `Installierte App-Version: ${ver}`) : null,
+      upd ? h("div", { class: "actions", style: "justify-content:flex-start;margin:4px 0 8px" }, upd) : null,
+      ...hp));
+  }
+  function healthPart() {
     const hMsg = h("div", { class: "muted", role: "status" });
     const hErr = h("div", { class: "err" });
     const hAuto = h("input", { type: "checkbox", checked: healthAuto(), onchange: () => healthAuto(hAuto.checked) });
@@ -9703,11 +9729,11 @@ async function renderSettings() {
       } catch (e) { hMsg.textContent = ""; hErr.textContent = e.message; }
       hBtn.disabled = false;
     } }, "Aus Health Connect übernehmen (30 Tage)");
-    root.append(h("div", { class: "card" }, h("h2", {}, "Android-App"),
-      h("div", { class: "muted" }, "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“."),
+    return [
+      h("div", { class: "muted", style: "margin-top:8px" }, "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“."),
       h("div", { class: "actions", style: "justify-content:flex-start;margin-top:8px" }, hBtn),
       hMsg, hErr,
-      h("label", { class: "pick", style: "margin-top:12px" }, hAuto, "Beim Öffnen automatisch übernehmen (letzte 7 Tage)")));
+      h("label", { class: "pick", style: "margin-top:12px" }, hAuto, "Beim Öffnen automatisch übernehmen (letzte 7 Tage)")];
   }
 
   // meals

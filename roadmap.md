@@ -14,9 +14,11 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 ## Plattformen
 
+Die Android-App liegt seit 1.30.0 in [MyDietAssistant-Android](https://github.com/Schumey/MyDietAssistant-Android); die Punkte hier betreffen dieses Repo, oft mit Gegenstück in der Oberfläche.
+
 - **Android-App: offene Prüfungen** (S): am echten HA und Handy prüfen: echter Barcode-Scan mit dem System-Scanner, Health Connect mit echten Daten (Waage, Uhr), Sitzungserneuerung nach 40 Minuten, Datei-Upload, Download, Verhalten ohne Admin-Rechte und ohne Play-Dienste.
 - **Android-App: Widget im Hintergrund aktualisieren** (M): das Widget aktualisiert sich nur, wenn die App das Tagebuch zeigt; ein Abruf im Hintergrund (WorkManager) bräuchte eine eigene Sitzung bei HA. Ebenso Health Connect im Hintergrund übernehmen.
-- **Android-App: eigener Signierschlüssel** (S): die APK ist mit dem Debug-Schlüssel eines Rechners signiert; ein Release-Keystore (als GitHub-Secret) und ein Workflow, der die APK bei `android-v*`-Tags baut, würden Updates unabhängig vom Rechner machen.
+- **Android-App: eigener Signierschlüssel** (S): die APK ist mit dem Debug-Schlüssel eines Rechners signiert; ein Release-Keystore (als GitHub-Secret) und ein Workflow im App-Repo, der die APK bei `v*`-Tags baut, würden Updates (auch die Update-Prüfung in der App) unabhängig vom Rechner machen. Ein Schlüsselwechsel zwingt einmal zum Neuinstallieren.
 
 ## Lebensmittel und Eingabe
 

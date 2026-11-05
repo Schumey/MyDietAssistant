@@ -75,9 +75,12 @@ Die Weboberfläche läuft auch in der Companion-App. Die eigene Android-App biet
 - **Barcode-Scanner des Systems** (schnell, ohne HTTPS und ohne Kamera-Berechtigung)
 - **Widget** für den Startbildschirm: Kalorien von heute, Rest bis zum Ziel, Knöpfe **Scannen** und **Eintragen**
 
-**[APK herunterladen](https://github.com/Schumey/MyDietAssistant/releases/download/android-v0.2.0/MyDietAssistant-android-0.2.0.apk)** (Version 0.2.0, Android 8 oder neuer) · [alle Versionen](https://github.com/Schumey/MyDietAssistant/releases?q=android&expanded=true) · [Anleitung](docs/de/android.md)
+- **Health Connect:** Gewicht, Schritte und aktive Kalorien vom Handy übernehmen
+- **Updates** direkt in der App
 
-Die App gibt es nicht im Play Store. Android fragt deshalb bei der Installation, ob Du Apps aus dieser Quelle zulassen willst.
+**[APK herunterladen](https://github.com/Schumey/MyDietAssistant-Android/releases/latest)** (Android 8 oder neuer) · [Quellcode und Versionen](https://github.com/Schumey/MyDietAssistant-Android) · [Anleitung](docs/de/android.md)
+
+Die App gibt es nicht im Play Store. Android fragt deshalb bei der Installation, ob Du Apps aus dieser Quelle zulassen willst. Neue Versionen findet die App danach selbst.
 
 ## Dokumentation
 
@@ -101,11 +104,10 @@ Danach `http://localhost:8099/` öffnen. Ohne Home Assistant gibt es keine Senso
 | Ordner | Inhalt |
 |---|---|
 | `mydiet/` | die App für Home Assistant: `app/main.py` (Kern-API), `app/extras*.py` (je ein Funktionsbereich), `app/db.py` (Schema und Migrationen), `app/static/` (Oberfläche ohne Build-Schritt) |
-| `android/` | Android-App (Kotlin, WebView-Hülle); Bauen siehe [android/README.md](android/README.md) |
 | `docs/` | Anleitungen (de/en) und Screenshots |
 | `tests/` | pytest-Suite, `tests/e2e` mit Playwright |
 
-Hinweise für die Weiterentwicklung stehen in [CLAUDE.md](CLAUDE.md). Fertige Container-Images für die HA-App beschreibt [Installation → Fertige Images](docs/de/installation.md#fertige-images-für-entwickler).
+Die Android-App liegt in einem eigenen Repository: [Schumey/MyDietAssistant-Android](https://github.com/Schumey/MyDietAssistant-Android). Hinweise für die Weiterentwicklung stehen in [CLAUDE.md](CLAUDE.md). Fertige Container-Images für die HA-App beschreibt [Installation → Fertige Images](docs/de/installation.md#fertige-images-für-entwickler).
 
 ## Lizenz
 

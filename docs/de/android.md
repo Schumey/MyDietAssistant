@@ -15,13 +15,22 @@ Du brauchst sie nicht: In der Companion-App oder im Browser funktioniert alles g
 
 ## App installieren
 
-Die App gibt es nicht im Play Store, sondern als APK-Datei auf GitHub.
+Die App gibt es nicht im Play Store, sondern als APK-Datei auf GitHub, im eigenen Repository [MyDietAssistant-Android](https://github.com/Schumey/MyDietAssistant-Android).
 
-1. Öffne auf dem Handy die [Releases-Seite](https://github.com/Schumey/MyDietAssistant/releases?q=android&expanded=true) und lade die neueste Datei `MyDietAssistant-android-<Version>.apk` herunter.
+1. Öffne auf dem Handy die [neueste Version](https://github.com/Schumey/MyDietAssistant-Android/releases/latest) und lade die Datei `MyDietAssistant-android-<Version>.apk` herunter.
 2. Tippe auf die heruntergeladene Datei. Android fragt beim ersten Mal, ob der Browser Apps installieren darf: erlaube es unter **Einstellungen → Unbekannte Apps installieren**.
 3. Tippe auf **Installieren**. Play Protect warnt eventuell vor einer unbekannten App; wähle **Trotzdem installieren**.
 
-Updates installierst Du genauso: neue APK laden und darüber installieren. Deine Einstellungen bleiben erhalten.
+## Updates
+
+Ab Version 0.4.0 sucht die App selbst nach neuen Versionen: beim Start höchstens einmal am Tag. Gibt es eine, fragt sie mit **Installieren**, **Später** oder **Überspringen**.
+
+1. Tippe auf **Installieren**. Beim ersten Mal öffnet Android die Einstellung **Unbekannte Apps installieren** für MyDietAssistant; erlaube es, gehe zurück und tippe noch einmal auf **Installieren**.
+2. Die App lädt die neue Version (Hinweis in der Benachrichtigungsleiste) und öffnet danach die Installation. Tippe auf **Aktualisieren**.
+
+Von Hand suchen: *Einstellungen → Android-App → Nach App-Updates suchen*. Dort steht auch die installierte Version. Deine Einstellungen bleiben bei jedem Update erhalten.
+
+> Von 0.2.0 oder 0.3.0 kommend installierst Du 0.4.0 einmal von Hand über die alte Version (Schritte oben). Ab dann meldet sich die App selbst.
 
 ## Einrichten
 
@@ -68,4 +77,4 @@ Den Zugriff entziehst Du in den Android-Einstellungen unter *Health Connect → 
 
 ## Bekannte Grenzen
 
-- Die APK ist nicht im Play Store und mit einem Entwicklerschlüssel signiert. Installiere Updates deshalb nur von der Releases-Seite dieses Repositorys.
+- Die APK ist nicht im Play Store und mit einem Entwicklerschlüssel signiert. Installiere Updates deshalb nur über die App selbst oder von der [Releases-Seite](https://github.com/Schumey/MyDietAssistant-Android/releases) des App-Repositorys.

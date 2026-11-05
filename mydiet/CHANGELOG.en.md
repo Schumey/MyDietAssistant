@@ -2,6 +2,12 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.30.0
+
+### New
+- **Android app in its own repository:** [MyDietAssistant-Android](https://github.com/Schumey/MyDietAssistant-Android) (history kept); the `android/` folder is removed here. From version 0.4.0 the app looks for updates itself.
+- *Settings → Android app* shows the installed app version and the button **Look for app updates** (from app 0.4.0). The card now appears for every app version; the Health Connect parts only when the app supports them.
+
 ## 1.29.0
 
 ### New

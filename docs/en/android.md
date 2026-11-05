@@ -15,13 +15,22 @@ You don't need it: in the Companion app or the browser everything works the same
 
 ## Install the app
 
-The app is not in the Play Store; it is an APK file on GitHub.
+The app is not in the Play Store; it is an APK file on GitHub, in its own repository [MyDietAssistant-Android](https://github.com/Schumey/MyDietAssistant-Android).
 
-1. On your phone, open the [releases page](https://github.com/Schumey/MyDietAssistant/releases?q=android&expanded=true) and download the newest file `MyDietAssistant-android-<version>.apk`.
+1. On your phone, open the [latest version](https://github.com/Schumey/MyDietAssistant-Android/releases/latest) and download the file `MyDietAssistant-android-<version>.apk`.
 2. Tap the downloaded file. The first time, Android asks whether the browser may install apps: allow it under **Settings → Install unknown apps**.
 3. Tap **Install**. Play Protect may warn about an unknown app; choose **Install anyway**.
 
-Updates work the same way: download the new APK and install it over the old one. Your settings are kept.
+## Updates
+
+From version 0.4.0 the app looks for new versions itself: on start, at most once a day. If there is one, it asks with **Install**, **Later** or **Skip**.
+
+1. Tap **Install**. The first time, Android opens the setting **Install unknown apps** for MyDietAssistant; allow it, go back and tap **Install** once more.
+2. The app downloads the new version (note in the notification shade) and then opens the installation. Tap **Update**.
+
+To look by hand: *Settings → Android app → Look for app updates*. The installed version is shown there too. Your settings are kept with every update.
+
+> Coming from 0.2.0 or 0.3.0, install 0.4.0 once by hand over the old version (steps above). From then on the app reports updates itself.
 
 ## Set up
 
@@ -68,4 +77,4 @@ Revoke access in the Android settings under *Health Connect → App permissions 
 
 ## Known limits
 
-- The APK is not in the Play Store and is signed with a developer key. Only install updates from this repository's releases page.
+- The APK is not in the Play Store and is signed with a developer key. Only install updates through the app itself or from the app repository's [releases page](https://github.com/Schumey/MyDietAssistant-Android/releases).

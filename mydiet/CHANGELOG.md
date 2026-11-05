@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.30.0
+
+### Neu
+- **Android-App in eigenem Repository:** [MyDietAssistant-Android](https://github.com/Schumey/MyDietAssistant-Android) (Verlauf übernommen); der Ordner `android/` ist hier entfernt. Die App sucht ab Version 0.4.0 selbst nach Updates.
+- *Einstellungen → Android-App* zeigt die installierte App-Version und den Knopf **Nach App-Updates suchen** (ab App 0.4.0). Die Karte erscheint jetzt für jede App-Version; die Health-Connect-Teile nur, wenn die App sie kann.
+
 ## 1.29.0
 
 ### Neu
