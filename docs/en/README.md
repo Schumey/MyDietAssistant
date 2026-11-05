@@ -32,6 +32,7 @@ This guide is split into separate pages. Each page covers one topic and walks yo
 | [Meal schedule](schedule.md) | Time window per meal, “Now: …” banner |
 | [Meal suggestions](suggestions.md) | Meals that fit your open macros |
 | [Shopping list](shopping.md) | Add up ingredients, copy them or send them to a Home Assistant to-do list |
+| [Pantry](pantry.md) | Stock of foods, alert by notification or to-do list (e.g. Bring!) |
 | [Household and users](household.md) | Multiple users, sharing, user administration |
 
 ## Home Assistant

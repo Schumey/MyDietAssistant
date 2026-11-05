@@ -40,7 +40,7 @@
 - Triggers: add or show foods and meals automatically, depending on states, calendars or time
 - Interface for automations (scale, voice assistant), reminder by notification, shopping list to an HA to-do list
 
-**Optional** (off by default, turn on in the settings): weekday goals, water and supplements, recipes, more nutrients, notes, body measurements and progress photos, online sync, activity, scale, meal schedule, meal suggestions, shopping list, household
+**Optional** (off by default, turn on in the settings): weekday goals, water and supplements, recipes, more nutrients, notes, body measurements and progress photos, online sync, activity, scale, meal schedule, meal suggestions, shopping list, pantry, household
 
 **Data:** import from MyFitnessPal, Cronometer, FDDB, Yazio, Apple Health and Google Fit; export as JSON and CSV; report for coaches and trainers; automatic backups.
 

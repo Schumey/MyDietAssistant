@@ -32,6 +32,7 @@ Diese Anleitung ist in einzelne Seiten aufgeteilt. Jede Seite beschreibt ein The
 | [Mahlzeiten-Zeitplan](schedule.md) | Zeitfenster pro Mahlzeit, Hinweis „Jetzt: …“ |
 | [Mahlzeiten-Vorschläge](suggestions.md) | Passende Mahlzeiten für die offenen Makros |
 | [Einkaufsliste](shopping.md) | Zutaten zusammenzählen, kopieren oder an eine Todo-Liste in Home Assistant senden |
+| [Vorrat](pantry.md) | Bestand von Lebensmitteln, Meldung per Benachrichtigung oder Todo-Liste (z. B. Bring!) |
 | [Haushalt und Benutzer](household.md) | Mehrere Benutzer, Teilen, Benutzerverwaltung |
 
 ## Home Assistant

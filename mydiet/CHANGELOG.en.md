@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.33.0
+
+### New
+- **Pantry (optional feature):** keep track of how much of a food you have (Foods tab → Pantry). Diary entries whose name matches the words reduce the stock automatically (editing/deleting corrects it); **+ pack** refills after shopping. When a food reaches the adjustable threshold, one notification is sent and/or the food is added to a Home Assistant to-do list, e.g. **Bring!**. New sensor `pantry_low`; the pantry is part of backup and restore.
+
 ## 1.32.0
 
 ### New

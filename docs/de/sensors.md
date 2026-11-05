@@ -20,6 +20,7 @@ Mit der Add-on-Option `publish_sensors` (Standard: an) setzt das Add-on nach jed
 | `sensor.mydiet_<name>_next_meal_time` | Beginn dieses Zeitfensters (`HH:MM`), sonst `none` |
 | `sensor.mydiet_<name>_weight_to_goal` | noch zu gehende kg bis zum Zielgewicht (nur mit gesetztem Zielgewicht) |
 | `sensor.mydiet_<name>_training_day` | `yes` an einem [Trainingstag](suggestions.md#trainingstag-shake-und-abendessen) (Shake eingetragen, per Trigger gebucht oder genug Kalorien verbrannt), sonst `no` (nur mit eingerichtetem Trainingstag) |
+| `sensor.mydiet_<name>_pantry_low` | Lebensmittel im [Vorrat](pantry.md) an oder unter ihrer Meldeschwelle, z. B. `Skyr, Reis`; sonst `none` (nur mit Zusatzfunktion „Vorrat“) |
 | `sensor.mydiet_<name>_training_shake` | die berechneten Mengen des Shakes, z. B. `Whey 35 g, Milch 370 g`; `none`, wenn er schon eingetragen ist (nur mit eingerichtetem Trainingstag) |
 | `sensor.mydiet_<name>_weight_goal_date` | Tag, an dem das Zielgewicht beim aktuellen Tempo erreicht wird; `reached` (erreicht) oder `none` (nicht absehbar, weniger als 14 Tage Daten) |
 

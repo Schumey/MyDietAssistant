@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.33.0
+
+### Neu
+- **Vorrat (Zusatzfunktion):** Bestand von Lebensmitteln festhalten (Reiter Lebensmittel → Vorrat). Tagebucheinträge, deren Name zu den Suchwörtern passt, verringern den Bestand automatisch (Ändern/Löschen korrigiert ihn); mit **+ Packung** wird nach dem Einkauf aufgefüllt. Erreicht ein Lebensmittel die einstellbare Schwelle, wird einmal eine Benachrichtigung gesendet und/oder das Lebensmittel auf eine Home-Assistant-Todo-Liste gesetzt, z. B. **Bring!**. Neuer Sensor `pantry_low`; der Vorrat ist in Sicherung und Wiederherstellung enthalten.
+
 ## 1.32.0
 
 ### Neu

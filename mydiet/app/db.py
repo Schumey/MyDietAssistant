@@ -243,6 +243,18 @@ CREATE TABLE IF NOT EXISTS lookup_cache (     -- cached answers of online food d
   payload TEXT NOT NULL,
   fetched TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS pantry (            -- optional: stock of foods; diary entries added after since_id reduce it
+  id INTEGER PRIMARY KEY,
+  owner TEXT NOT NULL,
+  name TEXT NOT NULL,
+  match TEXT NOT NULL DEFAULT '',   -- comma-separated words; an entry counts when its name contains one (empty: the name)
+  amount REAL NOT NULL DEFAULT 0,   -- grams in stock at the time of since_id
+  since_id INTEGER NOT NULL DEFAULT 0,
+  min_amount REAL NOT NULL DEFAULT 0,
+  pack_g REAL NOT NULL DEFAULT 0,
+  alerted INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS pantry_owner ON pantry(owner);
 CREATE TABLE IF NOT EXISTS activity_days (    -- optional: steps / active kcal per day (from HA sensors or typed in)
   owner TEXT NOT NULL,
   day TEXT NOT NULL,
@@ -362,7 +374,15 @@ def _m8_v125(c):
     c.execute("CREATE TABLE IF NOT EXISTS incomplete_days (owner TEXT NOT NULL, day TEXT NOT NULL, PRIMARY KEY (owner, day))")
 
 
-MIGRATIONS = (_m1_legacy, _m2_v1, _m3_v11, _m4_v17, _m5_v171, _m6_v176, _m7_v115, _m8_v125)
+def _m9_v133(c):
+    """v1.33: pantry (stock of foods, reduced by matching diary entries, alert below a threshold)."""
+    c.execute("CREATE TABLE IF NOT EXISTS pantry (id INTEGER PRIMARY KEY, owner TEXT NOT NULL, name TEXT NOT NULL, match TEXT NOT NULL DEFAULT '',"
+              " amount REAL NOT NULL DEFAULT 0, since_id INTEGER NOT NULL DEFAULT 0, min_amount REAL NOT NULL DEFAULT 0,"
+              " pack_g REAL NOT NULL DEFAULT 0, alerted INTEGER NOT NULL DEFAULT 0)")
+    c.execute("CREATE INDEX IF NOT EXISTS pantry_owner ON pantry(owner)")
+
+
+MIGRATIONS = (_m1_legacy, _m2_v1, _m3_v11, _m4_v17, _m5_v171, _m6_v176, _m7_v115, _m8_v125, _m9_v133)
 
 
 def init():

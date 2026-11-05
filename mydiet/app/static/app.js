@@ -6,6 +6,34 @@
 //  - confirm/alert/prompt dialogs go through the same lookup.
 // Strings without an entry stay German, so a missing entry never breaks the app.
 const EN = {
+    "Vorrat": "Pantry",
+    "Bestand von Lebensmitteln festhalten: Tagebucheinträge verringern ihn, unter einer Schwelle kommt eine Benachrichtigung und/oder ein Eintrag auf einer Todo-Liste (z. B. Bring!).": "Keep track of how much of a food you have: diary entries reduce it, and below a threshold you get a notification and/or an item on a to-do list (e.g. Bring!).",
+    "Vorrat bearbeiten": "Edit pantry item",
+    "Neuer Vorrat": "New pantry item",
+    "z. B. skyr, quark": "e.g. skyr, quark",
+    "Suchwörter im Namen der Tagebucheinträge (mit Komma getrennt, leer = Name)": "Words in the names of diary entries (comma-separated, empty = name)",
+    "Bestand jetzt (g)": "Stock now (g)",
+    "Melden ab (g)": "Alert at (g)",
+    "Packungsgröße (g, optional)": "Pack size (g, optional)",
+    "Vorrat „{}“ löschen?": "Delete pantry item “{}”?",
+    "noch {}": "{} left",
+    "knapp": "low",
+    "Meldung ab {}": "Alert at {}",
+    "+ Packung ({})": "+ pack ({})",
+    "Jeder Tagebucheintrag mit passendem Namen verringert den Bestand um seine Gramm (Schnelleingaben ohne Gramm zählen nicht). Fällt er auf die Schwelle, wirst Du einmal gemeldet.": "Every diary entry with a matching name reduces the stock by its grams (quick entries without grams do not count). When it falls to the threshold, you are alerted once.",
+    "Noch nichts im Vorrat.": "Nothing in the pantry yet.",
+    "+ Neuer Vorrat": "+ New pantry item",
+    "Wenn ein Vorrat knapp wird": "When a food runs low",
+    "Benachrichtigung über diesen Dienst senden (leer = keine)": "Send a notification through this service (empty = none)",
+    "Auf diese Todo-Liste setzen, z. B. Bring! oder die Einkaufsliste (leer = nicht)": "Add to this to-do list, e.g. Bring! or the shopping list (empty = no)",
+    "Bring! und andere Listen erscheinen in Home Assistant als Todo-Liste, sobald deren Integration eingerichtet ist.": "Bring! and other lists show up in Home Assistant as a to-do list once their integration is set up.",
+    "Meldung speichern": "Save alert",
+    "Vorrat nicht aktiviert": "Pantry is not switched on",
+    "Name fehlt": "name missing",
+    "Mengen dürfen nicht negativ sein": "amounts must not be negative",
+    "Zu viele Einträge": "too many entries",
+    "Eintrag nicht gefunden": "entry not found",
+    "Menge oder Packungsgröße fehlt": "amount or pack size missing",
     "Stufenplan (Reverse-Diät)": "Step plan (reverse diet)",
     "Das Tagesziel steigt oder sinkt in festen Schritten, z. B. +100 kcal pro Woche nach einer Diät.": "The daily goal rises or falls in fixed steps, e.g. +100 kcal per week after a diet.",
     "Stufenplan": "Step plan",
@@ -595,6 +623,34 @@ const LANG_LOCALES = { de: "de-DE", en: "en-US", fr: "fr-FR", es: "es-ES", nl: "
 // entry in LANG_LOCALES, in LANGS (extras.py) and in the language selection of the settings.
 Object.assign(LANGS, {
   fr: {
+    "Vorrat": "Réserve",
+    "Bestand von Lebensmitteln festhalten: Tagebucheinträge verringern ihn, unter einer Schwelle kommt eine Benachrichtigung und/oder ein Eintrag auf einer Todo-Liste (z. B. Bring!).": "Suivre le stock d’un aliment : les entrées du journal le réduisent, et sous un seuil vous recevez une notification et/ou un élément sur une liste de tâches (p. ex. Bring!).",
+    "Vorrat bearbeiten": "Modifier la réserve",
+    "Neuer Vorrat": "Nouvelle réserve",
+    "z. B. skyr, quark": "p. ex. skyr, fromage blanc",
+    "Suchwörter im Namen der Tagebucheinträge (mit Komma getrennt, leer = Name)": "Mots dans le nom des entrées du journal (séparés par des virgules, vide = nom)",
+    "Bestand jetzt (g)": "Stock actuel (g)",
+    "Melden ab (g)": "Alerter à partir de (g)",
+    "Packungsgröße (g, optional)": "Taille du paquet (g, facultatif)",
+    "Vorrat „{}“ löschen?": "Supprimer la réserve « {} » ?",
+    "noch {}": "reste {}",
+    "knapp": "bas",
+    "Meldung ab {}": "Alerte à partir de {}",
+    "+ Packung ({})": "+ paquet ({})",
+    "Jeder Tagebucheintrag mit passendem Namen verringert den Bestand um seine Gramm (Schnelleingaben ohne Gramm zählen nicht). Fällt er auf die Schwelle, wirst Du einmal gemeldet.": "Chaque entrée du journal au nom correspondant réduit le stock de ses grammes (les saisies rapides sans grammes ne comptent pas). Lorsqu’il atteint le seuil, vous êtes alerté une fois.",
+    "Noch nichts im Vorrat.": "Rien en réserve pour l’instant.",
+    "+ Neuer Vorrat": "+ Nouvelle réserve",
+    "Wenn ein Vorrat knapp wird": "Quand une réserve baisse",
+    "Benachrichtigung über diesen Dienst senden (leer = keine)": "Envoyer une notification via ce service (vide = aucune)",
+    "Auf diese Todo-Liste setzen, z. B. Bring! oder die Einkaufsliste (leer = nicht)": "Ajouter à cette liste de tâches, p. ex. Bring! ou la liste de courses (vide = non)",
+    "Bring! und andere Listen erscheinen in Home Assistant als Todo-Liste, sobald deren Integration eingerichtet ist.": "Bring! et d’autres listes apparaissent dans Home Assistant comme liste de tâches dès que leur intégration est configurée.",
+    "Meldung speichern": "Enregistrer l’alerte",
+    "Vorrat nicht aktiviert": "La réserve n’est pas activée",
+    "Name fehlt": "Nom manquant",
+    "Mengen dürfen nicht negativ sein": "Les quantités ne peuvent pas être négatives",
+    "Zu viele Einträge": "Trop d’entrées",
+    "Eintrag nicht gefunden": "Entrée introuvable",
+    "Menge oder Packungsgröße fehlt": "Quantité ou taille du paquet manquante",
     "Stufenplan (Reverse-Diät)": "Plan par paliers (diète inversée)",
     "Das Tagesziel steigt oder sinkt in festen Schritten, z. B. +100 kcal pro Woche nach einer Diät.": "L’objectif quotidien monte ou baisse par paliers fixes, p. ex. +100 kcal par semaine après un régime.",
     "Stufenplan": "Plan par paliers",
@@ -1554,6 +1610,34 @@ Object.assign(LANGS, {
     "{} von {} g": "{} sur {} g",
   },
   es: {
+    "Vorrat": "Despensa",
+    "Bestand von Lebensmitteln festhalten: Tagebucheinträge verringern ihn, unter einer Schwelle kommt eine Benachrichtigung und/oder ein Eintrag auf einer Todo-Liste (z. B. Bring!).": "Llevar el control de cuánto tienes de un alimento: las entradas del diario lo reducen y, por debajo de un umbral, recibes una notificación y/o un elemento en una lista de tareas (p. ej. Bring!).",
+    "Vorrat bearbeiten": "Editar despensa",
+    "Neuer Vorrat": "Nueva despensa",
+    "z. B. skyr, quark": "p. ej. skyr, requesón",
+    "Suchwörter im Namen der Tagebucheinträge (mit Komma getrennt, leer = Name)": "Palabras en el nombre de las entradas del diario (separadas por comas, vacío = nombre)",
+    "Bestand jetzt (g)": "Existencias ahora (g)",
+    "Melden ab (g)": "Avisar a partir de (g)",
+    "Packungsgröße (g, optional)": "Tamaño del envase (g, opcional)",
+    "Vorrat „{}“ löschen?": "¿Eliminar la despensa «{}»?",
+    "noch {}": "quedan {}",
+    "knapp": "bajo",
+    "Meldung ab {}": "Aviso a partir de {}",
+    "+ Packung ({})": "+ envase ({})",
+    "Jeder Tagebucheintrag mit passendem Namen verringert den Bestand um seine Gramm (Schnelleingaben ohne Gramm zählen nicht). Fällt er auf die Schwelle, wirst Du einmal gemeldet.": "Cada entrada del diario con un nombre coincidente reduce las existencias en sus gramos (las entradas rápidas sin gramos no cuentan). Cuando llegan al umbral, se te avisa una vez.",
+    "Noch nichts im Vorrat.": "Todavía no hay nada en la despensa.",
+    "+ Neuer Vorrat": "+ Nueva despensa",
+    "Wenn ein Vorrat knapp wird": "Cuando una despensa se agota",
+    "Benachrichtigung über diesen Dienst senden (leer = keine)": "Enviar una notificación con este servicio (vacío = ninguna)",
+    "Auf diese Todo-Liste setzen, z. B. Bring! oder die Einkaufsliste (leer = nicht)": "Añadir a esta lista de tareas, p. ej. Bring! o la lista de la compra (vacío = no)",
+    "Bring! und andere Listen erscheinen in Home Assistant als Todo-Liste, sobald deren Integration eingerichtet ist.": "Bring! y otras listas aparecen en Home Assistant como lista de tareas en cuanto se configura su integración.",
+    "Meldung speichern": "Guardar aviso",
+    "Vorrat nicht aktiviert": "La despensa no está activada",
+    "Name fehlt": "Falta el nombre",
+    "Mengen dürfen nicht negativ sein": "Las cantidades no pueden ser negativas",
+    "Zu viele Einträge": "Demasiadas entradas",
+    "Eintrag nicht gefunden": "Entrada no encontrada",
+    "Menge oder Packungsgröße fehlt": "Falta la cantidad o el tamaño del envase",
     "Stufenplan (Reverse-Diät)": "Plan por escalones (dieta inversa)",
     "Das Tagesziel steigt oder sinkt in festen Schritten, z. B. +100 kcal pro Woche nach einer Diät.": "El objetivo diario sube o baja en escalones fijos, p. ej. +100 kcal por semana después de una dieta.",
     "Stufenplan": "Plan por escalones",
@@ -2513,6 +2597,34 @@ Object.assign(LANGS, {
     "{} von {} g": "{} de {} g",
   },
   nl: {
+    "Vorrat": "Voorraad",
+    "Bestand von Lebensmitteln festhalten: Tagebucheinträge verringern ihn, unter einer Schwelle kommt eine Benachrichtigung und/oder ein Eintrag auf einer Todo-Liste (z. B. Bring!).": "Houd bij hoeveel je van een product op voorraad hebt: dagboekitems verlagen die, en onder een drempel krijg je een melding en/of een item op een takenlijst (bijv. Bring!).",
+    "Vorrat bearbeiten": "Voorraad bewerken",
+    "Neuer Vorrat": "Nieuwe voorraad",
+    "z. B. skyr, quark": "bijv. skyr, kwark",
+    "Suchwörter im Namen der Tagebucheinträge (mit Komma getrennt, leer = Name)": "Woorden in de naam van dagboekitems (gescheiden door komma’s, leeg = naam)",
+    "Bestand jetzt (g)": "Voorraad nu (g)",
+    "Melden ab (g)": "Melden vanaf (g)",
+    "Packungsgröße (g, optional)": "Verpakkingsgrootte (g, optioneel)",
+    "Vorrat „{}“ löschen?": "Voorraad “{}” verwijderen?",
+    "noch {}": "nog {}",
+    "knapp": "bijna op",
+    "Meldung ab {}": "Melding vanaf {}",
+    "+ Packung ({})": "+ verpakking ({})",
+    "Jeder Tagebucheintrag mit passendem Namen verringert den Bestand um seine Gramm (Schnelleingaben ohne Gramm zählen nicht). Fällt er auf die Schwelle, wirst Du einmal gemeldet.": "Elk dagboekitem met een passende naam verlaagt de voorraad met zijn gram (snelle invoer zonder gram telt niet). Bij de drempel krijg je één keer een melding.",
+    "Noch nichts im Vorrat.": "Nog niets in voorraad.",
+    "+ Neuer Vorrat": "+ Nieuwe voorraad",
+    "Wenn ein Vorrat knapp wird": "Als een voorraad bijna op is",
+    "Benachrichtigung über diesen Dienst senden (leer = keine)": "Melding sturen via deze dienst (leeg = geen)",
+    "Auf diese Todo-Liste setzen, z. B. Bring! oder die Einkaufsliste (leer = nicht)": "Op deze takenlijst zetten, bijv. Bring! of de boodschappenlijst (leeg = niet)",
+    "Bring! und andere Listen erscheinen in Home Assistant als Todo-Liste, sobald deren Integration eingerichtet ist.": "Bring! en andere lijsten verschijnen in Home Assistant als takenlijst zodra hun integratie is ingesteld.",
+    "Meldung speichern": "Melding opslaan",
+    "Vorrat nicht aktiviert": "Voorraad is niet ingeschakeld",
+    "Name fehlt": "Naam ontbreekt",
+    "Mengen dürfen nicht negativ sein": "Hoeveelheden mogen niet negatief zijn",
+    "Zu viele Einträge": "Te veel items",
+    "Eintrag nicht gefunden": "Item niet gevonden",
+    "Menge oder Packungsgröße fehlt": "Hoeveelheid of verpakkingsgrootte ontbreekt",
     "Stufenplan (Reverse-Diät)": "Stappenplan (reverse diet)",
     "Das Tagesziel steigt oder sinkt in festen Schritten, z. B. +100 kcal pro Woche nach einer Diät.": "Het dagdoel stijgt of daalt in vaste stappen, bijv. +100 kcal per week na een dieet.",
     "Stufenplan": "Stappenplan",
@@ -3484,6 +3596,34 @@ Object.assign(LANGS, {
     "{} von {} g": "{} van {} g",
   },
   it: {
+    "Vorrat": "Dispensa",
+    "Bestand von Lebensmitteln festhalten: Tagebucheinträge verringern ihn, unter einer Schwelle kommt eine Benachrichtigung und/oder ein Eintrag auf einer Todo-Liste (z. B. Bring!).": "Tieni traccia di quanto hai di un alimento: le voci del diario lo riducono e, sotto una soglia, ricevi una notifica e/o una voce in una lista di cose da fare (p. es. Bring!).",
+    "Vorrat bearbeiten": "Modifica dispensa",
+    "Neuer Vorrat": "Nuova dispensa",
+    "z. B. skyr, quark": "p. es. skyr, quark",
+    "Suchwörter im Namen der Tagebucheinträge (mit Komma getrennt, leer = Name)": "Parole nel nome delle voci del diario (separate da virgole, vuoto = nome)",
+    "Bestand jetzt (g)": "Scorta attuale (g)",
+    "Melden ab (g)": "Avvisa da (g)",
+    "Packungsgröße (g, optional)": "Dimensione confezione (g, facoltativo)",
+    "Vorrat „{}“ löschen?": "Eliminare la dispensa “{}”?",
+    "noch {}": "restano {}",
+    "knapp": "in esaurimento",
+    "Meldung ab {}": "Avviso da {}",
+    "+ Packung ({})": "+ confezione ({})",
+    "Jeder Tagebucheintrag mit passendem Namen verringert den Bestand um seine Gramm (Schnelleingaben ohne Gramm zählen nicht). Fällt er auf die Schwelle, wirst Du einmal gemeldet.": "Ogni voce del diario con un nome corrispondente riduce la scorta dei suoi grammi (gli inserimenti rapidi senza grammi non contano). Quando scende alla soglia, ricevi un avviso una volta.",
+    "Noch nichts im Vorrat.": "Ancora niente in dispensa.",
+    "+ Neuer Vorrat": "+ Nuova dispensa",
+    "Wenn ein Vorrat knapp wird": "Quando una scorta sta finendo",
+    "Benachrichtigung über diesen Dienst senden (leer = keine)": "Invia una notifica con questo servizio (vuoto = nessuna)",
+    "Auf diese Todo-Liste setzen, z. B. Bring! oder die Einkaufsliste (leer = nicht)": "Aggiungi a questa lista di cose da fare, p. es. Bring! o la lista della spesa (vuoto = no)",
+    "Bring! und andere Listen erscheinen in Home Assistant als Todo-Liste, sobald deren Integration eingerichtet ist.": "Bring! e altre liste compaiono in Home Assistant come lista di cose da fare non appena la loro integrazione è configurata.",
+    "Meldung speichern": "Salva avviso",
+    "Vorrat nicht aktiviert": "La dispensa non è attivata",
+    "Name fehlt": "Nome mancante",
+    "Mengen dürfen nicht negativ sein": "Le quantità non possono essere negative",
+    "Zu viele Einträge": "Troppe voci",
+    "Eintrag nicht gefunden": "Voce non trovata",
+    "Menge oder Packungsgröße fehlt": "Mancano la quantità o la dimensione della confezione",
     "Stufenplan (Reverse-Diät)": "Piano a gradini (reverse diet)",
     "Das Tagesziel steigt oder sinkt in festen Schritten, z. B. +100 kcal pro Woche nach einer Diät.": "L’obiettivo giornaliero sale o scende a gradini fissi, ad es. +100 kcal a settimana dopo una dieta.",
     "Stufenplan": "Piano a gradini",
@@ -4455,6 +4595,34 @@ Object.assign(LANGS, {
     "{} von {} g": "{} di {} g",
   },
   pt: {
+    "Vorrat": "Despensa",
+    "Bestand von Lebensmitteln festhalten: Tagebucheinträge verringern ihn, unter einer Schwelle kommt eine Benachrichtigung und/oder ein Eintrag auf einer Todo-Liste (z. B. Bring!).": "Acompanhe quanto tem de um alimento: as entradas do diário reduzem-no e, abaixo de um limite, recebe uma notificação e/ou um item numa lista de tarefas (p. ex. Bring!).",
+    "Vorrat bearbeiten": "Editar despensa",
+    "Neuer Vorrat": "Nova despensa",
+    "z. B. skyr, quark": "p. ex. skyr, quark",
+    "Suchwörter im Namen der Tagebucheinträge (mit Komma getrennt, leer = Name)": "Palavras no nome das entradas do diário (separadas por vírgulas, vazio = nome)",
+    "Bestand jetzt (g)": "Stock atual (g)",
+    "Melden ab (g)": "Avisar a partir de (g)",
+    "Packungsgröße (g, optional)": "Tamanho da embalagem (g, opcional)",
+    "Vorrat „{}“ löschen?": "Eliminar a despensa “{}”?",
+    "noch {}": "restam {}",
+    "knapp": "a acabar",
+    "Meldung ab {}": "Aviso a partir de {}",
+    "+ Packung ({})": "+ embalagem ({})",
+    "Jeder Tagebucheintrag mit passendem Namen verringert den Bestand um seine Gramm (Schnelleingaben ohne Gramm zählen nicht). Fällt er auf die Schwelle, wirst Du einmal gemeldet.": "Cada entrada do diário com um nome correspondente reduz o stock em gramas (as entradas rápidas sem gramas não contam). Ao atingir o limite, é avisado uma vez.",
+    "Noch nichts im Vorrat.": "Ainda nada na despensa.",
+    "+ Neuer Vorrat": "+ Nova despensa",
+    "Wenn ein Vorrat knapp wird": "Quando uma despensa está a acabar",
+    "Benachrichtigung über diesen Dienst senden (leer = keine)": "Enviar uma notificação através deste serviço (vazio = nenhuma)",
+    "Auf diese Todo-Liste setzen, z. B. Bring! oder die Einkaufsliste (leer = nicht)": "Adicionar a esta lista de tarefas, p. ex. Bring! ou a lista de compras (vazio = não)",
+    "Bring! und andere Listen erscheinen in Home Assistant als Todo-Liste, sobald deren Integration eingerichtet ist.": "O Bring! e outras listas aparecem no Home Assistant como lista de tarefas assim que a respetiva integração estiver configurada.",
+    "Meldung speichern": "Guardar aviso",
+    "Vorrat nicht aktiviert": "A despensa não está ativada",
+    "Name fehlt": "Nome em falta",
+    "Mengen dürfen nicht negativ sein": "As quantidades não podem ser negativas",
+    "Zu viele Einträge": "Demasiadas entradas",
+    "Eintrag nicht gefunden": "Entrada não encontrada",
+    "Menge oder Packungsgröße fehlt": "Falta a quantidade ou o tamanho da embalagem",
     "Stufenplan (Reverse-Diät)": "Plano em degraus (dieta reversa)",
     "Das Tagesziel steigt oder sinkt in festen Schritten, z. B. +100 kcal pro Woche nach einer Diät.": "A meta diária sobe ou desce em degraus fixos, p. ex. +100 kcal por semana depois de uma dieta.",
     "Stufenplan": "Plano em degraus",
@@ -5426,6 +5594,34 @@ Object.assign(LANGS, {
     "{} von {} g": "{} de {} g",
   },
   pl: {
+    "Vorrat": "Spiżarnia",
+    "Bestand von Lebensmitteln festhalten: Tagebucheinträge verringern ihn, unter einer Schwelle kommt eine Benachrichtigung und/oder ein Eintrag auf einer Todo-Liste (z. B. Bring!).": "Śledź, ile masz danego produktu: wpisy w dzienniku zmniejszają zapas, a poniżej progu dostaniesz powiadomienie i/lub pozycję na liście zadań (np. Bring!).",
+    "Vorrat bearbeiten": "Edytuj zapas",
+    "Neuer Vorrat": "Nowy zapas",
+    "z. B. skyr, quark": "np. skyr, twaróg",
+    "Suchwörter im Namen der Tagebucheinträge (mit Komma getrennt, leer = Name)": "Słowa w nazwach wpisów dziennika (rozdzielone przecinkami, puste = nazwa)",
+    "Bestand jetzt (g)": "Aktualny zapas (g)",
+    "Melden ab (g)": "Powiadom od (g)",
+    "Packungsgröße (g, optional)": "Wielkość opakowania (g, opcjonalnie)",
+    "Vorrat „{}“ löschen?": "Usunąć zapas „{}”?",
+    "noch {}": "zostało {}",
+    "knapp": "mało",
+    "Meldung ab {}": "Powiadomienie od {}",
+    "+ Packung ({})": "+ opakowanie ({})",
+    "Jeder Tagebucheintrag mit passendem Namen verringert den Bestand um seine Gramm (Schnelleingaben ohne Gramm zählen nicht). Fällt er auf die Schwelle, wirst Du einmal gemeldet.": "Każdy wpis w dzienniku z pasującą nazwą zmniejsza zapas o swoje gramy (szybkie wpisy bez gramów się nie liczą). Gdy zapas spadnie do progu, dostaniesz jedno powiadomienie.",
+    "Noch nichts im Vorrat.": "W spiżarni jeszcze nic nie ma.",
+    "+ Neuer Vorrat": "+ Nowy zapas",
+    "Wenn ein Vorrat knapp wird": "Gdy zapas się kończy",
+    "Benachrichtigung über diesen Dienst senden (leer = keine)": "Wyślij powiadomienie tą usługą (puste = brak)",
+    "Auf diese Todo-Liste setzen, z. B. Bring! oder die Einkaufsliste (leer = nicht)": "Dodaj do tej listy zadań, np. Bring! lub listy zakupów (puste = nie)",
+    "Bring! und andere Listen erscheinen in Home Assistant als Todo-Liste, sobald deren Integration eingerichtet ist.": "Bring! i inne listy pojawiają się w Home Assistant jako lista zadań, gdy tylko skonfigurujesz ich integrację.",
+    "Meldung speichern": "Zapisz powiadomienie",
+    "Vorrat nicht aktiviert": "Spiżarnia nie jest włączona",
+    "Name fehlt": "Brak nazwy",
+    "Mengen dürfen nicht negativ sein": "Ilości nie mogą być ujemne",
+    "Zu viele Einträge": "Zbyt wiele wpisów",
+    "Eintrag nicht gefunden": "Nie znaleziono wpisu",
+    "Menge oder Packungsgröße fehlt": "Brak ilości lub wielkości opakowania",
     "Stufenplan (Reverse-Diät)": "Plan stopniowy (reverse diet)",
     "Das Tagesziel steigt oder sinkt in festen Schritten, z. B. +100 kcal pro Woche nach einer Diät.": "Dzienny cel rośnie lub maleje o stałe stopnie, np. +100 kcal tygodniowo po diecie.",
     "Stufenplan": "Plan stopniowy",
@@ -8111,6 +8307,7 @@ async function renderFoods() {
       h("button", { onclick: () => openForm(null) }, "+ Neues Lebensmittel"),
       h("button", { class: "flat", onclick: () => dupDialog(renderFoods) }, "Duplikate suchen"),
       state.features.sources ? h("button", { class: "flat", onclick: foodCheckDialog }, "Werte online prüfen") : null,
+      state.features.pantry ? h("button", { class: "flat", onclick: pantryDialog }, "Vorrat") : null,
       h("button", { class: "flat", onclick: () => pickFile(".csv,.txt,.xlsx,text/csv", foodImportDialog) }, "Tabelle importieren …")),
     chips, list));
   draw();
@@ -8431,6 +8628,73 @@ async function shoppingDialog() {
     h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Schließen"), copy, todos.entities.length ? sendBtn : null));
   if (!dlg.open) dlg.showModal();
   recalc();
+}
+
+
+// ---------------------------------------------------------------- pantry (optional)
+// Stock of foods: diary entries with a matching name reduce it (server side); below the threshold the server notifies and/or adds a to-do item.
+async function pantryDialog() {
+  const [data, targets] = await Promise.all([api("pantry"), api("pantry/targets").catch(() => ({ todos: [], notifies: [] }))]);
+  const grams = g => `${Math.round(g).toLocaleString(I18N.locale)} g`;
+  const msg = h("div", { class: "err" });
+  const reload = () => pantryDialog();
+
+  const itemForm = it => {
+    const name = h("input", { value: it?.name || "", maxlength: 100 });
+    const match = h("input", { value: it?.match || "", placeholder: "z. B. skyr, quark" });
+    const stock = h("input", { type: "number", step: "any", min: "0", value: it ? Math.round(it.remaining) : "", placeholder: "0" });
+    const min = h("input", { type: "number", step: "any", min: "0", value: it?.min_amount || "", placeholder: "0" });
+    const pack = h("input", { type: "number", step: "any", min: "0", value: it?.pack_g || "", placeholder: "0" });
+    const err = h("div", { class: "err" });
+    setDlg(h("h2", {}, it ? "Vorrat bearbeiten" : "Neuer Vorrat"),
+      h("label", {}, "Name"), name,
+      h("label", {}, "Suchwörter im Namen der Tagebucheinträge (mit Komma getrennt, leer = Name)"), match,
+      h("label", {}, "Bestand jetzt (g)"), stock,
+      h("label", {}, "Melden ab (g)"), min,
+      h("label", {}, "Packungsgröße (g, optional)"), pack,
+      err,
+      h("div", { class: "actions" },
+        it ? h("button", { class: "flat", onclick: async () => {
+          if (!confirm(`Vorrat „${it.name}“ löschen?`)) return;
+          await api("pantry/" + it.id, { method: "DELETE" }); reload();
+        } }, "Löschen") : null,
+        h("button", { class: "flat", onclick: reload }, "Abbrechen"),
+        h("button", { onclick: async () => {
+          const body = { name: name.value, match: match.value, remaining: num(stock.value), min_amount: num(min.value) || 0, pack_g: num(pack.value) || 0 };
+          if (!it && body.remaining == null) body.remaining = 0;
+          try { await send(it ? "PUT" : "POST", "pantry" + (it ? "/" + it.id : ""), body); reload(); } catch (e) { err.textContent = e.message; }
+        } }, "Speichern")));
+  };
+
+  const row = it => h("div", {},
+    h("div", { class: "grow" }, it.name, " ", h("span", { class: "muted" }, `noch ${grams(it.remaining)}`),
+      it.low ? h("span", { class: "err", style: "margin-left:6px" }, "knapp") : null,
+      it.min_amount ? h("div", { class: "muted" }, `Meldung ab ${grams(it.min_amount)}`) : null),
+    it.pack_g ? h("button", { class: "flat", onclick: async () => {
+      try { await send("POST", `pantry/${it.id}/restock`, {}); reload(); } catch (e) { msg.textContent = e.message; }
+    } }, `+ Packung (${grams(it.pack_g)})`) : null,
+    h("button", { class: "icon edit", title: "Bearbeiten", "aria-label": "Bearbeiten", onclick: () => itemForm(it) }, "✎"));
+
+  const cfg = data.config;
+  const notify = h("input", { value: cfg.notify, list: "pantry-notify", placeholder: "notify.mobile_app_pixel" });
+  const todo = h("input", { value: cfg.todo, list: "pantry-todo", placeholder: "todo.bring" });
+  const lists = [h("datalist", { id: "pantry-notify" }, targets.notifies.map(n => h("option", { value: n }))),
+    h("datalist", { id: "pantry-todo" }, targets.todos.map(t => h("option", { value: t.id }, t.name)))];
+  setDlg(h("h2", {}, "Vorrat"),
+    h("div", { class: "muted" }, "Jeder Tagebucheintrag mit passendem Namen verringert den Bestand um seine Gramm (Schnelleingaben ohne Gramm zählen nicht). Fällt er auf die Schwelle, wirst Du einmal gemeldet."),
+    h("div", { class: "list" }, data.items.length ? data.items.map(row) : [h("div", { class: "muted" }, "Noch nichts im Vorrat.")]),
+    h("div", { class: "actions", style: "justify-content:flex-start" }, h("button", { onclick: () => itemForm(null) }, "+ Neuer Vorrat")),
+    h("label", {}, "Wenn ein Vorrat knapp wird"),
+    h("div", { class: "muted" }, "Benachrichtigung über diesen Dienst senden (leer = keine)"), notify,
+    h("div", { class: "muted" }, "Auf diese Todo-Liste setzen, z. B. Bring! oder die Einkaufsliste (leer = nicht)"), todo, lists,
+    h("div", { class: "muted" }, "Bring! und andere Listen erscheinen in Home Assistant als Todo-Liste, sobald deren Integration eingerichtet ist."),
+    msg,
+    h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Schließen"),
+      h("button", { onclick: async e => {
+        try { await send("PUT", "pantry/config", { notify: notify.value.trim(), todo: todo.value.trim() }); msg.textContent = ""; e.target.textContent = "Gespeichert ✓"; }
+        catch (err) { msg.textContent = err.message; }
+      } }, "Meldung speichern")));
+  if (!dlg.open) dlg.showModal();
 }
 
 
@@ -9534,6 +9798,7 @@ async function renderSettings() {
       feat("schedule", "Mahlzeiten-Zeitplan", "Zeitfenster pro Mahlzeit: das Tagebuch zeigt, welche Mahlzeit gerade ansteht, und erinnert auf Wunsch per Benachrichtigung."),
       feat("suggest", "Mahlzeiten-Vorschläge", "Button im Tagebuch: schlägt gespeicherte Mahlzeiten und Kombinationen aus Deinem Verlauf vor, die zu den offenen Kalorien und Makros passen (Mengen werden angepasst, feste Packungen bleiben)."),
       feat("shopping", "Einkaufsliste", "Zutaten von Rezepten und gespeicherten Mahlzeiten zusammenzählen, kopieren oder an eine Todo-Liste in Home Assistant schicken (z. B. die Einkaufsliste)."),
+      feat("pantry", "Vorrat", "Bestand von Lebensmitteln festhalten: Tagebucheinträge verringern ihn, unter einer Schwelle kommt eine Benachrichtigung und/oder ein Eintrag auf einer Todo-Liste (z. B. Bring!)."),
       feat("ramp", "Stufenplan (Reverse-Diät)", "Das Tagesziel steigt oder sinkt in festen Schritten, z. B. +100 kcal pro Woche nach einer Diät."),
       feat("household", "Haushalt", "Einträge, Lebensmittel und Mahlzeiten mit anderen Benutzern teilen, jeder mit eigener Portion (z. B. ein Gericht für die Familie). Beide Seiten müssen die Funktion einschalten."),
       feat("notes", "Notizen", "Freitext zu Mahlzeiten und Tagen (Hunger, Training, Stimmung). Vorhandene Notizen bleiben beim Ausschalten erhalten."),

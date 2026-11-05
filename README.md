@@ -40,7 +40,7 @@
 - Trigger: Lebensmittel oder Mahlzeiten automatisch eintragen oder einblenden, abhängig von Zuständen, Kalender oder Uhrzeit
 - Schnittstelle für Automationen (Waage, Sprachassistent), Erinnerung per Benachrichtigung, Einkaufsliste an eine HA-Todo-Liste
 
-**Optional** (standardmäßig aus, in den Einstellungen einschaltbar): Wochentagsziele, Wasser und Ergänzungen, Rezepte, weitere Nährwerte, Notizen, Körpermaße und Fortschrittsfotos, Online-Abgleich, Aktivität, Waage, Mahlzeiten-Zeitplan, Mahlzeiten-Vorschläge, Einkaufsliste, Haushalt
+**Optional** (standardmäßig aus, in den Einstellungen einschaltbar): Wochentagsziele, Wasser und Ergänzungen, Rezepte, weitere Nährwerte, Notizen, Körpermaße und Fortschrittsfotos, Online-Abgleich, Aktivität, Waage, Mahlzeiten-Zeitplan, Mahlzeiten-Vorschläge, Einkaufsliste, Vorrat, Haushalt
 
 **Daten:** Import aus MyFitnessPal, Cronometer, FDDB, Yazio, Apple Health und Google Fit; Export als JSON und CSV; Bericht für Berater und Trainer; automatische Sicherungen.
 

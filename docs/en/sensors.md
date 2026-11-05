@@ -20,6 +20,7 @@ With the add-on option `publish_sensors` (default: on) the add-on sets sensors i
 | `sensor.mydiet_<name>_next_meal_time` | start of that window (`HH:MM`), otherwise `none` |
 | `sensor.mydiet_<name>_weight_to_goal` | kg still to go to the target weight (only with a target weight set) |
 | `sensor.mydiet_<name>_training_day` | `yes` on a [training day](suggestions.md#training-day-shake-and-dinner) (shake entered, booked by a trigger or enough calories burned), otherwise `no` (only with the training day set up) |
+| `sensor.mydiet_<name>_pantry_low` | foods in the [pantry](pantry.md) at or below their alert threshold, e.g. `Skyr, Rice`; otherwise `none` (only with the optional feature “Pantry”) |
 | `sensor.mydiet_<name>_training_shake` | the calculated amounts of the shake, e.g. `Whey 35 g, Milk 370 g`; `none` once it is entered (only with the training day set up) |
 | `sensor.mydiet_<name>_weight_goal_date` | the day the target weight is reached at the current pace; `reached` or `none` (not in sight, less than 14 days of data) |
 
