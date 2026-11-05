@@ -162,6 +162,7 @@ const EN = {
   "Ziel: {}": "Goal: {}", "(Gewicht halten)": "(maintain weight)", "({} {}/Woche)": "({} {}/week)", "· Trend aktuell {} {}/Woche. {}": "· current trend {} {}/week. {}",
   "Für dieses Ziel passen ca. {} kcal am Tag (Dein Ziel: {}).": "About {} kcal a day fit this goal (your goal: {}).", "Als Tagesziel übernehmen": "Use as daily goal",
   "Ø Kalorien": "Ø calories", "Erfasste Tage": "Logged days", "Ø Eiweiß": "Ø protein", "Ø Kohlenhydrate": "Ø carbs", "Ø Fett": "Ø fat",
+  "Brutto-Kalorien": "Gross calories", "Netto-Kalorien": "Net calories", "Ø Netto-Kalorien": "Ø net calories", "Ø Verbrannt": "Ø burned", "Netto-Kalorien pro Tag": "Net calories per day", "Aufnahme abzüglich verbrannter Kalorien (Schritte und aktive Kalorien). Gestrichelt: Tagesziel ohne Aktivitätszuschlag.": "Intake minus burned calories (steps and active calories). Dashed: daily goal without the activity bonus.",
   "Kalorien pro Tag": "Calories per day", "Gestrichelt: Tagesziel je Wochentag": "Dashed: daily goal per weekday", "Gestrichelt: Tagesziel {} kcal": "Dashed: daily goal {} kcal",
   "Nährwertverteilung (Ø)": "Macro split (Ø)", "Eiweiß {} %": "Protein {} %", "Kohlenhydrate {} %": "Carbohydrates {} %", "Fett {} %": "Fat {} %",
   "Weitere Nährwerte (Ø pro Tag)": "More nutrients (Ø per day)", "Ø pro Tag": "Ø per day", "Eingetragen": "Logged", "Ziel erreicht": "Goal reached",
@@ -901,6 +902,7 @@ Object.assign(LANGS, {
     "Für dieses Ziel passen ca. {} kcal am Tag (Dein Ziel: {}).": "Pour cet objectif, environ {} kcal par jour conviennent (votre objectif : {}).",
     "Als Tagesziel übernehmen": "Utiliser comme objectif du jour",
     "Ø Kalorien": "Ø calories",
+    "Brutto-Kalorien": "Calories brutes", "Netto-Kalorien": "Calories nettes", "Ø Netto-Kalorien": "Ø calories nettes", "Ø Verbrannt": "Ø brûlées", "Netto-Kalorien pro Tag": "Calories nettes par jour", "Aufnahme abzüglich verbrannter Kalorien (Schritte und aktive Kalorien). Gestrichelt: Tagesziel ohne Aktivitätszuschlag.": "Apport moins calories brûlées (pas et calories actives). En pointillé : objectif du jour sans le bonus d’activité.",
     "Erfasste Tage": "Jours saisis",
     "Ø Eiweiß": "Ø protéines",
     "Ø Kohlenhydrate": "Ø glucides",
@@ -1859,6 +1861,7 @@ Object.assign(LANGS, {
     "Für dieses Ziel passen ca. {} kcal am Tag (Dein Ziel: {}).": "Para este objetivo encajan unas {} kcal al día (tu objetivo: {}).",
     "Als Tagesziel übernehmen": "Usar como objetivo diario",
     "Ø Kalorien": "Ø calorías",
+    "Brutto-Kalorien": "Calorías brutas", "Netto-Kalorien": "Calorías netas", "Ø Netto-Kalorien": "Ø calorías netas", "Ø Verbrannt": "Ø quemadas", "Netto-Kalorien pro Tag": "Calorías netas por día", "Aufnahme abzüglich verbrannter Kalorien (Schritte und aktive Kalorien). Gestrichelt: Tagesziel ohne Aktivitätszuschlag.": "Ingesta menos calorías quemadas (pasos y calorías activas). Discontinua: objetivo diario sin el extra de actividad.",
     "Erfasste Tage": "Días registrados",
     "Ø Eiweiß": "Ø proteínas",
     "Ø Kohlenhydrate": "Ø carbohidratos",
@@ -2824,6 +2827,7 @@ Object.assign(LANGS, {
     "Für dieses Ziel passen ca. {} kcal am Tag (Dein Ziel: {}).": "Voor dit doel passen ca. {} kcal per dag (jouw doel: {}).",
     "Als Tagesziel übernehmen": "Als dagdoel overnemen",
     "Ø Kalorien": "Ø calorieën",
+    "Brutto-Kalorien": "Bruto calorieën", "Netto-Kalorien": "Netto calorieën", "Ø Netto-Kalorien": "Ø netto calorieën", "Ø Verbrannt": "Ø verbrand", "Netto-Kalorien pro Tag": "Netto calorieën per dag", "Aufnahme abzüglich verbrannter Kalorien (Schritte und aktive Kalorien). Gestrichelt: Tagesziel ohne Aktivitätszuschlag.": "Inname min verbrande calorieën (stappen en actieve calorieën). Gestreept: dagdoel zonder activiteitstoeslag.",
     "Erfasste Tage": "Geregistreerde dagen",
     "Ø Eiweiß": "Ø eiwit",
     "Ø Kohlenhydrate": "Ø koolhydraten",
@@ -3794,6 +3798,7 @@ Object.assign(LANGS, {
     "Für dieses Ziel passen ca. {} kcal am Tag (Dein Ziel: {}).": "Circa {} kcal al giorno sono adatte a questo obiettivo (il tuo obiettivo: {}).",
     "Als Tagesziel übernehmen": "Usa come obiettivo giornaliero",
     "Ø Kalorien": "Ø calorie",
+    "Brutto-Kalorien": "Calorie lorde", "Netto-Kalorien": "Calorie nette", "Ø Netto-Kalorien": "Ø calorie nette", "Ø Verbrannt": "Ø bruciate", "Netto-Kalorien pro Tag": "Calorie nette al giorno", "Aufnahme abzüglich verbrannter Kalorien (Schritte und aktive Kalorien). Gestrichelt: Tagesziel ohne Aktivitätszuschlag.": "Assunzione meno calorie bruciate (passi e calorie attive). Tratteggiato: obiettivo giornaliero senza il bonus attività.",
     "Erfasste Tage": "Giorni registrati",
     "Ø Eiweiß": "Ø proteine",
     "Ø Kohlenhydrate": "Ø carboidrati",
@@ -4764,6 +4769,7 @@ Object.assign(LANGS, {
     "Für dieses Ziel passen ca. {} kcal am Tag (Dein Ziel: {}).": "Cerca de {} kcal por dia combinam com esta meta (sua meta: {}).",
     "Als Tagesziel übernehmen": "Usar como meta diária",
     "Ø Kalorien": "Ø calorias",
+    "Brutto-Kalorien": "Calorias brutas", "Netto-Kalorien": "Calorias líquidas", "Ø Netto-Kalorien": "Ø calorias líquidas", "Ø Verbrannt": "Ø queimadas", "Netto-Kalorien pro Tag": "Calorias líquidas por dia", "Aufnahme abzüglich verbrannter Kalorien (Schritte und aktive Kalorien). Gestrichelt: Tagesziel ohne Aktivitätszuschlag.": "Ingestão menos calorias queimadas (passos e calorias ativas). Tracejado: meta diária sem o bônus de atividade.",
     "Erfasste Tage": "Dias registrados",
     "Ø Eiweiß": "Ø proteína",
     "Ø Kohlenhydrate": "Ø carboidratos",
@@ -5734,6 +5740,7 @@ Object.assign(LANGS, {
     "Für dieses Ziel passen ca. {} kcal am Tag (Dein Ziel: {}).": "Ok. {} kcal dziennie pasuje do tego celu (Twój cel: {}).",
     "Als Tagesziel übernehmen": "Użyj jako dziennego celu",
     "Ø Kalorien": "Ø kalorie",
+    "Brutto-Kalorien": "Kalorie brutto", "Netto-Kalorien": "Kalorie netto", "Ø Netto-Kalorien": "Ø kalorie netto", "Ø Verbrannt": "Ø spalone", "Netto-Kalorien pro Tag": "Kalorie netto dziennie", "Aufnahme abzüglich verbrannter Kalorien (Schritte und aktive Kalorien). Gestrichelt: Tagesziel ohne Aktivitätszuschlag.": "Spożycie minus spalone kalorie (kroki i aktywne kalorie). Linia przerywana: cel dzienny bez dodatku za aktywność.",
     "Erfasste Tage": "Zapisane dni",
     "Ø Eiweiß": "Ø białko",
     "Ø Kohlenhydrate": "Ø węglowodany",
@@ -8866,10 +8873,15 @@ async function microGapsCard() {
 }
 
 async function renderStats() {
-  const [{ days, goal, balance }, weights, trk] = await Promise.all([api("stats?days=" + state.range), api("weights?days=" + state.range),
+  const [{ days: rawDays, goal, balance }, weights, trk] = await Promise.all([api("stats?days=" + state.range), api("weights?days=" + state.range),
     state.features.trackers ? api("trackers/stats?days=" + state.range) : []]);
   const root = $("#stats");
   root.replaceChildren();
+  // Net view (optional feature "Activity"): intake minus burned kcal against the goal without the activity bonus
+  const canNet = !!state.features.activity;
+  let net = false;
+  try { net = canNet && localStorage.getItem("mda.statNet") === "1"; } catch { /* storage unavailable */ }
+  const days = net ? rawDays.map(d => ({ ...d, kcal: d.logged ? Math.max(0, d.kcal - (d.burned || 0)) : d.kcal, goal_kcal: d.goal_base_kcal ?? d.goal_kcal })) : rawDays;
   const logged = days.filter(d => d.logged);
   const avg = k => logged.length ? logged.reduce((a, d) => a + d[k], 0) / logged.length : 0;
   const tile = (label, value) => h("div", { class: "tile" }, h("span", { class: "muted" }, label), h("b", {}, value));
@@ -8879,23 +8891,28 @@ async function renderStats() {
   const pct = v => Math.round(v / total * 100);
 
   const chart = h("div");
-  chart.innerHTML = barChart(days, goal.kcal);
+  chart.innerHTML = barChart(days, net ? (days.find(d => d.goal_base_kcal != null)?.goal_base_kcal ?? goal.kcal) : goal.kcal);
   tipHandlers(chart);
   const combo = h("div");
   combo.innerHTML = comboChart(days, weights);
   tipHandlers(combo);
   root.append(
+    canNet ? h("div", { class: "range" },
+      [[false, "Brutto-Kalorien"], [true, "Netto-Kalorien"]].map(([v, label]) =>
+        h("button", { class: v === net ? "active" : "", onclick: () => { try { localStorage.setItem("mda.statNet", v ? "1" : "0"); } catch { /* storage unavailable */ } renderStats(); } }, label))) : null,
     rangeButtons([[7, "7 Tage"], [14, "14 Tage"], [30, "30 Tage"], [90, "90 Tage"], [180, "180 Tage"], [365, "1 Jahr"], [730, "2 Jahre"]], state.range, v => { state.range = v; renderStats(); }),
     h("div", { class: "stat-tiles" },
-      tile("Ø Kalorien", logged.length ? n0(avg("kcal")) + " kcal" : "–"),
+      tile(net ? "Ø Netto-Kalorien" : "Ø Kalorien", logged.length ? n0(avg("kcal")) + " kcal" : "–"),
+      net ? tile("Ø Verbrannt", logged.length ? n0(avg("burned")) + " kcal" : "–") : null,
       tile("Erfasste Tage", `${logged.length} / ${days.length}`),
       tile("Ø Eiweiß", n0(avg("protein")) + " g"),
       tile("Ø Kohlenhydrate", n0(avg("carbs")) + " g"),
       tile("Ø Fett", n0(avg("fat")) + " g"),
       tile("Gewicht", weights.length > 1
         ? ((d => (d > 0 ? "+" : "") + n1(wConv(d)) + " " + wUnit())(weights[weights.length - 1].kg - weights[0].kg)) : "–")),
-    h("div", { class: "card" }, h("h2", {}, "Kalorien pro Tag"), chart,
-      goal.kcal ? h("div", { class: "muted" }, days.some(d => d.goal_kcal !== goal.kcal) ? "Gestrichelt: Tagesziel je Wochentag" : `Gestrichelt: Tagesziel ${n0(goal.kcal)} kcal`) : null),
+    h("div", { class: "card" }, h("h2", {}, net ? "Netto-Kalorien pro Tag" : "Kalorien pro Tag"), chart,
+      net ? h("div", { class: "muted" }, "Aufnahme abzüglich verbrannter Kalorien (Schritte und aktive Kalorien). Gestrichelt: Tagesziel ohne Aktivitätszuschlag.")
+      : goal.kcal ? h("div", { class: "muted" }, days.some(d => d.goal_kcal !== goal.kcal) ? "Gestrichelt: Tagesziel je Wochentag" : `Gestrichelt: Tagesziel ${n0(goal.kcal)} kcal`) : null),
     h("div", { class: "card" }, h("h2", {}, "Kalorien und Gewicht"),
       weights.some(w => w.day >= days[0].day) ? [combo, h("div", { class: "legend" },
         h("span", { style: "--c:var(--primary-color)" }, "Kalorien (linke Achse)"), h("span", { style: "--c:var(--info-color)" }, "Gewicht und Trend (rechte Achse)"))]

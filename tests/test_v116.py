@@ -75,3 +75,13 @@ def test_frequent_setting_roundtrip_and_validation(user):
     assert c.put("/api/settings", json={"frequent": "both"}).status_code == 200
     assert c.get("/api/settings").json()["frequent"] == "both"
     assert c.put("/api/settings", json={"frequent": "x"}).status_code == 400
+
+
+def test_stats_expose_burned_and_goal_without_activity_bonus(user):
+    c = user("Nora")
+    c.put("/api/goal", json={"kcal": 2000})
+    from extras import set_pref
+    set_pref(c.uid, "features", {"activity": True})
+    c.put("/api/activity/" + date.today().isoformat(), json={"steps": 0, "kcal": 400})
+    d = c.get("/api/stats?days=1").json()["days"][-1]
+    assert d["burned"] == 400 and d["goal_base_kcal"] == 2000 and d["goal_kcal"] == 2200

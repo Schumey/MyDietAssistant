@@ -693,7 +693,8 @@ def stats(days: int = 30, x_remote_user_id: str | None = Header(None)):
         d = (start + timedelta(days=i)).isoformat()
         r = rows.get(d)
         g = day_goals.get(d, goal)
-        out.append({"day": d, "logged": bool(r) and d not in skip, "incomplete": d in skip, "goal_kcal": g["kcal"], "goal_protein": g["protein"], "goal_carbs": g["carbs"],
+        out.append({"day": d, "logged": bool(r) and d not in skip, "incomplete": d in skip, "goal_kcal": g["kcal"], "burned": g.get("activity_kcal", 0),
+                    "goal_base_kcal": g["kcal"] - g.get("activity_bonus", 0), "goal_protein": g["protein"], "goal_carbs": g["carbs"],
                     "goal_fat": g["fat"], **{k: (r[k] if r else 0) for k in ("kcal", "protein", "carbs", "fat", *db.MICROS)}})
     return {"days": out, "goal": goal, "balance": energy_balance(owner, out),
             "mode": get_pref(owner, "goal_mode", "lose"), "rate": get_pref(owner, "goal_rate", 0.5)}

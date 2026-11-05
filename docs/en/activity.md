@@ -31,4 +31,8 @@ In the diary the **Activity** card shows steps, **Burned** (kcal; “estimated f
 
 The statistics and the sensor `kcal_remaining_today` use the raised goal.
 
+### Net calories
+
+With the optional feature “Activity”, the statistics get a **Gross calories / Net calories** switch at the top. *Net calories* shows intake minus burned calories (the full amount, not just the credited share) in the tiles and the chart, compared with the daily goal without the activity bonus, as in MyFitnessPal. The choice is kept in the browser.
+
 Only runs in the Home Assistant add-on (sensors and history). Help: [Troubleshooting](troubleshooting.md).

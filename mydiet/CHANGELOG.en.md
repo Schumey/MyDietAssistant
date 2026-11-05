@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.32.0
+
+### New
+- **Net calories in the statistics** ([#3](https://github.com/Schumey/MyDietAssistant/issues/3)): with the optional feature “Activity”, a switch toggles between *Gross calories* and *Net calories* (intake minus burned calories, compared with the daily goal without the activity bonus, as in MyFitnessPal). New tile “Ø burned”; `/api/stats` returns `burned` and `goal_base_kcal` per day.
+
 ## 1.31.0
 
 ### New

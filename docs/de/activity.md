@@ -31,4 +31,8 @@ Im Tagebuch zeigt die Karte **Aktivität** Schritte, **Verbrannt** (kcal; „aus
 
 Die Statistik und der Sensor `kcal_remaining_today` rechnen mit dem erhöhten Ziel.
 
+### Netto-Kalorien
+
+In der Statistik erscheint mit der Zusatzfunktion „Aktivität“ oben ein Umschalter **Brutto-Kalorien / Netto-Kalorien**. Bei *Netto-Kalorien* zeigen Kacheln und Diagramm die Aufnahme abzüglich der verbrannten Kalorien (vollständig, nicht nur der angerechnete Anteil) und vergleichen sie mit dem Tagesziel ohne Aktivitätszuschlag, wie in MyFitnessPal. Die Auswahl bleibt im Browser gespeichert.
+
 Läuft nur im Home-Assistant-Add-on (Sensoren und Verlauf). Hilfe: [Fehlersuche](troubleshooting.md).

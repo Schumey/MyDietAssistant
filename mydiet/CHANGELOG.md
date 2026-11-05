@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.32.0
+
+### Neu
+- **Netto-Kalorien in der Statistik** ([#3](https://github.com/Schumey/MyDietAssistant/issues/3)): Mit der Zusatzfunktion „Aktivität“ schaltet ein Umschalter zwischen *Brutto-Kalorien* und *Netto-Kalorien* (Aufnahme minus verbrannte Kalorien, verglichen mit dem Tagesziel ohne Aktivitätszuschlag, wie in MyFitnessPal). Neue Kachel „Ø Verbrannt“; `/api/stats` liefert je Tag `burned` und `goal_base_kcal`.
+
 ## 1.31.0
 
 ### Neu
