@@ -692,10 +692,32 @@ def del_weight(day: str, x_remote_user_id: str | None = Header(None)):
     return {"ok": True}
 
 
+STATS_MAX_DAYS = 3650
+
+
+def first_entry_day(c, owner: str) -> str | None:
+    return c.execute("SELECT MIN(day) FROM entries WHERE owner=?", (owner,)).fetchone()[0]
+
+
+@app.get("/api/stats/span")
+def stats_span(x_remote_user_id: str | None = Header(None)):
+    """First day with a diary entry and how many days lie between it and today (for the period slider)."""
+    owner = user_from(x_remote_user_id)
+    with db.conn() as c:
+        first = first_entry_day(c, owner)
+    days = (date.today() - date.fromisoformat(first)).days + 1 if first else 0
+    return {"first_day": first, "days": max(0, min(days, STATS_MAX_DAYS))}
+
+
 @app.get("/api/stats")
 def stats(days: int = 30, x_remote_user_id: str | None = Header(None)):
-    days = max(1, min(days, 730))
+    """Per day of the period; days=0 means everything since the first diary entry."""
     owner = user_from(x_remote_user_id)
+    if days <= 0:
+        with db.conn() as c:
+            first = first_entry_day(c, owner)
+        days = (date.today() - date.fromisoformat(first)).days + 1 if first else 1
+    days = max(1, min(days, STATS_MAX_DAYS))
     start = date.today() - timedelta(days=days - 1)
     with db.conn() as c:
         rows = {r["day"]: dict(r) for r in c.execute(

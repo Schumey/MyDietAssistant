@@ -2,6 +2,16 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.35.0
+
+### Neu
+- **Sortierung bei Mahlzeiten und Rezepten** wie bei den Lebensmitteln (Neueste/Älteste, Name, Am häufigsten/Zuletzt verwendet, Wenigste Kalorien, Meiste Eiweiß je kcal). Rezepte zählen pro Portion; „verwendet“ zählt bei Mahlzeiten das Einfügen, bei Rezepten die Tagebucheinträge.
+- **Zeitraum „Alles“** in der Statistik (seit dem ersten Tagebucheintrag, bis zu 10 Jahre). Ab einem Jahr zeigt „Kalorien pro Tag“ Wochenbalken. `/api/stats` nimmt `days=0` und bis zu 3650 Tage, neu ist `/api/stats/span`.
+
+### Geändert
+- **Zeitraum-Regler mit Zwischenstufen** (21, 45, 60, 120, 270 Tage, 1,5 Jahre) und angepasst an den bisherigen Verlauf: Stufen länger als die erfassten Daten entfallen, bei weniger als 30 Tagen ist „Alles“ voreingestellt. Gilt auch für die Gewichtsseite.
+- Datumsachsen sehr langer Zeiträume: Quartale bzw. Jahre statt jedes Monats.
+
 ## 1.34.0
 
 ### Neu

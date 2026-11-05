@@ -364,6 +364,11 @@ def saved_meal_rows(c, owner: str, shared: bool = False, only: int | None = None
             " WHERE saved_meal_id=? ORDER BY id", (m["id"],))]
         out.append({**dict(m), "items": items,
                     **{k: round(sum(i[k] for i in items), 1) for k in ("kcal", "protein", "carbs", "fat", *db.MICROS)}})
+    # how often / how recently the user inserted each meal (no date is stored, the latest use id gives the order)
+    uses = {r["saved_meal_id"]: (r["n"], r["last"]) for r in c.execute(
+        "SELECT saved_meal_id, COUNT(*) n, MAX(id) last FROM saved_meal_uses WHERE owner=? GROUP BY saved_meal_id", (owner,))}
+    for m in out:
+        m["uses"], m["last_use"] = uses.get(m["id"], (0, 0))
     owner_names(c, out, owner)
     return out
 

@@ -48,7 +48,9 @@ Bis zum Ende des ersten Abstands gilt Dein normales Ziel (Stufe 0), danach steig
 
 ## Statistik
 
-Der Reiter **Statistik** zeigt Auswertungen für 7, 14, 30, 90, 180 Tage, 1 Jahr oder 2 Jahre; den Zeitraum stellst Du mit dem Schieberegler **Zeitraum** ein (er rastet auf diesen Stufen ein, ein Tipp auf eine Beschriftung springt direkt dorthin):
+Der Reiter **Statistik** zeigt Auswertungen für einen Zeitraum, den Du mit dem Schieberegler **Zeitraum** einstellst. Er rastet auf 7, 14, 21, 30, 45, 60, 90, 120, 180, 270 Tagen, 1 Jahr, 1,5 und 2 Jahren ein; ganz rechts steht **Alles** (seit dem ersten Tagebucheintrag). Der Regler zeigt nur Stufen, die kürzer sind als Dein bisheriger Verlauf: Wer seit zwei Monaten erfasst, sieht also keine Jahre. Ein Tipp auf eine Beschriftung springt direkt dorthin. Solange Du weniger als 30 Tage erfasst hast, ist **Alles** voreingestellt. Ab einem Jahr zeigt „Kalorien pro Tag“ einen Balken je Woche (Durchschnitt der erfassten Tage).
+
+Die Statistik enthält:
 
 - **Kalorien pro Tag** als Balken (linke Achse) mit Zielinie, zusammen mit Gewichtswerten und geglättetem Trend als Linie (rechte Achse); der Tooltip zeigt beides je Tag.
 - **Makro-Verlauf** mit Zielinien.

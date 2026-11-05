@@ -2,6 +2,16 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.35.0
+
+### New
+- **Sort order for meals and recipes** as for foods (newest/oldest, name, most/recently used, fewest calories, most protein per kcal). Recipes count per portion; “used” counts inserting for meals and diary entries for recipes.
+- **Period “All”** in the statistics (since the first diary entry, up to 10 years). From one year on, “Calories per day” shows weekly bars. `/api/stats` accepts `days=0` and up to 3650 days; new `/api/stats/span`.
+
+### Changed
+- **Period slider with intermediate steps** (21, 45, 60, 120, 270 days, 1.5 years) that adapts to your history: steps longer than the logged data are left out, with fewer than 30 days “All” is preselected. Also on the weight page.
+- Date axes of very long periods: quarters or years instead of every month.
+
 ## 1.34.0
 
 ### New

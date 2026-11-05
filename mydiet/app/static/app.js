@@ -6,6 +6,14 @@
 //  - confirm/alert/prompt dialogs go through the same lookup.
 // Strings without an entry stay German, so a missing entry never breaks the app.
 const EN = {
+    "1,5 Jahre": "1.5 years",
+    "Alles": "All",
+    "Alles ({} Tage)": "All ({} days)",
+    "Woche ab {}": "Week from {}",
+    "Ø {} kcal (Ziel {})": "Ø {} kcal (goal {})",
+    "Ø {} kcal": "Ø {} kcal",
+    "{} / {} Tage erfasst": "{} / {} days logged",
+    "Ab einem Jahr: ein Balken je Woche (Durchschnitt der erfassten Tage).": "From one year on: one bar per week (average of the logged days).",
     "Vorrat": "Pantry",
     "Vorrat führen": "Track stock",
     "Bestand, Meldeschwelle und Packungsgröße stellst Du beim Lebensmittel ein (Lebensmittel → ✎ → Vorrat führen).": "Set the stock, alert threshold and pack size on the food (Foods → ✎ → Track stock).",
@@ -634,6 +642,14 @@ const LANG_LOCALES = { de: "de-DE", en: "en-US", fr: "fr-FR", es: "es-ES", nl: "
 // entry in LANG_LOCALES, in LANGS (extras.py) and in the language selection of the settings.
 Object.assign(LANGS, {
   fr: {
+    "1,5 Jahre": "1,5 an",
+    "Alles": "Tout",
+    "Alles ({} Tage)": "Tout ({} jours)",
+    "Woche ab {}": "Semaine du {}",
+    "Ø {} kcal (Ziel {})": "Ø {} kcal (objectif {})",
+    "Ø {} kcal": "Ø {} kcal",
+    "{} / {} Tage erfasst": "{} / {} jours saisis",
+    "Ab einem Jahr: ein Balken je Woche (Durchschnitt der erfassten Tage).": "À partir d’un an : une barre par semaine (moyenne des jours saisis).",
     "Vorrat führen": "Suivre le stock",
     "Bestand, Meldeschwelle und Packungsgröße stellst Du beim Lebensmittel ein (Lebensmittel → ✎ → Vorrat führen).": "Le stock, le seuil d’alerte et la taille du paquet se règlent sur l’aliment (Aliments → ✎ → Suivre le stock).",
     "Sortierung": "Tri",
@@ -1632,6 +1648,14 @@ Object.assign(LANGS, {
     "{} von {} g": "{} sur {} g",
   },
   es: {
+    "1,5 Jahre": "1,5 años",
+    "Alles": "Todo",
+    "Alles ({} Tage)": "Todo ({} días)",
+    "Woche ab {}": "Semana desde {}",
+    "Ø {} kcal (Ziel {})": "Ø {} kcal (objetivo {})",
+    "Ø {} kcal": "Ø {} kcal",
+    "{} / {} Tage erfasst": "{} / {} días registrados",
+    "Ab einem Jahr: ein Balken je Woche (Durchschnitt der erfassten Tage).": "A partir de un año: una barra por semana (media de los días registrados).",
     "Vorrat führen": "Llevar existencias",
     "Bestand, Meldeschwelle und Packungsgröße stellst Du beim Lebensmittel ein (Lebensmittel → ✎ → Vorrat führen).": "Las existencias, el umbral de aviso y el tamaño del paquete se ajustan en el alimento (Alimentos → ✎ → Llevar existencias).",
     "Sortierung": "Orden",
@@ -2630,6 +2654,14 @@ Object.assign(LANGS, {
     "{} von {} g": "{} de {} g",
   },
   nl: {
+    "1,5 Jahre": "1,5 jaar",
+    "Alles": "Alles",
+    "Alles ({} Tage)": "Alles ({} dagen)",
+    "Woche ab {}": "Week vanaf {}",
+    "Ø {} kcal (Ziel {})": "Ø {} kcal (doel {})",
+    "Ø {} kcal": "Ø {} kcal",
+    "{} / {} Tage erfasst": "{} / {} dagen vastgelegd",
+    "Ab einem Jahr: ein Balken je Woche (Durchschnitt der erfassten Tage).": "Vanaf een jaar: één balk per week (gemiddelde van de vastgelegde dagen).",
     "Vorrat führen": "Voorraad bijhouden",
     "Bestand, Meldeschwelle und Packungsgröße stellst Du beim Lebensmittel ein (Lebensmittel → ✎ → Vorrat führen).": "Voorraad, meldingsdrempel en verpakkingsgrootte stel je in bij het levensmiddel (Levensmiddelen → ✎ → Voorraad bijhouden).",
     "Sortierung": "Sortering",
@@ -3640,6 +3672,14 @@ Object.assign(LANGS, {
     "{} von {} g": "{} van {} g",
   },
   it: {
+    "1,5 Jahre": "1,5 anni",
+    "Alles": "Tutto",
+    "Alles ({} Tage)": "Tutto ({} giorni)",
+    "Woche ab {}": "Settimana dal {}",
+    "Ø {} kcal (Ziel {})": "Ø {} kcal (obiettivo {})",
+    "Ø {} kcal": "Ø {} kcal",
+    "{} / {} Tage erfasst": "{} / {} giorni registrati",
+    "Ab einem Jahr: ein Balken je Woche (Durchschnitt der erfassten Tage).": "Da un anno in su: una barra per settimana (media dei giorni registrati).",
     "Vorrat führen": "Gestisci scorta",
     "Bestand, Meldeschwelle und Packungsgröße stellst Du beim Lebensmittel ein (Lebensmittel → ✎ → Vorrat führen).": "Scorta, soglia di avviso e dimensione della confezione si impostano sull’alimento (Alimenti → ✎ → Gestisci scorta).",
     "Sortierung": "Ordinamento",
@@ -4650,6 +4690,14 @@ Object.assign(LANGS, {
     "{} von {} g": "{} di {} g",
   },
   pt: {
+    "1,5 Jahre": "1,5 ano",
+    "Alles": "Tudo",
+    "Alles ({} Tage)": "Tudo ({} dias)",
+    "Woche ab {}": "Semana a partir de {}",
+    "Ø {} kcal (Ziel {})": "Ø {} kcal (meta {})",
+    "Ø {} kcal": "Ø {} kcal",
+    "{} / {} Tage erfasst": "{} / {} dias registrados",
+    "Ab einem Jahr: ein Balken je Woche (Durchschnitt der erfassten Tage).": "A partir de um ano: uma barra por semana (média dos dias registrados).",
     "Vorrat führen": "Controlar estoque",
     "Bestand, Meldeschwelle und Packungsgröße stellst Du beim Lebensmittel ein (Lebensmittel → ✎ → Vorrat führen).": "O estoque, o limite de aviso e o tamanho da embalagem são definidos no alimento (Alimentos → ✎ → Controlar estoque).",
     "Sortierung": "Ordenação",
@@ -5660,6 +5708,14 @@ Object.assign(LANGS, {
     "{} von {} g": "{} de {} g",
   },
   pl: {
+    "1,5 Jahre": "1,5 roku",
+    "Alles": "Wszystko",
+    "Alles ({} Tage)": "Wszystko ({} dni)",
+    "Woche ab {}": "Tydzień od {}",
+    "Ø {} kcal (Ziel {})": "Ø {} kcal (cel {})",
+    "Ø {} kcal": "Ø {} kcal",
+    "{} / {} Tage erfasst": "{} / {} dni zapisanych",
+    "Ab einem Jahr: ein Balken je Woche (Durchschnitt der erfassten Tage).": "Od roku: jeden słupek na tydzień (średnia z zapisanych dni).",
     "Vorrat führen": "Prowadź zapas",
     "Bestand, Meldeschwelle und Packungsgröße stellst Du beim Lebensmittel ein (Lebensmittel → ✎ → Vorrat führen).": "Zapas, próg powiadomienia i wielkość opakowania ustawiasz przy produkcie (Produkty → ✎ → Prowadź zapas).",
     "Sortierung": "Sortowanie",
@@ -6836,7 +6892,7 @@ const iso = d => d.toLocaleDateString("sv");
 const parse = s => new Date(s + "T12:00:00");
 const num = v => (v === "" || v == null ? null : Number(String(v).replace(",", ".")));
 
-const state = { skin: "auto", goalMode: "lose", goalRate: 0.5, features: {}, day: iso(new Date()), tab: "diary", range: 30, wrange: 90, whist: 10 };
+const state = { skin: "auto", goalMode: "lose", goalRate: 0.5, features: {}, day: iso(new Date()), tab: "diary", range: null, wrange: null, whist: 10 };
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const longDate = day => parse(day).toLocaleDateString(I18N.locale, { weekday: "short", day: "numeric", month: "numeric", year: "numeric" });
 
@@ -6866,8 +6922,11 @@ function niceTicks(first, last) {
   for (let i = 0; i < n; i++) { const d = parse(first); d.setDate(d.getDate() + i); all.push(d); }
   let pick = () => true;
   let fmt = d => d.toLocaleDateString(I18N.locale, { day: "numeric", month: "numeric" });
-  if (n > 100) {
-    const every = n > 200 ? 2 : 1;
+  if (n > 1000) {
+    pick = d => d.getDate() === 1 && d.getMonth() === 0;
+    fmt = d => String(d.getFullYear());
+  } else if (n > 100) {
+    const every = n > 400 ? 3 : n > 200 ? 2 : 1;
     pick = d => d.getDate() === 1 && d.getMonth() % every === 0;
     fmt = d => d.toLocaleDateString(I18N.locale, d.getMonth() === 0 ? { month: "short", year: "2-digit" } : { month: "short" });
   } else if (n > 31) pick = d => d.getDate() === 1 || d.getDate() === 15;
@@ -8178,8 +8237,28 @@ function macroCard(days) {
       : "Balken: Gramm pro Tag. Durchgezogene Linie: Ø der letzten 7 Tage. Ein Ziel für dieses Makro lässt sich unter Einstellungen → Tagesziele setzen."));
 }
 
-function barChart(days, goal) {
+// Long periods: one bar per week (Monday to Sunday) with the average of the logged days and the average goal.
+const WEEKLY_FROM = 366;
+function weekBars(days, goal) {
+  const out = [];
+  for (const d of days) {
+    const dt = parse(d.day);
+    dt.setDate(dt.getDate() - (dt.getDay() + 6) % 7);
+    const key = iso(dt);
+    let w = out[out.length - 1];
+    if (!w || w.day !== key) { w = { day: key, first: d.day, end: d.day, sum: 0, n: 0, gsum: 0, gn: 0, total: 0 }; out.push(w); }
+    w.end = d.day; w.total++;
+    if (d.logged) { w.sum += d.kcal; w.n++; }
+    const g = d.goal_kcal ?? goal;
+    if (g) { w.gsum += g; w.gn++; }
+  }
+  return out.map(w => ({ day: w.day, first: w.first, end: w.end, week: true, logged: w.n > 0, kcal: w.n ? w.sum / w.n : 0,
+    goal_kcal: w.gn ? w.gsum / w.gn : goal, n: w.n, total: w.total }));
+}
+
+function barChart(allDays, goal) {
   const W = 600, H = 220, L = 40, B = 24, T = 10, R = 8;
+  const days = allDays.length > WEEKLY_FROM ? weekBars(allDays, goal) : allDays;
   const goals = days.map(d => d.goal_kcal ?? goal);
   // y axis on round values (100, 250, 500 … kcal), top tick above the highest bar or goal
   const top = Math.max(...goals, ...days.map(d => d.kcal), 100);
@@ -8191,18 +8270,26 @@ function barChart(days, goal) {
   for (let v = 0; v <= max / 1.04 + 1e-6; v += step) {
     s += `<line class="grid-line" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${n0(v)}</text>`;
   }
-  const ticks = new Map(niceTicks(days[0].day, days[days.length - 1].day).map(t => [t.day, t.label]));
+  const ticks = niceTicks(allDays[0].day, allDays[allDays.length - 1].day);
   const stepped = goals.some(g => g !== goals[0]);
+  let ti = 0;
   days.forEach((d, i) => {
     const x = L + i * bw, g = goals[i];
-    if (d.logged) s += `<rect class="bar-k${goalOver(d.kcal, g) ? " over" : ""}" x="${x + bw * 0.15}" y="${y(d.kcal)}" width="${bw * 0.7}" height="${H - B - y(d.kcal)}" rx="2"/>`;
-    if (ticks.has(d.day)) s += `<line class="grid-line" x1="${x + bw / 2}" x2="${x + bw / 2}" y1="${H - B}" y2="${H - B + 4}"/><text x="${x + bw / 2}" y="${H - 6}" text-anchor="middle">${ticks.get(d.day)}</text>`;
+    if (d.logged) s += `<rect class="bar-k${goalOver(d.kcal, g) ? " over" : ""}" x="${x + bw * 0.15}" y="${y(d.kcal)}" width="${bw * 0.7}" height="${H - B - y(d.kcal)}" rx="${d.week || bw > 3 ? 1 : 0}"/>`;
+    // a tick goes to the bar (day or week) that contains its date
+    while (ti < ticks.length && ticks[ti].day < (d.first || d.day)) ti++;
+    if (ti < ticks.length && ticks[ti].day <= (d.end || d.day)) {
+      s += `<line class="grid-line" x1="${x + bw / 2}" x2="${x + bw / 2}" y1="${H - B}" y2="${H - B + 4}"/><text x="${x + bw / 2}" y="${H - 6}" text-anchor="middle">${ticks[ti].label}</text>`;
+      ti++;
+    }
   });
   if (stepped) s += `<polyline class="goal-line" points="${goals.map((g, i) => `${L + i * bw},${y(g)} ${L + (i + 1) * bw},${y(g)}`).join(" ")}"/>`;
   else if (goal) s += `<line class="goal-line" x1="${L}" x2="${W - R}" y1="${y(goal)}" y2="${y(goal)}"/>`;
   // invisible hit areas, one column per day, carry the tooltip text
   days.forEach((d, i) => {
-    const text = d.logged
+    const text = d.week
+      ? `Woche ab ${longDate(d.first)}\n` + (d.logged ? (goals[i] ? `Ø ${n0(d.kcal)} kcal (Ziel ${n0(goals[i])})` : `Ø ${n0(d.kcal)} kcal`) + "\n" : "") + `${d.n} / ${d.total} Tage erfasst`
+      : d.logged
       ? `${longDate(d.day)}\n${n0(d.kcal)} kcal${goals[i] ? ` (Ziel ${n0(goals[i])})` : ""}\nKH ${n0(d.carbs)} g · Fett ${n0(d.fat)} g · Eiweiß ${n0(d.protein)} g`
       : `${longDate(d.day)}\n${d.incomplete ? "unvollständig (nicht gezählt)" : "nicht erfasst"}`;
     s += `<rect class="hit" x="${L + i * bw}" y="${T}" width="${bw}" height="${H - T - B}" data-tip="${esc(text)}"/>`;
@@ -8318,19 +8405,57 @@ function forecast(pts, target) {
 }
 
 // Time span as a slider that snaps to the given steps; the page reloads when it is let go (or a label is clicked).
+// options: [value, label, major, head]; only major steps get a label below, head (if set) is shown above instead of the label.
 function rangeSlider(options, current, onpick) {
   const at = Math.max(0, options.findIndex(([v]) => v === current));
-  const out = h("b", {}, options[at][1]);
+  const head = k => options[k][3] || options[k][1];
+  const out = h("b", {}, head(at));
   const id = "rs" + Math.random().toString(36).slice(2, 8);
   const input = h("input", { type: "range", min: 0, max: options.length - 1, step: 1, value: at, list: id, "aria-label": "Zeitraum",
-    oninput: () => { out.textContent = options[input.value][1]; input.setAttribute("aria-valuetext", options[input.value][1]); },
+    oninput: () => { out.textContent = head(input.value); input.setAttribute("aria-valuetext", head(input.value)); },
     onchange: () => onpick(options[input.value][0]) });
-  input.setAttribute("aria-valuetext", options[at][1]);
-  return h("div", { class: "range-slider", style: `--n:${options.length - 1}` },
+  input.setAttribute("aria-valuetext", head(at));
+  const majors = options.some(o => o[2]) ? options.map((o, k) => [o, k]).filter(([o]) => o[2]) : options.map((o, k) => [o, k]);
+  return h("div", { class: "range-slider", style: `--n:${Math.max(options.length - 1, 1)}` },
     h("div", { class: "rs-head" }, h("span", { class: "muted" }, "Zeitraum"), out), input,
     h("datalist", { id }, options.map((_, k) => h("option", { value: k }))),
-    h("div", { class: "rs-ticks" }, options.map(([v, l], k) => h("button", { type: "button", class: k === at ? "on" : "", style: `--k:${k}`,
+    h("div", { class: "rs-ticks" }, majors.map(([[v, l], k]) => h("button", { type: "button", class: k === at ? "on" : "", style: `--k:${k}`,
       tabindex: "-1", onclick: () => onpick(v) }, l))));
+}
+
+// Period steps of the statistics and the weight page; steps longer than what has been tracked are left out, "Alles" covers everything.
+const STAT_STEPS = [[7, "7 Tage", 1], [14, "14 Tage"], [21, "21 Tage"], [30, "30 Tage", 1], [45, "45 Tage"], [60, "60 Tage"], [90, "90 Tage", 1],
+  [120, "120 Tage"], [180, "180 Tage", 1], [270, "270 Tage"], [365, "1 Jahr", 1], [545, "1,5 Jahre"], [730, "2 Jahre", 1]];
+const WEIGHT_STEPS = [[30, "30 Tage", 1], [60, "60 Tage"], [90, "90 Tage", 1], [180, "180 Tage", 1], [365, "1 Jahr", 1], [545, "1,5 Jahre"], [730, "2 Jahre", 1]];
+const periodOptions = (steps, avail) => [...steps.filter(([v]) => v < avail), [0, "Alles", 1, `Alles (${avail} Tage)`]];
+// the period in use: not chosen yet -> everything for short histories, else the default; longer than the history -> everything (0)
+const periodPick = (cur, avail, dflt) => { const c = cur == null ? (avail < dflt ? 0 : dflt) : cur; return c && c < avail ? c : 0; };
+const periodControl = (steps, avail, cur, onpick) => (avail < 7 ? h("div", { class: "muted range-note" }, `Alles (${avail} Tage)`)
+  : rangeSlider(periodOptions(steps, avail), cur, onpick));
+
+// Sort orders of the foods, saved meals and recipes lists (kept per page on this device)
+function sortPicker(key, onchange) {
+  let v = "new";
+  try { v = localStorage.getItem(key) || "new"; } catch { /* storage unavailable */ }
+  const sel = h("select", { "aria-label": "Sortierung", class: "food-sort", onchange: () => {
+    try { localStorage.setItem(key, sel.value); } catch { /* storage unavailable */ }
+    onchange(sel.value);
+  } }, FOOD_SORTS.map(([k, l]) => h("option", { value: k }, l)));
+  sel.value = FOOD_SORTS.some(([k]) => k === v) ? v : "new";
+  return sel;
+}
+// nutrition: the values of a saved meal (whole meal) or of one recipe portion; last: use id / day of the latest use
+function sortItems(list, sort, nut, last) {
+  const name = (a, b) => a.name.localeCompare(b.name, I18N.locale, { sensitivity: "base" });
+  const dens = x => (nut(x).kcal > 0 ? nut(x).protein / nut(x).kcal : 0);
+  const cmp = {
+    new: (a, b) => b.id - a.id, old: (a, b) => a.id - b.id, name,
+    used: (a, b) => (b.uses || 0) - (a.uses || 0) || name(a, b),
+    recent: (a, b) => (last(a) ? 0 : 1) - (last(b) ? 0 : 1) || (last(a) < last(b) ? 1 : last(a) > last(b) ? -1 : 0) || name(a, b),
+    kcal: (a, b) => nut(a).kcal - nut(b).kcal || name(a, b),
+    protein: (a, b) => dens(b) - dens(a) || name(a, b),
+  }[sort] || ((a, b) => b.id - a.id);
+  return [...list].sort(cmp);
 }
 
 function rangeButtons(options, current, onpick) {
@@ -8345,8 +8470,8 @@ const FOOD_SORTS = [["new", "Neueste zuerst"], ["old", "Älteste zuerst"], ["nam
 
 async function renderFoods() {
   const PAGE = 200;
-  let sort = "new";
-  try { sort = localStorage.getItem("mda.foodSort") || "new"; } catch { /* storage unavailable */ }
+  const sortSel = sortPicker("mda.foodSort", v => { sort = v; load(false); });
+  let sort = sortSel.value;
   let [foods, stock] = await Promise.all([api(`foods?limit=${PAGE}&sort=${sort}`), state.features.pantry ? api("pantry").catch(() => null) : null, loadCats()]);
   const stockOf = new Map((stock ? stock.items : []).filter(i => i.food_id).map(i => [i.food_id, i]));
   let more = foods.length === PAGE, query = "", timer = null;
@@ -8405,12 +8530,6 @@ async function renderFoods() {
     clearTimeout(timer);
     timer = setTimeout(() => { query = search.value.trim(); load(false); }, 250);
   } });
-  const sortSel = h("select", { "aria-label": "Sortierung", class: "food-sort", onchange: () => {
-    sort = sortSel.value;
-    try { localStorage.setItem("mda.foodSort", sort); } catch { /* storage unavailable */ }
-    load(false);
-  } }, FOOD_SORTS.map(([v, l]) => h("option", { value: v }, l)));
-  sortSel.value = sort;
   root.append(h("div", { class: "card" }, h("div", { class: "food-search" }, search, sortSel),
     h("div", { class: "actions", style: "justify-content:flex-start;flex-wrap:wrap" },
       h("button", { onclick: () => openForm(null) }, "+ Neues Lebensmittel"),
@@ -8655,10 +8774,10 @@ async function renderMeals() {
   const draw = () => {
     chips.replaceChildren(...[catChips(draw)].filter(Boolean));
     const q = search.value.toLowerCase();
-    const shown = saved.filter(isVisible).filter(s => s.name.toLowerCase().includes(q));
+    const shown = sortItems(saved.filter(isVisible).filter(s => s.name.toLowerCase().includes(q)), sortSel.value, x => x, x => x.last_use);
     list.replaceChildren(...(shown.length ? shown.map(s => h("div", {},
       h("div", { class: "grow" }, h("div", {}, s.name, s.mine === false ? sharedFrom(s) : [tag(s.category), sharedMark(s)]),
-        h("div", { class: "muted" }, `${n0(s.kcal)} kcal · KH ${n1(s.carbs)} g · Fett ${n1(s.fat)} g · Eiweiß ${n1(s.protein)} g`),
+        h("div", { class: "muted" }, `${n0(s.kcal)} kcal · KH ${n1(s.carbs)} g · Fett ${n1(s.fat)} g · Eiweiß ${n1(s.protein)} g`, s.uses ? ` · ${s.uses}× verwendet` : ""),
         h("div", { class: "muted" }, s.items.map(entryLabel).join(" · "))),
       s.mine === false ? null : h("button", { class: "icon", title: "Trigger anlegen", "aria-label": "Trigger anlegen", onclick: () => triggerDialog({ item: "s:" + s.id }) }, "⚡\uFE0E"),
       state.features.household && s.mine !== false ? h("button", { class: "icon", title: "Mit dem Haushalt teilen", "aria-label": "Teilen", onclick: () => shareLibrary("saved-meals", s) }, "⇪") : null,
@@ -8677,7 +8796,8 @@ async function renderMeals() {
   };
 
   const search = h("input", { type: "search", placeholder: "Mahlzeiten suchen…", oninput: draw });
-  root.append(h("div", { class: "card" }, search, chips, list));
+  const sortSel = sortPicker("mda.mealSort", draw);
+  root.append(h("div", { class: "card" }, h("div", { class: "food-search" }, search, sortSel), chips, list));
   if (state.features.shopping) root.append(h("div", { class: "hint" }, h("button", { class: "flat", onclick: shoppingDialog }, "Einkaufsliste")));
   draw();
 }
@@ -8992,10 +9112,10 @@ async function renderRecipes() {
   const draw = () => {
     chips.replaceChildren(...[catChips(draw)].filter(Boolean));
     const q = search.value.toLowerCase();
-    const shown = recipes.filter(isVisible).filter(r => r.name.toLowerCase().includes(q));
+    const shown = sortItems(recipes.filter(isVisible).filter(r => r.name.toLowerCase().includes(q)), sortSel.value, x => x.portion, x => x.last_used || "");
     list.replaceChildren(...(shown.length ? shown.map(r => h("div", {},
       h("div", { class: "grow" }, h("div", {}, r.name, r.mine === false ? sharedFrom(r) : [tag(r.category), sharedMark(r)]),
-        h("div", { class: "muted" }, `Pro Portion (${gText(r.portion_g)}): ${n0(r.portion.kcal)} kcal · KH ${n1(r.portion.carbs)} g · Fett ${n1(r.portion.fat)} g · Eiweiß ${n1(r.portion.protein)} g · ${n1(r.portions)} Portionen`),
+        h("div", { class: "muted" }, `Pro Portion (${gText(r.portion_g)}): ${n0(r.portion.kcal)} kcal · KH ${n1(r.portion.carbs)} g · Fett ${n1(r.portion.fat)} g · Eiweiß ${n1(r.portion.protein)} g · ${n1(r.portions)} Portionen`, r.uses ? ` · ${r.uses}× verwendet` : ""),
         h("div", { class: "muted" }, r.items.map(i => `${i.name} ${gText(i.grams)}`).join(" · ")),
         r.instructions ? h("details", {}, h("summary", { class: "muted" }, "Zubereitung"), h("ol", { class: "steps" }, ...r.instructions.split("\n").filter(x => x.trim()).map(x => h("li", {}, x)))) : null,
         /^https?:\/\//.test(r.source || "") ? h("div", { class: "muted" }, h("a", { href: r.source, target: "_blank", rel: "noopener noreferrer" }, new URL(r.source).hostname.replace(/^www\./, ""))) : null),
@@ -9015,8 +9135,9 @@ async function renderRecipes() {
   };
 
   const search = h("input", { type: "search", placeholder: "Rezepte suchen…", oninput: draw });
+  const sortSel = sortPicker("mda.recipeSort", draw);
   root.append(h("div", { class: "card" },
-    h("div", { class: "grid", style: `grid-template-columns:1fr auto auto auto${mealieCfg?.token_set ? " auto" : ""}` }, search, h("button", { onclick: () => editRecipe(null) }, "+ Neues Rezept"),
+    h("div", { class: "grid", style: `grid-template-columns:1fr auto auto auto${mealieCfg?.token_set ? " auto" : ""}` }, h("div", { class: "food-search" }, search, sortSel), h("button", { onclick: () => editRecipe(null) }, "+ Neues Rezept"),
       h("button", { class: "flat", onclick: importDialog }, "Von Webseite …"),
       h("button", { class: "flat", onclick: textDialog }, "Aus Text …"),
       mealieCfg?.token_set ? h("button", { class: "flat", onclick: mealieDialog }, "Aus Mealie …") : null),
@@ -9057,7 +9178,9 @@ async function renderWeight() {
     return;
   }
   const trended = withTrend(all);
-  const since = state.wrange ? iso(new Date(Date.now() - state.wrange * 864e5)) : "";
+  const wAvail = Math.round((parse(iso(new Date())) - parse(all[0].day)) / 864e5) + 1;
+  const wEff = periodPick(state.wrange, wAvail, 90);
+  const since = wEff ? iso(new Date(Date.now() - wEff * 864e5)) : "";
   const pts = trended.filter(p => p.day >= since);
   const shown = pts.length ? pts : trended.slice(-1);
   const last = all[all.length - 1];
@@ -9076,8 +9199,7 @@ async function renderWeight() {
       tile("Ziel", goal.target_weight ? n1(wConv(goal.target_weight)) + " " + wUnit() : "–"),
       goal.target_weight ? tile("Prognose Ziel", fc ? fc.text : "–") : null),
     h("div", { class: "card" },
-      rangeSlider([[30, "30 Tage"], [90, "90 Tage"], [365, "1 Jahr"], [730, "2 Jahre"], [0, "Alle"]], state.wrange,
-        v => { state.wrange = v; renderWeight(); }),
+      periodControl(WEIGHT_STEPS, wAvail, wEff, v => { state.wrange = v; renderWeight(); }),
       chart,
       h("div", { class: "muted" }, "Dünne Linie und Punkte: Messwerte. Dicke Linie: geglätteter Trend (Tagesschwankungen ausgeblendet).",
         fc && fc.perWeek != null ? h("span", {}, ` Trend aktuell ${fc.perWeek > 0 ? "+" : ""}${n1(wConv(fc.perWeek))} ${wUnit()}/Woche.`) : null)),
@@ -9287,8 +9409,10 @@ async function microGapsCard() {
 let statsRun = 0;
 async function renderStats() {
   const run = ++statsRun;   // a newer call (e.g. the slider moved on) wins; older answers are dropped
-  const [{ days: rawDays, goal, balance }, weights, trk] = await Promise.all([api("stats?days=" + state.range), api("weights?days=" + state.range),
-    state.features.trackers ? api("trackers/stats?days=" + state.range) : []]);
+  const span = await api("stats/span");
+  const avail = Math.max(span.days, 1), eff = periodPick(state.range, avail, 30), nDays = eff || avail;
+  const [{ days: rawDays, goal, balance }, weights, trk] = await Promise.all([api("stats?days=" + nDays), api("weights?days=" + nDays),
+    state.features.trackers ? api("trackers/stats?days=" + nDays) : []]);
   if (run !== statsRun) return;
   const root = $("#stats");
   root.replaceChildren();
@@ -9315,7 +9439,7 @@ async function renderStats() {
     canNet ? h("div", { class: "range" },
       [[false, "Brutto-Kalorien"], [true, "Netto-Kalorien"]].map(([v, label]) =>
         h("button", { class: v === net ? "active" : "", onclick: () => { try { localStorage.setItem("mda.statNet", v ? "1" : "0"); } catch { /* storage unavailable */ } renderStats(); } }, label))) : null,
-    rangeSlider([[7, "7 Tage"], [14, "14 Tage"], [30, "30 Tage"], [90, "90 Tage"], [180, "180 Tage"], [365, "1 Jahr"], [730, "2 Jahre"]], state.range, v => { state.range = v; renderStats(); }),
+    span.days ? periodControl(STAT_STEPS, avail, eff, v => { state.range = v; renderStats(); }) : null,
     h("div", { class: "stat-tiles" },
       tile(net ? "Ø Netto-Kalorien" : "Ø Kalorien", logged.length ? n0(avg("kcal")) + " kcal" : "–"),
       net ? tile("Ø Verbrannt", logged.length ? n0(avg("burned")) + " kcal" : "–") : null,
@@ -9326,6 +9450,7 @@ async function renderStats() {
       tile("Gewicht", weights.length > 1
         ? ((d => (d > 0 ? "+" : "") + n1(wConv(d)) + " " + wUnit())(weights[weights.length - 1].kg - weights[0].kg)) : "–")),
     h("div", { class: "card" }, h("h2", {}, net ? "Netto-Kalorien pro Tag" : "Kalorien pro Tag"), chart,
+      days.length > WEEKLY_FROM ? h("div", { class: "muted" }, "Ab einem Jahr: ein Balken je Woche (Durchschnitt der erfassten Tage).") : null,
       net ? h("div", { class: "muted" }, "Aufnahme abzüglich verbrannter Kalorien (Schritte und aktive Kalorien). Gestrichelt: Tagesziel ohne Aktivitätszuschlag.")
       : goal.kcal ? h("div", { class: "muted" }, days.some(d => d.goal_kcal !== goal.kcal) ? "Gestrichelt: Tagesziel je Wochentag" : `Gestrichelt: Tagesziel ${n0(goal.kcal)} kcal`) : null),
     h("div", { class: "card" }, h("h2", {}, "Kalorien und Gewicht"),

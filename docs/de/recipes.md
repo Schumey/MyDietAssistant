@@ -6,6 +6,8 @@
 
 Ein Rezept bündelt Zutaten, teilt sie durch die Portionen und lässt sich wie ein Lebensmittel eintragen.
 
+Die Auswahl neben dem Suchfeld sortiert die Rezepte wie bei den [Lebensmitteln](foods.md#suchen-bearbeiten-favoriten); Kalorien und Eiweiß gelten pro Portion, „verwendet“ zählt die Tagebucheinträge des Rezepts.
+
 ## Ein Rezept von Hand anlegen
 
 1. Öffne **Rezepte** und lege ein neues Rezept an.

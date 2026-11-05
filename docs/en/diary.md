@@ -67,7 +67,7 @@ Under *Settings → Appearance → Diary* you can choose **Times** instead of fi
 
 When logging, pick the template under **My meals**, enter a factor under **Portions** (1 = as saved) and tap **Add**. These templates are snapshots too.
 
-Manage them in the **Meals** tab: edit (**✎**), add or swap components (**⇄**), make a copy (**⧉**), set a category, delete, share (**⇪**, see [Household](household.md)) or create a trigger (**⚡**).
+Manage them in the **Meals** tab: edit (**✎**), add or swap components (**⇄**), make a copy (**⧉**), set a category, delete, share (**⇪**, see [Household](household.md)) or create a trigger (**⚡**). The selection next to the search field sorts the list as for [foods](foods.md#search-edit-favorites); “used” counts how often you added the meal.
 
 ### Copy entries
 

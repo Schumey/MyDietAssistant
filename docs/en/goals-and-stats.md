@@ -48,7 +48,9 @@ Your normal goal applies until the first interval is over (step 0); after that i
 
 ## Statistics
 
-The **Statistics** tab shows evaluations for 7, 14, 30, 90, 180 days, 1 year or 2 years; choose the span with the **Period** slider (it snaps to these steps, tapping a label jumps straight there):
+The **Statistics** tab shows evaluations for a span you choose with the **Period** slider. It snaps to 7, 14, 21, 30, 45, 60, 90, 120, 180, 270 days, 1 year, 1.5 and 2 years; on the far right is **All** (since the first diary entry). The slider only offers steps shorter than your history so far: someone who has been logging for two months does not see years. Tapping a label jumps straight there. While you have logged fewer than 30 days, **All** is preselected. From one year on, “Calories per day” shows one bar per week (average of the logged days).
+
+The statistics contain:
 
 - **Calories per day** as bars (left axis) with a goal line, together with weight values and the smoothed trend as a line (right axis); the tooltip shows both per day.
 - **Macro history** with goal lines.

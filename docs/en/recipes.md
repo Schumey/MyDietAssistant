@@ -6,6 +6,8 @@
 
 A recipe bundles ingredients, divides them by the number of portions and can be logged like a food.
 
+The selection next to the search field sorts the recipes as for [foods](foods.md#search-edit-favorites); calories and protein are per portion, “used” counts the diary entries of the recipe.
+
 ## Create a recipe by hand
 
 1. Open **Recipes** and create a new recipe.

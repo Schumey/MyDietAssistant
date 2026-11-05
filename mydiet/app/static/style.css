@@ -759,7 +759,7 @@ details.card[open] > summary { margin-bottom: 12px; }
 @media (max-width: 480px) { .range-slider .rs-ticks button:nth-child(even):not(.on) { visibility: hidden; } }
 .food-search { display: flex; gap: 8px; }
 .food-search input { flex: 1 1 auto; }
-.food-search select { flex: 0 1 auto; width: auto; max-width: 45%; }
+.food-search select { flex: 0 1 auto; width: auto; max-width: 60%; }
 .stock-tag { margin-left: 6px; font-size: .8em; color: var(--secondary-text-color); }
 .stock-tag.low { color: var(--error-color); font-weight: 700; }
 .pantry-fields { margin-top: 12px; }

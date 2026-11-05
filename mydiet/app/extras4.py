@@ -92,6 +92,21 @@ def recipe_rows(c, owner: str, only: int | None = None, shared: bool = False) ->
         grams, tot = totals(items, r["cooked_g"])
         out.append({**dict(r), "items": items, "total_g": grams, "total": tot,
                     "portion": {k: v / r["portions"] for k, v in tot.items()}, "portion_g": grams / r["portions"]})
+    # use in the diary: entries with the name of the recipe's food (entries are snapshots without a link)
+    names = {}
+    for r in out:
+        f = c.execute("SELECT name FROM foods WHERE id=?", (r["food_id"],)).fetchone() if r.get("food_id") else None
+        names[r["id"]] = f["name"] if f else r["name"]
+    if out:
+        wanted = sorted(set(names.values()))
+        used = {}
+        for i in range(0, len(wanted), 500):
+            part = wanted[i:i + 500]
+            for u in c.execute(f"SELECT name, COUNT(*) n, MAX(day) last FROM entries WHERE owner=? AND name IN ({','.join('?' * len(part))}) GROUP BY name",
+                               (owner, *part)):
+                used[u["name"]] = (u["n"], u["last"])
+        for r in out:
+            r["uses"], r["last_used"] = used.get(names[r["id"]], (0, None))
     owner_names(c, out, owner)
     return out
 

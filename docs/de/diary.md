@@ -67,7 +67,7 @@ Unter *Einstellungen → Darstellung → Tagebuch* kannst Du statt fester Mahlze
 
 Beim Eintragen wählst Du die Vorlage unter **Meine Mahlzeiten**, gibst bei **Portionen** einen Faktor an (1 = wie gespeichert) und tippst auf **Hinzufügen**. Auch diese Vorlagen sind Schnappschüsse.
 
-Verwalten kannst Du sie im Reiter **Mahlzeiten**: bearbeiten (**✎**), Komponenten hinzufügen oder tauschen (**⇄**), eine Kopie anlegen (**⧉**), Kategorie vergeben, löschen, teilen (**⇪**, siehe [Haushalt](household.md)) oder einen Trigger anlegen (**⚡**).
+Verwalten kannst Du sie im Reiter **Mahlzeiten**: bearbeiten (**✎**), Komponenten hinzufügen oder tauschen (**⇄**), eine Kopie anlegen (**⧉**), Kategorie vergeben, löschen, teilen (**⇪**, siehe [Haushalt](household.md)) oder einen Trigger anlegen (**⚡**). Die Auswahl neben dem Suchfeld sortiert die Liste wie bei den [Lebensmitteln](foods.md#suchen-bearbeiten-favoriten); „verwendet“ zählt, wie oft Du die Mahlzeit eingetragen hast.
 
 ### Einträge kopieren
 
