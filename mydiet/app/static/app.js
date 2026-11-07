@@ -6952,6 +6952,30 @@ const setDlg = (...kids) => {
   if (first && first.tagName === "H2") dlg.replaceChildren(first, h("div", { class: "dlg-body" }, ...rest));
   else dlg.replaceChildren(h("div", { class: "dlg-body" }, first, ...rest));
 };
+// Autofocus: dialogs and pages made for typing put the cursor in their first text field, so typing can start right away.
+// Only text-like fields count (not date, checkbox, select …); a field the code already focused is left alone.
+const TYPING = "input:not([type]), input[type=text], input[type=search], input[type=number], input[type=url], input[type=email], input[type=tel], textarea";
+const typingFocused = () => { const a = document.activeElement; return !!a && a.matches(TYPING); };
+function focusField(el) {
+  if (!el || el.disabled || el.readOnly || !el.matches(TYPING) || !el.getClientRects().length) return;
+  el.focus({ preventScroll: true });
+}
+const showModalNative = dlg.showModal.bind(dlg);
+dlg.showModal = () => {
+  showModalNative();
+  setTimeout(() => {
+    if (!dlg.open || (typingFocused() && dlg.contains(document.activeElement))) return;
+    const fields = [...dlg.querySelectorAll("input, select, textarea")].filter(el => el.type !== "hidden" && !el.disabled && el.getClientRects().length);
+    focusField(dlg.querySelector("[autofocus], [data-autofocus]") || fields[0]);
+  });
+};
+// On a page the main field (marked data-autofocus, else the search box) gets the cursor, but only with mouse and keyboard:
+// on a phone the on-screen keyboard would cover half the page on every tab switch.
+function focusPage(tab) {
+  if (dlg.open || typingFocused() || !matchMedia("(pointer: fine)").matches) return;
+  const root = document.getElementById(tab);
+  if (root) focusField(root.querySelector("[data-autofocus]") || root.querySelector("input[type=search]"));
+}
 
 // Optik: "auto" switches to the Windows look when the HA theme is called HA 95/98 (see theme.js).
 const SKIN_RE = /ha[\s_-]*9[58]|windows|win[\s_-]*9[58]/i;
@@ -6982,9 +7006,9 @@ new MutationObserver(applySkin).observe(document.documentElement, { attributes: 
 // ---------------------------------------------------------------- tabs
 $("#tabs").addEventListener("click", e => {
   const t = e.target.closest("button");
-  if (t) show(t.dataset.tab);
+  if (t) show(t.dataset.tab, e.detail !== 0);   // detail 0: chosen with the keyboard, the focus stays on the tab bar
 });
-function show(tab) {
+function show(tab, focus = true) {
   state.tab = tab;
   for (const b of document.querySelectorAll("#tabs button")) {
     b.classList.toggle("active", b.dataset.tab === tab);
@@ -6995,7 +7019,8 @@ function show(tab) {
   const on = document.querySelector(`#tabs [data-tab="${tab}"]`);
   if (on && on.scrollIntoView) on.scrollIntoView({ block: "nearest", inline: "center" });
   window.scrollTo(0, 0);
-  return ({ diary: renderDiary, foods: renderFoods, meals: renderMeals, weight: renderWeight, stats: renderStats, settings: renderSettings, recipes: renderRecipes })[tab]();
+  return Promise.resolve(({ diary: renderDiary, foods: renderFoods, meals: renderMeals, weight: renderWeight, stats: renderStats, settings: renderSettings, recipes: renderRecipes })[tab]())
+    .then(r => { if (focus && state.tab === tab) focusPage(tab); return r; });
 }
 
 // ---------------------------------------------------------------- accessibility
@@ -9161,7 +9186,7 @@ async function renderWeight() {
   root.replaceChildren();
 
   const day = h("input", { type: "date", value: iso(new Date()) });
-  const kg = h("input", { type: "number", step: "0.1", min: Math.round(wConv(20)), max: Math.round(wConv(500)), placeholder: "z. B. 78,5" });
+  const kg = h("input", { type: "number", step: "0.1", min: Math.round(wConv(20)), max: Math.round(wConv(500)), placeholder: "z. B. 78,5", "data-autofocus": true });
   root.append(h("div", { class: "card" }, h("h2", {}, "Gewicht eintragen"),
     h("div", { class: "grid" },
       h("div", {}, h("label", {}, "Datum"), day),

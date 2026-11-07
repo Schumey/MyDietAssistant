@@ -372,6 +372,23 @@ def test_tabs_work_with_arrow_keys_and_the_dialog_is_named_and_closes_with_escap
     page.wait_for_selector("dialog[open]", state="detached")
 
 
+def test_pages_and_dialogs_put_the_cursor_in_their_input_field(page):
+    settings(page.base, lang="de", features={})
+    page.goto(page.base + "/")
+    page.wait_for_selector("#diary .daynav")
+    active = "(() => { const a = document.activeElement; return a ? a.tagName + ':' + (a.type || '') + ':' + !!a.closest('#' + %r) : ''; })()"
+    page.click('#tabs button[data-tab="foods"]')
+    page.wait_for_function(active % "foods" + " === 'INPUT:search:true'")
+    page.click('#tabs button[data-tab="weight"]')
+    page.wait_for_function(active % "weight" + " === 'INPUT:number:true'")
+    page.keyboard.type("80")
+    assert page.input_value('#weight input[type="number"]') == "80"
+    page.click('#tabs button[data-tab="foods"]')
+    page.click("text=+ Neues Lebensmittel")
+    page.wait_for_function(active % "dlg" + " === 'INPUT:text:true'")
+    assert page.errors == []
+
+
 def test_barcode_lookup_fills_the_food_form_and_reports_a_missing_scanner(page):
     import json
     settings(page.base, lang="de", features={})
