@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.36.0
+
+### Neu
+- **Cursor springt ins Eingabefeld:** Dialoge setzen den Cursor sofort in ihr erstes Textfeld (z. B. Menge beim Bearbeiten eines Eintrags, Name beim neuen Lebensmittel), Du kannst also gleich lostippen. Auf den Seiten „Lebensmittel“, „Mahlzeiten“ und „Rezepte“ landet der Cursor im Suchfeld, unter „Gewicht“ im Gewichtsfeld – das nur mit Maus und Tastatur, auf dem Handy würde sonst bei jedem Reiterwechsel die Bildschirmtastatur die halbe Seite verdecken.
+
 ## 1.35.1
 
 ### Behoben

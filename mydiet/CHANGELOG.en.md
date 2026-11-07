@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.36.0
+
+### New
+- **Cursor jumps into the input field:** dialogs put the cursor straight into their first text field (e.g. the amount when editing an entry, the name for a new food), so you can start typing right away. On the “Foods”, “Meals” and “Recipes” pages the cursor lands in the search box, on “Weight” in the weight field – only with mouse and keyboard, since on a phone the on-screen keyboard would otherwise cover half the page on every tab switch.
+
 ## 1.35.1
 
 ### Fixed
