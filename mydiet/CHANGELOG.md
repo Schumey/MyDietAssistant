@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.36.2
+
+### Behoben
+- **Netto-Kalorien mit Gesamtverbrauch** ([#3](https://github.com/Schumey/MyDietAssistant/issues/3)): Liefert der Kalorien-Sensor die gesamten verbrannten Kalorien (inkl. Grundumsatz, z. B. aus Health Connect), wurde der Grundumsatz mit abgezogen, die Netto-Werte waren viel zu niedrig und der Aktivitätszuschlag zu hoch. Neues Feld **Grundumsatz abziehen** in Einstellungen → Aktivität: Dann zählt nur der Teil über dem Grundumsatz als Aktivität (für heute anteilig nach Uhrzeit), in Statistik, Tagesziel und Tagebuch-Karte.
+
 ## 1.36.1
 
 ### Behoben

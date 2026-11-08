@@ -14,7 +14,8 @@ Schritte und verbrannte Kalorien erhöhen das Tagesziel des jeweiligen Tages.
 4. Wähle **Sensor für Schritte** (z. B. `sensor.handy_schritte`) und **Sensor für aktive Kalorien (kcal)** (z. B. `sensor.handy_aktive_kalorien`). Mindestens einer genügt.
 5. Lege den **Anteil, der das Tagesziel erhöht (%)** fest. Standard 50 %; viele Apps schätzen verbrannte Kalorien zu hoch.
 6. Ohne Kalorien-Sensor schätzt das Add-on aus Schritten × Körpergewicht × Faktor (Standard 0,0005 kcal je Schritt und kg). Den Faktor stellst Du unter **kcal je Schritt und kg Körpergewicht** ein.
-7. Tippe auf **Speichern**.
+7. Liefert Dein Kalorien-Sensor die **gesamten** verbrannten Kalorien (inklusive Grundumsatz, z. B. „Kalorien gesamt“ aus Health Connect), trage unter **Grundumsatz abziehen (kcal pro Tag, 0 = aus)** Deinen Grundumsatz ein (zeigt meist Deine Uhr oder Fitness-App). Dann zählt nur der Teil darüber als Aktivität; für den laufenden Tag wird der Grundumsatz anteilig nach Uhrzeit abgezogen. Bei aktiven Kalorien bleibt das Feld auf 0.
+8. Tippe auf **Speichern**.
 
 Das Add-on liest die Sensoren alle fünf Minuten und behält den höchsten Wert des Tages.
 
@@ -33,6 +34,6 @@ Die Statistik und der Sensor `kcal_remaining_today` rechnen mit dem erhöhten Zi
 
 ### Netto-Kalorien
 
-In der Statistik erscheint mit der Zusatzfunktion „Aktivität“ oben ein Umschalter **Brutto-Kalorien / Netto-Kalorien**. Bei *Netto-Kalorien* zeigen Kacheln und Diagramm die Aufnahme abzüglich der verbrannten Kalorien (vollständig, nicht nur der angerechnete Anteil) und vergleichen sie mit dem Tagesziel ohne Aktivitätszuschlag, wie in MyFitnessPal. Die Auswahl bleibt im Browser gespeichert.
+In der Statistik erscheint mit der Zusatzfunktion „Aktivität“ oben ein Umschalter **Brutto-Kalorien / Netto-Kalorien**. Bei *Netto-Kalorien* zeigen Kacheln und Diagramm die Aufnahme abzüglich der verbrannten Kalorien (vollständig, nicht nur der angerechnete Anteil) und vergleichen sie mit dem Tagesziel ohne Aktivitätszuschlag, wie in MyFitnessPal (Netto = Aufnahme − (Gesamtverbrauch − Grundumsatz), wenn ein Grundumsatz eingetragen ist). Die Auswahl bleibt im Browser gespeichert.
 
 Läuft nur im Home-Assistant-Add-on (Sensoren und Verlauf). Hilfe: [Fehlersuche](troubleshooting.md).

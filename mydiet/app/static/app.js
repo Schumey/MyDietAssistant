@@ -375,7 +375,7 @@ const EN = {
   "aus Schritten geschätzt": "estimated from steps", "Eintragen": "Log", "Aus Home Assistant lesen": "Read from Home Assistant", "Handeingabe verwerfen": "Discard manual entry",
   "Dein Tagesziel (+{} kcal Aktivität)": "Your daily goal (+{} kcal activity)", "Tagesziel ({}) (+{} kcal Aktivität)": "Daily goal ({}) (+{} kcal activity)", "(+{} kcal Aktivität)": "(+{} kcal activity)",
   "Von Hand eingetragene Werte werden für diesen Tag nicht mehr von den Sensoren überschrieben.": "Values typed in by hand are no longer overwritten by the sensors for this day.",
-  "Verbrannte Kalorien (kcal)": "Burned calories (kcal)", "leer = aus Schritten schätzen": "empty = estimate from steps",
+  "Verbrannte Kalorien (kcal)": "Burned calories (kcal)", "Verbrannte Kalorien gesamt, inkl. Grundumsatz (kcal)": "Total burned calories, incl. basal metabolic rate (kcal)", "{} kcal gesamt abzüglich Grundumsatz": "{} kcal total minus basal metabolic rate", "Grundumsatz abziehen (kcal pro Tag, 0 = aus)": "Subtract basal metabolic rate (kcal per day, 0 = off)", "Nur nötig, wenn dein Kalorien-Sensor die gesamten verbrannten Kalorien liefert (z. B. „Kalorien gesamt“ aus Health Connect). Dann zählt nur der Teil über dem Grundumsatz als Aktivität, für heute anteilig nach Uhrzeit. Den Wert zeigt meist deine Uhr oder Fitness-App an.": "Only needed if your calorie sensor reports total calories burned (e.g. “Total calories” from Health Connect). Then only the part above the basal metabolic rate counts as activity, for today in proportion to the time of day. Your watch or fitness app usually shows this value.", "leer = aus Schritten schätzen": "empty = estimate from steps",
   "{} % der verbrannten Kalorien": "{} % of the burned calories",
   "Sensoren aus Home Assistant, die über den Tag hochzählen und um Mitternacht auf 0 springen (ein dauerhaft steigender Zähler lässt sich mit dem Helfer „Verbrauchszähler“ auf täglich umstellen). Das Add-on liest sie alle fünf Minuten. Ohne Kalorien-Sensor werden Kalorien aus Schritten, Körpergewicht und dem Faktor unten geschätzt; Werte lassen sich auch von Hand eintragen.":
     "Home Assistant sensors that count up during the day and reset to 0 at midnight (a counter that only ever grows can be made daily with the “Utility Meter” helper). The add-on reads them every five minutes. Without a calorie sensor, calories are estimated from steps, body weight and the factor below; values can also be typed in by hand.",
@@ -1354,6 +1354,10 @@ Object.assign(LANGS, {
     "(+{} kcal Aktivität)": "(+{} kcal d’activité)",
     "Von Hand eingetragene Werte werden für diesen Tag nicht mehr von den Sensoren überschrieben.": "Les valeurs saisies à la main ne sont plus écrasées par les capteurs pour ce jour.",
     "Verbrannte Kalorien (kcal)": "Calories brûlées (kcal)",
+    "Verbrannte Kalorien gesamt, inkl. Grundumsatz (kcal)": "Calories brûlées au total, métabolisme de base inclus (kcal)",
+    "{} kcal gesamt abzüglich Grundumsatz": "{} kcal au total moins le métabolisme de base",
+    "Grundumsatz abziehen (kcal pro Tag, 0 = aus)": "Déduire le métabolisme de base (kcal par jour, 0 = désactivé)",
+    "Nur nötig, wenn dein Kalorien-Sensor die gesamten verbrannten Kalorien liefert (z. B. „Kalorien gesamt“ aus Health Connect). Dann zählt nur der Teil über dem Grundumsatz als Aktivität, für heute anteilig nach Uhrzeit. Den Wert zeigt meist deine Uhr oder Fitness-App an.": "Nécessaire uniquement si ton capteur de calories fournit le total des calories brûlées (p. ex. « Calories totales » de Health Connect). Seule la part au-dessus du métabolisme de base compte alors comme activité, pour aujourd’hui au prorata de l’heure. Ta montre ou ton appli de fitness affiche généralement cette valeur.",
     "leer = aus Schritten schätzen": "vide = estimer à partir des pas",
     "{} % der verbrannten Kalorien": "{} % des calories brûlées",
     "Sensoren aus Home Assistant, die über den Tag hochzählen und um Mitternacht auf 0 springen (ein dauerhaft steigender Zähler lässt sich mit dem Helfer „Verbrauchszähler“ auf täglich umstellen). Das Add-on liest sie alle fünf Minuten. Ohne Kalorien-Sensor werden Kalorien aus Schritten, Körpergewicht und dem Faktor unten geschätzt; Werte lassen sich auch von Hand eintragen.": "Capteurs Home Assistant qui comptent au fil de la journée et repassent à 0 à minuit (un compteur qui ne fait que croître peut être rendu quotidien avec l’assistant “Compteur d’utilité”). Le module les lit toutes les cinq minutes. Sans capteur de calories, les calories sont estimées à partir des pas, du poids corporel et du facteur ci-dessous ; les valeurs peuvent aussi être saisies à la main.",
@@ -2360,6 +2364,10 @@ Object.assign(LANGS, {
     "(+{} kcal Aktivität)": "(+{} kcal de actividad)",
     "Von Hand eingetragene Werte werden für diesen Tag nicht mehr von den Sensoren überschrieben.": "Los valores introducidos a mano ya no se sobrescriben con los sensores para este día.",
     "Verbrannte Kalorien (kcal)": "Calorías quemadas (kcal)",
+    "Verbrannte Kalorien gesamt, inkl. Grundumsatz (kcal)": "Calorías quemadas en total, incl. metabolismo basal (kcal)",
+    "{} kcal gesamt abzüglich Grundumsatz": "{} kcal en total menos el metabolismo basal",
+    "Grundumsatz abziehen (kcal pro Tag, 0 = aus)": "Restar el metabolismo basal (kcal por día, 0 = desactivado)",
+    "Nur nötig, wenn dein Kalorien-Sensor die gesamten verbrannten Kalorien liefert (z. B. „Kalorien gesamt“ aus Health Connect). Dann zählt nur der Teil über dem Grundumsatz als Aktivität, für heute anteilig nach Uhrzeit. Den Wert zeigt meist deine Uhr oder Fitness-App an.": "Solo es necesario si tu sensor de calorías indica el total de calorías quemadas (p. ej. «Calorías totales» de Health Connect). Entonces solo cuenta como actividad la parte por encima del metabolismo basal, hoy en proporción a la hora. Tu reloj o app de fitness suele mostrar este valor.",
     "leer = aus Schritten schätzen": "vacío = estimar a partir de los pasos",
     "{} % der verbrannten Kalorien": "{} % de las calorías quemadas",
     "Sensoren aus Home Assistant, die über den Tag hochzählen und um Mitternacht auf 0 springen (ein dauerhaft steigender Zähler lässt sich mit dem Helfer „Verbrauchszähler“ auf täglich umstellen). Das Add-on liest sie alle fünf Minuten. Ohne Kalorien-Sensor werden Kalorien aus Schritten, Körpergewicht und dem Faktor unten geschätzt; Werte lassen sich auch von Hand eintragen.": "Sensores de Home Assistant que cuentan a lo largo del día y vuelven a 0 a medianoche (un contador que solo crece se puede hacer diario con el asistente “Medidor de consumo”). El complemento los lee cada cinco minutos. Sin sensor de calorías, estas se estiman a partir de los pasos, el peso corporal y el factor de abajo; los valores también se pueden introducir a mano.",
@@ -3372,6 +3380,10 @@ Object.assign(LANGS, {
     "(+{} kcal Aktivität)": "(+{} kcal activiteit)",
     "Von Hand eingetragene Werte werden für diesen Tag nicht mehr von den Sensoren überschrieben.": "Handmatig ingevoerde waarden worden voor deze dag niet meer door de sensoren overschreven.",
     "Verbrannte Kalorien (kcal)": "Verbrande calorieën (kcal)",
+    "Verbrannte Kalorien gesamt, inkl. Grundumsatz (kcal)": "Totaal verbrande calorieën, incl. basaal metabolisme (kcal)",
+    "{} kcal gesamt abzüglich Grundumsatz": "{} kcal totaal min basaal metabolisme",
+    "Grundumsatz abziehen (kcal pro Tag, 0 = aus)": "Basaal metabolisme aftrekken (kcal per dag, 0 = uit)",
+    "Nur nötig, wenn dein Kalorien-Sensor die gesamten verbrannten Kalorien liefert (z. B. „Kalorien gesamt“ aus Health Connect). Dann zählt nur der Teil über dem Grundumsatz als Aktivität, für heute anteilig nach Uhrzeit. Den Wert zeigt meist deine Uhr oder Fitness-App an.": "Alleen nodig als je caloriesensor het totaal aan verbrande calorieën levert (bijv. „Totale calorieën” uit Health Connect). Dan telt alleen het deel boven het basaal metabolisme als activiteit, voor vandaag naar rato van de tijd. Je horloge of fitness-app toont deze waarde meestal.",
     "leer = aus Schritten schätzen": "leeg = schatten uit stappen",
     "{} % der verbrannten Kalorien": "{} % van de verbrande calorieën",
     "Sensoren aus Home Assistant, die über den Tag hochzählen und um Mitternacht auf 0 springen (ein dauerhaft steigender Zähler lässt sich mit dem Helfer „Verbrauchszähler“ auf täglich umstellen). Das Add-on liest sie alle fünf Minuten. Ohne Kalorien-Sensor werden Kalorien aus Schritten, Körpergewicht und dem Faktor unten geschätzt; Werte lassen sich auch von Hand eintragen.": "Sensoren uit Home Assistant die overdag oplopen en om middernacht op 0 springen (een teller die alleen maar stijgt, kun je met de helper “Verbruiksmeter” dagelijks maken). De add-on leest ze elke vijf minuten. Zonder calorie-sensor worden calorieën geschat uit stappen, lichaamsgewicht en de factor hieronder; waarden kunnen ook handmatig worden ingevoerd.",
@@ -4390,6 +4402,10 @@ Object.assign(LANGS, {
     "(+{} kcal Aktivität)": "(+{} kcal attività)",
     "Von Hand eingetragene Werte werden für diesen Tag nicht mehr von den Sensoren überschrieben.": "I valori digitati a mano non vengono più sovrascritti dai sensori per questo giorno.",
     "Verbrannte Kalorien (kcal)": "Calorie bruciate (kcal)",
+    "Verbrannte Kalorien gesamt, inkl. Grundumsatz (kcal)": "Calorie bruciate totali, incl. metabolismo basale (kcal)",
+    "{} kcal gesamt abzüglich Grundumsatz": "{} kcal totali meno il metabolismo basale",
+    "Grundumsatz abziehen (kcal pro Tag, 0 = aus)": "Sottrai il metabolismo basale (kcal al giorno, 0 = disattivato)",
+    "Nur nötig, wenn dein Kalorien-Sensor die gesamten verbrannten Kalorien liefert (z. B. „Kalorien gesamt“ aus Health Connect). Dann zählt nur der Teil über dem Grundumsatz als Aktivität, für heute anteilig nach Uhrzeit. Den Wert zeigt meist deine Uhr oder Fitness-App an.": "Serve solo se il tuo sensore di calorie fornisce le calorie bruciate totali (ad es. «Calorie totali» da Health Connect). Allora conta come attività solo la parte sopra il metabolismo basale, per oggi in proporzione all’ora. Di solito il tuo orologio o la tua app di fitness mostra questo valore.",
     "leer = aus Schritten schätzen": "vuoto = stima dai passi",
     "{} % der verbrannten Kalorien": "{} % delle calorie bruciate",
     "Sensoren aus Home Assistant, die über den Tag hochzählen und um Mitternacht auf 0 springen (ein dauerhaft steigender Zähler lässt sich mit dem Helfer „Verbrauchszähler“ auf täglich umstellen). Das Add-on liest sie alle fünf Minuten. Ohne Kalorien-Sensor werden Kalorien aus Schritten, Körpergewicht und dem Faktor unten geschätzt; Werte lassen sich auch von Hand eintragen.": "Sensori di Home Assistant che contano durante il giorno e si azzerano a mezzanotte (un contatore che cresce soltanto può diventare giornaliero con l’helper “Utility Meter”). Il componente li legge ogni cinque minuti. Senza sensore delle calorie, le calorie vengono stimate da passi, peso corporeo e dal fattore qui sotto; i valori si possono anche digitare a mano.",
@@ -5408,6 +5424,10 @@ Object.assign(LANGS, {
     "(+{} kcal Aktivität)": "(+{} kcal de atividade)",
     "Von Hand eingetragene Werte werden für diesen Tag nicht mehr von den Sensoren überschrieben.": "Valores digitados à mão não são mais sobrescritos pelos sensores neste dia.",
     "Verbrannte Kalorien (kcal)": "Calorias queimadas (kcal)",
+    "Verbrannte Kalorien gesamt, inkl. Grundumsatz (kcal)": "Calorias queimadas no total, incl. metabolismo basal (kcal)",
+    "{} kcal gesamt abzüglich Grundumsatz": "{} kcal no total menos o metabolismo basal",
+    "Grundumsatz abziehen (kcal pro Tag, 0 = aus)": "Subtrair o metabolismo basal (kcal por dia, 0 = desligado)",
+    "Nur nötig, wenn dein Kalorien-Sensor die gesamten verbrannten Kalorien liefert (z. B. „Kalorien gesamt“ aus Health Connect). Dann zählt nur der Teil über dem Grundumsatz als Aktivität, für heute anteilig nach Uhrzeit. Den Wert zeigt meist deine Uhr oder Fitness-App an.": "Só é necessário se o teu sensor de calorias fornecer o total de calorias queimadas (p. ex. «Calorias totais» do Health Connect). Assim, só a parte acima do metabolismo basal conta como atividade, hoje proporcionalmente à hora. O teu relógio ou app de fitness costuma mostrar este valor.",
     "leer = aus Schritten schätzen": "vazio = estimar a partir dos passos",
     "{} % der verbrannten Kalorien": "{} % das calorias queimadas",
     "Sensoren aus Home Assistant, die über den Tag hochzählen und um Mitternacht auf 0 springen (ein dauerhaft steigender Zähler lässt sich mit dem Helfer „Verbrauchszähler“ auf täglich umstellen). Das Add-on liest sie alle fünf Minuten. Ohne Kalorien-Sensor werden Kalorien aus Schritten, Körpergewicht und dem Faktor unten geschätzt; Werte lassen sich auch von Hand eintragen.": "Sensores do Home Assistant que contam ao longo do dia e zeram à meia-noite (um contador que só cresce pode virar diário com o auxiliar “Utility Meter”). O complemento os lê a cada cinco minutos. Sem sensor de calorias, as calorias são estimadas a partir dos passos, do peso corporal e do fator abaixo; os valores também podem ser digitados à mão.",
@@ -6426,6 +6446,10 @@ Object.assign(LANGS, {
     "(+{} kcal Aktivität)": "(+{} kcal aktywności)",
     "Von Hand eingetragene Werte werden für diesen Tag nicht mehr von den Sensoren überschrieben.": "Wartości wpisane ręcznie nie są już nadpisywane przez czujniki w tym dniu.",
     "Verbrannte Kalorien (kcal)": "Spalone kalorie (kcal)",
+    "Verbrannte Kalorien gesamt, inkl. Grundumsatz (kcal)": "Spalone kalorie łącznie, z podstawową przemianą materii (kcal)",
+    "{} kcal gesamt abzüglich Grundumsatz": "{} kcal łącznie minus podstawowa przemiana materii",
+    "Grundumsatz abziehen (kcal pro Tag, 0 = aus)": "Odejmij podstawową przemianę materii (kcal dziennie, 0 = wył.)",
+    "Nur nötig, wenn dein Kalorien-Sensor die gesamten verbrannten Kalorien liefert (z. B. „Kalorien gesamt“ aus Health Connect). Dann zählt nur der Teil über dem Grundumsatz als Aktivität, für heute anteilig nach Uhrzeit. Den Wert zeigt meist deine Uhr oder Fitness-App an.": "Potrzebne tylko, gdy twój czujnik kalorii podaje łączną liczbę spalonych kalorii (np. „Łączne kalorie” z Health Connect). Wtedy jako aktywność liczy się tylko część powyżej podstawowej przemiany materii, dziś proporcjonalnie do godziny. Tę wartość zwykle pokazuje twój zegarek lub aplikacja fitness.",
     "leer = aus Schritten schätzen": "puste = oszacuj z kroków",
     "{} % der verbrannten Kalorien": "{} % spalonych kalorii",
     "Sensoren aus Home Assistant, die über den Tag hochzählen und um Mitternacht auf 0 springen (ein dauerhaft steigender Zähler lässt sich mit dem Helfer „Verbrauchszähler“ auf täglich umstellen). Das Add-on liest sie alle fünf Minuten. Ohne Kalorien-Sensor werden Kalorien aus Schritten, Körpergewicht und dem Faktor unten geschätzt; Werte lassen sich auch von Hand eintragen.": "Czujniki Home Assistant, które liczą w ciągu dnia i zerują się o północy (licznik, który tylko rośnie, można zamienić na dzienny pomocnikiem „Utility Meter”). Dodatek odczytuje je co pięć minut. Bez czujnika kalorii kalorie są szacowane z kroków, masy ciała i współczynnika poniżej; wartości można też wpisać ręcznie.",
@@ -7456,7 +7480,7 @@ function activityCard(a) {
   return h("div", { class: "card" }, h("h2", {}, "Aktivität"),
     h("div", { class: "stat-tiles" },
       tile("Schritte", n0(a.steps)),
-      tile("Verbrannt", `${n0(a.kcal)} kcal`, a.estimated ? "aus Schritten geschätzt" : ""),
+      tile("Verbrannt", `${n0(a.kcal)} kcal`, a.estimated ? "aus Schritten geschätzt" : a.total_kcal != null ? `${n0(a.total_kcal)} kcal gesamt abzüglich Grundumsatz` : ""),
       tile("Zum Tagesziel", `+${n0(a.bonus)} kcal`, `${n0(a.config.share)} % der verbrannten Kalorien`)),
     h("div", { class: "actions", style: "justify-content:flex-start" },
       h("button", { class: "flat", onclick: () => activityDialog(a) }, "Eintragen"),
@@ -7473,11 +7497,11 @@ function activityCard(a) {
 
 function activityDialog(a) {
   const steps = h("input", { type: "number", step: "1", min: "0", value: a.steps || "" });
-  const kcal = h("input", { type: "number", step: "1", min: "0", value: a.estimated ? "" : a.kcal || "", placeholder: "leer = aus Schritten schätzen" });
+  const kcal = h("input", { type: "number", step: "1", min: "0", value: a.estimated ? "" : (a.total_kcal ?? a.kcal) || "", placeholder: "leer = aus Schritten schätzen" });
   const msg = h("div", { class: "err" });
   setDlg(h("h2", {}, "Aktivität eintragen"),
     h("div", { class: "muted" }, "Von Hand eingetragene Werte werden für diesen Tag nicht mehr von den Sensoren überschrieben."),
-    h("label", {}, "Schritte"), steps, h("label", {}, "Verbrannte Kalorien (kcal)"), kcal, msg,
+    h("label", {}, "Schritte"), steps, h("label", {}, a.config.bmr ? "Verbrannte Kalorien gesamt, inkl. Grundumsatz (kcal)" : "Verbrannte Kalorien (kcal)"), kcal, msg,
     h("div", { class: "actions" }, h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
       h("button", { onclick: async () => {
         try { await send("PUT", "activity/" + state.day, { steps: num(steps.value) || 0, kcal: num(kcal.value) || 0 }); dlg.close(); renderDiary(); }
@@ -10205,14 +10229,17 @@ async function renderSettings() {
     const kc = h("input", { list: "sensor-list", placeholder: "z. B. sensor.handy_aktive_kalorien", value: cfg.kcal_entity });
     const share = h("input", { type: "number", min: "0", max: "100", step: "5", value: cfg.share });
     const stride = h("input", { type: "number", min: "0.0001", max: "0.002", step: "0.0001", value: cfg.stride_kcal });
+    const bmr = h("input", { type: "number", min: "0", max: "5000", step: "10", placeholder: "0", value: cfg.bmr || "" });
     const asaved = h("span", { class: "muted" });
     root.append(h("div", { class: "card" }, h("h2", {}, "Aktivität"),
       h("div", { class: "muted" }, "Sensoren aus Home Assistant, die über den Tag hochzählen und um Mitternacht auf 0 springen (ein dauerhaft steigender Zähler lässt sich mit dem Helfer „Verbrauchszähler“ auf täglich umstellen). Das Add-on liest sie alle fünf Minuten. Ohne Kalorien-Sensor werden Kalorien aus Schritten, Körpergewicht und dem Faktor unten geschätzt; Werte lassen sich auch von Hand eintragen."),
       h("div", { class: "grid" }, h("div", {}, h("label", {}, "Sensor für Schritte"), steps), h("div", {}, h("label", {}, "Sensor für aktive Kalorien (kcal)"), kc)),
       h("div", { class: "grid" }, h("div", {}, h("label", {}, "Anteil, der das Tagesziel erhöht (%)"), share), h("div", {}, h("label", {}, "kcal je Schritt und kg Körpergewicht"), stride)),
       h("div", { class: "muted" }, "Viele Apps rechnen nur einen Teil der verbrannten Kalorien an (50 % ist ein vorsichtiger Wert), weil Aktivitätswerte oft zu hoch geschätzt sind."), sensors,
+      h("label", {}, "Grundumsatz abziehen (kcal pro Tag, 0 = aus)"), bmr,
+      h("div", { class: "muted" }, "Nur nötig, wenn dein Kalorien-Sensor die gesamten verbrannten Kalorien liefert (z. B. „Kalorien gesamt“ aus Health Connect). Dann zählt nur der Teil über dem Grundumsatz als Aktivität, für heute anteilig nach Uhrzeit. Den Wert zeigt meist deine Uhr oder Fitness-App an."),
       h("div", { class: "actions" }, asaved, h("button", { onclick: async () => {
-        try { await send("PUT", "activity/config", { steps_entity: steps.value.trim(), kcal_entity: kc.value.trim(), share: num(share.value) ?? 50, stride_kcal: num(stride.value) || 0.0005 }); asaved.className = "muted"; asaved.textContent = "Gespeichert ✓"; }
+        try { await send("PUT", "activity/config", { steps_entity: steps.value.trim(), kcal_entity: kc.value.trim(), share: num(share.value) ?? 50, stride_kcal: num(stride.value) || 0.0005, bmr: num(bmr.value) || 0 }); asaved.className = "muted"; asaved.textContent = "Gespeichert ✓"; }
         catch (e) { asaved.className = "err"; asaved.textContent = e.message; }
       } }, "Speichern"))));
   }
