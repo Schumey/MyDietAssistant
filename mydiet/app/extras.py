@@ -613,6 +613,7 @@ def dump(owner: str) -> dict:
             "activity": get_pref(owner, "activity", {}),
             "scale": get_pref(owner, "scale", {}),
             "activity_days": q("SELECT day,steps,kcal,manual FROM activity_days WHERE owner=? ORDER BY day", owner),
+            "bmr_days": q("SELECT day,kcal FROM bmr_days WHERE owner=? ORDER BY day", owner),
             "settings": {"diary_mode": get_pref(owner, "diary_mode", "meals"),
                          "goal_mode": get_pref(owner, "goal_mode", "lose"), "goal_rate": get_pref(owner, "goal_rate", 0.5),
                          "lang": get_pref(owner, "lang", "auto"), "units": get_pref(owner, "units", "metric"),
@@ -705,6 +706,9 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
         for a in d.get("activity_days", []):
             c.execute("INSERT OR REPLACE INTO activity_days(owner,day,steps,kcal,manual) VALUES(?,?,?,?,?)",
                       (owner, a["day"], a.get("steps", 0), a.get("kcal", 0), a.get("manual", 0)))
+        c.execute("DELETE FROM bmr_days WHERE owner=?", (owner,))
+        for b in d.get("bmr_days", []):
+            c.execute("INSERT OR REPLACE INTO bmr_days(owner,day,kcal) VALUES(?,?,?)", (owner, b["day"], b["kcal"]))
         c.execute("DELETE FROM recipe_items WHERE recipe_id IN (SELECT id FROM recipes WHERE owner=?)", (owner,))
         c.execute("DELETE FROM recipes WHERE owner=?", (owner,))
         for b in d.get("body_measures", []):

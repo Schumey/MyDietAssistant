@@ -49,11 +49,27 @@ def test_basal_metabolic_rate_is_subtracted_from_total_calories(user):
     assert a["kcal"] == 1500 and "total_kcal" not in a
 
 
-def test_bmr_share_counts_up_over_today():
-    now = datetime(2026, 5, 10, 12, 0)
-    assert extras9.bmr_share(2400, "2026-05-09", now) == 2400
-    assert extras9.bmr_share(2400, "2026-05-10", now) == 1200
-    assert extras9.bmr_share(2400, "2026-05-11", now) == 0
+def test_basal_rate_from_a_sensor_is_kept_per_day(user, monkeypatch):
+    """#3: the basal rate comes from a HA sensor (body composition scale) and changes with each measurement;
+    every day uses the value that was valid then, today's total is reduced by the full rate."""
+    c = user(feature=("activity",))
+    c.put("/api/activity/config", json={"kcal_entity": "sensor.total", "bmr_entity": "sensor.bmr", "bmr": 1500})
+    today = datetime.now().date().isoformat()
+    c.put(f"/api/activity/{DAY}", json={"steps": 0, "kcal": 2300})
+    assert c.get(f"/api/activity?day={DAY}").json()["kcal"] == 800        # no sensor value yet: typed-in rate
+    monkeypatch.setattr(extras9, "SUPERVISOR_TOKEN", "x")
+    states = {"sensor.total": {"state": "1800"}, "sensor.bmr": {"state": "1750", "last_changed": "2026-01-01T00:00:00+00:00"}}
+    monkeypatch.setattr(extras9, "ha_get", lambda path, **kw: states[path.split("/", 1)[1]])
+    r = c.post("/api/activity/sync").json()                                 # a days-old basal value still counts
+    assert (r["kcal"], r["total_kcal"], r["bmr"]) == (50, 1800, 1750)
+    assert c.get(f"/api/activity?day={DAY}").json()["kcal"] == 550         # earlier day: earliest known sensor value
+    with extras9.db.conn() as conn:
+        conn.execute("INSERT INTO bmr_days(owner,day,kcal) VALUES(?,?,?)", (c.uid, DAY, 1700))
+    assert c.get(f"/api/activity?day={DAY}").json()["bmr"] == 1700
+    states["sensor.bmr"] = {"state": "unavailable"}                         # implausible values are skipped
+    assert c.post("/api/activity/sync").json()["bmr"] == 1750
+    dump = c.get("/api/export/json").json()
+    assert {"day": today, "kcal": 1750} in dump["bmr_days"]
 
 
 def test_steps_alone_are_converted_with_the_body_weight(user):
