@@ -8289,10 +8289,14 @@ function barChart(allDays, goal) {
   const top = Math.max(...goals, ...days.map(d => d.kcal), 100);
   const step = [50, 100, 200, 250, 500, 1000, 2000, 5000].find(st => top / st <= 6) || 10000;
   const max = Math.ceil(top / step) * step * 1.04;
-  const y = v => T + (H - T - B) * (1 - v / max);
+  // net view can go below zero (burned more than eaten): extend the axis downwards
+  const low = Math.min(0, ...days.filter(d => d.logged).map(d => d.kcal));
+  const lowTick = Math.floor(low / step) * step;
+  const min = low < 0 ? lowTick * 1.04 : 0;
+  const y = v => T + (H - T - B) * (1 - (v - min) / (max - min));
   const bw = (W - L - R) / days.length;
   let s = "";
-  for (let v = 0; v <= max / 1.04 + 1e-6; v += step) {
+  for (let v = lowTick; v <= max / 1.04 + 1e-6; v += step) {
     s += `<line class="grid-line" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${n0(v)}</text>`;
   }
   const ticks = niceTicks(allDays[0].day, allDays[allDays.length - 1].day);
@@ -8300,7 +8304,7 @@ function barChart(allDays, goal) {
   let ti = 0;
   days.forEach((d, i) => {
     const x = L + i * bw, g = goals[i];
-    if (d.logged) s += `<rect class="bar-k${goalOver(d.kcal, g) ? " over" : ""}" x="${x + bw * 0.15}" y="${y(d.kcal)}" width="${bw * 0.7}" height="${H - B - y(d.kcal)}" rx="${d.week || bw > 3 ? 1 : 0}"/>`;
+    if (d.logged) s += `<rect class="bar-k${goalOver(d.kcal, g) ? " over" : ""}" x="${x + bw * 0.15}" y="${Math.min(y(d.kcal), y(0))}" width="${bw * 0.7}" height="${Math.abs(y(0) - y(d.kcal))}" rx="${d.week || bw > 3 ? 1 : 0}"/>`;
     // a tick goes to the bar (day or week) that contains its date
     while (ti < ticks.length && ticks[ti].day < (d.first || d.day)) ti++;
     if (ti < ticks.length && ticks[ti].day <= (d.end || d.day)) {
@@ -9445,7 +9449,7 @@ async function renderStats() {
   const canNet = !!state.features.activity;
   let net = false;
   try { net = canNet && localStorage.getItem("mda.statNet") === "1"; } catch { /* storage unavailable */ }
-  const days = net ? rawDays.map(d => ({ ...d, kcal: d.logged ? Math.max(0, d.kcal - (d.burned || 0)) : d.kcal, goal_kcal: d.goal_base_kcal ?? d.goal_kcal })) : rawDays;
+  const days = net ? rawDays.map(d => ({ ...d, kcal: d.logged ? d.kcal - (d.burned || 0) : d.kcal, goal_kcal: d.goal_base_kcal ?? d.goal_kcal })) : rawDays;
   const logged = days.filter(d => d.logged);
   const avg = k => logged.length ? logged.reduce((a, d) => a + d[k], 0) / logged.length : 0;
   const tile = (label, value) => h("div", { class: "tile" }, h("span", { class: "muted" }, label), h("b", {}, value));

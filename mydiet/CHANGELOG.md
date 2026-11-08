@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.36.1
+
+### Behoben
+- **Netto-Ansicht der Statistik** ([#3](https://github.com/Schumey/MyDietAssistant/issues/3)): Tage, an denen mehr verbrannt als gegessen wurde, fehlten (Balken auf 0 gekappt). Negative Netto-Werte werden jetzt als Balken unter der Nulllinie gezeigt.
+
 ## 1.36.0
 
 ### Neu

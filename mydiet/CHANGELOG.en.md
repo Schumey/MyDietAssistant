@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.36.1
+
+### Fixed
+- **Net view in the statistics** ([#3](https://github.com/Schumey/MyDietAssistant/issues/3)): days on which more was burned than eaten were missing (bar clamped to 0). Negative net values are now drawn as bars below the zero line.
+
 ## 1.36.0
 
 ### New
