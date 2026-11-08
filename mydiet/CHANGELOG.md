@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.36.3
+
+### Behoben
+- **Tab-Wechsel direkt nach dem Öffnen:** Wer einen Tab angetippt hat, bevor die Einstellungen geladen waren, landete wieder im Tagebuch, und der Tab erschien ohne die eingeschalteten Zusatzfunktionen (z. B. fehlte die Karte „Nährwert-Lücken“ in der Statistik). Der gewählte Tab bleibt jetzt offen und wird mit den Zusatzfunktionen neu gezeichnet.
+
 ## 1.36.2
 
 ### Behoben
