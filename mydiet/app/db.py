@@ -264,6 +264,12 @@ CREATE TABLE IF NOT EXISTS activity_days (    -- optional: steps / active kcal p
   manual INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (owner, day)
 );
+CREATE TABLE IF NOT EXISTS bmr_days (         -- optional: basal metabolic rate from a HA sensor, valid from its day on
+  owner TEXT NOT NULL,
+  day TEXT NOT NULL,
+  kcal REAL NOT NULL,
+  PRIMARY KEY (owner, day)
+);
 """
 
 
@@ -390,7 +396,12 @@ def _m10_v134(c):
               " WHERE food_id IS NULL")
 
 
-MIGRATIONS = (_m1_legacy, _m2_v1, _m3_v11, _m4_v17, _m5_v171, _m6_v176, _m7_v115, _m8_v125, _m9_v133, _m10_v134)
+def _m11_v137(c):
+    """v1.37: basal metabolic rate per day from a HA sensor (subtracted from total calories burned)."""
+    c.execute("CREATE TABLE IF NOT EXISTS bmr_days (owner TEXT NOT NULL, day TEXT NOT NULL, kcal REAL NOT NULL, PRIMARY KEY (owner, day))")
+
+
+MIGRATIONS = (_m1_legacy, _m2_v1, _m3_v11, _m4_v17, _m5_v171, _m6_v176, _m7_v115, _m8_v125, _m9_v133, _m10_v134, _m11_v137)
 
 
 def init():

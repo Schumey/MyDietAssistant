@@ -2,6 +2,14 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.37.0
+
+### Neu
+- **Sensor für den Grundumsatz** ([#3](https://github.com/Schumey/MyDietAssistant/issues/3)): In Einstellungen → Aktivität lässt sich eine Entität für den Grundumsatz wählen (z. B. von einer Körperanalyse-Waage über Health Connect). Der Wert wird je Tag gespeichert, jeder Tag rechnet mit dem damals gültigen Grundumsatz; „Verlauf nachladen“ holt ihn mit. Er ist Teil von Export/Import und „Daten löschen“.
+
+### Geändert
+- **Grundumsatz immer voll abziehen:** Der Gesamtwert aus Health Connect startet um Mitternacht schon mit dem ganzen Grundumsatz. Darum wird er jetzt auch für den laufenden Tag vollständig abgezogen (bisher anteilig nach Uhrzeit, was morgens zu viel Aktivität ergab). Die Tagebuch-Karte zeigt „… kcal gesamt − … kcal Grundumsatz“.
+
 ## 1.36.3
 
 ### Behoben

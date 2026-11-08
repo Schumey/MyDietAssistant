@@ -2,6 +2,14 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.37.0
+
+### New
+- **Basal metabolic rate sensor** ([#3](https://github.com/Schumey/MyDietAssistant/issues/3)): Settings → Activity can take an entity for the basal metabolic rate (e.g. from a body composition scale via Health Connect). The value is stored per day, so every day uses the basal rate valid at the time; "Load history" fetches it too. It is part of export/import and "Delete data".
+
+### Changed
+- **Basal rate always subtracted in full:** the Health Connect total already starts at midnight with the whole basal rate, so it is now subtracted in full for the current day as well (previously in proportion to the time of day, which gave too much activity in the morning). The diary card shows "… kcal total − … kcal basal metabolic rate".
+
 ## 1.36.3
 
 ### Fixed

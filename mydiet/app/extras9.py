@@ -16,8 +16,9 @@ from main import GOAL_HOOKS, SENSOR_HOOKS, SUPERVISOR_TOKEN, app, check_day, che
 # --- activity ------------------------------------------------------------------
 
 # share = % of burned kcal added to the budget; bmr = basal metabolic rate (kcal/day) to subtract when the
-# kcal values are total calories burned (e.g. Health Connect "total calories") instead of active calories, 0 = off
-DEFAULT_ACTIVITY = {"steps_entity": "", "kcal_entity": "", "share": 50, "stride_kcal": 0.0005, "bmr": 0}
+# kcal values are total calories burned (e.g. Health Connect "total calories") instead of active calories, 0 = off;
+# bmr_entity = HA sensor with the basal rate (e.g. from a body composition scale), its values are kept per day in bmr_days
+DEFAULT_ACTIVITY = {"steps_entity": "", "kcal_entity": "", "share": 50, "stride_kcal": 0.0005, "bmr": 0, "bmr_entity": ""}
 
 
 def activity_config(owner: str) -> dict:
@@ -29,32 +30,33 @@ def latest_kg(c, owner: str) -> float:
     return r["kg"] if r else 70.0
 
 
-def bmr_share(bmr: float, day: str, now: datetime | None = None) -> float:
-    """Part of the basal metabolic rate contained in a day's total: all of it for past days, the elapsed
-    fraction for today (a total-calories sensor counts the basal rate up over the day), none for later days."""
-    now = now or datetime.now()
-    today = now.date().isoformat()
-    if day < today:
-        return bmr
-    if day > today:
-        return 0.0
-    return bmr * (now.hour * 3600 + now.minute * 60 + now.second) / 86400
+def bmr_for(c, owner: str, day: str, cfg: dict) -> float:
+    """Basal metabolic rate of a day: with a sensor the latest value up to that day (it changes only with a new
+    scale reading), else the earliest one known, else the typed-in value; 0 = nothing to subtract."""
+    if cfg.get("bmr_entity"):
+        r = c.execute("SELECT kcal FROM bmr_days WHERE owner=? AND day<=? ORDER BY day DESC LIMIT 1", (owner, day)).fetchone() \
+            or c.execute("SELECT kcal FROM bmr_days WHERE owner=? ORDER BY day LIMIT 1", (owner,)).fetchone()
+        if r:
+            return float(r["kcal"])
+    return float(cfg.get("bmr") or 0)
 
 
 def burned(c, owner: str, day: str, cfg: dict | None = None) -> dict:
     """Steps and burned (active) kcal of a day; without a kcal value, steps * weight * factor estimates it.
-    With a basal metabolic rate set, the stored kcal are total calories and the basal part is subtracted."""
+    With a basal metabolic rate set, the stored kcal are total calories and the basal rate is subtracted in full
+    (Health Connect's total starts the day with the whole basal rate, so there is nothing to spread over the day)."""
     cfg = cfg or activity_config(owner)
     r = c.execute("SELECT steps, kcal, manual FROM activity_days WHERE owner=? AND day=?", (owner, day)).fetchone()
     steps, kcal, manual = (r["steps"], r["kcal"], bool(r["manual"])) if r else (0.0, 0.0, False)
     est, total = False, None
-    if kcal and cfg.get("bmr"):
-        total, kcal = kcal, max(0.0, kcal - bmr_share(float(cfg["bmr"]), day))
+    bmr = bmr_for(c, owner, day, cfg) if kcal else 0
+    if bmr:
+        total, kcal = kcal, max(0.0, kcal - bmr)
     elif not kcal and steps:
         kcal, est = steps * latest_kg(c, owner) * cfg["stride_kcal"], True
     out = {"steps": round(steps), "kcal": round(kcal), "estimated": est, "manual": manual}
     if total is not None:
-        out["total_kcal"] = round(total)
+        out["total_kcal"], out["bmr"] = round(total), round(bmr)
     return out
 
 
@@ -82,6 +84,7 @@ class ActivityConfigIn(BaseModel):
     share: float = 50
     stride_kcal: float = 0.0005
     bmr: float = 0
+    bmr_entity: str = ""
 
 
 class ActivityDayIn(BaseModel):
@@ -100,13 +103,13 @@ def get_activity(day: str, x_remote_user_id: str | None = Header(None)):
 
 @app.put("/api/activity/config")
 def put_activity_config(a: ActivityConfigIn, x_remote_user_id: str | None = Header(None)):
-    for e in (a.steps_entity, a.kcal_entity):
+    for e in (a.steps_entity, a.kcal_entity, a.bmr_entity):
         if e and not re.fullmatch(r"[a-z_]+\.[a-z0-9_]+", e):
             raise HTTPException(400, "Ungültige Entität")
     set_pref(user_from(x_remote_user_id), "activity", {
         "steps_entity": a.steps_entity, "kcal_entity": a.kcal_entity,
         "share": max(0.0, min(float(a.share), 100.0)), "stride_kcal": max(0.0001, min(float(a.stride_kcal), 0.002)),
-        "bmr": round(max(0.0, min(float(a.bmr), 5000.0)))})
+        "bmr": round(max(0.0, min(float(a.bmr), 5000.0))), "bmr_entity": a.bmr_entity})
     return {"ok": True}
 
 
@@ -147,6 +150,16 @@ def sensor_value(entity: str) -> float | None:
     return v if v >= 0 else None
 
 
+def bmr_value(entity: str) -> float | None:
+    """Current basal metabolic rate (kcal/day). Unlike the daily counters it may be days old: it only changes with a new
+    measurement. Implausible values (none, below 500 or above 5000) are ignored."""
+    try:
+        v = float(ha_get(f"states/{entity}")["state"])
+    except (httpx.HTTPError, ValueError, KeyError, TypeError):
+        return None
+    return v if 500 <= v <= 5000 else None
+
+
 def sync_activity_for(owner: str) -> dict:
     """Read today's values from the configured HA sensors. They are daily sensors that reset at midnight,
     so the highest value seen during a day is the day's total."""
@@ -158,6 +171,11 @@ def sync_activity_for(owner: str) -> dict:
             v = sensor_value(entity)
             if v is not None:
                 got[key] = v
+    if cfg.get("bmr_entity") and SUPERVISOR_TOKEN:
+        v = bmr_value(cfg["bmr_entity"])
+        if v:
+            with db.conn() as c:
+                c.execute("INSERT OR REPLACE INTO bmr_days(owner,day,kcal) VALUES(?,?,?)", (owner, today, v))
     if got:
         with db.conn() as c:
             r = c.execute("SELECT steps, kcal, manual FROM activity_days WHERE owner=? AND day=?", (owner, today)).fetchone()
@@ -203,8 +221,14 @@ def backfill_activity_for(owner: str, days: int) -> int:
         data = ha_get(f"history/period/{start.isoformat()}", filter_entity_id=entity, minimal_response="", no_attributes="")
         for day, v in daily_max(data[0] if data else []).items():
             per_day.setdefault(day, {})[key] = v
+    bmr_days = {}
+    if cfg.get("bmr_entity"):
+        data = ha_get(f"history/period/{start.isoformat()}", filter_entity_id=cfg["bmr_entity"], minimal_response="", no_attributes="")
+        bmr_days = {d: v for d, v in daily_max(data[0] if data else []).items() if 500 <= v <= 5000}
     n = 0
     with db.conn() as c:
+        for day, v in bmr_days.items():
+            c.execute("INSERT OR REPLACE INTO bmr_days(owner,day,kcal) VALUES(?,?,?)", (owner, day, v))
         for day, got in per_day.items():
             r = c.execute("SELECT steps, kcal, manual FROM activity_days WHERE owner=? AND day=?", (owner, day)).fetchone()
             if r and r["manual"]:
