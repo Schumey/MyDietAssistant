@@ -32,6 +32,30 @@ def test_activity_off_by_default(user):
     assert c.get(f"/api/day/{DAY}").json()["goal"]["kcal"] == 2000
 
 
+def test_basal_metabolic_rate_is_subtracted_from_total_calories(user):
+    """#3: a sensor with total calories burned includes the basal rate; only the part above it is activity."""
+    c = user(feature=("activity",))
+    c.put("/api/goal", json={"kcal": 2000})
+    c.put("/api/activity/config", json={"share": 100, "bmr": 1800})
+    c.put(f"/api/activity/{DAY}", json={"steps": 8000, "kcal": 2300})
+    a = c.get(f"/api/activity?day={DAY}").json()
+    assert (a["kcal"], a["total_kcal"], a["bonus"], a["config"]["bmr"]) == (500, 2300, 500, 1800)
+    s = next(d for d in c.get("/api/stats?days=400").json()["days"] if d["day"] == DAY)
+    assert (s["burned"], s["goal_kcal"]) == (500, 2500)
+    c.put(f"/api/activity/{DAY}", json={"steps": 0, "kcal": 1500})   # below the basal rate: no activity
+    assert c.get(f"/api/activity?day={DAY}").json()["kcal"] == 0
+    c.put("/api/activity/config", json={"share": 100, "bmr": 0})       # off: value counts as active calories
+    a = c.get(f"/api/activity?day={DAY}").json()
+    assert a["kcal"] == 1500 and "total_kcal" not in a
+
+
+def test_bmr_share_counts_up_over_today():
+    now = datetime(2026, 5, 10, 12, 0)
+    assert extras9.bmr_share(2400, "2026-05-09", now) == 2400
+    assert extras9.bmr_share(2400, "2026-05-10", now) == 1200
+    assert extras9.bmr_share(2400, "2026-05-11", now) == 0
+
+
 def test_steps_alone_are_converted_with_the_body_weight(user):
     c = user(feature=("activity",))
     c.put("/api/weights/2026-04-01", json={"kg": 80})

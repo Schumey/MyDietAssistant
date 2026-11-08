@@ -15,7 +15,9 @@ from main import GOAL_HOOKS, SENSOR_HOOKS, SUPERVISOR_TOKEN, app, check_day, che
 
 # --- activity ------------------------------------------------------------------
 
-DEFAULT_ACTIVITY = {"steps_entity": "", "kcal_entity": "", "share": 50, "stride_kcal": 0.0005}   # share = % of burned kcal added to the budget
+# share = % of burned kcal added to the budget; bmr = basal metabolic rate (kcal/day) to subtract when the
+# kcal values are total calories burned (e.g. Health Connect "total calories") instead of active calories, 0 = off
+DEFAULT_ACTIVITY = {"steps_entity": "", "kcal_entity": "", "share": 50, "stride_kcal": 0.0005, "bmr": 0}
 
 
 def activity_config(owner: str) -> dict:
@@ -27,15 +29,33 @@ def latest_kg(c, owner: str) -> float:
     return r["kg"] if r else 70.0
 
 
+def bmr_share(bmr: float, day: str, now: datetime | None = None) -> float:
+    """Part of the basal metabolic rate contained in a day's total: all of it for past days, the elapsed
+    fraction for today (a total-calories sensor counts the basal rate up over the day), none for later days."""
+    now = now or datetime.now()
+    today = now.date().isoformat()
+    if day < today:
+        return bmr
+    if day > today:
+        return 0.0
+    return bmr * (now.hour * 3600 + now.minute * 60 + now.second) / 86400
+
+
 def burned(c, owner: str, day: str, cfg: dict | None = None) -> dict:
-    """Steps and burned kcal of a day; without a kcal value, steps * weight * factor estimates it."""
+    """Steps and burned (active) kcal of a day; without a kcal value, steps * weight * factor estimates it.
+    With a basal metabolic rate set, the stored kcal are total calories and the basal part is subtracted."""
     cfg = cfg or activity_config(owner)
     r = c.execute("SELECT steps, kcal, manual FROM activity_days WHERE owner=? AND day=?", (owner, day)).fetchone()
     steps, kcal, manual = (r["steps"], r["kcal"], bool(r["manual"])) if r else (0.0, 0.0, False)
-    est = False
-    if not kcal and steps:
+    est, total = False, None
+    if kcal and cfg.get("bmr"):
+        total, kcal = kcal, max(0.0, kcal - bmr_share(float(cfg["bmr"]), day))
+    elif not kcal and steps:
         kcal, est = steps * latest_kg(c, owner) * cfg["stride_kcal"], True
-    return {"steps": round(steps), "kcal": round(kcal), "estimated": est, "manual": manual}
+    out = {"steps": round(steps), "kcal": round(kcal), "estimated": est, "manual": manual}
+    if total is not None:
+        out["total_kcal"] = round(total)
+    return out
 
 
 def bonus_for(c, owner: str, day: str) -> tuple[int, dict]:
@@ -61,6 +81,7 @@ class ActivityConfigIn(BaseModel):
     kcal_entity: str = ""
     share: float = 50
     stride_kcal: float = 0.0005
+    bmr: float = 0
 
 
 class ActivityDayIn(BaseModel):
@@ -84,7 +105,8 @@ def put_activity_config(a: ActivityConfigIn, x_remote_user_id: str | None = Head
             raise HTTPException(400, "Ungültige Entität")
     set_pref(user_from(x_remote_user_id), "activity", {
         "steps_entity": a.steps_entity, "kcal_entity": a.kcal_entity,
-        "share": max(0.0, min(float(a.share), 100.0)), "stride_kcal": max(0.0001, min(float(a.stride_kcal), 0.002))})
+        "share": max(0.0, min(float(a.share), 100.0)), "stride_kcal": max(0.0001, min(float(a.stride_kcal), 0.002)),
+        "bmr": round(max(0.0, min(float(a.bmr), 5000.0)))})
     return {"ok": True}
 
 

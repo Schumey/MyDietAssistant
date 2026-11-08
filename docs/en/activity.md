@@ -14,7 +14,8 @@ Steps and burned calories raise the daily goal of that day.
 4. Choose **Steps sensor** (for example `sensor.phone_steps`) and **Active calories sensor (kcal)** (for example `sensor.phone_active_calories`). One is enough.
 5. Set the **Share that raises the daily goal (%)**. Default 50 %; many apps overestimate burned calories.
 6. Without a calories sensor the add-on estimates from steps × body weight × factor (default 0.0005 kcal per step and kg). Set the factor under **kcal per step and kg body weight**.
-7. Tap **Save**.
+7. If your calorie sensor reports **total** calories burned (including the basal metabolic rate, e.g. “Total calories” from Health Connect), enter your basal metabolic rate under **Subtract basal metabolic rate (kcal per day, 0 = off)** (your watch or fitness app usually shows it). Then only the part above it counts as activity; for the current day the basal rate is subtracted in proportion to the time of day. With active calories, leave the field at 0.
+8. Tap **Save**.
 
 The add-on reads the sensors every five minutes and keeps the highest value of the day.
 
@@ -33,6 +34,6 @@ The statistics and the sensor `kcal_remaining_today` use the raised goal.
 
 ### Net calories
 
-With the optional feature “Activity”, the statistics get a **Gross calories / Net calories** switch at the top. *Net calories* shows intake minus burned calories (the full amount, not just the credited share) in the tiles and the chart, compared with the daily goal without the activity bonus, as in MyFitnessPal. The choice is kept in the browser.
+With the optional feature “Activity”, the statistics get a **Gross calories / Net calories** switch at the top. *Net calories* shows intake minus burned calories (the full amount, not just the credited share) in the tiles and the chart, compared with the daily goal without the activity bonus, as in MyFitnessPal (net = intake − (total burned − basal metabolic rate) when a basal metabolic rate is set). The choice is kept in the browser.
 
 Only runs in the Home Assistant add-on (sensors and history). Help: [Troubleshooting](troubleshooting.md).

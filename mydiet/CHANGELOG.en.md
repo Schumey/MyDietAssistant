@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.36.2
+
+### Fixed
+- **Net calories with total calories burned** ([#3](https://github.com/Schumey/MyDietAssistant/issues/3)): when the calorie sensor reports total calories burned (incl. the basal metabolic rate, e.g. from Health Connect), the basal rate was subtracted too, so net values were far too low and the activity bonus too high. New field **Subtract basal metabolic rate** in Settings → Activity: only the part above the basal rate then counts as activity (for today in proportion to the time of day), in the statistics, the daily goal and the diary card.
+
 ## 1.36.1
 
 ### Fixed
