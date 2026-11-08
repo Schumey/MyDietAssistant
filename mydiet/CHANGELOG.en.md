@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.36.3
+
+### Fixed
+- **Switching tabs right after opening:** a tab tapped before the settings had loaded jumped back to the diary and was drawn without the enabled optional features (e.g. the “Nutrient gaps” card in the statistics was missing). The chosen tab now stays open and is redrawn with the features.
+
 ## 1.36.2
 
 ### Fixed

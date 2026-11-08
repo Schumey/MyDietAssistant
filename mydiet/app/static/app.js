@@ -10769,7 +10769,8 @@ api("me").then(m => { $("#who").textContent = m.name; state.admin = !!m.admin; }
   } catch { /* keep auto */ }
   applySkin();
   applyTabs();
-  await show("diary");
+  // a tab clicked while the settings were loading stays open and is drawn again with the features now known
+  await show(state.tab);
   // widget buttons of the Android app: "scan" opens the scanner, "add" the add dialog of the current meal
   window.mdaAction = async action => {
     if (state.tab !== "diary" || state.day !== iso(new Date())) { state.day = iso(new Date()); await show("diary"); }
