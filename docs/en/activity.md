@@ -25,7 +25,7 @@ In the diary the **Activity** card shows steps, **Burned** (kcal; “estimated f
 
 - **Log:** set steps and burned calories by hand. Such days are no longer overwritten by the sensors. If you leave the calories empty, they are estimated from the steps.
 - **Read from Home Assistant:** reads the sensors immediately (today only).
-- **Load history:** fetches steps and calories of the last 30 days from Home Assistant’s history database (the recorder must record the sensors). Days with manual entry stay untouched.
+- **Load history:** fetches steps and calories of the last 30 days from Home Assistant’s history database (the recorder must record the sensors). The recorder usually keeps the detailed history for only 10 days; older days come from the long-term statistics that Home Assistant keeps permanently for sensors with a `state_class` (e.g. the companion app’s Health Connect sensors). Days with manual entry stay untouched.
 - **Discard manual entry:** hands the day back to the sensors.
 
 ## Effect

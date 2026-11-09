@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.37.2
+
+### Fixed
+- **"Load history" found nothing** ([#8](https://github.com/Schumey/MyDietAssistant/issues/8)): without an end time, Home Assistant returned only the first day of the period, i.e. the day 30 days ago, which the recorder has usually purged already ("History loaded: 0 days"). The whole period up to today is now requested. Days older than the recorder history (10 days by default) come from Home Assistant's long-term statistics, as long as the sensor has a `state_class` (like the companion app's Health Connect sensors).
+
 ## 1.37.1
 
 ### Changed

@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.37.2
+
+### Behoben
+- **„Verlauf nachladen“ fand nichts** ([#8](https://github.com/Schumey/MyDietAssistant/issues/8)): Home Assistant lieferte ohne Endzeit nur den ersten Tag des Zeitraums, also den Tag vor 30 Tagen, den der Recorder meist schon gelöscht hat („Verlauf nachgeladen: 0 Tage“). Jetzt wird der ganze Zeitraum bis heute abgefragt. Tage, die älter sind als der Recorder-Verlauf (Standard 10 Tage), kommen aus den Langzeitstatistiken von Home Assistant, sofern der Sensor eine `state_class` hat (wie die Sensoren der Companion-App aus Health Connect).
+
 ## 1.37.1
 
 ### Geändert

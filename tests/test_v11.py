@@ -169,12 +169,55 @@ def test_backfill_fills_days_but_keeps_manual_ones(user, monkeypatch, app_module
     c.put(f"/api/activity/{d2.date().isoformat()}", json={"steps": 111, "kcal": 0})
     monkeypatch.setattr(extras9, "ha_get", lambda path, **kw: [[{"state": "9000", "last_changed": d1.isoformat()},
                                                                  {"state": "5000", "last_changed": d2.isoformat()}]])
+    monkeypatch.setattr(extras9, "ha_ws", lambda msg: (_ for _ in ()).throw(OSError("no HA")))
     monkeypatch.setattr(extras9, "SUPERVISOR_TOKEN", "x")
     monkeypatch.setattr(app_module, "SUPERVISOR_TOKEN", "x")
     assert c.post("/api/activity/backfill?days=7").json() == {"days": 1}
     assert c.get(f"/api/activity?day={d1.date().isoformat()}").json()["steps"] == 9000
     assert c.get(f"/api/activity?day={d2.date().isoformat()}").json()["steps"] == 111
     assert c.post("/api/activity/backfill?days=0").status_code == 400
+
+
+def test_backfill_asks_for_the_whole_period_and_uses_long_term_statistics(user, monkeypatch, app_module):
+    """#8: without end_time HA returns only the first day after the start, which is empty when it lies beyond the
+    recorder's 10 days. Older days come from the hourly long-term statistics."""
+    import extras9
+    c = user("Anna", ("activity",))
+    c.put("/api/activity/config", json={"steps_entity": "sensor.steps", "kcal_entity": "sensor.kcal", "share": 50})
+    now = datetime.now().astimezone()
+    recent, old = now - timedelta(days=2), (now - timedelta(days=25)).replace(hour=10)
+    calls = []
+
+    def ha_get(path, **kw):
+        calls.append((path, kw))
+        return [[{"state": "7000", "last_changed": recent.isoformat()}]] if kw["filter_entity_id"] == "sensor.steps" else []
+
+    def ha_ws(msg):
+        assert msg["type"] == "recorder/statistics_during_period" and msg["period"] == "hour"
+        ms = lambda t: t.timestamp() * 1000
+        return {"sensor.steps": [{"start": ms(old), "state": 4000.0}, {"start": ms(old + timedelta(hours=5)), "state": 11000.0},
+                                 {"start": ms(recent), "state": 6500.0}],
+                "sensor.kcal": [{"start": ms(old), "max": 2900.0, "state": None}]}
+
+    monkeypatch.setattr(extras9, "ha_get", ha_get)
+    monkeypatch.setattr(extras9, "ha_ws", ha_ws)
+    monkeypatch.setattr(extras9, "SUPERVISOR_TOKEN", "x")
+    monkeypatch.setattr(app_module, "SUPERVISOR_TOKEN", "x")
+    assert c.post("/api/activity/backfill?days=30").json() == {"days": 2}
+    for path, kw in calls:
+        start, end = datetime.fromisoformat(path.split("/")[-1]), datetime.fromisoformat(kw["end_time"])
+        assert end - start > timedelta(days=30) and start.hour == 0
+    old_day = c.get(f"/api/activity?day={old.date().isoformat()}").json()
+    assert old_day["steps"] == 11000 and old_day["kcal"] == 2900
+    assert c.get(f"/api/activity?day={recent.date().isoformat()}").json()["steps"] == 7000   # higher of history and statistics
+
+
+def test_stats_daily_max_reads_millisecond_and_iso_starts():
+    import extras9
+    t = datetime(2026, 10, 3, 14, 0).astimezone()
+    rows = [{"start": t.timestamp() * 1000, "state": 5.0}, {"start": t.isoformat(), "max": 9.0},
+            {"start": "x", "max": 99.0}, {"start": t.timestamp() * 1000, "state": None, "max": None}]
+    assert extras9.stats_daily_max(rows) == {t.date().isoformat(): 9.0}
 
 
 # --- sensors ---------------------------------------------------------------------------

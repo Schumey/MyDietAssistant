@@ -1,5 +1,6 @@
 """v1.0: activity-based calorie budget (optional feature "activity"), meal schedule (optional feature "schedule")
 and the local cache of online food lookups."""
+import json
 import re
 from datetime import date, datetime, timedelta
 
@@ -209,22 +210,85 @@ def daily_max(history: list) -> dict[str, float]:
     return out
 
 
+def ha_ws(msg: dict):
+    """One command over the HA WebSocket API (the long-term statistics are not offered by the REST API).
+    The websockets package comes with uvicorn[standard] in the add-on image."""
+    from websockets.sync.client import connect
+    with connect("ws://supervisor/core/websocket", open_timeout=8, close_timeout=2, max_size=2 ** 25) as ws:
+        json.loads(ws.recv(timeout=8))   # auth_required
+        ws.send(json.dumps({"type": "auth", "access_token": SUPERVISOR_TOKEN}))
+        if json.loads(ws.recv(timeout=8)).get("type") != "auth_ok":
+            raise RuntimeError("HA WebSocket: authentication failed")
+        ws.send(json.dumps({"id": 1, **msg}))
+        while True:
+            r = json.loads(ws.recv(timeout=30))
+            if r.get("id") == 1 and r.get("type") == "result":
+                break
+    if not r.get("success"):
+        raise RuntimeError(f"HA WebSocket: {r.get('error')}")
+    return r["result"]
+
+
+def stats_daily_max(rows: list) -> dict[str, float]:
+    """Highest value per local day from hourly long-term statistics rows ("max" for measurements, "state" for totals)."""
+    out = {}
+    for row in rows:
+        start = row.get("start")
+        try:
+            t = datetime.fromtimestamp(start / 1000) if isinstance(start, (int, float)) \
+                else datetime.fromisoformat(str(start).replace("Z", "+00:00"))
+        except (ValueError, TypeError, OverflowError, OSError):
+            continue
+        vals = [float(v) for v in (row.get("max"), row.get("state")) if isinstance(v, (int, float)) and v >= 0]
+        if vals:
+            day = t.astimezone().date().isoformat()
+            out[day] = max(out.get(day, 0), *vals)
+    return out
+
+
+def long_term_days(entities: list, start: datetime, end: datetime) -> dict[str, dict[str, float]]:
+    """Daily maxima per entity from HA's long-term statistics, which reach back further than the recorder's
+    state history (default 10 days). Only sensors with a state_class have them; any failure just yields nothing."""
+    try:
+        res = ha_ws({"type": "recorder/statistics_during_period", "start_time": start.isoformat(), "end_time": end.isoformat(),
+                     "statistic_ids": entities, "period": "hour", "types": ["max", "state"]})
+    except Exception as e:   # no websockets package, HA unreachable, old HA: fall back to the state history alone
+        print(f"activity backfill: no long-term statistics ({e})", flush=True)
+        return {}
+    return {e: stats_daily_max(res.get(e) or []) for e in entities}
+
+
+def history_days(entities: list, start: datetime, end: datetime) -> dict[str, dict[str, float]]:
+    """Daily maxima per entity from the state history plus the long-term statistics (the higher value wins).
+    end_time is required: without it HA returns only the first day after the start."""
+    stats = long_term_days(entities, start, end)
+    out = {}
+    for entity in entities:
+        data = ha_get(f"history/period/{start.isoformat()}", filter_entity_id=entity, end_time=end.isoformat(),
+                      minimal_response="", no_attributes="")
+        days = daily_max(data[0] if data else [])
+        for day, v in stats.get(entity, {}).items():
+            days[day] = max(days.get(day, 0), v)
+        out[entity] = days
+    return out
+
+
 def backfill_activity_for(owner: str, days: int) -> int:
     """Fill past days from the HA history database (the sensors only get collected from switching the feature on otherwise).
     Days with manual values stay untouched; returns the number of days written."""
     cfg = activity_config(owner)
-    start = datetime.now().astimezone() - timedelta(days=days)
+    end = datetime.now().astimezone()
+    start = (end - timedelta(days=days)).replace(hour=0, minute=0, second=0, microsecond=0)   # whole first day
+    pairs = [(k, e) for k, e in (("steps", cfg["steps_entity"]), ("kcal", cfg["kcal_entity"])) if e]
+    entities = list(dict.fromkeys([e for _, e in pairs] + ([cfg["bmr_entity"]] if cfg.get("bmr_entity") else [])))
+    found = history_days(entities, start, end)
     per_day: dict[str, dict] = {}
-    for key, entity in (("steps", cfg["steps_entity"]), ("kcal", cfg["kcal_entity"])):
-        if not entity:
-            continue
-        data = ha_get(f"history/period/{start.isoformat()}", filter_entity_id=entity, minimal_response="", no_attributes="")
-        for day, v in daily_max(data[0] if data else []).items():
+    for key, entity in pairs:
+        for day, v in found[entity].items():
             per_day.setdefault(day, {})[key] = v
     bmr_days = {}
     if cfg.get("bmr_entity"):
-        data = ha_get(f"history/period/{start.isoformat()}", filter_entity_id=cfg["bmr_entity"], minimal_response="", no_attributes="")
-        bmr_days = {d: v for d, v in daily_max(data[0] if data else []).items() if 500 <= v <= 5000}
+        bmr_days = {d: v for d, v in found[cfg["bmr_entity"]].items() if 500 <= v <= 5000}
     n = 0
     with db.conn() as c:
         for day, v in bmr_days.items():

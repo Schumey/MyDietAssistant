@@ -25,7 +25,7 @@ Im Tagebuch zeigt die Karte **Aktivität** Schritte, **Verbrannt** (kcal; „aus
 
 - **Eintragen:** Schritte und verbrannte Kalorien von Hand setzen. Solche Tage überschreiben die Sensoren nicht mehr. Lässt Du die Kalorien leer, werden sie aus den Schritten geschätzt.
 - **Aus Home Assistant lesen:** liest die Sensoren sofort (nur heute).
-- **Verlauf nachladen:** holt die Schritte und Kalorien der letzten 30 Tage aus der Verlaufsdatenbank von Home Assistant (der Recorder muss die Sensoren aufzeichnen). Tage mit Handeingabe bleiben unberührt.
+- **Verlauf nachladen:** holt die Schritte und Kalorien der letzten 30 Tage aus der Verlaufsdatenbank von Home Assistant (der Recorder muss die Sensoren aufzeichnen). Der Recorder hebt den genauen Verlauf meist nur 10 Tage auf; ältere Tage kommen aus den Langzeitstatistiken, die Home Assistant für Sensoren mit `state_class` (z. B. die Health-Connect-Sensoren der Companion-App) dauerhaft führt. Tage mit Handeingabe bleiben unberührt.
 - **Handeingabe verwerfen:** gibt den Tag wieder an die Sensoren zurück.
 
 ## Wirkung
