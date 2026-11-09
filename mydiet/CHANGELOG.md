@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.37.1
+
+### Geändert
+- **Hinzufügen-Dialog aufgeräumt:** „+ Neu“, „Scannen“, „Foto“ und „Nur kcal“ stehen jetzt als kompakte Knopfzeile direkt unter dem Suchfeld statt unter der langen Liste, so sind sie auf dem Handy ohne Scrollen erreichbar. „Schließen“ ist ein ✕ oben rechts im Titel.
+
 ## 1.37.0
 
 ### Neu

@@ -43,7 +43,7 @@ Adresse ändern: Wenn Home Assistant nicht erreichbar ist, zeigt die App **Serve
 
 ## Barcode scannen
 
-Tippe in der Oberfläche wie gewohnt auf **Barcode scannen**. In der App öffnet sich der Scanner von Google (Hinweis „Scanned by Google“). Er braucht keine Kamera-Berechtigung für die App und erkennt EAN-13, EAN-8, UPC-A und UPC-E. Mit dem **X** brichst Du ab. Was danach passiert, steht unter [Barcode-Scanner](barcode.md).
+Tippe im Hinzufügen-Dialog wie gewohnt auf **Scannen**. In der App öffnet sich der Scanner von Google (Hinweis „Scanned by Google“). Er braucht keine Kamera-Berechtigung für die App und erkennt EAN-13, EAN-8, UPC-A und UPC-E. Mit dem **X** brichst Du ab. Was danach passiert, steht unter [Barcode-Scanner](barcode.md).
 
 ## Widget
 

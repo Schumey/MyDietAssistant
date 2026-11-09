@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.37.1
+
+### Changed
+- **Tidier add dialog:** "+ New", "Scan", "Photo" and "kcal only" now sit in a compact button row right below the search field instead of under the long list, so on a phone they can be reached without scrolling. "Close" is a ✕ at the top right of the title.
+
 ## 1.37.0
 
 ### New

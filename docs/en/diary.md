@@ -19,7 +19,7 @@ The diary shows one day with its meals, the totals for calories and macros, the 
    - **My meals**: saved meals.
 3. Search in the **Search…** field or tap a result. With the optional feature “More data sources” online results appear too.
 4. Enter the amount. The preview shows the values. Tap **Add**.
-5. If the food does not exist yet, tap **+ New food** or **Scan barcode** (see [Barcode scanner](barcode.md)).
+5. If the food does not exist yet, tap **+ New** or **Scan** below the search field (see [Barcode scanner](barcode.md)).
 
 One-tap logging: under **Frequently used** you re-log a recently eaten food with its last amount.
 
@@ -27,7 +27,7 @@ One-tap logging: under **Frequently used** you re-log a recently eaten food with
 
 When you only know the calories (restaurant, estimate):
 
-1. For the meal tap **+ Add food** and then **Quick entry (kcal only)**.
+1. For the meal tap **+ Add food** and then **kcal only** below the search field.
 2. Enter a **Description** (for example “Restaurant”) and **kcal**, optionally **Carbs (g)**, **Fat (g)** and **Protein (g)**. Description and kcal are required.
 3. Tap **Add**.
 

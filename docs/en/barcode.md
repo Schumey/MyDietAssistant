@@ -7,14 +7,14 @@ Only the online search (Open Food Facts, optionally USDA) needs the internet. Yo
 ## Scan a barcode
 
 1. Open the **Diary** and tap **+ Add food** for a meal.
-2. Choose one of the options:
-   - **Scan barcode** starts the camera. Hold the barcode in view.
-   - **Photo of barcode** reads the code from a photo (works without HTTPS too).
-   - To type the number, create a **+ New food** and enter it in the barcode field.
+2. Choose one of the options in the button row below the search field:
+   - **Scan** starts the camera. Hold the barcode in view.
+   - **Photo** reads the code from a photo (works without HTTPS too).
+   - To type the number, create a new food with **+ New** and enter it in the barcode field.
 3. Wait until the code is recognised.
 4. If you already know the food, it is selected right away. Otherwise the add-on looks the code up at Open Food Facts and prepares a new food. Check the values, save and enter the amount.
 
-The barcode is stored with the food, so next time **Scan barcode** finds it directly.
+The barcode is stored with the food, so next time **Scan** finds it directly.
 
 ## How the scanner reads
 
@@ -22,7 +22,7 @@ The browser’s own reader (Chrome/Android) is used where available. Otherwise t
 
 **The camera needs an HTTPS connection** (Nabu Casa or your own certificate). A photo always works.
 
-In the [Android app](android.md), **Scan barcode** opens the system scanner (Google Play services) instead. It does not need HTTPS. The app's widget also has a **Scan** button that opens the scanner directly.
+In the [Android app](android.md), **Scan** opens the system scanner (Google Play services) instead. It does not need HTTPS. The app's widget also has a **Scan** button that opens the scanner directly.
 
 ## Scanner via a home-screen shortcut (Companion app)
 
@@ -39,6 +39,6 @@ The Companion app has no real widget with a camera. With a shortcut to the panel
 6. Tap the shortcut. The app opens the diary, the add dialog appears with the camera running. Grant the camera permission the first time.
 7. Hold the barcode in view.
 
-> As long as the option is on, the scanner starts every time you open the panel on this device. **Close** only closes the dialog. To stop this, turn the option off again.
+> As long as the option is on, the scanner starts every time you open the panel on this device. The **✕** at the top right only closes the dialog. To stop this, turn the option off again.
 
 Problems? See [Troubleshooting](troubleshooting.md#the-camera-does-not-start).

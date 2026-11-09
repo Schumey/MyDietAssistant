@@ -119,6 +119,15 @@ button.icon:hover { color: var(--error-color); }
 button:disabled { opacity: .4; cursor: default; }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; align-items: end; }
 .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+/* dialog title with a close cross on the right; compact action row (add dialog) */
+dialog h2.dlg-head { display: flex; align-items: center; gap: 8px; }
+dialog h2.dlg-head > span { flex: 1; min-width: 0; }
+dialog h2.dlg-head .dlg-x { font-size: 18px; padding: 2px 8px; margin: -4px -8px -4px 0; }
+.add-actions { display: flex; gap: 6px; margin: 8px 0; }
+.add-actions button.flat {
+  flex: 1 1 0; min-width: 0; padding: 6px 4px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  border: 1px solid currentColor; border-radius: 16px;
+}
 .err { color: var(--error-color); }
 
 /* day navigation: the date reads as the page title, the arrows stay quiet */
@@ -472,6 +481,10 @@ html[data-skin="win"] dialog {
 html[data-skin="win"] dialog > h2:first-child {
   margin: 0; padding: 3px 6px; font-size: 13px; font-weight: 700; background: var(--w-title); color: #fff;
 }
+html[data-skin="win"] dialog > h2.dlg-head .dlg-x {
+  margin: 0; padding: 0 4px; font-size: 11px; line-height: 14px; border-radius: 0; background: var(--w-face); color: var(--w-text); box-shadow: var(--w-raised);
+}
+html[data-skin="win"] .add-actions button.flat { padding: 4px 2px; font-size: 12px; border: 0; border-radius: 0; }
 html[data-skin="win"] dialog::backdrop { background: #0004; }
 html[data-skin="win"] .dlg-body { padding: 12px; }
 @media (max-width: 560px) {

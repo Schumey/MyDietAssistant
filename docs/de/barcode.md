@@ -7,14 +7,14 @@ Nur die Online-Suche (Open Food Facts, optional USDA) braucht Internet. Den Barc
 ## Einen Barcode scannen
 
 1. Öffne das **Tagebuch** und tippe bei einer Mahlzeit auf **+ Nahrungsmittel hinzufügen**.
-2. Wähle eine der Möglichkeiten:
-   - **Barcode scannen** startet die Kamera. Halte den Barcode ins Bild.
-   - **Foto vom Barcode** liest den Code aus einem Foto (geht auch ohne HTTPS).
-   - Zum Eintippen der Nummer legst Du ein **+ Neues Lebensmittel** an und trägst sie im Feld für den Barcode ein.
+2. Wähle in der Knopfzeile unter dem Suchfeld eine der Möglichkeiten:
+   - **Scannen** startet die Kamera. Halte den Barcode ins Bild.
+   - **Foto** liest den Code aus einem Foto (geht auch ohne HTTPS).
+   - Zum Eintippen der Nummer legst Du mit **+ Neu** ein neues Lebensmittel an und trägst sie im Feld für den Barcode ein.
 3. Warte, bis der Code erkannt ist.
 4. Kennst Du das Lebensmittel schon, wird es direkt gewählt. Sonst schlägt das Add-on den Code bei Open Food Facts nach und bereitet ein neues Lebensmittel vor. Prüfe die Werte, speichere und gib die Menge an.
 
-Der Barcode wird am Lebensmittel gespeichert, beim nächsten Mal findet ihn „Barcode scannen“ direkt.
+Der Barcode wird am Lebensmittel gespeichert, beim nächsten Mal findet ihn **Scannen** direkt.
 
 ## Wie der Scanner liest
 
@@ -22,7 +22,7 @@ Der Browser-eigene Leser (Chrome/Android) wird genutzt, wo es ihn gibt. Sonst sp
 
 **Die Kamera braucht eine HTTPS-Verbindung** (Nabu Casa oder eigenes Zertifikat). Ein Foto geht immer.
 
-In der [Android-App](android.md) öffnet **Barcode scannen** stattdessen den Scanner des Systems (Google-Play-Dienste). Der braucht kein HTTPS. Das Widget der App hat zusätzlich einen Knopf **Scannen**, der direkt den Scanner öffnet.
+In der [Android-App](android.md) öffnet **Scannen** stattdessen den Scanner des Systems (Google-Play-Dienste). Der braucht kein HTTPS. Das Widget der App hat zusätzlich einen Knopf **Scannen**, der direkt den Scanner öffnet.
 
 ## Scanner per Homescreen-Verknüpfung (Companion-App)
 
@@ -39,6 +39,6 @@ Ein echtes Widget mit Kamera gibt es in der Companion-App nicht. Mit einer Verkn
 6. Tippe die Verknüpfung an. Die App öffnet das Tagebuch, der Hinzufügen-Dialog erscheint mit laufender Kamera. Erteile beim ersten Mal die Kameraerlaubnis.
 7. Halte den Barcode ins Bild.
 
-> Solange die Option an ist, startet der Scanner bei jedem Öffnen des Panels auf diesem Gerät. **Schließen** schließt nur den Dialog. Zum Abschalten die Option wieder ausschalten.
+> Solange die Option an ist, startet der Scanner bei jedem Öffnen des Panels auf diesem Gerät. Das **✕** oben rechts schließt nur den Dialog. Zum Abschalten die Option wieder ausschalten.
 
 Probleme? Siehe [Fehlersuche](troubleshooting.md#die-kamera-startet-nicht).

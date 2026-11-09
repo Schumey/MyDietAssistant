@@ -19,7 +19,7 @@ Das Tagebuch zeigt einen Tag mit seinen Mahlzeiten, den Summen für Kalorien und
    - **Meine Mahlzeiten**: gespeicherte Mahlzeiten.
 3. Suche im Feld **Suchen…** oder tippe auf einen Treffer. Mit der Zusatzfunktion „Weitere Datenquellen“ erscheinen auch Online-Treffer.
 4. Gib die Menge ein. Die Vorschau zeigt die Werte. Tippe auf **Hinzufügen**.
-5. Gibt es das Lebensmittel noch nicht, tippe auf **+ Neues Lebensmittel** oder **Barcode scannen** (siehe [Barcode-Scanner](barcode.md)).
+5. Gibt es das Lebensmittel noch nicht, tippe unter dem Suchfeld auf **+ Neu** oder **Scannen** (siehe [Barcode-Scanner](barcode.md)).
 
 Ein Eintrag mit einem Tipp: Unter **Häufig verwendet** trägst Du ein zuletzt gegessenes Lebensmittel mit seiner letzten Menge neu ein.
 
@@ -27,7 +27,7 @@ Ein Eintrag mit einem Tipp: Unter **Häufig verwendet** trägst Du ein zuletzt g
 
 Wenn Du nur die Kalorien kennst (Restaurant, Schätzung):
 
-1. Tippe bei der Mahlzeit auf **+ Nahrungsmittel hinzufügen** und dann auf **Schnelleingabe (nur kcal)**.
+1. Tippe bei der Mahlzeit auf **+ Nahrungsmittel hinzufügen** und dann unter dem Suchfeld auf **Nur kcal**.
 2. Trage eine **Bezeichnung** (z. B. „Restaurant“) und **kcal** ein, optional **KH (g)**, **Fett (g)** und **Eiweiß (g)**. Bezeichnung und kcal sind Pflicht.
 3. Tippe auf **Hinzufügen**.
 

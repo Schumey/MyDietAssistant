@@ -43,7 +43,7 @@ Change the address: when Home Assistant cannot be reached, the app shows **Chang
 
 ## Scan a barcode
 
-Tap **Scan barcode** in the interface as usual. In the app, Google's scanner opens (note “Scanned by Google”). The app needs no camera permission for it, and it reads EAN-13, EAN-8, UPC-A and UPC-E. Tap the **X** to cancel. What happens next is described under [Barcode scanner](barcode.md).
+Tap **Scan** in the add dialog as usual. In the app, Google's scanner opens (note “Scanned by Google”). The app needs no camera permission for it, and it reads EAN-13, EAN-8, UPC-A and UPC-E. Tap the **X** to cancel. What happens next is described under [Barcode scanner](barcode.md).
 
 ## Widget
 

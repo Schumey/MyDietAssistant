@@ -133,6 +133,7 @@ const EN = {
   "Noch keine Favoriten – markiere Lebensmittel auf der Seite „Lebensmittel“ mit ☆.": "No favorites yet – mark foods with ☆ on the “Foods” page.",
   "Keine gespeicherte Mahlzeit. Im Tagebuch über „Als Mahlzeit speichern“ anlegen.": "No saved meal. Create one in the diary via “Save as meal”.",
   "Portionen": "Portions", "+ Neues Lebensmittel": "+ New food", "Schnelleingabe (nur kcal)": "Quick entry (kcal only)", "Schließen": "Close",
+  "+ Neu": "+ New", "Scannen": "Scan", "Foto": "Photo", "Nur kcal": "kcal only",
   "Zu „{}“ hinzufügen": "Add to “{}”", "Eintrag hinzufügen": "Add entry", "(Ziel {})": "(goal {})",
 
   // weight
@@ -846,6 +847,7 @@ Object.assign(LANGS, {
     "Keine gespeicherte Mahlzeit. Im Tagebuch über „Als Mahlzeit speichern“ anlegen.": "Aucun repas enregistré. Créez-en un dans le journal via “Enregistrer comme repas”.",
     "Portionen": "Portions",
     "+ Neues Lebensmittel": "+ Nouvel aliment",
+    "+ Neu": "+ Nouveau", "Scannen": "Scanner", "Foto": "Photo", "Nur kcal": "kcal seul.",
     "Schnelleingabe (nur kcal)": "Saisie rapide (kcal seulement)",
     "Schließen": "Fermer",
     "Zu „{}“ hinzufügen": "Ajouter à “{}”",
@@ -1857,6 +1859,7 @@ Object.assign(LANGS, {
     "Keine gespeicherte Mahlzeit. Im Tagebuch über „Als Mahlzeit speichern“ anlegen.": "No hay comidas guardadas. Crea una en el diario con “Guardar como comida”.",
     "Portionen": "Porciones",
     "+ Neues Lebensmittel": "+ Nuevo alimento",
+    "+ Neu": "+ Nuevo", "Scannen": "Escanear", "Foto": "Foto", "Nur kcal": "Solo kcal",
     "Schnelleingabe (nur kcal)": "Entrada rápida (solo kcal)",
     "Schließen": "Cerrar",
     "Zu „{}“ hinzufügen": "Añadir a “{}”",
@@ -2868,6 +2871,7 @@ Object.assign(LANGS, {
     "Keine gespeicherte Mahlzeit. Im Tagebuch über „Als Mahlzeit speichern“ anlegen.": "Geen opgeslagen maaltijd. Maak er een aan in het dagboek via “Opslaan als maaltijd”.",
     "Portionen": "Porties",
     "+ Neues Lebensmittel": "+ Nieuw voedingsmiddel",
+    "+ Neu": "+ Nieuw", "Scannen": "Scannen", "Foto": "Foto", "Nur kcal": "Alleen kcal",
     "Schnelleingabe (nur kcal)": "Snelle invoer (alleen kcal)",
     "Schließen": "Sluiten",
     "Zu „{}“ hinzufügen": "Toevoegen aan “{}”",
@@ -3891,6 +3895,7 @@ Object.assign(LANGS, {
     "Keine gespeicherte Mahlzeit. Im Tagebuch über „Als Mahlzeit speichern“ anlegen.": "Nessun pasto salvato. Creane uno nel diario con “Salva come pasto”.",
     "Portionen": "Porzioni",
     "+ Neues Lebensmittel": "+ Nuovo alimento",
+    "+ Neu": "+ Nuovo", "Scannen": "Scansiona", "Foto": "Foto", "Nur kcal": "Solo kcal",
     "Schnelleingabe (nur kcal)": "Inserimento rapido (solo kcal)",
     "Schließen": "Chiudi",
     "Zu „{}“ hinzufügen": "Aggiungi a “{}”",
@@ -4914,6 +4919,7 @@ Object.assign(LANGS, {
     "Keine gespeicherte Mahlzeit. Im Tagebuch über „Als Mahlzeit speichern“ anlegen.": "Nenhuma refeição salva. Crie uma no diário com “Salvar como refeição”.",
     "Portionen": "Porções",
     "+ Neues Lebensmittel": "+ Novo alimento",
+    "+ Neu": "+ Novo", "Scannen": "Ler", "Foto": "Foto", "Nur kcal": "Só kcal",
     "Schnelleingabe (nur kcal)": "Registro rápido (só kcal)",
     "Schließen": "Fechar",
     "Zu „{}“ hinzufügen": "Adicionar a “{}”",
@@ -5937,6 +5943,7 @@ Object.assign(LANGS, {
     "Keine gespeicherte Mahlzeit. Im Tagebuch über „Als Mahlzeit speichern“ anlegen.": "Brak zapisanych posiłków. Utwórz go w dzienniku przez „Zapisz jako posiłek”.",
     "Portionen": "Porcje",
     "+ Neues Lebensmittel": "+ Nowy produkt",
+    "+ Neu": "+ Nowy", "Scannen": "Skanuj", "Foto": "Zdjęcie", "Nur kcal": "Tylko kcal",
     "Schnelleingabe (nur kcal)": "Szybki wpis (tylko kcal)",
     "Schließen": "Zamknij",
     "Zu „{}“ hinzufügen": "Dodaj do „{}”",
@@ -8229,14 +8236,17 @@ async function openAdd(meal, { scan = false } = {}) {
     scanBox.replaceChildren();
     try { await found(await scanBarcode(scanBox)); } catch (e) { if (e.message !== "Abgebrochen") scanBox.replaceChildren(h("div", { class: "err" }, e.message)); }
   };
-  body.append(tabs, search, scanBox, chips, sug, results,
-    h("div", { class: "actions" },
-      h("button", { class: "flat", onclick: () => newFood() }, "+ Neues Lebensmittel"),
-      h("button", { class: "flat", onclick: startScan }, "Barcode scannen"),
-      h("button", { class: "flat", onclick: () => photoIn.click() }, "Foto vom Barcode"), photoIn,
-      h("button", { class: "flat", onclick: () => quickDialog(meal) }, "Schnelleingabe (nur kcal)"),
-      h("button", { class: "flat", onclick: () => dlg.close() }, "Schließen")));
-  setDlg(h("h2", {}, meal ? "Zu „" + meal.name + "“ hinzufügen" : "Eintrag hinzufügen"),
+  // compact action row right under the search, so it is reachable without scrolling past the list
+  const act = (label, title, onclick) => h("button", { class: "flat", title, "aria-label": title, onclick }, label);
+  body.append(tabs, search,
+    h("div", { class: "add-actions" },
+      act("+ Neu", "+ Neues Lebensmittel", () => newFood()),
+      act("Scannen", "Barcode scannen", startScan),
+      act("Foto", "Foto vom Barcode", () => photoIn.click()), photoIn,
+      act("Nur kcal", "Schnelleingabe (nur kcal)", () => quickDialog(meal))),
+    scanBox, chips, sug, results);
+  setDlg(h("h2", { class: "dlg-head" }, h("span", {}, meal ? "Zu „" + meal.name + "“ hinzufügen" : "Eintrag hinzufügen"),
+    h("button", { class: "icon dlg-x", title: "Schließen", "aria-label": "Schließen", onclick: () => dlg.close() }, "✕")),
     times ? h("div", { style: "margin-bottom:8px" }, h("label", {}, "Uhrzeit"), time) : null, body, detail);
   draw();
   dlg.showModal();
