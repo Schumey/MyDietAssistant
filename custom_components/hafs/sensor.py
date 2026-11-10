@@ -20,7 +20,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
     def add(owners: list[str]) -> None:
         async_add_entities([cls(hub, owner) for owner in owners for cls in
-                            (TrainingState, WorkoutsToday, WorkoutsWeek, VolumeWeek, LastWorkout, PhaseSensor)])
+                            (TrainingState, WorkoutsToday, WorkoutsWeek, VolumeWeek, NextRoutine, LastWorkout, PhaseSensor)])
 
     hub.register_platform(add)
     add(list(hub.names))
@@ -90,6 +90,21 @@ class VolumeWeek(_Base):
     @property
     def native_value(self) -> float:
         return self.status.get("volume_week_kg", 0)
+
+
+class NextRoutine(_Base):
+    key, label = "next_routine", "next routine"
+    _attr_icon = "mdi:format-list-checks"
+
+    @property
+    def native_value(self) -> str | None:
+        nxt = self.status.get("next")
+        return nxt["routine"] if nxt else None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        nxt = self.status.get("next") or {}
+        return {"program": nxt.get("program"), "exercises": nxt.get("exercises", [])}
 
 
 class LastWorkout(_Base):

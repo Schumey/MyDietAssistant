@@ -267,3 +267,27 @@ def test_week_volume_and_mda_name(store):
     assert not targets.valid_pref("mda_name", "Robin") and not targets.valid_pref("mda_name", "a b")
     store.set_pref(OWNER, "mda_name", "andre")
     assert store.get_pref(OWNER, "mda_name") == "andre"
+
+
+def test_next_routine_rotation(store):
+    store.push(OWNER, {
+        "program": [{"id": "p", "name": "PPL", "updated_at": T}],
+        "routine": [{"id": "ra", "name": "Push", "program_id": "p", "position": 0, "updated_at": T},
+                    {"id": "rb", "name": "Pull", "program_id": "p", "position": 1, "updated_at": T}],
+        "routine_exercise": [{"id": "x1", "routine_id": "ra", "exercise_id": "e1", "position": 0, "updated_at": T}],
+    })
+    with store._conn() as c:
+        assert status.next_routine(c, OWNER)["routine"] == "Push"
+        assert status.next_routine(c, OWNER)["exercises"] == ["Bank"]
+    r = wrec("w1", "2026-11-09T10:00:00+00:00", "2026-11-09T11:00:00+00:00")
+    r["routine_id"] = "ra"
+    store.push(OWNER, {"workout": [r]})
+    with store._conn() as c:
+        assert status.next_routine(c, OWNER)["routine"] == "Pull"
+    r2 = wrec("w2", "2026-11-10T10:00:00+00:00", "2026-11-10T11:00:00+00:00")
+    r2["routine_id"] = "rb"
+    store.push(OWNER, {"workout": [r2]})
+    with store._conn() as c:
+        assert status.next_routine(c, OWNER)["routine"] == "Push"   # wrapped
+        assert status.status(c, OWNER, utc(2026, 11, 10, 12))["next"]["routine"] == "Push"
+    assert status.next_routine(store._conn().__enter__(), "nobody") is None
