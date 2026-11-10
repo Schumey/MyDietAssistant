@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_state.dart';
 import 'gyms_screen.dart';
+import 'history_plan.dart';
 import 'l10n.dart';
 import 'repo_gym.dart';
 import 'repo_program.dart';
@@ -49,6 +50,52 @@ class _ProgramsScreenState extends State<ProgramsScreen> {
     if (mounted) setState(() {});
   }
 
+  /// Offers the routines found in the history (e.g. an imported PPL) and creates routines plus a program from them.
+  Future<void> _fromHistory() async {
+    final repo = widget.app.repo!;
+    final found = repo.historyRoutines();
+    if (found.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr('history_plan_empty'))));
+      return;
+    }
+    final picked = {for (final h in found) h.name};
+    final chosen = await showDialog<List<HistoryRoutine>>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialog) => AlertDialog(
+          title: Text(tr('history_plan_title')),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView(shrinkWrap: true, children: [
+              Text(tr('history_plan_help'), style: Theme.of(context).textTheme.bodySmall),
+              for (final h in found)
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  value: picked.contains(h.name),
+                  onChanged: (v) => setDialog(() => v == true ? picked.add(h.name) : picked.remove(h.name)),
+                  title: Text(h.name),
+                  subtitle: Text('${tr('history_plan_info', [h.workouts, h.exercises.length])} · ${h.exercises.map((x) => x.name).take(3).join(', ')}…'),
+                ),
+            ]),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: Text(tr('cancel'))),
+            FilledButton(
+              onPressed: picked.isEmpty ? null : () => Navigator.pop(context, [for (final h in found) if (picked.contains(h.name)) h]),
+              child: Text(tr('history_plan_create')),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (chosen == null || chosen.isEmpty || !mounted) return;
+    final name = await askText(context, tr('program_name'), initial: chosen.map((h) => h.name).join(' / '));
+    if (name == null || name.trim().isEmpty || !mounted) return;
+    repo.createFromHistory(chosen, name);
+    widget.app.changed();
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final repo = widget.app.repo!;
@@ -57,7 +104,10 @@ class _ProgramsScreenState extends State<ProgramsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(tr('programs_title')),
-        actions: [TextButton.icon(onPressed: _fromTemplate, icon: const Icon(Icons.auto_awesome), label: Text(tr('from_template')))],
+        actions: [
+          TextButton.icon(onPressed: _fromHistory, icon: const Icon(Icons.history), label: Text(tr('from_history'))),
+          TextButton.icon(onPressed: _fromTemplate, icon: const Icon(Icons.auto_awesome), label: Text(tr('from_template'))),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(onPressed: () => _edit(), icon: const Icon(Icons.add), label: Text(tr('program_add'))),
       body: programs.isEmpty
