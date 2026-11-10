@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'exercise_form.dart';
 import 'l10n.dart';
 import 'repo.dart';
 
@@ -16,6 +17,12 @@ class ExercisePicker extends StatefulWidget {
 class _ExercisePickerState extends State<ExercisePicker> {
   String _query = '';
 
+  Future<void> _create() async {
+    final e = await Navigator.of(context).push<ExerciseInfo>(
+        MaterialPageRoute(builder: (_) => ExerciseForm(repo: widget.repo, initialName: _query.trim())));
+    if (e != null && mounted) Navigator.of(context).pop(e);
+  }
+
   @override
   Widget build(BuildContext context) {
     final items = widget.repo.exercises(query: _query.trim());
@@ -27,9 +34,16 @@ class _ExercisePickerState extends State<ExercisePicker> {
           decoration: InputDecoration(hintText: tr('search_exercise'), border: InputBorder.none),
           onChanged: (v) => setState(() => _query = v),
         ),
+        actions: [IconButton(tooltip: tr('exercise_new'), icon: const Icon(Icons.add), onPressed: _create)],
       ),
       body: items.isEmpty
-          ? Center(child: Text(tr('no_exercises')))
+          ? Center(
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                Text(tr('no_exercises')),
+                const SizedBox(height: 12),
+                FilledButton.icon(onPressed: _create, icon: const Icon(Icons.add), label: Text(tr('exercise_new'))),
+              ]),
+            )
           : ListView.builder(
               itemCount: items.length,
               itemBuilder: (context, i) {

@@ -18,7 +18,7 @@ class ExerciseInfo {
 }
 
 class SetRow {
-  SetRow(this.id, this.setNo, this.weight, this.reps, this.kind, this.doneAt);
+  SetRow(this.id, this.setNo, this.weight, this.reps, this.kind, this.doneAt, [this.durationSeconds]);
 
   final String id;
   final int? setNo;
@@ -26,6 +26,7 @@ class SetRow {
   final int? reps;
   final String kind;
   final String doneAt;
+  final int? durationSeconds;
 }
 
 class WorkoutExercise {
@@ -211,7 +212,7 @@ class Repo {
   /// Die Übungen eines Workouts in der Reihenfolge des ersten Satzes, mit ihren Sätzen.
   List<WorkoutExercise> workoutDetail(String workoutId) {
     final rows = local.rows(
-        'SELECT s.id, s.exercise_id, s.set_no, s.weight, s.reps, s.kind, s.done_at, e.name, e.kind ekind, e.catalog_key '
+        'SELECT s.id, s.exercise_id, s.set_no, s.weight, s.reps, s.duration_s, s.kind, s.done_at, e.name, e.kind ekind, e.catalog_key '
         'FROM workout_set s JOIN exercise e ON e.id = s.exercise_id '
         'WHERE s.workout_id = ? AND s.deleted = 0 ORDER BY s.done_at, s.set_no',
         [workoutId]);
@@ -224,7 +225,7 @@ class Repo {
         return WorkoutExercise(ExerciseInfo(eid, r['name'] as String, r['ekind'] as String, r['catalog_key'] as String, null), []);
       });
       entry.sets.add(SetRow(r['id'] as String, r['set_no'] as int?, (r['weight'] as num?)?.toDouble(), r['reps'] as int?,
-          r['kind'] as String, r['done_at'] as String));
+          r['kind'] as String, r['done_at'] as String, r['duration_s'] as int?));
     }
     return [for (final id in order) out[id]!];
   }
