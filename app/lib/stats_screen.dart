@@ -105,11 +105,17 @@ class ExerciseStatsScreen extends StatefulWidget {
 
 class _ExerciseStatsScreenState extends State<ExerciseStatsScreen> {
   String _metric = '';
+  int _months = 0; // 0 = alles
+  String? _equipmentId;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final sessions = exerciseSessions(widget.app.repo!.statSets(widget.exercise.id));
+    final repo = widget.app.repo!;
+    final equipment = repo.equipmentUsed(widget.exercise.id);
+    final all = exerciseSessions(repo.statSets(widget.exercise.id, equipmentId: _equipmentId));
+    final cutoff = _months == 0 ? null : DateTime.now().subtract(Duration(days: 30 * _months));
+    final sessions = cutoff == null ? all : [for (final s in all) if (!s.day.isBefore(cutoff)) s];
     final bodyweight = sessions.isNotEmpty && sessions.every((s) => s.topWeight == 0);
     final metrics = bodyweight ? ['reps'] : ['1rm', 'weight', 'volume'];
     final metric = metrics.contains(_metric) ? _metric : metrics.first;
@@ -120,7 +126,7 @@ class _ExerciseStatsScreenState extends State<ExerciseStatsScreen> {
           _ => s.bestSetReps.toDouble(),
         };
     final points = [for (final s in sessions) if (pick(s) != null) (s.day, pick(s)!)];
-    final recs = records(sessions);
+    final recs = records(all);
     return Scaffold(
       appBar: AppBar(title: Text(widget.exercise.name)),
       body: ListView(
@@ -135,6 +141,34 @@ class _ExerciseStatsScreenState extends State<ExerciseStatsScreen> {
             )
           else
             Text(tr('metric_reps'), style: theme.textTheme.titleMedium),
+          const SizedBox(height: 8),
+          Wrap(spacing: 8, children: [
+            for (final m in const [3, 12, 0])
+              ChoiceChip(
+                visualDensity: VisualDensity.compact,
+                label: Text(tr(m == 0 ? 'range_all' : 'range_months', [m])),
+                selected: _months == m,
+                onSelected: (_) => setState(() => _months = m),
+              ),
+          ]),
+          if (equipment.length > 1) ...[
+            const SizedBox(height: 4),
+            Wrap(spacing: 8, children: [
+              ChoiceChip(
+                visualDensity: VisualDensity.compact,
+                label: Text(tr('all_equipment')),
+                selected: _equipmentId == null,
+                onSelected: (_) => setState(() => _equipmentId = null),
+              ),
+              for (final q in equipment)
+                ChoiceChip(
+                  visualDensity: VisualDensity.compact,
+                  label: Text(q.$2),
+                  selected: _equipmentId == q.$1,
+                  onSelected: (_) => setState(() => _equipmentId = q.$1),
+                ),
+            ]),
+          ],
           const SizedBox(height: 12),
           points.isEmpty ? Text(tr('stats_empty')) : LineChart(points: points),
           if (metric == '1rm') Text(tr('stats_note_1rm'), style: theme.textTheme.bodySmall),

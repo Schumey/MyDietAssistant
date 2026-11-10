@@ -99,6 +99,37 @@ void main() {
     expect(recent.where((t) => t != null && t.contains('Nov.')).length, greaterThanOrEqualTo(2));
   });
 
+  testWidgets('exercise screen: range and equipment filters', (tester) async {
+    final local = app.local!;
+    for (final q in [('q1', 'Maschine A'), ('q2', 'Maschine B')]) {
+      local.upsert('equipment', {
+        'id': q.$1, 'owner': 'u1', 'updated_at': '2026-01-01T00:00:00+00:00', 'gym_id': 'g', 'name': q.$2, 'type': 'machine',
+      }, dirty: false);
+    }
+    final old = DateTime.now().subtract(const Duration(days: 400));
+    final recent = DateTime.now().subtract(const Duration(days: 5));
+    for (final w in [(old, 'q1', 40.0), (recent, 'q1', 50.0), (recent, 'q2', 90.0)]) {
+      final r = Repo(app.local!, clock: () => w.$1);
+      final id = r.startWorkout();
+      r.addSet(workoutId: id, exerciseId: 'bench', equipmentId: w.$2, weight: w.$3, reps: 8);
+      r.finishWorkout(id);
+    }
+    tester.view.physicalSize = const Size(800, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final e = app.repo!.exercise('bench')!;
+    await tester.pumpWidget(host(ExerciseStatsScreen(app: app, exercise: e)));
+    expect(find.text('Maschine A'), findsOneWidget);
+    expect(find.text('Alle Geräte'), findsOneWidget);
+    final before = find.byType(ListTile).evaluate().length;
+    await tester.tap(find.text('3 Monate'));
+    await tester.pump();
+    expect(find.byType(ListTile).evaluate().length, before - 1); // the 400-day-old session drops out
+    await tester.tap(find.text('Maschine B'));
+    await tester.pump();
+    expect(find.text('90 kg'), findsWidgets); // heaviest weight record is per selected equipment
+  });
+
   test('queries: trained exercises, workout days, muscle sets', () {
     workout(DateTime(2026, 11, 3, 18), 'bench', [(60, 8)]);
     final repo = app.repo!;

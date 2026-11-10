@@ -44,4 +44,13 @@ extension StatsRepo on Repo {
       ];
 
   static List<String> _split(String s) => s.split(' ').where((p) => p.isNotEmpty).toList();
+
+  /// Geräte, an denen die Übung erfasst wurde (id, Name), die meistgenutzten zuerst.
+  List<(String, String)> equipmentUsed(String exerciseId) => [
+        for (final r in local.rows(
+            'SELECT q.id, q.name, COUNT(*) n FROM workout_set s JOIN equipment q ON q.id = s.equipment_id '
+            'WHERE s.exercise_id = ? AND s.deleted = 0 GROUP BY q.id ORDER BY n DESC, q.name COLLATE NOCASE',
+            [exerciseId]))
+          (r['id'] as String, r['name'] as String),
+      ];
 }
