@@ -5,6 +5,7 @@ import 'gyms_screen.dart';
 import 'l10n.dart';
 import 'repo_gym.dart';
 import 'repo_program.dart';
+import 'templates.dart';
 
 /// Programme verwalten (Rotation von Routinen).
 class ProgramsScreen extends StatefulWidget {
@@ -22,13 +23,42 @@ class _ProgramsScreenState extends State<ProgramsScreen> {
     if (mounted) setState(() {});
   }
 
+  Future<void> _fromTemplate() async {
+    final t = await showDialog<TemplateDef>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: Text(tr('template_pick')),
+        children: [
+          for (final t in templates)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, t),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(tr('tpl_${t.key}'), style: Theme.of(context).textTheme.titleMedium),
+                Text(tr('tpl_${t.key}_desc'), style: Theme.of(context).textTheme.bodySmall),
+              ]),
+            ),
+        ],
+      ),
+    );
+    if (t == null || !mounted) return;
+    final id = widget.app.repo!.createFromTemplate(t, tr('tpl_${t.key}'), (k) => t.key == 'fullbody' ? '${tr('tpl_fullbody')} $k' : tr('tpl_day_$k'));
+    widget.app.changed();
+    if (id == null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr('template_empty'))));
+    }
+    if (mounted) setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final repo = widget.app.repo!;
     final programs = repo.programs();
     final names = {for (final r in repo.routines()) r.id: r.name};
     return Scaffold(
-      appBar: AppBar(title: Text(tr('programs_title'))),
+      appBar: AppBar(
+        title: Text(tr('programs_title')),
+        actions: [TextButton.icon(onPressed: _fromTemplate, icon: const Icon(Icons.auto_awesome), label: Text(tr('from_template')))],
+      ),
       floatingActionButton: FloatingActionButton.extended(onPressed: () => _edit(), icon: const Icon(Icons.add), label: Text(tr('program_add'))),
       body: programs.isEmpty
           ? Center(child: Padding(padding: const EdgeInsets.all(24), child: Text(tr('programs_empty'), textAlign: TextAlign.center)))

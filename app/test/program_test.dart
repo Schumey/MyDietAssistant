@@ -7,6 +7,7 @@ import 'package:hafs/main.dart';
 import 'package:hafs/repo.dart';
 import 'package:hafs/repo_gym.dart';
 import 'package:hafs/repo_program.dart';
+import 'package:hafs/templates.dart';
 
 import 'support.dart';
 
@@ -22,6 +23,7 @@ class _Creds implements CredentialStore {
 }
 
 void main() {
+  group('templates', templateRepoTests);
   late AppState app;
   late Repo repo;
   late String a, b, c;
@@ -146,5 +148,38 @@ void main() {
     expect(find.text('PPL'), findsOneWidget);
     expect(find.text('Push → Pull'), findsOneWidget);
     expect(repo.programs().single.routineIds, hasLength(2));
+  });
+}
+
+void templateRepoTests() {
+  test('createFromTemplate builds routines and a program from the own exercises', () async {
+    L10n.lang = 'de';
+    final local = openMemory();
+    final server = FakeServer(local.schema.syncTables);
+    final app = AppState(_Creds(), openDb: () async => local, connector: (x, y) async => server);
+    await app.start();
+    final repo = app.repo!;
+    for (final e in [('bench', 'Bankdrücken', 'chest'), ('row', 'Rudern', 'lats'), ('squat', 'Kniebeuge', 'quads')]) {
+      local.upsert('exercise', {
+        'id': e.$1, 'owner': 'u1', 'updated_at': '2026-01-01T00:00:00+00:00', 'name': e.$2, 'kind': 'strength',
+        'muscles_primary': e.$3, 'muscles_secondary': '',
+      }, dirty: false);
+    }
+    final ppl = templates.firstWhere((t) => t.key == 'ppl');
+    final id = repo.createFromTemplate(ppl, 'PPL', (k) => 'Tag $k');
+    expect(id, isNotNull);
+    final p = repo.programs().single;
+    expect(p.routineIds, hasLength(3));
+    final names = [for (final r in repo.routines()) r.name];
+    expect(names, containsAll(['Tag push', 'Tag pull', 'Tag legs']));
+    expect(repo.routine(p.routineIds.first)!.exercises.single.name, 'Bankdrücken');
+  });
+
+  test('createFromTemplate without usable exercises creates nothing', () async {
+    final local = openMemory();
+    final app = AppState(_Creds(), openDb: () async => local, connector: (x, y) async => FakeServer(local.schema.syncTables));
+    await app.start();
+    expect(app.repo!.createFromTemplate(templates.first, 'X', (k) => k), isNull);
+    expect(app.repo!.programs(), isEmpty);
   });
 }

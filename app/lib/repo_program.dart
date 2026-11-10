@@ -1,4 +1,6 @@
 import 'repo.dart';
+import 'repo_gym.dart';
+import 'templates.dart';
 
 class ProgramInfo {
   ProgramInfo(this.id, this.name, this.routineIds);
@@ -78,5 +80,34 @@ extension ProgramRepo on Repo {
       if (id != null) return id;
     }
     return null;
+  }
+
+  /// Übungen mit Hauptmuskeln und der Zahl ihrer bisherigen Arbeitssätze, als Grundlage für Vorlagen.
+  List<Candidate> templateCandidates() => [
+        for (final r in local.rows(
+            'SELECT e.id, e.name, e.kind, e.muscles_primary mp, '
+            "(SELECT COUNT(*) FROM workout_set s WHERE s.exercise_id = e.id AND s.deleted = 0 AND s.kind = 'work') n "
+            'FROM exercise e WHERE e.deleted = 0'))
+          Candidate(
+            id: r['id'] as String,
+            name: r['name'] as String,
+            kind: r['kind'] as String,
+            primary: (r['mp'] as String).split(' ').where((m) => m.isNotEmpty).toList(),
+            uses: r['n'] as int,
+          ),
+      ];
+
+  /// Legt aus einer Vorlage Routinen und ein Programm an. [dayName] übersetzt die Tag-Schlüssel.
+  /// Gibt die ID des Programms zurück, null wenn keine Übung gepasst hat.
+  String? createFromTemplate(TemplateDef t, String programName, String Function(String key) dayName) {
+    final plan = buildPlan(t, templateCandidates());
+    if (plan.isEmpty) return null;
+    final ids = <String>[];
+    for (final day in plan) {
+      ids.add(saveRoutine(name: dayName(day.name), exercises: [
+        for (final x in day.exercises) RoutineExercise(exerciseId: x.exerciseId, name: x.name, sets: x.sets, repsMin: x.repsMin, repsMax: x.repsMax),
+      ]));
+    }
+    return saveProgram(name: programName, routineIds: ids);
   }
 }
