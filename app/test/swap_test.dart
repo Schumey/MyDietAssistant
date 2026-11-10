@@ -127,8 +127,28 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     await tester.tap(find.text('Stop'));
     await tester.pumpAndSettle();
-    // only the second planned exercise still offers the menu
-    expect(find.byIcon(Icons.more_vert), findsOneWidget);
+    // with sets the menu only offers moving, no swap/skip
+    await tester.tap(find.byIcon(Icons.more_vert).first);
+    await tester.pumpAndSettle();
+    expect(find.text('Nach oben'), findsOneWidget);
+    expect(find.text('Austauschen'), findsNothing);
+    expect(find.text('Überspringen'), findsNothing);
+  });
+
+  testWidgets('planned exercises can be moved up and down', (tester) async {
+    await start(tester);
+    double y(String t) => tester.getTopLeft(find.text(t)).dy;
+    expect(y('Bankdrücken'), lessThan(y('Kniebeuge')));
+    await tester.tap(find.byIcon(Icons.more_vert).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Nach unten'));
+    await tester.pumpAndSettle();
+    expect(y('Kniebeuge'), lessThan(y('Bankdrücken')));
+    await tester.tap(find.byIcon(Icons.more_vert).last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Nach oben'));
+    await tester.pumpAndSettle();
+    expect(y('Bankdrücken'), lessThan(y('Kniebeuge')));
   });
 }
 

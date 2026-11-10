@@ -102,6 +102,31 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   /// Planned exercises left out of this workout (only kept while the screen is open).
   final Set<String> _skipped = {};
 
+  /// Order of the planned exercises chosen by moving cards (only kept while the screen is open).
+  List<String> _order = [];
+
+  /// Planned exercises in the shown order: moved cards first as arranged, the rest in plan order.
+  List<PlannedExercise> _sorted(List<PlannedExercise> plan) {
+    final rank = {for (var i = 0; i < _order.length; i++) _order[i]: i};
+    final indexed = [for (var i = 0; i < plan.length; i++) (i, plan[i])];
+    if (rank.isEmpty) return plan;
+    indexed.sort((a, b) {
+      final ra = rank[a.$2.exercise.id], rb = rank[b.$2.exercise.id];
+      if (ra != null && rb != null) return ra.compareTo(rb);
+      return a.$1.compareTo(b.$1);
+    });
+    return [for (final x in indexed) x.$2];
+  }
+
+  /// Moves a planned exercise one place up (-1) or down (+1) among the shown ones.
+  void _move(String id, int by) {
+    final shown = [for (final p in _sorted(repo.planned(widget.workoutId))) if (!_skipped.contains(p.exercise.id)) p.exercise.id];
+    final i = shown.indexOf(id), j = i + by;
+    if (i < 0 || j < 0 || j >= shown.length) return;
+    shown.insert(j, shown.removeAt(i));
+    setState(() => _order = shown);
+  }
+
   void _skip(ExerciseInfo e) {
     setState(() {
       _skipped.add(e.id);
@@ -209,16 +234,24 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
               Expanded(child: Text(e.name, style: theme.textTheme.titleMedium)),
-              if (plan != null && sets.isEmpty)
+              if (plan != null)
                 PopupMenuButton<String>(
                   tooltip: tr('plan_options'),
                   padding: EdgeInsets.zero,
                   icon: const Icon(Icons.more_vert, size: 20),
-                  onSelected: (v) => v == 'swap' ? _swap(e) : (v == 'busy' ? _busy(e) : _skip(e)),
+                  onSelected: (v) => switch (v) {
+                    'up' => _move(e.id, -1),
+                    'down' => _move(e.id, 1),
+                    'swap' => _swap(e),
+                    'busy' => _busy(e),
+                    _ => _skip(e),
+                  },
                   itemBuilder: (context) => [
-                    PopupMenuItem(value: 'busy', child: Text(tr('equipment_busy'))),
-                    PopupMenuItem(value: 'swap', child: Text(tr('swap_exercise'))),
-                    PopupMenuItem(value: 'skip', child: Text(tr('skip_exercise'))),
+                    PopupMenuItem(value: 'up', child: Text(tr('move_up'))),
+                    PopupMenuItem(value: 'down', child: Text(tr('move_down'))),
+                    if (sets.isEmpty) PopupMenuItem(value: 'busy', child: Text(tr('equipment_busy'))),
+                    if (sets.isEmpty) PopupMenuItem(value: 'swap', child: Text(tr('swap_exercise'))),
+                    if (sets.isEmpty) PopupMenuItem(value: 'skip', child: Text(tr('skip_exercise'))),
                   ],
                 ),
               if (plan != null)
@@ -289,7 +322,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 const SizedBox(height: 8),
                 if (detail.isEmpty && plan.isEmpty) Padding(padding: const EdgeInsets.all(24), child: Center(child: Text(tr('no_sets_yet')))),
                 // geplante Übungen der Routine zuerst, dann alles, was zusätzlich gemacht wurde
-                for (final p in plan)
+                for (final p in _sorted(plan))
                   if (!_skipped.contains(p.exercise.id)) _exerciseCard(theme, p.exercise, byId[p.exercise.id]?.sets ?? const [], plan: p),
                 for (final d in detail)
                   if (!plan.any((p) => p.exercise.id == d.exercise.id)) _exerciseCard(theme, d.exercise, d.sets),
