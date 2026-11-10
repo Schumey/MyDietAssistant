@@ -6,7 +6,7 @@ import os
 from contextlib import closing
 from typing import Any
 
-from . import catalog, db, gymrun, sync, targets
+from . import catalog, db, gymrun, status, sync, targets
 
 
 class Store:
@@ -26,13 +26,64 @@ class Store:
             return {"schema_version": conn.execute("PRAGMA user_version").fetchone()[0]}
 
     def push(self, owner: str, records: dict[str, list[dict[str, Any]]]) -> dict:
+        return self.push_ex(owner, records)[0]
+
+    def push_ex(self, owner: str, records: dict[str, list[dict[str, Any]]]) -> tuple[dict, list[dict]]:
+        """Like `push`, plus the events (workout started / finished / record) this push caused."""
         with self._conn() as conn:
+            ids = [r["id"] for r in records.get("workout", []) if isinstance(r.get("id"), str)]
+            before = status.workout_ids(conn, owner, ids)
             result = sync.push(conn, owner, records)
+            if not result["applied"]:
+                return result, []
+            self._stamp_phase(conn, owner, ids)
             # New sets change the suggestions of exactly these exercises.
             touched = {r["exercise_id"] for r in records.get("workout_set", []) if r.get("exercise_id")}
-            if touched and result["applied"]:
+            if touched:
                 result["targets"] = targets.recompute(conn, owner, list(touched))
-            return result
+            events: list[dict] = []
+            after = status.workout_ids(conn, owner, ids)
+            for wid, ended in after.items():
+                if wid not in before:
+                    stats = status.workout_stats(conn, owner, wid)
+                    events.append({"event": "workout_started", "data": {"workout_id": wid, "started_at": stats["started_at"],
+                                                                           "routine": stats["routine"]}})
+                if ended and not before.get(wid):
+                    stats = status.workout_stats(conn, owner, wid)
+                    events.append({"event": "workout_finished", "data": stats})
+                    for rec in status.records_in(conn, owner, wid):
+                        events.append({"event": "record", "data": rec})
+            return result, events
+
+    @staticmethod
+    def _stamp_phase(conn, owner: str, ids: list[str]) -> None:
+        """Remember the nutrition phase on workouts that have none (snapshot at the time of training)."""
+        if not ids:
+            return
+        phase = targets._phase(conn, owner)
+        if not phase:
+            return
+        q = ",".join("?" * len(ids))
+        with conn:
+            conn.execute(f"UPDATE workout SET phase=? WHERE owner=? AND phase='' AND source='' AND id IN ({q})",
+                         (phase, owner, *ids))
+
+    def status(self, owner: str, now=None, tz=None) -> dict:
+        with self._conn() as conn:
+            return status.status(conn, owner, now, tz)
+
+    def owners(self) -> list[str]:
+        with self._conn() as conn:
+            return [r[0] for r in conn.execute("SELECT DISTINCT owner FROM workout WHERE deleted=0")]
+
+    def set_auto_phase(self, owner: str, phase: str) -> bool:
+        """Store the phase derived from MDA; recompute targets when it changed. Returns True if it changed."""
+        with self._conn() as conn:
+            if targets.get_pref(conn, owner, "phase_auto") == phase:
+                return False
+            targets.set_pref(conn, owner, "phase_auto", phase)
+            targets.recompute(conn, owner)
+            return True
 
     def recompute_targets(self, owner: str, today=None) -> dict:
         with self._conn() as conn:

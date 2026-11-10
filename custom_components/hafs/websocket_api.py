@@ -71,7 +71,10 @@ async def ws_info(hass: HomeAssistant, connection: websocket_api.ActiveConnectio
 @websocket_api.async_response
 @_with_store
 async def ws_sync_push(hass, connection, msg, store: Store) -> dict:
-    return await hass.async_add_executor_job(store.push, connection.user.id, msg["records"])
+    result, events = await hass.async_add_executor_job(store.push_ex, connection.user.id, msg["records"])
+    if (hub := hass.data.get(DOMAIN)) is not None and result["applied"]:
+        await hub.async_after_push(connection.user.id, events)
+    return result
 
 
 @websocket_api.websocket_command(
@@ -114,6 +117,8 @@ async def ws_pref_set(hass, connection, msg, store: Store) -> dict:
     if msg["value"] not in PREF_VALUES[msg["key"]]:
         raise ValueError(f"invalid value for {msg['key']}")
     targets_result = await hass.async_add_executor_job(store.set_pref, connection.user.id, msg["key"], msg["value"])
+    if (hub := hass.data.get(DOMAIN)) is not None:
+        await hub.async_after_pref(connection.user.id)
     return {"key": msg["key"], "value": msg["value"], "targets": targets_result}
 
 

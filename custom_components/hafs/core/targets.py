@@ -35,6 +35,9 @@ def _phase(conn: sqlite3.Connection, owner: str) -> str:
     manual = get_pref(conn, owner, "phase")
     if manual in PHASE_VALUES[1:]:
         return manual
+    auto = get_pref(conn, owner, "phase_auto")  # written by the HA side from MyDietAssistant's sensors
+    if auto in PHASE_VALUES[1:]:
+        return auto
     row = conn.execute("SELECT phase FROM workout WHERE owner=? AND deleted=0 AND phase!='' "
                        "ORDER BY started_at DESC LIMIT 1", (owner,)).fetchone()
     return row[0] if row else ""
