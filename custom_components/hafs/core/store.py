@@ -6,7 +6,7 @@ import os
 from contextlib import closing
 from typing import Any
 
-from . import catalog, db, gymrun, status, sync, targets
+from . import catalog, db, gymrun, status, sync, targets, zones
 
 
 class Store:
@@ -79,6 +79,10 @@ class Store:
     def plan(self, owner: str, now=None) -> dict:
         with self._conn() as conn:
             return status.plan(conn, owner, now)
+
+    def gym_for_zone(self, owner: str, zone: str | None) -> dict | None:
+        with self._conn() as conn:
+            return zones.gym_for_zone(conn, owner, zone)
 
     def owners(self) -> list[str]:
         with self._conn() as conn:

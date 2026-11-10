@@ -98,6 +98,8 @@ class TrainingTab extends StatelessWidget {
   /// Startet ein Workout. Gibt es Routinen oder mehrere Studios, wird vorher gefragt.
   Future<void> _start(BuildContext context) async {
     final repo = app.repo!;
+    if (repo.gyms().any((g) => g.zone.isNotEmpty)) await app.detectGym();
+    if (!context.mounted) return;
     final gyms = repo.gyms();
     final routines = repo.routines();
     if (routines.isEmpty && gyms.length < 2) {
@@ -156,6 +158,8 @@ class TrainingTab extends StatelessWidget {
             if (next == null) return const SizedBox.shrink();
             return FilledButton.tonalIcon(
               onPressed: () async {
+                if (repo.gyms().any((g) => g.zone.isNotEmpty)) await app.detectGym();
+                if (!context.mounted) return;
                 final gym = repo.lastGymId() ?? repo.gyms().firstOrNull?.id;
                 await _open(context, repo.startWorkout(routineId: next.id, routineName: next.name, gymId: gym));
               },

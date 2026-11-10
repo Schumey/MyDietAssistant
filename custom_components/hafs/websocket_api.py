@@ -24,7 +24,7 @@ from .core.store import Store
 @callback
 def async_register_websocket_commands(hass: HomeAssistant) -> None:
     for command in (ws_info, ws_sync_push, ws_sync_pull, ws_export, ws_import_gymrun, ws_catalog_info,
-                    ws_pref_get, ws_pref_set, ws_targets_recompute):
+                    ws_pref_get, ws_pref_set, ws_targets_recompute, ws_gym_current):
         websocket_api.async_register_command(hass, command)
 
 
@@ -121,6 +121,17 @@ async def ws_pref_set(hass, connection, msg, store: Store) -> dict:
     if (hub := hass.data.get(DOMAIN)) is not None:
         await hub.async_after_pref(connection.user.id)
     return {"key": msg["key"], "value": msg["value"], "targets": targets_result}
+
+
+@websocket_api.websocket_command({vol.Required("type"): "hafs/gym/current"})
+@websocket_api.async_response
+@_with_store
+async def ws_gym_current(hass, connection, msg, store: Store) -> dict:
+    """The gym the user is at, from the zone of their person entity and the `zone` field of their gyms."""
+    hub = hass.data.get(DOMAIN)
+    zone = hub.current_zone(connection.user.id) if hub is not None else None
+    found = await hass.async_add_executor_job(store.gym_for_zone, connection.user.id, zone)
+    return {"zone": zone, **(found or {"gym_id": None, "gym": None})}
 
 
 @websocket_api.websocket_command({vol.Required("type"): "hafs/targets/recompute"})

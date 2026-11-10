@@ -349,3 +349,17 @@ def test_speech():
     assert "gestern" in speech.last_workout({"last_workout_at": "2026-11-09T08:00:00+00:00"}, today, "de")
     assert speech.last_workout({"last_workout_at": "2026-11-05T08:00:00+00:00"}, today, "en") == "Your last workout was 5 days ago."
     assert speech.last_workout({}, today, "xx") == "I don't know of any workout yet."
+
+
+def test_zone_to_gym(store):
+    from core import zones
+    z = {"CleverFit": "zone.cleverfit"}
+    assert zones.zone_entity("home", z) == "zone.home"
+    assert zones.zone_entity("CleverFit", z) == "zone.cleverfit"
+    assert zones.zone_entity("not_home", z) is None and zones.zone_entity("Anderswo", z) is None
+    store.push(OWNER, {"gym": [{"id": "g1", "name": "Clever", "zone": "zone.CleverFit", "updated_at": T}]})
+    with store._conn() as c:
+        assert zones.gym_for_zone(c, OWNER, "zone.cleverfit") == {"gym_id": "g1", "gym": "Clever"}
+        assert zones.gym_for_zone(c, OWNER, "zone.home") is None
+        assert zones.gym_for_zone(c, "other", "zone.cleverfit") is None
+        assert zones.gym_for_zone(c, OWNER, None) is None

@@ -3,11 +3,14 @@ import 'package:uuid/uuid.dart';
 import 'repo.dart';
 
 class GymInfo {
-  GymInfo(this.id, this.name, this.equipmentCount);
+  GymInfo(this.id, this.name, this.equipmentCount, [this.zone = '']);
 
   final String id;
   final String name;
   final int equipmentCount;
+
+  /// Home Assistant zone entity id (e.g. zone.cleverfit) used to detect that the user is here.
+  final String zone;
 }
 
 class EquipmentInfo {
@@ -74,15 +77,20 @@ extension GymRepo on Repo {
 
   List<GymInfo> gyms() => [
         for (final r in local.rows(
-            'SELECT g.id, g.name, (SELECT COUNT(*) FROM equipment e WHERE e.gym_id = g.id AND e.deleted = 0) n '
+            'SELECT g.id, g.name, g.zone, (SELECT COUNT(*) FROM equipment e WHERE e.gym_id = g.id AND e.deleted = 0) n '
             'FROM gym g WHERE g.deleted = 0 ORDER BY g.name COLLATE NOCASE'))
-          GymInfo(r['id'] as String, r['name'] as String, r['n'] as int),
+          GymInfo(r['id'] as String, r['name'] as String, r['n'] as int, r['zone'] as String),
       ];
 
   String addGym(String name) {
     final id = newId();
     local.upsert('gym', {'id': id, 'owner': '', 'updated_at': nowStamp(), 'deleted': 0, 'name': name.trim()}, dirty: true);
     return id;
+  }
+
+  void setGymZone(String id, String zone) {
+    final r = local.row('SELECT * FROM gym WHERE id = ?', [id]);
+    if (r != null) local.upsert('gym', {...r, 'zone': zone.trim(), 'updated_at': nowStamp()}, dirty: true);
   }
 
   void renameGym(String id, String name) {

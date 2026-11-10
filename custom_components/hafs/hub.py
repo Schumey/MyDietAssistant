@@ -16,6 +16,7 @@ from homeassistant.util import slugify
 from .const import DOMAIN
 from .core import phase as phase_mod
 from .core import targets
+from .core import zones as zones_mod
 from .core.store import Store
 
 _LOGGER = logging.getLogger(__name__)
@@ -88,6 +89,17 @@ class HafsHub:
         async def handler(_event: Event) -> None:
             await self.async_refresh_phase(owner)
         return handler
+
+    # ---- location ---------------------------------------------------------
+
+    def current_zone(self, owner: str) -> str | None:
+        """Zone entity id the user's person entity is in right now (None when away or unknown)."""
+        zones = {s.name: s.entity_id for s in self.hass.states.async_all("zone")}
+        zones.update({s.attributes.get("friendly_name", ""): s.entity_id for s in self.hass.states.async_all("zone")})
+        for person in self.hass.states.async_all("person"):
+            if person.attributes.get("user_id") == owner:
+                return zones_mod.zone_entity(person.state, zones)
+        return None
 
     # ---- refresh ----------------------------------------------------------
 

@@ -1,4 +1,5 @@
 import 'plates.dart';
+import 'repo_gym.dart';
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -81,6 +82,29 @@ class AppState extends ChangeNotifier {
     _token = token.trim();
     syncError = null;
     notifyListeners();
+  }
+
+  /// Asks Home Assistant which gym the user is at (zone of the person entity matched with the gyms' zone) and makes it the
+  /// default for the next workout. Never throws and gives up after a few seconds (offline in the gym is normal).
+  Future<String?> detectGym() async {
+    if (!hasCredentials || local == null) return null;
+    HaConnection? connection;
+    try {
+      connection = await _connector(address!, _token!).timeout(const Duration(seconds: 4));
+      final r = await connection.call('hafs/gym/current').timeout(const Duration(seconds: 4)) as Map;
+      final id = r['gym_id'] as String?;
+      if (id != null && repo!.gyms().any((g) => g.id == id)) {
+        local!.setState('last_gym', id);
+        return id;
+      }
+    } catch (_) {
+      // no connection or an older server: keep the remembered gym
+    } finally {
+      try {
+        await connection?.close();
+      } catch (_) {}
+    }
+    return null;
   }
 
   Future<void> syncNow() async {

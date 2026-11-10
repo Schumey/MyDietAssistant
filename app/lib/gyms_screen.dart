@@ -70,7 +70,7 @@ class _GymsScreenState extends State<GymsScreen> {
                   ListTile(
                     leading: const Icon(Icons.store),
                     title: Text(g.name),
-                    subtitle: Text(tr('equipment_n', [g.equipmentCount])),
+                    subtitle: Text(g.zone.isEmpty ? tr('equipment_n', [g.equipmentCount]) : '${tr('equipment_n', [g.equipmentCount])} · ${g.zone}'),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () async {
                       await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => GymDetailScreen(app: widget.app, gymId: g.id)));
@@ -111,6 +111,18 @@ class _GymDetailScreenState extends State<GymDetailScreen> {
       appBar: AppBar(
         title: Text(gym.name),
         actions: [
+          IconButton(
+            tooltip: tr('gym_zone'),
+            icon: Icon(gym.zone.isEmpty ? Icons.location_off_outlined : Icons.location_on),
+            onPressed: () async {
+              final zone = await askText(context, tr('gym_zone_ask'), initial: gym.zone);
+              if (zone != null) {
+                repo.setGymZone(gym.id, zone);
+                widget.app.changed();
+                setState(() {});
+              }
+            },
+          ),
           IconButton(
             tooltip: tr('gym_rename'),
             icon: const Icon(Icons.edit),
