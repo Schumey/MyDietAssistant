@@ -6,6 +6,7 @@ The data sync is record based: the app pushes records with client-made UUIDs
 
 from __future__ import annotations
 
+import json
 from collections.abc import Callable
 from typing import Any
 
@@ -17,14 +18,14 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.loader import async_get_integration
 
 from .const import API_VERSION, DOMAIN
-from .core import catalog, sync, targets
+from .core import aiplan, catalog, sync, targets
 from .core.store import Store
 
 
 @callback
 def async_register_websocket_commands(hass: HomeAssistant) -> None:
     for command in (ws_info, ws_sync_push, ws_sync_pull, ws_export, ws_import_gymrun, ws_catalog_info,
-                    ws_pref_get, ws_pref_set, ws_targets_recompute, ws_gym_current):
+                    ws_pref_get, ws_pref_set, ws_targets_recompute, ws_gym_current, ws_plan_suggest):
         websocket_api.async_register_command(hass, command)
 
 
@@ -132,6 +133,46 @@ async def ws_gym_current(hass, connection, msg, store: Store) -> dict:
     zone = hub.current_zone(connection.user.id) if hub is not None else None
     found = await hass.async_add_executor_job(store.gym_for_zone, connection.user.id, zone)
     return {"zone": zone, **(found or {"gym_id": None, "gym": None})}
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "hafs/plan/suggest",
+        vol.Required("days"): vol.All(int, vol.Range(min=1, max=6)),
+        vol.Optional("minutes", default=60): vol.All(int, vol.Range(min=20, max=180)),
+        vol.Optional("goal", default=""): vol.All(str, vol.Length(max=200)),
+        vol.Optional("notes", default=""): vol.All(str, vol.Length(max=500)),
+        vol.Optional("language", default="de"): str,
+        vol.Optional("entity_id"): str,
+    }
+)
+@websocket_api.async_response
+@_with_store
+async def ws_plan_suggest(hass, connection, msg, store: Store) -> dict:
+    """Ask the AI configured in Home Assistant (`ai_task.generate_data`) for a plan draft built from the user's own
+    exercises. Returns validated days; nothing is saved."""
+    req = await hass.async_add_executor_job(
+        store.plan_request, connection.user.id, msg["days"], msg["minutes"], msg["goal"], msg["notes"], msg["language"])
+    if not req["known"]:
+        raise ValueError("no exercises to build a plan from")
+    if not hass.services.has_service("ai_task", "generate_data"):
+        raise ValueError("Home Assistant has no AI task set up (ai_task)")
+    data = {
+        "task_name": "HAFS training plan",
+        "instructions": req["instructions"],
+        "structure": {"plan": {"description": "The plan as JSON text", "required": True, "selector": {"text": {"multiline": True}}}},
+    }
+    if msg.get("entity_id"):
+        data["entity_id"] = msg["entity_id"]
+    try:
+        result = await hass.services.async_call("ai_task", "generate_data", data, blocking=True, return_response=True)
+    except Exception as err:  # noqa: BLE001 - surface any provider error to the app as a message
+        raise ValueError(f"AI request failed: {err}") from err
+    answer = (result or {}).get("data", {})
+    text = answer.get("plan") if isinstance(answer, dict) else None
+    if not isinstance(text, str):
+        text = json.dumps(answer) if answer else str((result or {}).get("text", ""))
+    return {"days": aiplan.parse_draft(text, req["known"])}
 
 
 @websocket_api.websocket_command({vol.Required("type"): "hafs/targets/recompute"})

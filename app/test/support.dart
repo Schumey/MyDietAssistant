@@ -22,6 +22,9 @@ class FakeServer implements HaConnection {
   final Map<String, String> prefs = {};
   bool offline = false;
   String? currentGymId;
+  List<Map<String, Object?>> planDays = [];
+  String? planError;
+  final List<Map> planRequests = [];
   Set<String> rejectIds = {};
 
   void put(String table, Map<String, Object?> record) => (data[table] ??= {})[record['id'] as String] = record;
@@ -39,6 +42,10 @@ class FakeServer implements HaConnection {
     switch (type) {
       case 'hafs/info':
         return {'api_version': apiVersion, 'version': '0.1.0', 'ready': ready, 'schema_version': 3};
+      case 'hafs/plan/suggest':
+        planRequests.add(payload);
+        if (planError != null) throw HaException(planError!);
+        return {'days': planDays};
       case 'hafs/gym/current':
         return {'zone': currentGymId == null ? null : 'zone.x', 'gym_id': currentGymId, 'gym': null};
       case 'hafs/pref/get':

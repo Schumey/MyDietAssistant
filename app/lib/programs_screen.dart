@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_state.dart';
+import 'ai_plan.dart';
 import 'gyms_screen.dart';
 import 'history_plan.dart';
 import 'l10n.dart';
@@ -22,6 +23,11 @@ class _ProgramsScreenState extends State<ProgramsScreen> {
   Future<void> _edit([String? id]) async {
     await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => ProgramEditor(app: widget.app, programId: id)));
     if (mounted) setState(() {});
+  }
+
+  Future<void> _fromAi() async {
+    final created = await showAiPlanDialog(context, widget.app);
+    if (created && mounted) setState(() {});
   }
 
   Future<void> _fromTemplate() async {
@@ -105,6 +111,7 @@ class _ProgramsScreenState extends State<ProgramsScreen> {
       appBar: AppBar(
         title: Text(tr('programs_title')),
         actions: [
+          IconButton(tooltip: tr('from_ai'), onPressed: _fromAi, icon: const Icon(Icons.psychology_alt_outlined)),
           TextButton.icon(onPressed: _fromHistory, icon: const Icon(Icons.history), label: Text(tr('from_history'))),
           TextButton.icon(onPressed: _fromTemplate, icon: const Icon(Icons.auto_awesome), label: Text(tr('from_template'))),
         ],

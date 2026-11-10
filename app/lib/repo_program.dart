@@ -132,6 +132,18 @@ extension ProgramRepo on Repo {
           ),
       ];
 
+  /// Legt aus fertigen Tagen (Vorlage, KI-Entwurf) Routinen und ein Programm an. Null bei leerem Plan.
+  String? createFromPlan(List<PlanDay> plan, String programName) {
+    if (plan.isEmpty) return null;
+    final ids = [
+      for (final day in plan)
+        saveRoutine(name: day.name, exercises: [
+          for (final x in day.exercises) RoutineExercise(exerciseId: x.exerciseId, name: x.name, sets: x.sets, repsMin: x.repsMin, repsMax: x.repsMax),
+        ]),
+    ];
+    return saveProgram(name: programName, routineIds: ids);
+  }
+
   /// Legt aus einer Vorlage Routinen und ein Programm an. [dayName] übersetzt die Tag-Schlüssel.
   /// Gibt die ID des Programms zurück, null wenn keine Übung gepasst hat.
   String? createFromTemplate(TemplateDef t, String programName, String Function(String key) dayName) {

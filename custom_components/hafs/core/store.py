@@ -6,7 +6,7 @@ import os
 from contextlib import closing
 from typing import Any
 
-from . import catalog, db, gymrun, status, sync, targets, zones
+from . import aiplan, catalog, db, gymrun, status, sync, targets, zones
 
 
 class Store:
@@ -83,6 +83,14 @@ class Store:
     def gym_for_zone(self, owner: str, zone: str | None) -> dict | None:
         with self._conn() as conn:
             return zones.gym_for_zone(conn, owner, zone)
+
+    def plan_request(self, owner: str, days: int, minutes: int, goal: str, notes: str, lang: str) -> dict:
+        """Instructions for the AI and the id -> name map needed to validate the answer."""
+        with self._conn() as conn:
+            exercises = aiplan.candidate_exercises(conn, owner)
+            phase = targets.get_pref(conn, owner, "phase") or targets.get_pref(conn, owner, "phase_auto")
+        return {"instructions": aiplan.build_instructions(days, minutes, goal, notes, phase, exercises, lang),
+                "known": {e["id"]: e["name"] for e in exercises}}
 
     def owners(self) -> list[str]:
         with self._conn() as conn:

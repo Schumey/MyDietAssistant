@@ -1,5 +1,7 @@
 import 'plates.dart';
+import 'l10n.dart';
 import 'repo_gym.dart';
+import 'templates.dart';
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -105,6 +107,25 @@ class AppState extends ChangeNotifier {
       } catch (_) {}
     }
     return null;
+  }
+
+  /// Asks the AI set up in Home Assistant for a plan draft (`hafs/plan/suggest`). The server validates the answer
+  /// against the user's own exercises. Throws [HaException] with a readable message on failure.
+  Future<List<PlanDay>> suggestPlan({required int days, required int minutes, String goal = '', String notes = ''}) async {
+    if (!hasCredentials) throw HaException('not signed in');
+    final connection = await _connector(address!, _token!);
+    try {
+      final r = await connection.call('hafs/plan/suggest', {'days': days, 'minutes': minutes, 'goal': goal, 'notes': notes, 'language': L10n.lang}) as Map;
+      return [
+        for (final d in (r['days'] as List).cast<Map>())
+          PlanDay(d['name'] as String, [
+            for (final x in (d['exercises'] as List).cast<Map>())
+              PlanExercise(x['id'] as String, x['name'] as String, x['sets'] as int, x['reps_min'] as int, x['reps_max'] as int),
+          ]),
+      ];
+    } finally {
+      await connection.close();
+    }
   }
 
   Future<void> syncNow() async {
