@@ -172,7 +172,7 @@ void main() {
     expect(app.settings['hit_fraction'], '0.75');
     await tester.drag(find.byType(ListView), const Offset(0, -400));
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(Switch));
+    await tester.tap(find.widgetWithText(SwitchListTile, 'Diät: erst einen Satz streichen'));
     await tester.pumpAndSettle();
     expect(server.prefs['cut_drop_set_first'], '1');
   });

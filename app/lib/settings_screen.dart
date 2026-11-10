@@ -17,6 +17,7 @@ class SettingsTab extends StatefulWidget {
 
 class _SettingsTabState extends State<SettingsTab> {
   String? _error;
+  bool _hcError = false;
 
   /// Stored fraction -> the nearest offered choice ('' = default 1.0).
   static String _hit(String v) {
@@ -161,6 +162,21 @@ class _SettingsTabState extends State<SettingsTab> {
           onTap: _editPlates,
         ),
         if (_error != null) Text(_error!, style: TextStyle(color: theme.colorScheme.error)),
+        const SizedBox(height: 24),
+        Text(tr('hc_title'), style: theme.textTheme.titleSmall),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(tr('hc_write')),
+          subtitle: Text(_hcError ? tr('hc_refused') : tr('hc_help')),
+          value: app.health?.enabled ?? false,
+          onChanged: app.health == null
+              ? null
+              : (v) async {
+                  final ok = await app.health!.setEnabled(v);
+                  if (v && ok) await app.health!.exportPending();
+                  if (mounted) setState(() => _hcError = v && !ok);
+                },
+        ),
         if (app.updater != null) ...[
           const SizedBox(height: 24),
           Text(tr('app_section'), style: theme.textTheme.titleSmall),

@@ -1,3 +1,4 @@
+import 'health_export.dart';
 import 'plates.dart';
 import 'updater.dart';
 import 'l10n.dart';
@@ -21,9 +22,13 @@ typedef Connector = Future<HaConnection> Function(String address, String token);
 /// Die Datenbank ist immer offen, auch ohne Verbindung: Training erfassen geht offline,
 /// abgeglichen wird, wenn eine Verbindung da ist.
 class AppState extends ChangeNotifier {
-  AppState(this.credentials, {required this.openDb, Connector? connector, RestTimer? rest})
+  AppState(this.credentials, {required this.openDb, Connector? connector, RestTimer? rest, WorkoutSink? workoutSink})
       : _connector = connector ?? ((a, t) => HaClient.connect(a, t)),
+        // ignore: prefer_initializing_formals
+        _workoutSink = workoutSink,
         rest = rest ?? RestTimer();
+
+  final WorkoutSink? _workoutSink;
 
   final CredentialStore credentials;
   final Future<LocalDb> Function() openDb;
@@ -47,6 +52,9 @@ class AppState extends ChangeNotifier {
 
   bool get hasCredentials => address != null && _token != null;
 
+  /// Writes finished workouts to Health Connect (opt-in), null before the local database is open.
+  HealthExport? health;
+
   /// Self-update from this Home Assistant (Android only), null when not signed in or unsupported.
   Updater? get updater => hasCredentials && Updater.supported ? Updater(address: address!, token: _token!) : null;
 
@@ -63,6 +71,7 @@ class AppState extends ChangeNotifier {
     _token = saved?.token;
     local = await openDb();
     repo = Repo(local!);
+    health = HealthExport(local!, sink: _workoutSink);
     phase = local!.state('phase') ?? '';
     for (final k in settingKeys) {
       settings[k] = local!.state('pref_$k') ?? '';
@@ -70,6 +79,7 @@ class AppState extends ChangeNotifier {
     loaded = true;
     notifyListeners();
     unawaited(rest.restore());
+    unawaited(health!.exportPending()); // workouts finished while the export could not run
     if (hasCredentials) unawaited(syncNow());
   }
 

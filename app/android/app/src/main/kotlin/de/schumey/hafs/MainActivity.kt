@@ -1,5 +1,6 @@
 package de.schumey.hafs
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
+// Health Connect asks for its permissions through the activity result API, which needs a fragment activity.
+class MainActivity : FlutterFragmentActivity()

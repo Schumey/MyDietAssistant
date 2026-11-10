@@ -280,6 +280,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     widget.app.changed();
     Navigator.of(context).pop();
     widget.app.syncNow();
+    widget.app.health?.exportPending();
   }
 
   Widget _exerciseCard(ThemeData theme, ExerciseInfo e, List<SetRow> sets, {PlannedExercise? plan}) {
