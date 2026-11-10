@@ -20,6 +20,7 @@ class _Creds implements CredentialStore {
 }
 
 void main() {
+  group("plate hint", plateHintTests);
   late AppState app;
 
   setUp(() {
@@ -88,5 +89,37 @@ void main() {
     await tester.pumpAndSettle();
     // only the second planned exercise still offers the menu
     expect(find.byIcon(Icons.more_vert), findsOneWidget);
+  });
+}
+
+void plateHintTests() {
+  late AppState app;
+
+  setUp(() {
+    L10n.lang = 'de';
+    final local = openMemory();
+    final server = FakeServer(local.schema.syncTables);
+    server.put('exercise', {
+      'id': 'e1', 'owner': 'u1', 'updated_at': '2026-01-01T00:00:00+00:00', 'deleted': 0, 'name': 'Kniebeuge', 'kind': 'strength', 'catalog_key': '',
+    });
+    app = AppState(_Creds(), openDb: () async => local, connector: (a, t) async => server);
+  });
+
+  testWidgets('barbell equipment shows the plates per side', (tester) async {
+    await tester.pumpWidget(HafsApp(app: app));
+    await tester.pumpAndSettle();
+    final repo = app.repo!;
+    final g = repo.addGym('A');
+    final q = repo.saveEquipment(gymId: g, name: 'Stange', type: 'barbell', steps: '');
+    repo.setExercisesOf(q, {'e1'});
+    final w = repo.startWorkout(gymId: g);
+    repo.addSet(workoutId: w, exerciseId: 'e1', equipmentId: q, weight: 100, reps: 5);
+    app.changed();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Workout fortsetzen'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kniebeuge').first);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Pro Seite: 25'), findsOneWidget);
   });
 }

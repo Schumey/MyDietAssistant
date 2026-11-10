@@ -6,6 +6,7 @@ import 'exercise_picker.dart';
 import 'gyms_screen.dart';
 import 'history_screen.dart';
 import 'l10n.dart';
+import 'plates.dart';
 import 'repo.dart';
 import 'repo_gym.dart';
 import 'rest_timer.dart';
@@ -274,6 +275,17 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     );
   }
 
+  bool get _isBarbell => _equipmentId != null && repo.equipmentById(_equipmentId!)?.type == 'barbell';
+
+  /// Plate calculator for barbells: plates per side for the current weight.
+  Widget _platesHint(ThemeData theme) {
+    final r = platesFor(_weight);
+    final text = r == null
+        ? tr('plates_below_bar', [L10n.kg(defaultBar)])
+        : '${tr('plates_per_side')}: ${platesLine(r, L10n.kg)}${r.remainder > 0 ? '  (${tr('plates_rest', [L10n.kg(r.remainder)])})' : ''}';
+    return Padding(padding: const EdgeInsets.only(top: 4), child: Text(text, style: theme.textTheme.bodySmall));
+  }
+
   Widget _entryPanel(ThemeData theme) {
     final e = _exercise!;
     final d = _defaults!;
@@ -335,6 +347,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                         onPressed: () => setState(() => _step = _nextStep(_step)),
                       ),
               ),
+              if (_isBarbell) _platesHint(theme),
               const SizedBox(height: 8),
               Stepper2(
                 label: tr('reps'),
