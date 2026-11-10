@@ -11,6 +11,16 @@
     }
   },
   "services": {
+    "get_plan": {
+      "name": "Plan abrufen",
+      "description": "Gibt die Programme mit Routinen und Übungen zurück, dazu die als Nächstes fällige Routine.",
+      "fields": {
+        "user_id": {
+          "name": "User",
+          "description": "Benutzer-ID (Standard: der aufrufende Benutzer)"
+        }
+      }
+    },
     "get_workouts": {
       "name": "Workouts abrufen",
       "description": "Gibt die letzten abgeschlossenen Workouts mit Dauer, Volumen und Übungen zurück.",

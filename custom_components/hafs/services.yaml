@@ -1,3 +1,9 @@
+get_plan:
+  fields:
+    user_id:
+      required: false
+      selector:
+        text:
 get_workouts:
   fields:
     user_id:

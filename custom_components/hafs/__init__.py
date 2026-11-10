@@ -12,6 +12,7 @@ from homeassistant.helpers.typing import ConfigType
 
 from .const import DB_SUBPATH, DOMAIN
 from .core.store import Store
+from . import intent as hafs_intent
 from .hub import HafsHub
 from .websocket_api import async_register_websocket_commands
 
@@ -24,6 +25,7 @@ type HafsConfigEntry = ConfigEntry[Store]
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     async_register_websocket_commands(hass)
+    hafs_intent.async_register(hass)
 
     async def get_workouts(call: ServiceCall) -> dict:
         """Recent finished workouts of a user (default: the user who called the service)."""
@@ -36,6 +38,23 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         workouts = await hass.async_add_executor_job(hub.store.recent_workouts, owner, call.data["days"], call.data["limit"])
         return {"user_id": owner, "workouts": workouts}
 
+    async def get_plan(call: ServiceCall) -> dict:
+        """Programs with routines and exercises of a user, plus the routine due next."""
+        hub: HafsHub | None = hass.data.get(DOMAIN)
+        if hub is None:
+            raise HomeAssistantError("HAFS is not set up")
+        owner = call.data.get("user_id") or call.context.user_id
+        if not owner:
+            raise HomeAssistantError("user_id is required when the caller is not a user")
+        from homeassistant.util import dt as dt_util
+        now = dt_util.now()
+        return {"user_id": owner, **await hass.async_add_executor_job(hub.store.plan, owner, now)}
+
+    hass.services.async_register(
+        DOMAIN, "get_plan", get_plan,
+        schema=vol.Schema({vol.Optional("user_id"): cv.string}),
+        supports_response=SupportsResponse.ONLY,
+    )
     hass.services.async_register(
         DOMAIN, "get_workouts", get_workouts,
         schema=vol.Schema({

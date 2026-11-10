@@ -1,0 +1,12 @@
+language: "en"
+intents:
+  HafsNextWorkout:
+    data:
+      - sentences:
+          - "what do I train today"
+          - "what is my workout today"
+  HafsLastWorkout:
+    data:
+      - sentences:
+          - "when did I last go to the gym"
+          - "when did I last train"

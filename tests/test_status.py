@@ -317,3 +317,35 @@ def test_next_routine_uses_rhythm(store):
         assert status.next_routine(c, OWNER, mon)["routine"] == "Push"
         assert status.next_routine(c, OWNER, tue)["routine"] == "Pull"
         assert status.next_routine(c, OWNER, wed)["routine"] == "Pull"
+
+
+def test_plan(store):
+    store.push(OWNER, {
+        "program": [{"id": "p", "name": "PPL", "rhythm": "1,3", "updated_at": T}],
+        "routine": [{"id": "ra", "name": "Push", "program_id": "p", "position": 0, "updated_at": T},
+                    {"id": "rb", "name": "Pull", "program_id": "p", "position": 1, "updated_at": T}],
+        "routine_exercise": [{"id": "x1", "routine_id": "ra", "exercise_id": "e1", "position": 0, "target_sets": 4,
+                              "reps_min": 6, "reps_max": 10, "superset_group": "A", "updated_at": T}],
+    })
+    with store._conn() as c:
+        p = status.plan(c, OWNER, utc(2026, 11, 9, 8))
+        assert p["next"] == {"routine": "Push", "program": "PPL"}
+        prog = p["programs"][0]
+        assert prog["weekdays"] == [1, 3] and [r["routine"] for r in prog["routines"]] == ["Push", "Pull"]
+        ex = prog["routines"][0]["exercises"][0]
+        assert (ex["exercise"], ex["sets"], ex["reps_min"], ex["reps_max"], ex["superset"]) == ("Bank", 4, 6, 10, "A")
+        assert status.plan(c, "nobody") == {"programs": [], "next": None}
+
+
+def test_speech():
+    from datetime import date
+    from core import speech
+    nxt = {"next": {"routine": "Push", "exercises": ["Bank", "Dips", "Seitheben", "Trizeps", "Fliegende"]}}
+    assert speech.next_workout(nxt, "de") == "Heute steht Push an: Bank, Dips, Seitheben, Trizeps."
+    assert speech.next_workout({"next": {"routine": "Push", "exercises": []}}, "en-US") == "Today is Push."
+    assert speech.next_workout({}, "de") == "Es gibt noch keinen Trainingsplan."
+    today = date(2026, 11, 10)
+    assert speech.last_workout({"last_workout_at": "2026-11-10T08:00:00+00:00"}, today, "de") == "Du hast heute schon trainiert."
+    assert "gestern" in speech.last_workout({"last_workout_at": "2026-11-09T08:00:00+00:00"}, today, "de")
+    assert speech.last_workout({"last_workout_at": "2026-11-05T08:00:00+00:00"}, today, "en") == "Your last workout was 5 days ago."
+    assert speech.last_workout({}, today, "xx") == "I don't know of any workout yet."

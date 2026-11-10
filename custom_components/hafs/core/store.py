@@ -76,6 +76,10 @@ class Store:
         with self._conn() as conn:
             return status.recent_workouts(conn, owner, days, limit)
 
+    def plan(self, owner: str, now=None) -> dict:
+        with self._conn() as conn:
+            return status.plan(conn, owner, now)
+
     def owners(self) -> list[str]:
         with self._conn() as conn:
             return [r[0] for r in conn.execute("SELECT DISTINCT owner FROM workout WHERE deleted=0")]

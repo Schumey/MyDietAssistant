@@ -11,6 +11,16 @@
     }
   },
   "services": {
+    "get_plan": {
+      "name": "Get plan",
+      "description": "Returns the programs with routines and exercises, and the routine due next.",
+      "fields": {
+        "user_id": {
+          "name": "User",
+          "description": "User ID (default: the calling user)"
+        }
+      }
+    },
     "get_workouts": {
       "name": "Get workouts",
       "description": "Returns the latest finished workouts with duration, volume and exercises.",

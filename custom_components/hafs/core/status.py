@@ -192,3 +192,27 @@ def next_routine(conn: sqlite3.Connection, owner: str, now: datetime | None = No
             "WHERE x.routine_id=? AND x.deleted=0 AND e.deleted=0 ORDER BY x.position", (nxt["id"],))]
         return {"routine_id": nxt["id"], "routine": nxt["name"], "program": prog["name"], "exercises": exercises}
     return None
+
+
+def plan(conn: sqlite3.Connection, owner: str, now: datetime | None = None) -> dict:
+    """All programs with their routines and exercises (sets, rep range, superset group, current target), plus the
+    routine that is due next."""
+    programs = []
+    for prog in conn.execute("SELECT id, name, rhythm FROM program WHERE owner=? AND deleted=0 ORDER BY name COLLATE NOCASE", (owner,)):
+        routines = []
+        for r in conn.execute("SELECT id, name FROM routine WHERE owner=? AND program_id=? AND deleted=0 ORDER BY position, name COLLATE NOCASE",
+                              (owner, prog["id"])):
+            exercises = []
+            for x in conn.execute(
+                    "SELECT x.exercise_id, e.name, x.target_sets, x.reps_min, x.reps_max, x.superset_group, "
+                    "(SELECT weight FROM target t WHERE t.owner=x.owner AND t.exercise_id=x.exercise_id AND t.deleted=0 "
+                    " ORDER BY t.updated_at DESC LIMIT 1) AS weight "
+                    "FROM routine_exercise x JOIN exercise e ON e.id=x.exercise_id "
+                    "WHERE x.routine_id=? AND x.deleted=0 AND e.deleted=0 ORDER BY x.position", (r["id"],)):
+                exercises.append({"exercise": x["name"], "sets": x["target_sets"], "reps_min": x["reps_min"], "reps_max": x["reps_max"],
+                                  "superset": x["superset_group"] or None, "target_weight": x["weight"]})
+            routines.append({"routine": r["name"], "exercises": exercises})
+        days = parse_rhythm(prog["rhythm"], len(routines))
+        programs.append({"program": prog["name"], "weekdays": days or None, "routines": routines})
+    nxt = next_routine(conn, owner, now)
+    return {"programs": programs, "next": {k: nxt[k] for k in ("routine", "program")} if nxt else None}
