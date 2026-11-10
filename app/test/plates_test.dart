@@ -26,4 +26,10 @@ void main() {
     expect(platesLine(platesFor(100)!, (v) => '$v'), '25.0 + 15.0');
     expect(platesLine(platesFor(20)!, (v) => '$v'), '–');
   });
+  test('parsePlates', () {
+    expect(parsePlates('25 20 2,5'), [25, 20, 2.5]);
+    expect(parsePlates(''), isNull);
+    expect(parsePlates('25 x'), isNull);
+    expect(parsePlates('0'), isNull);
+  });
 }

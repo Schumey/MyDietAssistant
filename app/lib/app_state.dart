@@ -1,3 +1,4 @@
+import 'plates.dart';
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -127,6 +128,16 @@ class AppState extends ChangeNotifier {
     }
     notifyListeners();
     await syncNow();
+  }
+
+  /// Barbell for the plate calculator (device local, not synced).
+  double get plateBar => double.tryParse(local?.state('plate_bar') ?? '') ?? defaultBar;
+  List<double> get plateSet => parsePlates(local?.state('plate_set') ?? '') ?? defaultPlates;
+
+  void setPlates(double bar, List<double> plates) {
+    local?.setState('plate_bar', '$bar');
+    local?.setState('plate_set', plates.join(' '));
+    notifyListeners();
   }
 
   /// Ändert eine Progressions-Einstellung auf dem Server (rechnet dort alle Zielwerte neu) und holt sie.

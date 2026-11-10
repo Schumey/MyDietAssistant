@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_state.dart';
 import 'l10n.dart';
+import 'plates.dart';
 
 class SettingsTab extends StatefulWidget {
   const SettingsTab({super.key, required this.app});
@@ -37,6 +38,34 @@ class _SettingsTabState extends State<SettingsTab> {
     } catch (e) {
       if (mounted) setState(() => _error = tr('sync_failed', ['$e']));
     }
+  }
+
+  Future<void> _editPlates() async {
+    final bar = TextEditingController(text: L10n.kg(widget.app.plateBar));
+    final set = TextEditingController(text: widget.app.plateSet.map(L10n.kg).join(' '));
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(tr('plates_title')),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          TextField(controller: bar, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: tr('plates_bar'))),
+          TextField(controller: set, decoration: InputDecoration(labelText: tr('plates_set'), helperText: tr('plates_help'))),
+        ]),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('cancel'))),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr('save'))),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    final b = double.tryParse(bar.text.trim().replaceAll(',', '.'));
+    final p = parsePlates(set.text);
+    if (b == null || b < 0 || b > 50 || p == null) {
+      setState(() => _error = tr('plates_invalid'));
+      return;
+    }
+    setState(() => _error = null);
+    widget.app.setPlates(b, p);
   }
 
   Future<void> _logout() async {
@@ -119,6 +148,15 @@ class _SettingsTabState extends State<SettingsTab> {
           subtitle: Text(tr('drop_set_first_help')),
           value: app.settings['cut_drop_set_first'] == '1',
           onChanged: (v) => _setting('cut_drop_set_first', v ? '1' : '0'),
+        ),
+        const SizedBox(height: 24),
+        Text(tr('plates_title'), style: theme.textTheme.titleSmall),
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text('${tr('plates_bar')}: ${L10n.kg(app.plateBar)}'),
+          subtitle: Text('${tr('plates_set')}: ${app.plateSet.map(L10n.kg).join(' ')}'),
+          trailing: const Icon(Icons.edit),
+          onTap: _editPlates,
         ),
         if (_error != null) Text(_error!, style: TextStyle(color: theme.colorScheme.error)),
         const SizedBox(height: 32),

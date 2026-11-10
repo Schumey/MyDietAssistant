@@ -28,3 +28,15 @@ PlateResult? platesFor(double total, {double bar = defaultBar, List<double> plat
 
 String platesLine(PlateResult r, String Function(double) fmt) =>
     r.perSide.isEmpty ? '–' : r.perSide.map(fmt).join(' + ');
+
+/// Parses "25 20 15 10 5 2,5 1,25" (space or semicolon separated); null if invalid or empty.
+List<double>? parsePlates(String text) {
+  final parts = text.split(RegExp(r'[\s;]+')).where((s) => s.isNotEmpty);
+  final out = <double>[];
+  for (final s in parts) {
+    final v = double.tryParse(s.replaceAll(',', '.'));
+    if (v == null || v <= 0 || v > 100) return null;
+    out.add(v);
+  }
+  return out.isEmpty ? null : out;
+}
