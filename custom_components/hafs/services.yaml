@@ -1,0 +1,20 @@
+get_workouts:
+  fields:
+    user_id:
+      required: false
+      selector:
+        text:
+    days:
+      required: false
+      default: 30
+      selector:
+        number:
+          min: 1
+          max: 3650
+    limit:
+      required: false
+      default: 50
+      selector:
+        number:
+          min: 1
+          max: 500

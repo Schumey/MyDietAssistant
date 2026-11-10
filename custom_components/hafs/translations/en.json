@@ -9,5 +9,25 @@
     "abort": {
       "single_instance_allowed": "HAFS is already set up."
     }
+  },
+  "services": {
+    "get_workouts": {
+      "name": "Get workouts",
+      "description": "Returns the latest finished workouts with duration, volume and exercises.",
+      "fields": {
+        "user_id": {
+          "name": "User",
+          "description": "User ID (default: the calling user)"
+        },
+        "days": {
+          "name": "Days",
+          "description": "Days"
+        },
+        "limit": {
+          "name": "Limit",
+          "description": "Limit"
+        }
+      }
+    }
   }
 }

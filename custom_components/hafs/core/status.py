@@ -121,3 +121,26 @@ def records_in(conn: sqlite3.Connection, owner: str, workout_id: str) -> list[di
                 out.append({"workout_id": workout_id, "exercise_id": ex["exercise_id"], "exercise": ex["name"],
                             "kind": kind, "value": round(best_new, 1), "previous": round(best_old, 1)})
     return out
+
+
+def recent_workouts(conn: sqlite3.Connection, owner: str, days: int = 30, limit: int = 50,
+                    now: datetime | None = None) -> list[dict]:
+    """Finished workouts of the last `days` days, newest first, with their per-exercise summary."""
+    now = now or datetime.now(timezone.utc)
+    since = (now - timedelta(days=days)).isoformat()
+    ids = [r["id"] for r in conn.execute(
+        "SELECT id FROM workout WHERE owner=? AND deleted=0 AND ended_at IS NOT NULL AND started_at >= ? "
+        "ORDER BY started_at DESC LIMIT ?", (owner, since, limit))]
+    out = []
+    for wid in ids:
+        stats = workout_stats(conn, owner, wid)
+        if stats is None:
+            continue
+        stats["exercises"] = [
+            {"name": r["name"], "sets": r["n"], "best_weight": r["best"]}
+            for r in conn.execute(
+                "SELECT e.name, COUNT(*) n, MAX(s.weight) best FROM workout_set s JOIN exercise e ON e.id=s.exercise_id "
+                "WHERE s.workout_id=? AND s.owner=? AND s.deleted=0 AND s.kind!='warmup' GROUP BY e.id ORDER BY MIN(s.done_at)",
+                (wid, owner))]
+        out.append(stats)
+    return out

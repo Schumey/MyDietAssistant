@@ -243,3 +243,16 @@ def test_setting_changes_the_target(store):
         after = c.execute("SELECT weight, reason_code FROM target WHERE owner=?", (OWNER,)).fetchone()
     assert before is not None and after is not None
     assert after["weight"] >= before["weight"]
+
+
+def test_recent_workouts(store):
+    store.push(OWNER, {"workout": [wrec("w1", "2026-11-09T10:00:00+00:00", "2026-11-09T11:00:00+00:00"),
+                                   wrec("w0", "2026-09-01T10:00:00+00:00", "2026-09-01T11:00:00+00:00"),
+                                   wrec("w2", "2026-11-10T10:00:00+00:00")],
+                       "workout_set": [srec("w1", 60, 8), srec("w0", 50, 8), srec("w2", 70, 5)]})
+    with store._conn() as c:
+        out = status.recent_workouts(c, OWNER, days=30, now=utc(2026, 11, 10, 12))
+    assert [w["workout_id"] for w in out] == ["w1"]          # unfinished and old ones are left out
+    assert out[0]["exercises"] == [{"name": "Bank", "sets": 1, "best_weight": 60.0}]
+    assert out[0]["volume_kg"] == 480
+    assert store.recent_workouts("nobody") == []

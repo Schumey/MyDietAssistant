@@ -9,5 +9,25 @@
     "abort": {
       "single_instance_allowed": "HAFS ist bereits eingerichtet."
     }
+  },
+  "services": {
+    "get_workouts": {
+      "name": "Workouts abrufen",
+      "description": "Gibt die letzten abgeschlossenen Workouts mit Dauer, Volumen und Übungen zurück.",
+      "fields": {
+        "user_id": {
+          "name": "User",
+          "description": "Benutzer-ID (Standard: der aufrufende Benutzer)"
+        },
+        "days": {
+          "name": "Tage",
+          "description": "Tage"
+        },
+        "limit": {
+          "name": "Höchstzahl",
+          "description": "Höchstzahl"
+        }
+      }
+    }
   }
 }
