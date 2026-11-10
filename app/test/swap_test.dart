@@ -135,6 +135,35 @@ void main() {
     expect(find.text('Überspringen'), findsNothing);
   });
 
+  testWidgets('a superset alternates exercises and rests only after the round', (tester) async {
+    await tester.pumpWidget(HafsApp(app: app));
+    await tester.pumpAndSettle();
+    final repo = app.repo!;
+    repo.saveRoutine(name: 'SS', exercises: [
+      RoutineExercise(exerciseId: 'e1', name: 'Bankdrücken', sets: 2, group: 'A'),
+      RoutineExercise(exerciseId: 'e3', name: 'Rudern', sets: 2, group: 'A'),
+      RoutineExercise(exerciseId: 'e2', name: 'Kniebeuge'),
+    ]);
+    expect(repo.routines().firstWhere((r) => r.name == 'SS').exercises.map((x) => x.group), ['A', 'A', '']);
+    await tester.tap(find.text('Workout starten'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('SS'));
+    await tester.pumpAndSettle();
+    expect(find.text('Supersatz A'), findsNWidgets(2));
+    await tester.tap(find.text('Bankdrücken').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Satz fertig'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Stop'), findsNothing); // no rest between the superset partners
+    expect(find.textContaining('Rudern · Satz 1'), findsOneWidget); // switched to the partner
+    await tester.tap(find.text('Satz fertig'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Stop'), findsOneWidget); // round done: rest
+    expect(find.textContaining('Bankdrücken · Satz 2'), findsOneWidget); // and back to the first
+    await tester.tap(find.text('Stop'));
+    await tester.pumpAndSettle();
+  });
+
   testWidgets('planned exercises can be moved up and down', (tester) async {
     await start(tester);
     double y(String t) => tester.getTopLeft(find.text(t)).dy;

@@ -31,7 +31,7 @@ class EquipmentInfo {
 }
 
 class RoutineExercise {
-  RoutineExercise({required this.exerciseId, required this.name, this.sets = 3, this.repsMin = 8, this.repsMax = 12, this.restSeconds});
+  RoutineExercise({required this.exerciseId, required this.name, this.sets = 3, this.repsMin = 8, this.repsMax = 12, this.restSeconds, this.group = ''});
 
   final String exerciseId;
   final String name;
@@ -39,6 +39,9 @@ class RoutineExercise {
   final int repsMin;
   final int repsMax;
   final int? restSeconds;
+
+  /// Superset group letter; exercises with the same non-empty group are done alternately.
+  final String group;
 }
 
 class RoutineInfo {
@@ -51,13 +54,14 @@ class RoutineInfo {
 
 /// Eine geplante Übung im laufenden Workout: Soll aus der Routine, Ist aus den erfassten Sätzen.
 class PlannedExercise {
-  PlannedExercise(this.exercise, this.targetSets, this.doneSets, this.repsMin, this.repsMax);
+  PlannedExercise(this.exercise, this.targetSets, this.doneSets, this.repsMin, this.repsMax, [this.group = '']);
 
   final ExerciseInfo exercise;
   final int targetSets;
   final int doneSets;
   final int repsMin;
   final int repsMax;
+  final String group;
 
   bool get finished => doneSets >= targetSets;
 }
@@ -236,7 +240,7 @@ extension GymRepo on Repo {
 
   List<RoutineExercise> routineExercises(String routineId) => [
         for (final r in local.rows(
-            'SELECT x.exercise_id, x.target_sets, x.reps_min, x.reps_max, x.rest_s, e.name '
+            'SELECT x.exercise_id, x.target_sets, x.reps_min, x.reps_max, x.rest_s, x.superset_group, e.name '
             'FROM routine_exercise x JOIN exercise e ON e.id = x.exercise_id '
             'WHERE x.routine_id = ? AND x.deleted = 0 AND e.deleted = 0 ORDER BY x.position',
             [routineId]))
@@ -247,6 +251,7 @@ extension GymRepo on Repo {
             repsMin: (r['reps_min'] as int?) ?? 8,
             repsMax: (r['reps_max'] as int?) ?? 12,
             restSeconds: r['rest_s'] as int?,
+            group: r['superset_group'] as String,
           ),
       ];
 
@@ -282,6 +287,7 @@ extension GymRepo on Repo {
           'reps_min': x.repsMin,
           'reps_max': x.repsMax,
           'rest_s': x.restSeconds,
+          'superset_group': x.group,
         }, dirty: true);
       }
     });
@@ -316,6 +322,7 @@ extension GymRepo on Repo {
           counts[x.exerciseId] ?? 0,
           x.repsMin,
           x.repsMax,
+          x.group,
         ),
     ];
   }

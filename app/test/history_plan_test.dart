@@ -1,12 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hafs/history_plan.dart';
 import 'package:hafs/repo.dart';
+import 'package:hafs/routines_screen.dart';
 import 'package:hafs/repo_gym.dart';
 import 'package:hafs/repo_program.dart';
 
 import 'support.dart';
 
 void main() {
+  test('supersetGroups', () {
+    expect(supersetGroups([false, true, true, false, false, true]), ['A', 'A', 'A', '', 'B', 'B']);
+    expect(supersetGroups([true, false]), ['', '']);
+  });
+
   test('deriveDay keeps usual exercises in usual order with sets and a rep range', () {
     ExerciseRun r(String id, int sets, int best, int order) => ExerciseRun(id, id.toUpperCase(), sets, best, order);
     final day = deriveDay([

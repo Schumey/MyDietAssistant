@@ -55,8 +55,20 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
   }
 }
 
+/// Group letters for rows; a row flagged `withPrev` joins the group of the row above (the first row can't).
+List<String> supersetGroups(List<bool> withPrev) {
+  final out = List.filled(withPrev.length, '');
+  var next = 0;
+  for (var i = 1; i < withPrev.length; i++) {
+    if (!withPrev[i]) continue;
+    if (out[i - 1].isEmpty) out[i - 1] = String.fromCharCode(65 + next++ % 26);
+    out[i] = out[i - 1];
+  }
+  return out;
+}
+
 class _Row {
-  _Row(this.exerciseId, this.name, this.sets, this.repsMin, this.repsMax, this.restSeconds);
+  _Row(this.exerciseId, this.name, this.sets, this.repsMin, this.repsMax, this.restSeconds, [this.withPrev = false]);
 
   final String exerciseId;
   final String name;
@@ -64,6 +76,9 @@ class _Row {
   int repsMin;
   int repsMax;
   final int? restSeconds;
+
+  /// Done as a superset together with the row above.
+  bool withPrev;
 }
 
 /// Routine anlegen oder bearbeiten: Name und Übungen mit Sätzen und Wiederholungsbereich.
@@ -88,8 +103,9 @@ class _RoutineEditorState extends State<RoutineEditor> {
     final r = id == null ? null : widget.app.repo!.routine(id);
     if (r != null) {
       _name.text = r.name;
-      for (final x in r.exercises) {
-        _rows.add(_Row(x.exerciseId, x.name, x.sets, x.repsMin, x.repsMax, x.restSeconds));
+      for (final (i, x) in r.exercises.indexed) {
+        final linked = i > 0 && x.group.isNotEmpty && x.group == r.exercises[i - 1].group;
+        _rows.add(_Row(x.exerciseId, x.name, x.sets, x.repsMin, x.repsMax, x.restSeconds, linked));
       }
     }
   }
@@ -108,12 +124,14 @@ class _RoutineEditorState extends State<RoutineEditor> {
 
   void _save() {
     if (_name.text.trim().isEmpty) return;
+    final groups = supersetGroups([for (final r in _rows) r.withPrev]);
     widget.app.repo!.saveRoutine(
       id: widget.routineId,
       name: _name.text,
       exercises: [
-        for (final r in _rows)
-          RoutineExercise(exerciseId: r.exerciseId, name: r.name, sets: r.sets, repsMin: r.repsMin, repsMax: r.repsMax, restSeconds: r.restSeconds),
+        for (final (i, r) in _rows.indexed)
+          RoutineExercise(
+              exerciseId: r.exerciseId, name: r.name, sets: r.sets, repsMin: r.repsMin, repsMax: r.repsMax, restSeconds: r.restSeconds, group: groups[i]),
       ],
     );
     widget.app.changed();
@@ -162,6 +180,17 @@ class _RoutineEditorState extends State<RoutineEditor> {
                         Expanded(child: Text(r.name, style: theme.textTheme.titleSmall)),
                         IconButton(visualDensity: VisualDensity.compact, icon: const Icon(Icons.close), onPressed: () => setState(() => _rows.removeAt(i))),
                       ]),
+                      if (i > 0)
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: FilterChip(
+                            visualDensity: VisualDensity.compact,
+                            avatar: const Icon(Icons.link, size: 16),
+                            label: Text(tr('superset_with_prev')),
+                            selected: r.withPrev,
+                            onSelected: (v) => setState(() => r.withPrev = v),
+                          ),
+                        ),
                       Row(children: [
                         _mini(tr('routine_sets'), r.sets, 1, 20, (v) => setState(() => r.sets = v)),
                         _mini(tr('routine_reps_min'), r.repsMin, 1, 100, (v) => setState(() {

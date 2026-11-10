@@ -209,6 +209,21 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     _select(e);
   }
 
+  /// What happens after a work set: `go` = exercise to switch to (superset partner), `rest` = start the rest timer.
+  /// In a superset there is no rest until the last exercise of the round; then the round starts again with the first.
+  ({ExerciseInfo? go, bool rest}) _supersetRound(ExerciseInfo e) {
+    final plan = repo.planned(widget.workoutId);
+    final me = plan.where((p) => p.exercise.id == e.id).firstOrNull;
+    if (me == null || me.group.isEmpty) return (go: null, rest: true);
+    final group = [for (final p in plan) if (p.group == me.group && !_skipped.contains(p.exercise.id)) p];
+    final myIndex = group.indexWhere((p) => p.exercise.id == e.id);
+    for (var i = myIndex + 1; i < group.length; i++) {
+      if (!group[i].finished) return (go: group[i].exercise, rest: false);
+    }
+    final again = group.where((p) => !p.finished && p.exercise.id != e.id).firstOrNull;
+    return (go: again?.exercise, rest: true);
+  }
+
   void _saveSet() {
     final e = _exercise;
     if (e == null) return;
@@ -227,12 +242,14 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     );
     HapticFeedback.lightImpact();
     widget.app.changed();
-    // Nach einem Aufwärmsatz läuft keine Pause.
-    if (!_warmup) widget.app.rest.start(_restSeconds, exercise: e.name);
+    // Nach einem Aufwärmsatz läuft keine Pause; im Supersatz erst nach der letzten Übung der Runde.
+    final round = _warmup ? (go: null, rest: false) : _supersetRound(e);
+    if (!_warmup && round.rest) widget.app.rest.start(_restSeconds, exercise: e.name);
     setState(() {
       _warmup = false;
       _note = '';
     });
+    if (round.go != null) _select(round.go!);
   }
 
   Future<void> _finish() async {
@@ -302,6 +319,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   style: theme.textTheme.labelMedium,
                 ),
             ]),
+            if (plan != null && plan.group.isNotEmpty) Text(tr('superset_label', [plan.group]), style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.primary)),
             if (plan != null && sets.isEmpty) Text(tr('planned_range', [plan.repsMin, plan.repsMax]), style: theme.textTheme.bodySmall),
             if (sets.isNotEmpty) const SizedBox(height: 6),
             for (final s in sets)
