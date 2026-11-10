@@ -12,7 +12,6 @@ from homeassistant.helpers.typing import ConfigType
 
 from .const import DB_SUBPATH, DOMAIN
 from .core.store import Store
-from . import intent as hafs_intent
 from .hub import HafsHub
 from .websocket_api import async_register_websocket_commands
 
@@ -25,7 +24,6 @@ type HafsConfigEntry = ConfigEntry[Store]
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     async_register_websocket_commands(hass)
-    hafs_intent.async_register(hass)
 
     async def get_workouts(call: ServiceCall) -> dict:
         """Recent finished workouts of a user (default: the user who called the service)."""

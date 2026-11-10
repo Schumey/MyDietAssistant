@@ -38,6 +38,7 @@ class _Handler(intent.IntentHandler):
         return response
 
 
-def async_register(hass: HomeAssistant) -> None:
+async def async_setup_intents(hass: HomeAssistant) -> None:
+    """Called by Home Assistant's intent integration for every integration that has an intent.py."""
     intent.async_register(hass, _Handler(NEXT))
     intent.async_register(hass, _Handler(LAST))
