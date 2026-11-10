@@ -191,6 +191,12 @@ extension GymRepo on Repo {
     });
   }
 
+  /// Ordnet eine Übung einem Gerät zu oder löst die Zuordnung.
+  void linkExercise(String exerciseId, String equipmentId, bool linked) {
+    final now = exercisesOf(equipmentId);
+    setExercisesOf(equipmentId, linked ? {...now, exerciseId} : ({...now}..remove(exerciseId)));
+  }
+
   /// Geräte im Studio, an denen die Übung geht (ohne „außer Betrieb“).
   List<EquipmentInfo> equipmentFor(String exerciseId, String gymId) => [
         for (final r in local.rows(

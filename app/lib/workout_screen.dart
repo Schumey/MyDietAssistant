@@ -87,6 +87,48 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     });
   }
 
+  /// Sheet to assign the current exercise to equipment of this gym (or to a new one).
+  Future<void> _assignEquipment() async {
+    final e = _exercise, gym = _gymId;
+    if (e == null || gym == null) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheet) {
+          final all = repo.equipment(gym);
+          final linked = {for (final q in all) if (repo.exercisesOf(q.id).contains(e.id)) q.id};
+          return SafeArea(
+            child: ListView(shrinkWrap: true, children: [
+              Padding(padding: const EdgeInsets.all(16), child: Text(tr('assign_equipment', [e.name]), style: Theme.of(context).textTheme.titleMedium)),
+              for (final q in all)
+                CheckboxListTile(
+                  title: Text(q.name),
+                  value: linked.contains(q.id),
+                  onChanged: (v) {
+                    repo.linkExercise(e.id, q.id, v ?? false);
+                    setSheet(() {});
+                  },
+                ),
+              ListTile(
+                leading: const Icon(Icons.add),
+                title: Text(tr('equipment_add')),
+                onTap: () async {
+                  final name = await askText(context, tr('equipment_name'));
+                  if (name == null || name.trim().isEmpty) return;
+                  final id = repo.saveEquipment(gymId: gym, name: name);
+                  repo.linkExercise(e.id, id, true);
+                  setSheet(() {});
+                },
+              ),
+            ]),
+          );
+        },
+      ),
+    );
+    if (mounted) _select(e);
+  }
+
   Future<void> _cycleRest() async {
     final e = _exercise;
     if (e == null) return;
@@ -367,10 +409,24 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('${e.name} · ${tr('set_n', [done + 1])}', style: theme.textTheme.titleMedium),
-            if (_equipmentOptions.length == 1)
-              Text('${tr('equipment_label')}: ${_equipmentOptions.first.name}', style: theme.textTheme.bodySmall)
+            if (_gymId != null && _equipmentOptions.isEmpty)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: ActionChip(
+                  visualDensity: VisualDensity.compact,
+                  avatar: const Icon(Icons.fitness_center, size: 16),
+                  label: Text(tr('assign_equipment_short')),
+                  onPressed: _assignEquipment,
+                ),
+              )
+            else if (_equipmentOptions.length == 1)
+              Row(children: [
+                Text('${tr('equipment_label')}: ${_equipmentOptions.first.name}', style: theme.textTheme.bodySmall),
+                IconButton(visualDensity: VisualDensity.compact, iconSize: 18, icon: const Icon(Icons.edit_outlined), onPressed: _assignEquipment),
+              ])
             else if (_equipmentOptions.length > 1)
               Wrap(spacing: 8, children: [
+                ActionChip(visualDensity: VisualDensity.compact, avatar: const Icon(Icons.edit_outlined, size: 16), label: Text(tr('assign_equipment_short')), onPressed: _assignEquipment),
                 for (final o in _equipmentOptions)
                   ChoiceChip(
                     visualDensity: VisualDensity.compact,
@@ -423,9 +479,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               ),
             ],
             const SizedBox(height: 12),
-            Row(children: [
+            Wrap(spacing: 8, runSpacing: 0, children: [
               FilterChip(label: Text(tr('kind_warmup')), selected: _warmup, onSelected: (v) => setState(() => _warmup = v)),
-              const SizedBox(width: 8),
               ActionChip(
                 avatar: const Icon(Icons.edit_note, size: 18),
                 label: Text(_note.isEmpty ? tr('set_note') : _note, overflow: TextOverflow.ellipsis),
@@ -434,27 +489,25 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   if (n != null && mounted) setState(() => _note = n.trim());
                 },
               ),
-              const SizedBox(width: 8),
               ActionChip(
                 avatar: const Icon(Icons.timer_outlined, size: 18),
                 label: Text(_restSeconds == 0 ? tr('rest_off') : tr('rest_seconds', [_restSeconds])),
                 onPressed: _cycleRest,
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: SizedBox(
-                  height: 56,
-                  child: FilledButton(onPressed: _saveSet, child: Text(tr('save_set'), style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onPrimary))),
-                ),
-              ),
             ]),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: FilledButton(onPressed: _saveSet, child: Text(tr('save_set'), style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onPrimary))),
+            ),
           ]),
         ),
       ),
     );
   }
 
-  static const _stepPresets = [1.0, 2.5, 5.0, 10.0, 25.0];
+  static const _stepPresets = [1.0, 2.0, 2.5, 5.0, 10.0, 25.0];
 
   double _nextStep(double current) {
     final i = _stepPresets.indexWhere((s) => s > current + 1e-9);

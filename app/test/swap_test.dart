@@ -182,4 +182,28 @@ void plateHintTests() {
     await tester.pumpAndSettle();
     expect(find.textContaining('Pro Seite: 25'), findsOneWidget);
   });
+
+  testWidgets('an exercise without equipment can be assigned to a new one from the workout', (tester) async {
+    await tester.pumpWidget(HafsApp(app: app));
+    await tester.pumpAndSettle();
+    final repo = app.repo!;
+    final g = repo.addGym('A');
+    final q = repo.saveEquipment(gymId: g, name: 'Kurzhanteln', type: 'dumbbell', steps: '2-40/2');
+    final w = repo.startWorkout(gymId: g);
+    repo.addSet(workoutId: w, exerciseId: 'e1', weight: 10, reps: 5);
+    app.changed();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Workout fortsetzen'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kniebeuge').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Gerät zuordnen'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kurzhanteln'));
+    await tester.pumpAndSettle();
+    expect(repo.exercisesOf(q), {'e1'});
+    Navigator.of(tester.element(find.text('Geräte für Kniebeuge'))).pop();
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Gerät: Kurzhanteln'), findsOneWidget);
+  });
 }
