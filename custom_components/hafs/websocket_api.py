@@ -97,7 +97,7 @@ def ws_catalog_info(hass: HomeAssistant, connection: websocket_api.ActiveConnect
     connection.send_result(msg["id"], catalog.info())
 
 
-PREF_KEYS = ["phase", *targets.SETTING_KEYS]
+PREF_KEYS = ["phase", *targets.SETTING_KEYS, "mda_name"]
 
 
 @websocket_api.websocket_command({vol.Required("type"): "hafs/pref/get", vol.Required("key"): vol.In(PREF_KEYS)})

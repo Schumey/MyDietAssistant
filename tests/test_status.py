@@ -256,3 +256,14 @@ def test_recent_workouts(store):
     assert out[0]["exercises"] == [{"name": "Bank", "sets": 1, "best_weight": 60.0}]
     assert out[0]["volume_kg"] == 480
     assert store.recent_workouts("nobody") == []
+
+
+def test_week_volume_and_mda_name(store):
+    store.push(OWNER, {"workout": [wrec("w1", "2026-11-09T10:00:00+00:00", "2026-11-09T11:00:00+00:00")],
+                       "workout_set": [srec("w1", 60, 8)]})
+    with store._conn() as c:
+        assert status.status(c, OWNER, utc(2026, 11, 10, 12))["volume_week_kg"] == 480
+    assert targets.valid_pref("mda_name", "robin") and targets.valid_pref("mda_name", "")
+    assert not targets.valid_pref("mda_name", "Robin") and not targets.valid_pref("mda_name", "a b")
+    store.set_pref(OWNER, "mda_name", "andre")
+    assert store.get_pref(OWNER, "mda_name") == "andre"

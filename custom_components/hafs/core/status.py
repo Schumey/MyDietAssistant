@@ -70,7 +70,9 @@ def status(conn: sqlite3.Connection, owner: str, now: datetime | None = None, tz
     week = [f for f in finished if f[0] >= week_start]
     state = "active" if active else ("done" if today else "none")
     last = workout_stats(conn, owner, finished[0][1]) if finished else None
+    volume_week = sum((workout_stats(conn, owner, wid) or {}).get("volume_kg", 0) for _, wid in week)
     out = {"state": state, "active": bool(active), "workouts_today": len(today), "workouts_week": len(week),
+           "volume_week_kg": round(volume_week, 1),
            "last_workout_at": finished[0][0].isoformat() if finished else None, "last": last}
     if state == "done":
         out["attrs"] = {k: last[k] for k in ("duration_min", "volume_kg", "sets", "kcal_estimate", "routine")}

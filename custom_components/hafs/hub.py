@@ -31,6 +31,7 @@ class HafsHub:
         self.names: dict[str, str] = {}                 # owner -> display name
         self.state: dict[str, dict[str, Any]] = {}      # owner -> status() result
         self.phase: dict[str, dict[str, str]] = {}      # owner -> {"phase", "source"}
+        self.mda_names: dict[str, str] = {}             # owner -> name used in MDA entity ids (override)
         self._adders: list[Callable[[list[str]], None]] = []
         self._tracked: dict[str, Callable[[], None]] = {}
         self._unsubs: list[Callable[[], None]] = []
@@ -60,16 +61,26 @@ class HafsHub:
         """Lowercase name used in entity ids (HAFS and, as default, MDA)."""
         return slugify(self.names.get(owner) or owner[:8])
 
+    def mda_name(self, owner: str) -> str:
+        return self.mda_names.get(owner) or self.object_name(owner)
+
+    async def _track_mda(self, owner: str) -> None:
+        """(Re)subscribe to the MDA sensors of this user; the name can be overridden with the `mda_name` pref."""
+        self.mda_names[owner] = await self.hass.async_add_executor_job(self.store.get_pref, owner, "mda_name")
+        if (old := self._tracked.pop(owner, None)):
+            old()
+        mda = f"sensor.mydiet_{self.mda_name(owner)}"
+        self._tracked[owner] = async_track_state_change_event(
+            self.hass, [f"{mda}_goal_mode", f"{mda}_energy_balance"], self._mda_changed(owner))
+
     async def async_ensure_owner(self, owner: str) -> None:
         if owner in self.names:
             return
         user = await self.hass.auth.async_get_user(owner)
         self.names[owner] = (user.name if user and user.name else owner[:8])
         await self.async_refresh(owner, fire=False)
+        await self._track_mda(owner)
         await self.async_refresh_phase(owner)
-        mda = f"sensor.mydiet_{self.object_name(owner)}"
-        self._tracked[owner] = async_track_state_change_event(
-            self.hass, [f"{mda}_goal_mode", f"{mda}_energy_balance"], self._mda_changed(owner))
         for add in self._adders:
             add([owner])
 
@@ -88,7 +99,7 @@ class HafsHub:
 
     async def async_refresh_phase(self, owner: str) -> None:
         """Resolve manual choice -> MDA goal_mode -> MDA energy_balance and hand it to the store."""
-        prefix = f"sensor.mydiet_{self.object_name(owner)}"
+        prefix = f"sensor.mydiet_{self.mda_name(owner)}"
         goal = self.hass.states.get(f"{prefix}_goal_mode")
         balance = self.hass.states.get(f"{prefix}_energy_balance")
         manual = await self.hass.async_add_executor_job(self.store.get_pref, owner, "phase")
@@ -108,6 +119,7 @@ class HafsHub:
 
     async def async_after_pref(self, owner: str) -> None:
         await self.async_ensure_owner(owner)
+        await self._track_mda(owner)
         await self.async_refresh_phase(owner)
 
     async def _midnight(self, _now: datetime) -> None:

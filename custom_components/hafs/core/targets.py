@@ -46,6 +46,8 @@ def valid_pref(key: str, value: str) -> bool:
             return False
     if key == "cut_drop_set_first":
         return value in ("0", "1")
+    if key == "mda_name":  # the user name MyDietAssistant puts into its entity ids ('' = derive from the HA name)
+        return len(value) <= 40 and all(c.isascii() and (c.islower() or c.isdigit() or c == "_") for c in value)
     if key == "break_days":
         return value.isdigit() and 3 <= int(value) <= 120
     return False

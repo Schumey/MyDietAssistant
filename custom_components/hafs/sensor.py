@@ -20,7 +20,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
     def add(owners: list[str]) -> None:
         async_add_entities([cls(hub, owner) for owner in owners for cls in
-                            (TrainingState, WorkoutsToday, WorkoutsWeek, LastWorkout, PhaseSensor)])
+                            (TrainingState, WorkoutsToday, WorkoutsWeek, VolumeWeek, LastWorkout, PhaseSensor)])
 
     hub.register_platform(add)
     add(list(hub.names))
@@ -79,6 +79,17 @@ class WorkoutsWeek(_Base):
     @property
     def native_value(self) -> int:
         return self.status.get("workouts_week", 0)
+
+
+class VolumeWeek(_Base):
+    key, label = "volume_week", "volume this week"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = "kg"
+    _attr_icon = "mdi:weight-lifter"
+
+    @property
+    def native_value(self) -> float:
+        return self.status.get("volume_week_kg", 0)
 
 
 class LastWorkout(_Base):
