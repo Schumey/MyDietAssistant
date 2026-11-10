@@ -458,6 +458,7 @@ html[data-skin="win"] .diary tr.item button.icon { opacity: 1; }
 html[data-skin="win"] .meal-actions { margin: 8px 0 0; gap: 6px; }
 html[data-skin="win"] .meal-actions .clear { color: var(--w-text); }
 html[data-skin="win"] .range.chips button { text-decoration: line-through; color: var(--w-b1); border: 0; }
+html[data-skin="win"] .range.chips.filter button, html[data-skin="win"] .range.chips button.flat { text-decoration: none; color: var(--w-text); }
 html[data-skin="win"] .range.chips button.active { text-decoration: none; color: var(--w-text); background: var(--w-face); box-shadow: var(--w-pressed); }
 
 
@@ -652,6 +653,8 @@ html[data-skin="win"] .diary thead th, html[data-skin="win"] table.summary thead
   background: color-mix(in srgb, var(--primary-color) 14%, transparent); color: var(--primary-text-color);
   border-color: color-mix(in srgb, var(--primary-color) 45%, transparent); text-decoration: none;
 }
+.range.chips.filter button { text-decoration: none; }
+.range.chips button.flat { border-style: dashed; text-decoration: none; margin-left: auto; }
 .range.chips { flex-wrap: wrap; margin-top: 10px; gap: 6px; }
 /* symbol buttons: text glyphs, never colour emoji, so every icon has the same weight */
 button.icon { font-variant-emoji: text; font-family: "Segoe UI Symbol", var(--ha-font-family-body, system-ui), sans-serif; }

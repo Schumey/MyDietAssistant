@@ -21,7 +21,7 @@ The form warns about implausible values (for example more than 100 g of nutrient
 - **✎** edits a food, **✕** deletes it. Amounts already logged in the diary stay unchanged (snapshots).
 - **☆** makes it a favorite (**★**). Favorites appear in the add dialog under **★ Favorites**.
 - **⚡** creates a [trigger](triggers.md) for the food.
-- Categories (for example diet, bulk) can be shown or hidden with a chip.
+- Categories (for example diet, bulk) work as a filter: one click on a chip shows only that category, a second click shows everything again. “Hide” next to the chips switches to hiding categories everywhere instead.
 
 ## Merge duplicate foods
 

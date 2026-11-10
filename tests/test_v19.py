@@ -79,3 +79,12 @@ def test_push_texts_follow_the_interface_language(me):
     title, msg = extras2.notify_text(me.uid, 1, "20:00")
     assert title == "Voedingsdagboek" and "20:00" in msg and "Uhr" not in msg
     assert extras2.notify_text("someone-else", 2, "Lunch", "12:00", "14:00")[0] == "Ernährungstagebuch"
+
+
+@pytest.mark.parametrize("sort", ["new", "used"])
+def test_food_list_can_be_filtered_by_category(me, sort):
+    import_table(me, "Name;Kategorie;kcal\nApfel;Obst;52\nBirne;Obst;57\nBrot;Backwaren;250\n".encode())
+    names = lambda r: sorted(f["name"] for f in r.json())
+    assert names(me.get(f"/api/foods?sort={sort}&category=Obst")) == ["Apfel", "Birne"]
+    assert names(me.get(f"/api/foods?sort={sort}&category=Backwaren&q=Br")) == ["Brot"]
+    assert len(me.get(f"/api/foods?sort={sort}").json()) == 3

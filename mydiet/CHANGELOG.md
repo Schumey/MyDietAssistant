@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.38.0
+
+### Geändert
+- **Kategorien sind jetzt ein Filter**: Ein Klick auf eine Kategorie zeigt nur noch deren Einträge (Lebensmittel, gespeicherte Mahlzeiten, Rezepte, Hinzufügen-Dialog), ein zweiter Klick hebt den Filter auf. In der Lebensmittelliste filtert der Server, auch bei sehr großen Bibliotheken. Das bisherige Ein-/Ausblenden gibt es weiter über den Schalter „Ausblenden“ neben den Kategorien.
+
 ## 1.37.2
 
 ### Behoben

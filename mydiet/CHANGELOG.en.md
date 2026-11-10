@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.38.0
+
+### Changed
+- **Categories are now a filter**: one click on a category shows only its entries (foods, saved meals, recipes, add dialog), a second click clears the filter. In the food list the server does the filtering, even for very large libraries. The former show/hide behaviour is still available via the "Hide" switch next to the categories.
+
 ## 1.37.2
 
 ### Fixed

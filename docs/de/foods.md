@@ -21,7 +21,7 @@ Das Formular weist auf unplausible Werte hin (zum Beispiel mehr als 100 g Nährs
 - **✎** bearbeitet ein Lebensmittel, **✕** löscht es. Bereits eingetragene Mengen im Tagebuch bleiben unverändert (Schnappschüsse).
 - **☆** macht es zum Favoriten (**★**). Favoriten stehen im Hinzufügen-Dialog im Reiter **★ Favoriten**.
 - **⚡** legt einen [Trigger](triggers.md) für das Lebensmittel an.
-- Kategorien (z. B. Diät, Bulk) lassen sich per Chip ein- und ausblenden.
+- Kategorien (z. B. Diät, Bulk) sind ein Filter: Ein Klick auf den Chip zeigt nur diese Kategorie, ein zweiter zeigt wieder alles. Über „Ausblenden“ neben den Chips lassen sich Kategorien stattdessen überall ausblenden.
 
 ## Doppelte Lebensmittel zusammenführen
 

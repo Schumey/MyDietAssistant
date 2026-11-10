@@ -426,7 +426,7 @@ FOOD_SORTS = {
 
 
 @app.get("/api/foods")
-def list_foods(q: str = "", barcode: str = "", favorite: int = 0, limit: int = 200, offset: int = 0, sort: str = "new",
+def list_foods(q: str = "", barcode: str = "", favorite: int = 0, limit: int = 200, offset: int = 0, sort: str = "new", category: str = "",
                x_remote_user_id: str | None = Header(None)):
     owner = user_from(x_remote_user_id)
     limit, offset = max(1, min(limit, 1000)), max(0, offset)
@@ -442,11 +442,13 @@ def list_foods(q: str = "", barcode: str = "", favorite: int = 0, limit: int = 2
                 " LEFT JOIN (SELECT name, COUNT(*) AS n, MAX(day) AS last FROM entries WHERE owner=? GROUP BY name) u ON u.name=foods.name"
                 f" WHERE {scope.replace('owner', 'foods.owner').replace('shared>', 'foods.shared>')} AND (foods.name LIKE ? OR foods.brand LIKE ? OR foods.barcode=?)"
                 + (" AND foods.favorite=1 AND foods.owner=?" if favorite else "")
-                + f" ORDER BY {order} LIMIT ? OFFSET ?", (owner, *sp, f"%{q}%", f"%{q}%", q.strip(), *([owner] if favorite else []), limit, offset))
+                + (" AND foods.category=?" if category else "")
+                + f" ORDER BY {order} LIMIT ? OFFSET ?", (owner, *sp, f"%{q}%", f"%{q}%", q.strip(), *([owner] if favorite else []), *([category] if category else []), limit, offset))
         else:
             rows = c.execute(
                 f"SELECT * FROM foods WHERE {scope} AND (name LIKE ? OR brand LIKE ? OR barcode=?)" + (" AND favorite=1 AND owner=?" if favorite else "")
-                + f" ORDER BY {order} LIMIT ? OFFSET ?", (*sp, f"%{q}%", f"%{q}%", q.strip(), *([owner] if favorite else []), limit, offset))
+                + (" AND category=?" if category else "")
+                + f" ORDER BY {order} LIMIT ? OFFSET ?", (*sp, f"%{q}%", f"%{q}%", q.strip(), *([owner] if favorite else []), *([category] if category else []), limit, offset))
         foods = [dict(r) for r in rows]
         names = {}
         for f in foods:

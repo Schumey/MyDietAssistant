@@ -81,7 +81,7 @@ const EN = {
   "Gewicht": "Weight", "Statistik": "Statistics", "Einstellungen": "Settings", "Lokal": "Local",
 
   // diary
-  "Kategorien:": "Categories:", "Ein-/ausblenden": "Show/hide", "Vortag": "Previous day", "Folgetag": "Next day", "Tag unvollständig (zählt nicht in der Statistik)": "Mark day as incomplete (not counted in statistics)", "unvollständig (nicht gezählt)": "incomplete (not counted)",
+  "Kategorien:": "Categories:", "Kategorie:": "Category:", "Nur diese Kategorie anzeigen": "Show only this category", "Kategorien ausblenden statt filtern": "Hide categories instead of filtering", "Ein-/ausblenden": "Show/hide", "Vortag": "Previous day", "Folgetag": "Next day", "Tag unvollständig (zählt nicht in der Statistik)": "Mark day as incomplete (not counted in statistics)", "unvollständig (nicht gezählt)": "incomplete (not counted)",
   "Bearbeiten": "Edit", "Entfernen": "Remove", "Kalorien": "Calories", "Kohlenhydrate": "Carbohydrates", "Fette": "Fats", "Eiweiß": "Protein",
   "Nach App-Updates suchen": "Look for app updates",
   "Installierte App-Version: {}": "Installed app version: {}",
@@ -723,6 +723,9 @@ Object.assign(LANGS, {
     "Einstellungen": "Paramètres",
     "Lokal": "Local",
     "Kategorien:": "Catégories :",
+    "Kategorie:": "Catégorie :",
+    "Nur diese Kategorie anzeigen": "Afficher uniquement cette catégorie",
+    "Kategorien ausblenden statt filtern": "Masquer les catégories au lieu de filtrer",
     "Ein-/ausblenden": "Afficher/masquer",
     "Vortag": "Jour précédent",
     "Folgetag": "Jour suivant", "Tag unvollständig (zählt nicht in der Statistik)": "Journée incomplète (non comptée dans les statistiques)", "unvollständig (nicht gezählt)": "incomplète (non comptée)",
@@ -1735,6 +1738,9 @@ Object.assign(LANGS, {
     "Einstellungen": "Ajustes",
     "Lokal": "Local",
     "Kategorien:": "Categorías:",
+    "Kategorie:": "Categoría:",
+    "Nur diese Kategorie anzeigen": "Mostrar solo esta categoría",
+    "Kategorien ausblenden statt filtern": "Ocultar categorías en lugar de filtrar",
     "Ein-/ausblenden": "Mostrar/ocultar",
     "Vortag": "Día anterior",
     "Folgetag": "Día siguiente", "Tag unvollständig (zählt nicht in der Statistik)": "Día incompleto (no cuenta en las estadísticas)", "unvollständig (nicht gezählt)": "incompleto (no contado)",
@@ -2747,6 +2753,9 @@ Object.assign(LANGS, {
     "Einstellungen": "Instellingen",
     "Lokal": "Lokaal",
     "Kategorien:": "Categorieën:",
+    "Kategorie:": "Categorie:",
+    "Nur diese Kategorie anzeigen": "Alleen deze categorie tonen",
+    "Kategorien ausblenden statt filtern": "Categorieën verbergen in plaats van filteren",
     "Ein-/ausblenden": "Tonen/verbergen",
     "Vortag": "Vorige dag",
     "Folgetag": "Volgende dag", "Tag unvollständig (zählt nicht in der Statistik)": "Dag onvolledig (telt niet mee in de statistieken)", "unvollständig (nicht gezählt)": "onvolledig (niet meegeteld)",
@@ -3771,6 +3780,9 @@ Object.assign(LANGS, {
     "Einstellungen": "Impostazioni",
     "Lokal": "Locale",
     "Kategorien:": "Categorie:",
+    "Kategorie:": "Categoria:",
+    "Nur diese Kategorie anzeigen": "Mostra solo questa categoria",
+    "Kategorien ausblenden statt filtern": "Nascondi le categorie invece di filtrare",
     "Ein-/ausblenden": "Mostra/nascondi",
     "Vortag": "Giorno precedente",
     "Folgetag": "Giorno successivo", "Tag unvollständig (zählt nicht in der Statistik)": "Giorno incompleto (non conta nelle statistiche)", "unvollständig (nicht gezählt)": "incompleto (non conteggiato)",
@@ -4795,6 +4807,9 @@ Object.assign(LANGS, {
     "Einstellungen": "Configurações",
     "Lokal": "Local",
     "Kategorien:": "Categorias:",
+    "Kategorie:": "Categoria:",
+    "Nur diese Kategorie anzeigen": "Mostrar apenas esta categoria",
+    "Kategorien ausblenden statt filtern": "Ocultar categorias em vez de filtrar",
     "Ein-/ausblenden": "Mostrar/ocultar",
     "Vortag": "Dia anterior",
     "Folgetag": "Próximo dia", "Tag unvollständig (zählt nicht in der Statistik)": "Dia incompleto (não conta nas estatísticas)", "unvollständig (nicht gezählt)": "incompleto (não contado)",
@@ -5819,6 +5834,9 @@ Object.assign(LANGS, {
     "Einstellungen": "Ustawienia",
     "Lokal": "Lokalnie",
     "Kategorien:": "Kategorie:",
+    "Kategorie:": "Kategoria:",
+    "Nur diese Kategorie anzeigen": "Pokaż tylko tę kategorię",
+    "Kategorien ausblenden statt filtern": "Ukryj kategorie zamiast filtrować",
     "Ein-/ausblenden": "Pokaż/ukryj",
     "Vortag": "Poprzedni dzień",
     "Folgetag": "Następny dzień", "Tag unvollständig (zählt nicht in der Statistik)": "Dzień niekompletny (nie liczy się do statystyk)", "unvollständig (nicht gezählt)": "niekompletny (nie liczony)",
@@ -7092,23 +7110,38 @@ $("#tabs").addEventListener("keydown", e => {
 });
 
 // ---------------------------------------------------------------- categories
-const cat = { all: [], hidden: [] };
-const loadCats = async () => Object.assign(cat, await api("categories"));
-const isVisible = x => !x.category || !cat.hidden.includes(x.category);
+const cat = { all: [], hidden: [], only: "", edit: false };
+const loadCats = async () => { Object.assign(cat, await api("categories")); if (cat.only && !cat.all.includes(cat.only)) cat.only = ""; };
+const isVisible = x => cat.only ? x.category === cat.only : (!x.category || !cat.hidden.includes(x.category));
 const catList = () => h("datalist", { id: "cat-list" }, cat.all.map(c => h("option", { value: c })));
 
-// Toggle chips: a highlighted category is shown, the others are hidden everywhere.
+// Category chips: by default a filter (click = show only this category, click again = all);
+// the "Ausblenden" switch turns them into the old show/hide toggles (hidden categories vanish everywhere).
 function catChips(onchange) {
   if (!cat.all.length) return null;
-  return h("div", { class: "range chips" }, h("span", { class: "muted" }, "Kategorien:"), cat.all.map(c => {
-    const b = h("button", { class: cat.hidden.includes(c) ? "" : "active", "aria-pressed": String(!cat.hidden.includes(c)), title: "Ein-/ausblenden", onclick: async () => {
-      cat.hidden = cat.hidden.includes(c) ? cat.hidden.filter(x => x !== c) : [...cat.hidden, c];
-      await send("PUT", "categories/hidden", { hidden: cat.hidden });
-      b.classList.toggle("active", !cat.hidden.includes(c)); b.setAttribute("aria-pressed", String(!cat.hidden.includes(c)));
-      onchange();
-    } }, c);
-    return b;
-  }));
+  const box = h("div", { class: "range chips" + (cat.edit ? "" : " filter") });
+  const draw = () => {
+    box.className = "range chips" + (cat.edit ? "" : " filter");
+    box.replaceChildren(h("span", { class: "muted" }, cat.edit ? "Kategorien:" : "Kategorie:"),
+      ...cat.all.map(c => {
+        if (!cat.edit) {
+          const on = cat.only === c;
+          return h("button", { class: on ? "active" : "", "aria-pressed": String(on), title: "Nur diese Kategorie anzeigen", onclick: () => {
+            cat.only = on ? "" : c; draw(); onchange();
+          } }, c);
+        }
+        const shown = !cat.hidden.includes(c);
+        return h("button", { class: shown ? "active" : "", "aria-pressed": String(shown), title: "Ein-/ausblenden", onclick: async () => {
+          cat.hidden = cat.hidden.includes(c) ? cat.hidden.filter(x => x !== c) : [...cat.hidden, c];
+          await send("PUT", "categories/hidden", { hidden: cat.hidden });
+          draw(); onchange();
+        } }, c);
+      }),
+      h("button", { class: "flat", "aria-pressed": String(cat.edit), title: "Kategorien ausblenden statt filtern", onclick: () => { cat.edit = !cat.edit; cat.only = ""; draw(); onchange(); } },
+        cat.edit ? "Fertig" : "Ausblenden"));
+  };
+  draw();
+  return box;
 }
 
 // ---------------------------------------------------------------- diary
@@ -8561,14 +8594,14 @@ async function renderFoods() {
 
   // the library can hold thousands of foods (e.g. after a BLS import): search and paging happen on the server
   const load = async append => {
-    const rows = await api(`foods?limit=${PAGE}&offset=${append ? foods.length : 0}&q=${encodeURIComponent(query)}&sort=${sort}`);
+    const rows = await api(`foods?limit=${PAGE}&offset=${append ? foods.length : 0}&q=${encodeURIComponent(query)}&sort=${sort}&category=${encodeURIComponent(cat.only)}`);
     foods = append ? foods.concat(rows) : rows;
     more = rows.length === PAGE;
     draw();
   };
 
   const draw = () => {
-    chips.replaceChildren(...[catChips(draw)].filter(Boolean));
+    chips.replaceChildren(...[catChips(() => load())].filter(Boolean));
     const shown = foods.filter(isVisible);
     const hiddenN = foods.length - shown.length;
     list.replaceChildren(...(shown.length ? shown.map(f => h("div", {},
