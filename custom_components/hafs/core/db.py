@@ -124,6 +124,12 @@ MIGRATIONS: list[str] = [
     ALTER TABLE exercise ADD COLUMN catalog_key TEXT NOT NULL DEFAULT '';
     CREATE INDEX exercise_catalog ON exercise(owner, catalog_key) WHERE catalog_key != '';
     """,
+    # 3: structured reason and set count for suggested targets
+    """
+    ALTER TABLE target ADD COLUMN sets INTEGER;
+    ALTER TABLE target ADD COLUMN reason_code TEXT NOT NULL DEFAULT '';
+    ALTER TABLE target ADD COLUMN reason_params TEXT NOT NULL DEFAULT '';
+    """,
 ]
 
 SCHEMA_VERSION = len(MIGRATIONS)

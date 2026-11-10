@@ -17,13 +17,14 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.loader import async_get_integration
 
 from .const import API_VERSION, DOMAIN
-from .core import catalog, sync
+from .core import catalog, sync, targets
 from .core.store import Store
 
 
 @callback
 def async_register_websocket_commands(hass: HomeAssistant) -> None:
-    for command in (ws_info, ws_sync_push, ws_sync_pull, ws_export, ws_import_gymrun, ws_catalog_info):
+    for command in (ws_info, ws_sync_push, ws_sync_pull, ws_export, ws_import_gymrun, ws_catalog_info,
+                    ws_pref_get, ws_pref_set, ws_targets_recompute):
         websocket_api.async_register_command(hass, command)
 
 
@@ -91,6 +92,36 @@ async def ws_sync_pull(hass, connection, msg, store: Store) -> dict:
 def ws_catalog_info(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]) -> None:
     """Labels and English names of the built-in catalog (the exercises themselves arrive via sync)."""
     connection.send_result(msg["id"], catalog.info())
+
+
+PREF_VALUES = {"phase": targets.PHASE_VALUES}
+
+
+@websocket_api.websocket_command({vol.Required("type"): "hafs/pref/get", vol.Required("key"): vol.In(list(PREF_VALUES))})
+@websocket_api.async_response
+@_with_store
+async def ws_pref_get(hass, connection, msg, store: Store) -> dict:
+    return {"key": msg["key"], "value": await hass.async_add_executor_job(store.get_pref, connection.user.id, msg["key"])}
+
+
+@websocket_api.websocket_command(
+    {vol.Required("type"): "hafs/pref/set", vol.Required("key"): vol.In(list(PREF_VALUES)), vol.Required("value"): str}
+)
+@websocket_api.async_response
+@_with_store
+async def ws_pref_set(hass, connection, msg, store: Store) -> dict:
+    """Set a preference. `phase` is "", "bulk", "maintain" or "cut" and recomputes all targets."""
+    if msg["value"] not in PREF_VALUES[msg["key"]]:
+        raise ValueError(f"invalid value for {msg['key']}")
+    targets_result = await hass.async_add_executor_job(store.set_pref, connection.user.id, msg["key"], msg["value"])
+    return {"key": msg["key"], "value": msg["value"], "targets": targets_result}
+
+
+@websocket_api.websocket_command({vol.Required("type"): "hafs/targets/recompute"})
+@websocket_api.async_response
+@_with_store
+async def ws_targets_recompute(hass, connection, msg, store: Store) -> dict:
+    return await hass.async_add_executor_job(store.recompute_targets, connection.user.id)
 
 
 @websocket_api.websocket_command({vol.Required("type"): "hafs/export"})

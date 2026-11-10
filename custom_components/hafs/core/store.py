@@ -6,7 +6,7 @@ import os
 from contextlib import closing
 from typing import Any
 
-from . import catalog, db, gymrun, sync
+from . import catalog, db, gymrun, sync, targets
 
 
 class Store:
@@ -27,7 +27,27 @@ class Store:
 
     def push(self, owner: str, records: dict[str, list[dict[str, Any]]]) -> dict:
         with self._conn() as conn:
-            return sync.push(conn, owner, records)
+            result = sync.push(conn, owner, records)
+            # New sets change the suggestions of exactly these exercises.
+            touched = {r["exercise_id"] for r in records.get("workout_set", []) if r.get("exercise_id")}
+            if touched and result["applied"]:
+                result["targets"] = targets.recompute(conn, owner, list(touched))
+            return result
+
+    def recompute_targets(self, owner: str, today=None) -> dict:
+        with self._conn() as conn:
+            catalog.seed(conn, owner)
+            return targets.recompute(conn, owner, today=today)
+
+    def get_pref(self, owner: str, key: str) -> str:
+        with self._conn() as conn:
+            return targets.get_pref(conn, owner, key)
+
+    def set_pref(self, owner: str, key: str, value: str) -> dict:
+        """Store a preference; a new phase recomputes every target."""
+        with self._conn() as conn:
+            targets.set_pref(conn, owner, key, value)
+            return targets.recompute(conn, owner) if key == "phase" else {}
 
     def pull(self, owner: str, cursors: dict | None, limit: int) -> dict:
         with self._conn() as conn:
@@ -46,4 +66,5 @@ class Store:
             with self._conn() as conn:
                 catalog.seed(conn, owner)
                 out["added"] = gymrun.import_into(conn, owner, res, catalog.exercise_ids(conn, owner))
+                out["targets"] = targets.recompute(conn, owner)
         return out
