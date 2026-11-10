@@ -157,4 +157,23 @@ void main() {
     expect(server.calls, contains('hafs/pref/set'));
     expect(app.phase, 'cut');
   });
+
+  testWidgets('settings: progression rule is stored on the server and read back', (tester) async {
+    creds.saved = (address: 'ha.local', token: 't');
+    server.prefs['hit_fraction'] = '0.5';
+    await tester.pumpWidget(HafsApp(app: app));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Einstellungen'));
+    await tester.pumpAndSettle();
+    expect(app.settings['hit_fraction'], '0.5'); // read during the first sync
+    await tester.tap(find.text('¾ der Sätze'));
+    await tester.pumpAndSettle();
+    expect(server.prefs['hit_fraction'], '0.75');
+    expect(app.settings['hit_fraction'], '0.75');
+    await tester.drag(find.byType(ListView), const Offset(0, -400));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(Switch));
+    await tester.pumpAndSettle();
+    expect(server.prefs['cut_drop_set_first'], '1');
+  });
 }

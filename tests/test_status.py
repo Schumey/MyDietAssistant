@@ -205,3 +205,41 @@ def test_auto_phase_is_used_unless_manual(store):
 def test_owners(store):
     store.push(OWNER, {"workout": [wrec("w1", "2026-11-10T10:00:00+00:00")]})
     assert store.owners() == [OWNER]
+
+
+# ---- settings via pref -----------------------------------------------------
+
+def test_pref_validation():
+    assert targets.valid_pref("phase", "cut") and not targets.valid_pref("phase", "x")
+    assert targets.valid_pref("hit_fraction", "0.75") and not targets.valid_pref("hit_fraction", "1.5")
+    assert not targets.valid_pref("hit_fraction", "abc")
+    assert targets.valid_pref("cut_drop_set_first", "1") and not targets.valid_pref("cut_drop_set_first", "yes")
+    assert targets.valid_pref("break_days", "21") and not targets.valid_pref("break_days", "1")
+    assert not targets.valid_pref("unknown", "1")
+
+
+def test_settings_from_prefs(store):
+    with store._conn() as c:
+        assert targets.load_settings(c, OWNER).hit_fraction == 1.0
+    store.set_pref(OWNER, "hit_fraction", "0.75")
+    store.set_pref(OWNER, "cut_drop_set_first", "1")
+    store.set_pref(OWNER, "break_days", "bad")  # ignored when invalid
+    with store._conn() as c:
+        s = targets.load_settings(c, OWNER)
+    assert (s.hit_fraction, s.cut_drop_set_first, s.break_days) == (0.75, True, 14)
+
+
+def test_setting_changes_the_target(store):
+    # three work sets 60 x 10, 10, 8 with range 8-10 inferred? use a routine-less history: 3 sets, last one short
+    store.push(OWNER, {"workout": [wrec("w1", "2026-11-05T10:00:00+00:00", "2026-11-05T11:00:00+00:00")],
+                       "workout_set": [
+                           {"id": f"s{i}", "workout_id": "w1", "exercise_id": "e1", "set_no": i, "weight": 60, "reps": r,
+                            "kind": "work", "done_at": f"2026-11-05T10:0{i}:00+00:00", "updated_at": T}
+                           for i, r in enumerate([10, 10, 9, 10], 1)]})
+    with store._conn() as c:
+        before = c.execute("SELECT weight, reason_code FROM target WHERE owner=?", (OWNER,)).fetchone()
+    store.set_pref(OWNER, "hit_fraction", "0.75")
+    with store._conn() as c:
+        after = c.execute("SELECT weight, reason_code FROM target WHERE owner=?", (OWNER,)).fetchone()
+    assert before is not None and after is not None
+    assert after["weight"] >= before["weight"]

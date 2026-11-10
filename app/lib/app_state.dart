@@ -36,6 +36,10 @@ class AppState extends ChangeNotifier {
   String? syncError;
   String phase = '';
 
+  /// Progression settings kept on the server (`hafs/pref/*`), cached here: key -> value ('' = default).
+  static const settingKeys = ['hit_fraction', 'cut_drop_set_first'];
+  final Map<String, String> settings = {};
+
   bool get hasCredentials => address != null && _token != null;
 
   DateTime? get lastSync {
@@ -52,6 +56,9 @@ class AppState extends ChangeNotifier {
     local = await openDb();
     repo = Repo(local!);
     phase = local!.state('phase') ?? '';
+    for (final k in settingKeys) {
+      settings[k] = local!.state('pref_$k') ?? '';
+    }
     loaded = true;
     notifyListeners();
     unawaited(rest.restore());
@@ -87,6 +94,15 @@ class AppState extends ChangeNotifier {
       final p = (await connection.call('hafs/pref/get', {'key': 'phase'}) as Map)['value'] as String? ?? '';
       phase = p;
       local!.setState('phase', p);
+      for (final k in settingKeys) {
+        try {
+          final v = (await connection.call('hafs/pref/get', {'key': k}) as Map)['value'] as String? ?? '';
+          settings[k] = v;
+          local!.setState('pref_$k', v);
+        } on HaException {
+          // older server without this setting: keep the cached value
+        }
+      }
     } on HaException catch (e) {
       syncError = e.message;
     } catch (e) {
@@ -106,6 +122,21 @@ class AppState extends ChangeNotifier {
       await connection.call('hafs/pref/set', {'key': 'phase', 'value': value});
       phase = value;
       local!.setState('phase', value);
+    } finally {
+      await connection.close();
+    }
+    notifyListeners();
+    await syncNow();
+  }
+
+  /// Ändert eine Progressions-Einstellung auf dem Server (rechnet dort alle Zielwerte neu) und holt sie.
+  Future<void> setSetting(String key, String value) async {
+    if (!hasCredentials) return;
+    final connection = await _connector(address!, _token!);
+    try {
+      await connection.call('hafs/pref/set', {'key': key, 'value': value});
+      settings[key] = value;
+      local!.setState('pref_$key', value);
     } finally {
       await connection.close();
     }

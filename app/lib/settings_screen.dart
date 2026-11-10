@@ -15,10 +15,25 @@ class SettingsTab extends StatefulWidget {
 class _SettingsTabState extends State<SettingsTab> {
   String? _error;
 
+  /// Stored fraction -> the nearest offered choice ('' = default 1.0).
+  static String _hit(String v) {
+    final f = double.tryParse(v) ?? 1.0;
+    return f >= 0.9 ? '1.0' : (f >= 0.6 ? '0.75' : '0.5');
+  }
+
   Future<void> _phase(String value) async {
     setState(() => _error = null);
     try {
       await widget.app.setPhase(value);
+    } catch (e) {
+      if (mounted) setState(() => _error = tr('sync_failed', ['$e']));
+    }
+  }
+
+  Future<void> _setting(String key, String value) async {
+    setState(() => _error = null);
+    try {
+      await widget.app.setSetting(key, value);
     } catch (e) {
       if (mounted) setState(() => _error = tr('sync_failed', ['$e']));
     }
@@ -81,6 +96,30 @@ class _SettingsTabState extends State<SettingsTab> {
         ),
         const SizedBox(height: 4),
         Text(tr('phase_help'), style: theme.textTheme.bodySmall),
+        const SizedBox(height: 24),
+        Text(tr('progression'), style: theme.textTheme.titleSmall),
+        const SizedBox(height: 8),
+        Text(tr('hit_rule'), style: theme.textTheme.bodyMedium),
+        const SizedBox(height: 4),
+        SegmentedButton<String>(
+          showSelectedIcon: false,
+          segments: [
+            ButtonSegment(value: '1.0', label: Text(tr('hit_all'))),
+            ButtonSegment(value: '0.75', label: Text(tr('hit_most'))),
+            ButtonSegment(value: '0.5', label: Text(tr('hit_half'))),
+          ],
+          selected: {_hit(app.settings['hit_fraction'] ?? '')},
+          onSelectionChanged: (s) => _setting('hit_fraction', s.first),
+        ),
+        const SizedBox(height: 4),
+        Text(tr('hit_help'), style: theme.textTheme.bodySmall),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(tr('drop_set_first')),
+          subtitle: Text(tr('drop_set_first_help')),
+          value: app.settings['cut_drop_set_first'] == '1',
+          onChanged: (v) => _setting('cut_drop_set_first', v ? '1' : '0'),
+        ),
         if (_error != null) Text(_error!, style: TextStyle(color: theme.colorScheme.error)),
         const SizedBox(height: 32),
         TextButton.icon(onPressed: _logout, icon: const Icon(Icons.logout), label: Text(tr('logout'))),

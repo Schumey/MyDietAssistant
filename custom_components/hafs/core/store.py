@@ -98,7 +98,7 @@ class Store:
         """Store a preference; a new phase recomputes every target."""
         with self._conn() as conn:
             targets.set_pref(conn, owner, key, value)
-            return targets.recompute(conn, owner) if key == "phase" else {}
+            return targets.recompute(conn, owner) if key == "phase" or key in targets.SETTING_KEYS else {}
 
     def pull(self, owner: str, cursors: dict | None, limit: int) -> dict:
         with self._conn() as conn:

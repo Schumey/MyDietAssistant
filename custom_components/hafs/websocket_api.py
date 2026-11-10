@@ -97,10 +97,10 @@ def ws_catalog_info(hass: HomeAssistant, connection: websocket_api.ActiveConnect
     connection.send_result(msg["id"], catalog.info())
 
 
-PREF_VALUES = {"phase": targets.PHASE_VALUES}
+PREF_KEYS = ["phase", *targets.SETTING_KEYS]
 
 
-@websocket_api.websocket_command({vol.Required("type"): "hafs/pref/get", vol.Required("key"): vol.In(list(PREF_VALUES))})
+@websocket_api.websocket_command({vol.Required("type"): "hafs/pref/get", vol.Required("key"): vol.In(PREF_KEYS)})
 @websocket_api.async_response
 @_with_store
 async def ws_pref_get(hass, connection, msg, store: Store) -> dict:
@@ -108,13 +108,14 @@ async def ws_pref_get(hass, connection, msg, store: Store) -> dict:
 
 
 @websocket_api.websocket_command(
-    {vol.Required("type"): "hafs/pref/set", vol.Required("key"): vol.In(list(PREF_VALUES)), vol.Required("value"): str}
+    {vol.Required("type"): "hafs/pref/set", vol.Required("key"): vol.In(PREF_KEYS), vol.Required("value"): str}
 )
 @websocket_api.async_response
 @_with_store
 async def ws_pref_set(hass, connection, msg, store: Store) -> dict:
-    """Set a preference. `phase` is "", "bulk", "maintain" or "cut" and recomputes all targets."""
-    if msg["value"] not in PREF_VALUES[msg["key"]]:
+    """Set a preference. `phase` is "", "bulk", "maintain" or "cut"; hit_fraction/miss_fraction (0.1 to 1), cut_drop_set_first ("0"/"1"),
+    break_days (3 to 120) tune the progression. Every change recomputes all targets."""
+    if not targets.valid_pref(msg["key"], msg["value"]):
         raise ValueError(f"invalid value for {msg['key']}")
     targets_result = await hass.async_add_executor_job(store.set_pref, connection.user.id, msg["key"], msg["value"])
     if (hub := hass.data.get(DOMAIN)) is not None:

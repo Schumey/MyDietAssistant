@@ -31,6 +31,38 @@ def set_pref(conn: sqlite3.Connection, owner: str, key: str, value: str) -> None
                      " ON CONFLICT(owner,key) DO UPDATE SET value=excluded.value", (owner, key, value))
 
 
+# Preferences that change the progression rules (besides `phase`). Value checks live here so that the
+# WebSocket layer only asks `valid_pref`.
+SETTING_KEYS = ("hit_fraction", "miss_fraction", "cut_drop_set_first", "break_days")
+
+
+def valid_pref(key: str, value: str) -> bool:
+    if key == "phase":
+        return value in PHASE_VALUES
+    if key in ("hit_fraction", "miss_fraction"):
+        try:
+            return 0.1 <= float(value) <= 1.0
+        except ValueError:
+            return False
+    if key == "cut_drop_set_first":
+        return value in ("0", "1")
+    if key == "break_days":
+        return value.isdigit() and 3 <= int(value) <= 120
+    return False
+
+
+def load_settings(conn: sqlite3.Connection, owner: str) -> pr.Settings:
+    """Progression settings of the user: defaults overridden by the stored preferences."""
+    changes: dict = {}
+    for key in SETTING_KEYS:
+        raw = get_pref(conn, owner, key)
+        if not raw or not valid_pref(key, raw):
+            continue
+        changes[key] = {"hit_fraction": float, "miss_fraction": float, "break_days": int,
+                        "cut_drop_set_first": lambda v: v == "1"}[key](raw)
+    return replace(pr.DEFAULT_SETTINGS, **changes)
+
+
 def _phase(conn: sqlite3.Connection, owner: str) -> str:
     manual = get_pref(conn, owner, "phase")
     if manual in PHASE_VALUES[1:]:
@@ -116,10 +148,11 @@ def compute_exercise(conn: sqlite3.Connection, owner: str, exercise_id: str, tod
 
 
 def recompute(conn: sqlite3.Connection, owner: str, exercise_ids: list[str] | None = None,
-              today: date | None = None, settings: pr.Settings = pr.DEFAULT_SETTINGS) -> dict:
+              today: date | None = None, settings: pr.Settings | None = None) -> dict:
     """Recompute targets for the given exercises, or for every exercise trained in the last year."""
     today = today or date.today()
     phase = _phase(conn, owner)
+    settings = settings or load_settings(conn, owner)
     if exercise_ids is None:
         since = date.fromordinal(today.toordinal() - RECENT_DAYS).isoformat()
         exercise_ids = [r[0] for r in conn.execute(
