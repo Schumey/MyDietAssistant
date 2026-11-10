@@ -82,14 +82,18 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('65'), findsOneWidget);
     await tester.tap(find.text('Satz fertig'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300)); // der Pausen-Timer läuft jetzt: kein pumpAndSettle
     expect(find.text('Satz 1: 65 kg × 8'), findsOneWidget);
+    expect(find.text('1:30'), findsOneWidget); // Standardpause 90 s
+    await tester.tap(find.text('+30 s'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('2:00'), findsOneWidget);
 
     // Zweiter Satz mit weniger Wiederholungen
     await tester.tap(find.byIcon(Icons.remove).at(1));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     await tester.tap(find.text('Satz fertig'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('Satz 2: 65 kg × 7'), findsOneWidget);
 
     // Beenden

@@ -6,6 +6,8 @@ import 'exercise_picker.dart';
 import 'history_screen.dart';
 import 'l10n.dart';
 import 'repo.dart';
+import 'rest_timer.dart';
+import 'wakelock.dart';
 
 /// Das laufende Workout: oben die erfassten Sätze, unten die Satzeingabe für die gewählte Übung.
 class WorkoutScreen extends StatefulWidget {
@@ -28,6 +30,20 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   int _minutes = 1;
   double _step = 2.5;
   bool _warmup = false;
+  int _restSeconds = RestTimer.defaultSeconds;
+
+  @override
+  void initState() {
+    super.initState();
+    keepScreenOn(true);
+    widget.app.rest.notifier.requestPermission();
+  }
+
+  @override
+  void dispose() {
+    keepScreenOn(false);
+    super.dispose();
+  }
 
   void _select(ExerciseInfo e) {
     final d = repo.defaults(e.id, workoutId: widget.workoutId);
@@ -43,6 +59,16 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       _step = d.step;
       _warmup = false;
     });
+    widget.app.rest.restSeconds(e.id).then((s) {
+      if (mounted && _exercise?.id == e.id) setState(() => _restSeconds = s);
+    });
+  }
+
+  Future<void> _cycleRest() async {
+    final e = _exercise;
+    if (e == null) return;
+    final s = await widget.app.rest.cycleRest(e.id);
+    if (mounted) setState(() => _restSeconds = s);
   }
 
   Future<void> _addExercise() async {
@@ -66,6 +92,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     );
     HapticFeedback.lightImpact();
     widget.app.changed();
+    // Nach einem Aufwärmsatz läuft keine Pause.
+    if (!_warmup) widget.app.rest.start(_restSeconds, exercise: e.name);
     setState(() => _warmup = false);
   }
 
@@ -84,6 +112,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     );
     if (ok != true || !mounted) return;
     repo.finishWorkout(widget.workoutId);
+    widget.app.rest.stop();
     widget.app.changed();
     Navigator.of(context).pop();
     widget.app.syncNow();
@@ -139,6 +168,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               ],
             ),
           ),
+          _RestBar(timer: widget.app.rest),
           if (_exercise != null) _entryPanel(theme),
         ],
       ),
@@ -204,6 +234,12 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             const SizedBox(height: 12),
             Row(children: [
               FilterChip(label: Text(tr('kind_warmup')), selected: _warmup, onSelected: (v) => setState(() => _warmup = v)),
+              const SizedBox(width: 8),
+              ActionChip(
+                avatar: const Icon(Icons.timer_outlined, size: 18),
+                label: Text(_restSeconds == 0 ? tr('rest_off') : tr('rest_seconds', [_restSeconds])),
+                onPressed: _cycleRest,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: SizedBox(
@@ -282,5 +318,37 @@ class Stepper2 extends StatelessWidget {
         SizedBox(width: 72, height: 56, child: FilledButton.tonal(onPressed: onPlus, child: const Icon(Icons.add, size: 28))),
       ]),
     ]);
+  }
+}
+
+/// Die laufende Pause: Restzeit, „+30 s“ und Stop. Nur sichtbar, solange der Timer läuft.
+class _RestBar extends StatelessWidget {
+  const _RestBar({required this.timer});
+
+  final RestTimer timer;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ListenableBuilder(
+      listenable: timer,
+      builder: (context, _) {
+        if (!timer.running) return const SizedBox.shrink();
+        return Material(
+          color: theme.colorScheme.tertiaryContainer,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(children: [
+              const Icon(Icons.timer),
+              const SizedBox(width: 8),
+              Text(RestTimer.format(timer.remaining), style: theme.textTheme.headlineSmall),
+              const Spacer(),
+              TextButton(onPressed: timer.extend, child: Text(tr('rest_add'))),
+              TextButton(onPressed: timer.stop, child: Text(tr('rest_stop'))),
+            ]),
+          ),
+        );
+      },
+    );
   }
 }

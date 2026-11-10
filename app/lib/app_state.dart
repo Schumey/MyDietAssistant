@@ -6,6 +6,7 @@ import 'credentials.dart';
 import 'db.dart';
 import 'ha_client.dart';
 import 'repo.dart';
+import 'rest_timer.dart';
 import 'sync.dart';
 
 typedef Connector = Future<HaConnection> Function(String address, String token);
@@ -15,12 +16,16 @@ typedef Connector = Future<HaConnection> Function(String address, String token);
 /// Die Datenbank ist immer offen, auch ohne Verbindung: Training erfassen geht offline,
 /// abgeglichen wird, wenn eine Verbindung da ist.
 class AppState extends ChangeNotifier {
-  AppState(this.credentials, {required this.openDb, Connector? connector})
-      : _connector = connector ?? ((a, t) => HaClient.connect(a, t));
+  AppState(this.credentials, {required this.openDb, Connector? connector, RestTimer? rest})
+      : _connector = connector ?? ((a, t) => HaClient.connect(a, t)),
+        rest = rest ?? RestTimer();
 
   final CredentialStore credentials;
   final Future<LocalDb> Function() openDb;
   final Connector _connector;
+
+  /// Pausen-Timer zwischen den Sätzen.
+  final RestTimer rest;
 
   bool loaded = false;
   String? address;
@@ -49,6 +54,7 @@ class AppState extends ChangeNotifier {
     phase = local!.state('phase') ?? '';
     loaded = true;
     notifyListeners();
+    unawaited(rest.restore());
     if (hasCredentials) unawaited(syncNow());
   }
 

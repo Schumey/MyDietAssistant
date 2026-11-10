@@ -13,6 +13,7 @@ import 'db.dart';
 import 'home_screen.dart';
 import 'l10n.dart';
 import 'login_screen.dart';
+import 'rest_android.dart';
 
 Future<LocalDb> _openDatabase() async {
   final schema = Schema.parse(await rootBundle.loadString('assets/schema.json'));
@@ -24,7 +25,7 @@ Future<LocalDb> _openDatabase() async {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   L10n.lang = L10n.resolve(WidgetsBinding.instance.platformDispatcher.locale.languageCode);
-  runApp(HafsApp(app: AppState(SecureCredentialStore(), openDb: _openDatabase)));
+  runApp(HafsApp(app: AppState(SecureCredentialStore(), openDb: _openDatabase, rest: createRestTimer())));
 }
 
 /// Blau des Standard-Themes von Home Assistant, wie in der tHAsk-App.
@@ -64,7 +65,10 @@ class _HafsAppState extends State<HafsApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && widget.app.loaded) widget.app.syncNow();
+    if (state == AppLifecycleState.resumed && widget.app.loaded) {
+      widget.app.syncNow();
+      widget.app.rest.restore();
+    }
   }
 
   @override
