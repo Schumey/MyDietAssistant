@@ -17,13 +17,13 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.loader import async_get_integration
 
 from .const import API_VERSION, DOMAIN
-from .core import sync
+from .core import catalog, sync
 from .core.store import Store
 
 
 @callback
 def async_register_websocket_commands(hass: HomeAssistant) -> None:
-    for command in (ws_info, ws_sync_push, ws_sync_pull, ws_export, ws_import_gymrun):
+    for command in (ws_info, ws_sync_push, ws_sync_pull, ws_export, ws_import_gymrun, ws_catalog_info):
         websocket_api.async_register_command(hass, command)
 
 
@@ -84,6 +84,13 @@ async def ws_sync_push(hass, connection, msg, store: Store) -> dict:
 @_with_store
 async def ws_sync_pull(hass, connection, msg, store: Store) -> dict:
     return await hass.async_add_executor_job(store.pull, connection.user.id, msg.get("cursors"), msg["limit"])
+
+
+@websocket_api.websocket_command({vol.Required("type"): "hafs/catalog/info"})
+@callback
+def ws_catalog_info(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]) -> None:
+    """Labels and English names of the built-in catalog (the exercises themselves arrive via sync)."""
+    connection.send_result(msg["id"], catalog.info())
 
 
 @websocket_api.websocket_command({vol.Required("type"): "hafs/export"})

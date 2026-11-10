@@ -102,5 +102,6 @@ def test_store_roundtrip_with_gymrun(tmp_path):
     assert store.pull("u1", None, 100)["records"]["workout_set"] == []
     done = store.import_gymrun("u1", text, dry_run=False)
     assert done["added"]["sets"] == 1
-    pulled = store.pull("u1", None, 100)["records"]
-    assert len(pulled["workout_set"]) == 1 and len(pulled["exercise"]) == 1
+    pulled = store.pull("u1", None, 1000)["records"]
+    assert len(pulled["workout_set"]) == 1
+    assert any(e["name"] == "Rudern" for e in pulled["exercise"])  # unknown name stays a custom exercise

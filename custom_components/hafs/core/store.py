@@ -6,7 +6,7 @@ import os
 from contextlib import closing
 from typing import Any
 
-from . import db, gymrun, sync
+from . import catalog, db, gymrun, sync
 
 
 class Store:
@@ -31,10 +31,12 @@ class Store:
 
     def pull(self, owner: str, cursors: dict | None, limit: int) -> dict:
         with self._conn() as conn:
+            catalog.seed(conn, owner)
             return sync.pull(conn, owner, cursors, limit)
 
     def export_all(self, owner: str) -> dict:
         with self._conn() as conn:
+            catalog.seed(conn, owner)
             return sync.export_all(conn, owner)
 
     def import_gymrun(self, owner: str, text: str, dry_run: bool) -> dict:
@@ -42,5 +44,6 @@ class Store:
         out = {"summary": gymrun.summary(res)}
         if not dry_run:
             with self._conn() as conn:
-                out["added"] = gymrun.import_into(conn, owner, res)
+                catalog.seed(conn, owner)
+                out["added"] = gymrun.import_into(conn, owner, res, catalog.exercise_ids(conn, owner))
         return out

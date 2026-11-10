@@ -119,6 +119,11 @@ MIGRATIONS: list[str] = [
       PRIMARY KEY (owner, key)
     );
     """,
+    # 2: link exercises to the built-in catalog
+    """
+    ALTER TABLE exercise ADD COLUMN catalog_key TEXT NOT NULL DEFAULT '';
+    CREATE INDEX exercise_catalog ON exercise(owner, catalog_key) WHERE catalog_key != '';
+    """,
 ]
 
 SCHEMA_VERSION = len(MIGRATIONS)
