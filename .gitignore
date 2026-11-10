@@ -1,0 +1,13 @@
+# Personal training data (GymRun export and backup) - never commit
+GymRun_*.csv
+GymRun_*.zip
+*.db
+*.db.bak*
+
+# Python / tests
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Local tooling
+.claude/

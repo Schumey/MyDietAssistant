@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "HAFS einrichten",
+        "description": "HAFS speichert dein Training in Home Assistant. Die Daten liegen in /config/hafs/hafs.db."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "HAFS ist bereits eingerichtet."
+    }
+  }
+}
