@@ -1,0 +1,92 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:hafs/app_state.dart';
+import 'package:hafs/credentials.dart';
+import 'package:hafs/l10n.dart';
+import 'package:hafs/main.dart';
+import 'package:hafs/repo_gym.dart';
+
+import 'support.dart';
+
+class _Creds implements CredentialStore {
+  @override
+  Future<({String address, String token})?> load() async => (address: 'ha.local', token: 't');
+
+  @override
+  Future<void> save(String address, String token) async {}
+
+  @override
+  Future<void> clear() async {}
+}
+
+void main() {
+  late AppState app;
+
+  setUp(() {
+    L10n.lang = 'de';
+    final local = openMemory();
+    final server = FakeServer(local.schema.syncTables);
+    for (final e in [('e1', 'Bankdrücken'), ('e2', 'Kniebeuge'), ('e3', 'Rudern')]) {
+      server.put('exercise', {
+        'id': e.$1, 'owner': 'u1', 'updated_at': '2026-01-01T00:00:00+00:00', 'deleted': 0, 'name': e.$2, 'kind': 'strength', 'catalog_key': '',
+      });
+    }
+    app = AppState(_Creds(), openDb: () async => local, connector: (a, t) async => server);
+  });
+
+  Future<void> start(WidgetTester tester) async {
+    await tester.pumpWidget(HafsApp(app: app));
+    await tester.pumpAndSettle();
+    final repo = app.repo!;
+    final r = repo.saveRoutine(name: 'Mix', exercises: [
+      RoutineExercise(exerciseId: 'e1', name: 'Bankdrücken'),
+      RoutineExercise(exerciseId: 'e2', name: 'Kniebeuge'),
+    ]);
+    await tester.tap(find.text('Workout starten'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mix'));
+    await tester.pumpAndSettle();
+    expect(r, isNotEmpty);
+  }
+
+  testWidgets('skip removes a planned exercise from the screen', (tester) async {
+    await start(tester);
+    expect(find.text('Bankdrücken'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.more_vert).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Überspringen'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bankdrücken'), findsNothing);
+    expect(find.text('Kniebeuge'), findsOneWidget);
+  });
+
+  testWidgets('swap replaces the planned exercise and selects the new one', (tester) async {
+    await start(tester);
+    await tester.tap(find.byIcon(Icons.more_vert).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Austauschen'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Rudern'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bankdrücken'), findsNothing);
+    expect(find.text('Rudern'), findsWidgets); // card + entry panel
+    await tester.tap(find.text('Satz fertig'));
+    await tester.pump(const Duration(milliseconds: 300));
+    final sets = app.repo!.local.rows('SELECT exercise_id FROM workout_set');
+    expect(sets.single['exercise_id'], 'e3');
+    await tester.tap(find.text('Stop'));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('exercises that already have sets cannot be swapped', (tester) async {
+    await start(tester);
+    await tester.tap(find.text('Bankdrücken'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Satz fertig'));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.text('Stop'));
+    await tester.pumpAndSettle();
+    // only the second planned exercise still offers the menu
+    expect(find.byIcon(Icons.more_vert), findsOneWidget);
+  });
+}

@@ -96,6 +96,25 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     if (e != null) _select(e);
   }
 
+  /// Planned exercises left out of this workout (only kept while the screen is open).
+  final Set<String> _skipped = {};
+
+  void _skip(ExerciseInfo e) {
+    setState(() {
+      _skipped.add(e.id);
+      if (_exercise?.id == e.id) _exercise = null;
+    });
+  }
+
+  /// Replaces a planned exercise that has no sets yet by another one (e.g. machine is taken).
+  Future<void> _swap(ExerciseInfo old) async {
+    final e = await Navigator.of(context).push<ExerciseInfo>(MaterialPageRoute(builder: (_) => ExercisePicker(repo: repo)));
+    if (e == null || !mounted) return;
+    if (e.id != old.id) _skipped.add(old.id);
+    _skipped.remove(e.id);
+    _select(e);
+  }
+
   void _saveSet() {
     final e = _exercise;
     if (e == null) return;
@@ -159,6 +178,17 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
               Expanded(child: Text(e.name, style: theme.textTheme.titleMedium)),
+              if (plan != null && sets.isEmpty)
+                PopupMenuButton<String>(
+                  tooltip: tr('plan_options'),
+                  padding: EdgeInsets.zero,
+                  icon: const Icon(Icons.more_vert, size: 20),
+                  onSelected: (v) => v == 'swap' ? _swap(e) : _skip(e),
+                  itemBuilder: (context) => [
+                    PopupMenuItem(value: 'swap', child: Text(tr('swap_exercise'))),
+                    PopupMenuItem(value: 'skip', child: Text(tr('skip_exercise'))),
+                  ],
+                ),
               if (plan != null)
                 Text(
                   plan.finished ? '✓ ${tr('planned_progress', [plan.doneSets, plan.targetSets])}' : tr('planned_progress', [plan.doneSets, plan.targetSets]),
@@ -227,9 +257,13 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 const SizedBox(height: 8),
                 if (detail.isEmpty && plan.isEmpty) Padding(padding: const EdgeInsets.all(24), child: Center(child: Text(tr('no_sets_yet')))),
                 // geplante Übungen der Routine zuerst, dann alles, was zusätzlich gemacht wurde
-                for (final p in plan) _exerciseCard(theme, p.exercise, byId[p.exercise.id]?.sets ?? const [], plan: p),
+                for (final p in plan)
+                  if (!_skipped.contains(p.exercise.id)) _exerciseCard(theme, p.exercise, byId[p.exercise.id]?.sets ?? const [], plan: p),
                 for (final d in detail)
                   if (!plan.any((p) => p.exercise.id == d.exercise.id)) _exerciseCard(theme, d.exercise, d.sets),
+                // an exercise swapped in that has no sets yet still needs a card to come back to
+                if (_exercise != null && !byId.containsKey(_exercise!.id) && !plan.any((p) => p.exercise.id == _exercise!.id))
+                  _exerciseCard(theme, _exercise!, const []),
               ],
             ),
           ),
