@@ -117,7 +117,9 @@ class _ProgramsScreenState extends State<ProgramsScreen> {
                 ListTile(
                   leading: const Icon(Icons.autorenew),
                   title: Text(p.name),
-                  subtitle: Text(p.routineIds.map((id) => names[id] ?? '?').join(' → ')),
+                  subtitle: Text(p.weekdays.isEmpty
+                      ? p.routineIds.map((id) => names[id] ?? '?').join(' → ')
+                      : [for (final (i, id) in p.routineIds.indexed) '${L10n.weekdayLabels[p.weekdays[i] - 1]} ${names[id] ?? '?'}'].join(', ')),
                   onTap: () => _edit(p.id),
                 ),
             ]),
@@ -140,6 +142,7 @@ class _ProgramEditorState extends State<ProgramEditor> {
   final _name = TextEditingController();
   late final List<({String id, String name})> _order; // all routines, members first in rotation order
   final Set<String> _selected = {};
+  final Set<int> _days = {};
 
   @override
   void initState() {
@@ -150,6 +153,7 @@ class _ProgramEditorState extends State<ProgramEditor> {
     if (p != null) {
       _name.text = p.name;
       _selected.addAll(p.routineIds);
+      _days.addAll(p.weekdays);
     }
     final members = [for (final id in p?.routineIds ?? const <String>[]) if (all.containsKey(id)) id];
     _order = [
@@ -170,6 +174,7 @@ class _ProgramEditorState extends State<ProgramEditor> {
       id: widget.programId,
       name: _name.text,
       routineIds: [for (final r in _order) if (_selected.contains(r.id)) r.id],
+      weekdays: _days.toList(),
     );
     widget.app.changed();
     Navigator.of(context).pop();
@@ -204,6 +209,28 @@ class _ProgramEditorState extends State<ProgramEditor> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Align(alignment: Alignment.centerLeft, child: Text(tr('program_hint'), style: Theme.of(context).textTheme.bodySmall)),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(tr('weekdays_title'), style: Theme.of(context).textTheme.titleSmall),
+            const SizedBox(height: 4),
+            Wrap(spacing: 6, children: [
+              for (var d = 1; d <= 7; d++)
+                FilterChip(
+                  visualDensity: VisualDensity.compact,
+                  label: Text(L10n.weekdayLabels[d - 1]),
+                  selected: _days.contains(d),
+                  onSelected: (v) => setState(() => v ? _days.add(d) : _days.remove(d)),
+                ),
+            ]),
+            Text(
+              _days.isEmpty
+                  ? tr('weekdays_help')
+                  : (_days.length == _selected.length ? tr('weekdays_ok') : tr('weekdays_mismatch', [_days.length, _selected.length])),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ]),
         ),
         Expanded(
           child: _order.isEmpty

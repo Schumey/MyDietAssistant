@@ -72,7 +72,7 @@ def status(conn: sqlite3.Connection, owner: str, now: datetime | None = None, tz
     last = workout_stats(conn, owner, finished[0][1]) if finished else None
     volume_week = sum((workout_stats(conn, owner, wid) or {}).get("volume_kg", 0) for _, wid in week)
     out = {"state": state, "active": bool(active), "workouts_today": len(today), "workouts_week": len(week),
-           "volume_week_kg": round(volume_week, 1), "next": next_routine(conn, owner),
+           "volume_week_kg": round(volume_week, 1), "next": next_routine(conn, owner, local_now),
            "last_workout_at": finished[0][0].isoformat() if finished else None, "last": last}
     if state == "done":
         out["attrs"] = {k: last[k] for k in ("duration_min", "volume_kg", "sets", "kcal_estimate", "routine")}
@@ -148,10 +148,30 @@ def recent_workouts(conn: sqlite3.Connection, owner: str, days: int = 30, limit:
     return out
 
 
-def next_routine(conn: sqlite3.Connection, owner: str) -> dict | None:
+def parse_rhythm(text: str, count: int) -> list[int]:
+    """Weekdays (1 = Monday .. 7 = Sunday) of a program rhythm like "1,3,5"; empty unless there is one per routine."""
+    try:
+        days = sorted({int(x) for x in text.split(",") if x.strip()})
+    except ValueError:
+        return []
+    return days if len(days) == count and all(1 <= d <= 7 for d in days) else []
+
+
+def pick_next(count: int, last_index: int, days: list[int], today: int, trained_today: bool) -> int:
+    """Index of the next routine: by weekday plan when there is one (the routine of today's weekday, or the next
+    training day once today is done), else rotation after the last finished routine."""
+    if not days:
+        return (last_index + 1) % count
+    if not trained_today and today in days:
+        return days.index(today)
+    later = [d for d in days if d > today]
+    return days.index(later[0]) if later else 0
+
+
+def next_routine(conn: sqlite3.Connection, owner: str, now: datetime | None = None) -> dict | None:
     """The routine that follows the last finished one in the first program that has routines
     (same rule as the app: rotation, free workouts do not count). None without a program."""
-    for prog in conn.execute("SELECT id, name FROM program WHERE owner=? AND deleted=0 ORDER BY name COLLATE NOCASE", (owner,)):
+    for prog in conn.execute("SELECT id, name, rhythm FROM program WHERE owner=? AND deleted=0 ORDER BY name COLLATE NOCASE", (owner,)):
         routines = conn.execute(
             "SELECT id, name FROM routine WHERE owner=? AND program_id=? AND deleted=0 ORDER BY position, name COLLATE NOCASE",
             (owner, prog["id"])).fetchall()
@@ -160,10 +180,13 @@ def next_routine(conn: sqlite3.Connection, owner: str) -> dict | None:
         ids = [r["id"] for r in routines]
         q = ",".join("?" * len(ids))
         last = conn.execute(
-            f"SELECT routine_id FROM workout WHERE owner=? AND deleted=0 AND ended_at IS NOT NULL AND routine_id IN ({q}) "
+            f"SELECT routine_id, started_at FROM workout WHERE owner=? AND deleted=0 AND ended_at IS NOT NULL AND routine_id IN ({q}) "
             "ORDER BY started_at DESC LIMIT 1", (owner, *ids)).fetchone()
         i = ids.index(last["routine_id"]) if last else -1
-        nxt = routines[(i + 1) % len(routines)]
+        days = parse_rhythm(prog["rhythm"], len(routines)) if now else []
+        today = now.isoweekday() if now else 0
+        trained_today = bool(last and now and str(last["started_at"])[:10] == now.date().isoformat())
+        nxt = routines[pick_next(len(routines), i, days, today, trained_today)]
         exercises = [r["name"] for r in conn.execute(
             "SELECT e.name FROM routine_exercise x JOIN exercise e ON e.id=x.exercise_id "
             "WHERE x.routine_id=? AND x.deleted=0 AND e.deleted=0 ORDER BY x.position", (nxt["id"],))]

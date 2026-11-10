@@ -291,3 +291,29 @@ def test_next_routine_rotation(store):
         assert status.next_routine(c, OWNER)["routine"] == "Push"   # wrapped
         assert status.status(c, OWNER, utc(2026, 11, 10, 12))["next"]["routine"] == "Push"
     assert status.next_routine(store._conn().__enter__(), "nobody") is None
+
+
+def test_pick_next_weekday_plan():
+    # Mon, Wed, Fri
+    days = [1, 3, 5]
+    assert status.pick_next(3, -1, days, 1, False) == 0   # Monday, not trained yet: Monday's routine
+    assert status.pick_next(3, 0, days, 1, True) == 1     # trained Monday: next is Wednesday's
+    assert status.pick_next(3, 0, days, 2, False) == 1    # Tuesday: next training day
+    assert status.pick_next(3, 2, days, 6, False) == 0    # Saturday: wraps to Monday
+    assert status.pick_next(3, 1, [], 4, False) == 2      # no rhythm: rotation
+    assert status.parse_rhythm("1,3,5", 3) == days
+    assert status.parse_rhythm("1,3", 3) == []            # one weekday per routine required
+    assert status.parse_rhythm("x", 1) == []
+
+
+def test_next_routine_uses_rhythm(store):
+    store.push(OWNER, {
+        "program": [{"id": "p", "name": "PPL", "rhythm": "1,3", "updated_at": T}],
+        "routine": [{"id": "ra", "name": "Push", "program_id": "p", "position": 0, "updated_at": T},
+                    {"id": "rb", "name": "Pull", "program_id": "p", "position": 1, "updated_at": T}],
+    })
+    mon, tue, wed = utc(2026, 11, 9, 8), utc(2026, 11, 10, 8), utc(2026, 11, 11, 8)
+    with store._conn() as c:
+        assert status.next_routine(c, OWNER, mon)["routine"] == "Push"
+        assert status.next_routine(c, OWNER, tue)["routine"] == "Pull"
+        assert status.next_routine(c, OWNER, wed)["routine"] == "Pull"
