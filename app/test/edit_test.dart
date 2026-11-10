@@ -65,6 +65,12 @@ void main() {
       expect((set.weight, set.reps), (null, 6));
       repo.editSet(s, durationSeconds: 90);
       expect(repo.workoutDetail(w).single.sets.single.durationSeconds, 90);
+      repo.editSet(s, note: '  links ');
+      expect(repo.workoutDetail(w).single.sets.single.note, 'links');
+      repo.editSet(s, weight: 70);
+      expect(repo.workoutDetail(w).single.sets.single.note, 'links');
+      repo.editSet(s, note: '');
+      expect(repo.workoutDetail(w).single.sets.single.note, '');
       expect(local.row('SELECT dirty FROM workout_set WHERE id = ?', [s])!['dirty'], 1);
     });
 

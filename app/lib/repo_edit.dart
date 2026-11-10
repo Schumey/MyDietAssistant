@@ -58,7 +58,7 @@ extension EditRepo on Repo {
   String workoutNote(String id) => (local.row('SELECT note FROM workout WHERE id = ?', [id])?['note'] as String?) ?? '';
 
   /// Ändert Gewicht, Wiederholungen oder Dauer eines Satzes; `null` lässt den Wert unverändert.
-  void editSet(String id, {double? weight, int? reps, int? durationSeconds, String? kind, bool clearWeight = false}) {
+  void editSet(String id, {double? weight, int? reps, int? durationSeconds, String? kind, String? note, bool clearWeight = false}) {
     final r = local.row('SELECT * FROM workout_set WHERE id = ?', [id]);
     if (r == null) return;
     local.upsert('workout_set', {
@@ -67,6 +67,7 @@ extension EditRepo on Repo {
       'reps': reps ?? r['reps'],
       'duration_s': durationSeconds ?? r['duration_s'],
       'kind': kind ?? r['kind'],
+      'note': note == null ? r['note'] : note.trim(),
       'updated_at': nowStamp(),
     }, dirty: true);
   }

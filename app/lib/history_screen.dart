@@ -104,6 +104,7 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
     final timed = d.exercise.kind == 'time' || d.exercise.kind == 'cardio';
     final weight = TextEditingController(text: (s.weight ?? 0) > 0 ? L10n.kg(s.weight!) : '');
     final reps = TextEditingController(text: timed ? '${((s.durationSeconds ?? 0) / 60).round()}' : '${s.reps ?? ''}');
+    final note = TextEditingController(text: s.note);
     double? parse(String t) => double.tryParse(t.trim().replaceAll(',', '.'));
     final action = await showDialog<String>(
       context: context,
@@ -122,6 +123,8 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: InputDecoration(labelText: timed ? tr('minutes') : tr('reps'), border: const OutlineInputBorder()),
           ),
+          const SizedBox(height: 12),
+          TextField(controller: note, decoration: InputDecoration(labelText: tr('set_note'), border: const OutlineInputBorder())),
         ]),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, 'delete'), child: Text(tr('delete_set'))),
@@ -135,9 +138,9 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
     } else if (action == 'save') {
       final w = parse(weight.text), r = parse(reps.text);
       if (timed) {
-        repo.editSet(s.id, durationSeconds: r == null ? null : (r * 60).round());
+        repo.editSet(s.id, durationSeconds: r == null ? null : (r * 60).round(), note: note.text);
       } else {
-        repo.editSet(s.id, weight: w, reps: r?.round(), clearWeight: weight.text.trim().isEmpty);
+        repo.editSet(s.id, weight: w, reps: r?.round(), note: note.text, clearWeight: weight.text.trim().isEmpty);
       }
     } else {
       return;
