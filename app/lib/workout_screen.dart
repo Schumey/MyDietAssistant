@@ -35,6 +35,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   int _minutes = 1;
   double _step = 2.5;
   bool _warmup = false;
+  String _note = ''; // note for the next set (e.g. "links", tempo)
   int _restSeconds = RestTimer.defaultSeconds;
   String? _gymId;
   List<EquipmentInfo> _equipmentOptions = [];
@@ -155,12 +156,16 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       kind: _warmup ? 'warmup' : 'work',
       targetWeight: _defaults?.target?.weight,
       targetReps: _defaults?.target?.reps,
+      note: _note,
     );
     HapticFeedback.lightImpact();
     widget.app.changed();
     // Nach einem Aufwärmsatz läuft keine Pause.
     if (!_warmup) widget.app.rest.start(_restSeconds, exercise: e.name);
-    setState(() => _warmup = false);
+    setState(() {
+      _warmup = false;
+      _note = '';
+    });
   }
 
   Future<void> _finish() async {
@@ -386,6 +391,15 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             const SizedBox(height: 12),
             Row(children: [
               FilterChip(label: Text(tr('kind_warmup')), selected: _warmup, onSelected: (v) => setState(() => _warmup = v)),
+              const SizedBox(width: 8),
+              ActionChip(
+                avatar: const Icon(Icons.edit_note, size: 18),
+                label: Text(_note.isEmpty ? tr('set_note') : _note, overflow: TextOverflow.ellipsis),
+                onPressed: () async {
+                  final n = await askText(context, tr('set_note'), initial: _note);
+                  if (n != null && mounted) setState(() => _note = n.trim());
+                },
+              ),
               const SizedBox(width: 8),
               ActionChip(
                 avatar: const Icon(Icons.timer_outlined, size: 18),

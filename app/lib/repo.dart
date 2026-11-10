@@ -18,7 +18,7 @@ class ExerciseInfo {
 }
 
 class SetRow {
-  SetRow(this.id, this.setNo, this.weight, this.reps, this.kind, this.doneAt, [this.durationSeconds]);
+  SetRow(this.id, this.setNo, this.weight, this.reps, this.kind, this.doneAt, [this.durationSeconds, this.note = '']);
 
   final String id;
   final int? setNo;
@@ -27,6 +27,7 @@ class SetRow {
   final String kind;
   final String doneAt;
   final int? durationSeconds;
+  final String note;
 }
 
 class WorkoutExercise {
@@ -141,6 +142,7 @@ class Repo {
     String kind = 'work',
     double? targetWeight,
     int? targetReps,
+    String note = '',
   }) {
     final n = local.row('SELECT COUNT(*) c FROM workout_set WHERE workout_id = ? AND exercise_id = ? AND deleted = 0',
         [workoutId, exerciseId])!['c'] as int;
@@ -160,6 +162,7 @@ class Repo {
       'kind': kind,
       'target_weight': targetWeight,
       'target_reps': targetReps,
+      'note': note.trim(),
       'done_at': localStamp(_clock()),
     }, dirty: true);
     return id;
@@ -212,7 +215,7 @@ class Repo {
   /// Die Übungen eines Workouts in der Reihenfolge des ersten Satzes, mit ihren Sätzen.
   List<WorkoutExercise> workoutDetail(String workoutId) {
     final rows = local.rows(
-        'SELECT s.id, s.exercise_id, s.set_no, s.weight, s.reps, s.duration_s, s.kind, s.done_at, e.name, e.kind ekind, e.catalog_key '
+        'SELECT s.id, s.exercise_id, s.set_no, s.weight, s.reps, s.duration_s, s.note, s.kind, s.done_at, e.name, e.kind ekind, e.catalog_key '
         'FROM workout_set s JOIN exercise e ON e.id = s.exercise_id '
         'WHERE s.workout_id = ? AND s.deleted = 0 ORDER BY s.done_at, s.set_no',
         [workoutId]);
@@ -225,7 +228,7 @@ class Repo {
         return WorkoutExercise(ExerciseInfo(eid, r['name'] as String, r['ekind'] as String, r['catalog_key'] as String, null), []);
       });
       entry.sets.add(SetRow(r['id'] as String, r['set_no'] as int?, (r['weight'] as num?)?.toDouble(), r['reps'] as int?,
-          r['kind'] as String, r['done_at'] as String, r['duration_s'] as int?));
+          r['kind'] as String, r['done_at'] as String, r['duration_s'] as int?, r['note'] as String));
     }
     return [for (final id in order) out[id]!];
   }
@@ -244,11 +247,11 @@ class Repo {
     if (w == null) return [];
     return [
       for (final r in local.rows(
-          'SELECT id, set_no, weight, reps, kind, done_at FROM workout_set '
+          'SELECT id, set_no, weight, reps, kind, done_at, note FROM workout_set '
           'WHERE workout_id = ? AND exercise_id = ? AND deleted = 0 ORDER BY done_at, set_no',
           [w['workout_id'], exerciseId]))
         SetRow(r['id'] as String, r['set_no'] as int?, (r['weight'] as num?)?.toDouble(), r['reps'] as int?, r['kind'] as String,
-            r['done_at'] as String),
+            r['done_at'] as String, null, r['note'] as String),
     ];
   }
 

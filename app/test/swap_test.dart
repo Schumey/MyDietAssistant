@@ -99,6 +99,26 @@ void main() {
     expect(find.text('Fliegende'), findsWidgets);
   });
 
+  testWidgets('a note is saved with the next set only and shown in the history line', (tester) async {
+    await start(tester);
+    await tester.tap(find.text('Bankdrücken'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Notiz'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'links');
+    await tester.tap(find.text('Speichern'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Satz fertig'));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.text('Satz fertig'));
+    await tester.pump(const Duration(milliseconds: 300));
+    final notes = app.repo!.local.rows('SELECT note FROM workout_set ORDER BY done_at, set_no').map((r) => r['note']).toList();
+    expect(notes, ['links', '']); // cleared after the first set
+    expect(find.textContaining('· links'), findsOneWidget);
+    await tester.tap(find.text('Stop'));
+    await tester.pumpAndSettle();
+  });
+
   testWidgets('exercises that already have sets cannot be swapped', (tester) async {
     await start(tester);
     await tester.tap(find.text('Bankdrücken'));

@@ -23,7 +23,7 @@ String setLine(SetRow s, {String? durationFor}) {
       ? '$w${s.reps}'
       : (s.durationSeconds != null ? tr('duration_min', [(s.durationSeconds! / 60).toStringAsFixed(s.durationSeconds! % 60 == 0 ? 0 : 1)]) : '');
   final mark = switch (s.kind) { 'warmup' => ' (${tr('kind_warmup')})', 'drop' => ' (${tr('kind_drop')})', _ => '' };
-  return '$body$mark';
+  return '$body$mark${s.note.isEmpty ? '' : ' · ${s.note}'}';
 }
 
 class HistoryTab extends StatefulWidget {
