@@ -15,6 +15,8 @@ Mit der Add-on-Option `publish_sensors` (Standard: an) setzt das Add-on nach jed
 | `sensor.mydiet_<name>_weight` | letzter Gewichtswert |
 | `sensor.mydiet_<name>_weight_trend` | geglätteter Gewichtstrend |
 | `sensor.mydiet_<name>_energy_balance` | geschätzte Kalorienbilanz pro Tag (30 Tage, aus Gewichtstrend und Aufnahme; + Überschuss, − Defizit) |
+| `sensor.mydiet_<name>_goal_mode` | Ziel aus den Einstellungen: `lose`, `maintain` oder `gain` (Standard `lose`, solange nichts gewählt ist). Mit `mqtt_discovery` (siehe unten) bleibt der Sensor nach einem Neustart von Home Assistant erhalten |
+| `sensor.mydiet_<name>_goal_rate` | gewünschte Veränderung in kg pro Woche (positiv) |
 | `sensor.mydiet_<name>_current_meal` | Name der Mahlzeit, deren Zeitfenster jetzt offen ist, sonst `none` (nur mit [Mahlzeiten-Zeitplan](schedule.md); wechselt zur vollen Minute) |
 | `sensor.mydiet_<name>_next_meal` | Name der nächsten Mahlzeit, deren Zeitfenster heute noch beginnt, sonst `none` (nur mit Mahlzeiten-Zeitplan) |
 | `sensor.mydiet_<name>_next_meal_time` | Beginn dieses Zeitfensters (`HH:MM`), sonst `none` |

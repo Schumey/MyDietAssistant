@@ -59,6 +59,8 @@ On training days the app works out the amount of your post-workout shake and the
 
 **Sensors:** `training_day` (`yes`/`no`) and `training_shake` (the calculated amounts as text) allow automations, for example a notification “Shake today: Whey 35 g, Milk 370 g” (see [Sensors](sensors.md)).
 
+**With HAFS (training app):** If the HAFS integration provides `sensor.hafs_<name>_training_state`, create a trigger (Settings → Triggers) with entity `sensor.hafs_<name>_training_state`, value `done` and the shake as saved meal. When the workout ends, the trigger books the shake and the day counts as a training day.
+
 **Protein:** With “Dinners should reach the protein goal as far as possible” (on by default) the dinner suggestions prefer amounts that reach the day’s protein goal.
 
 **With a trigger:** If a trigger (e.g. “at the gym”) enters the shake, tick “Triggers enter the shake with the calculated amounts” in the settings. The trigger then uses the calculated instead of the saved amounts today. For planned days in the future the saved amounts stay.

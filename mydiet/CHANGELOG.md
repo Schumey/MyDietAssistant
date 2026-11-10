@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.39.0
+
+### Neu
+- **Sensoren `goal_mode` und `goal_rate`**: das Ziel aus den Einstellungen (`lose`/`maintain`/`gain`) und das gewünschte Tempo in kg pro Woche stehen als Sensoren in Home Assistant (z. B. für die Trainings-App HAFS). Sie aktualisieren sich sofort, wenn Du das Ziel in den Einstellungen änderst. Für Sensoren, die einen Neustart von Home Assistant überstehen, `mqtt_discovery` einschalten.
+
 ## 1.38.0
 
 ### Geändert

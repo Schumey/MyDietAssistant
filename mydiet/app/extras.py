@@ -106,7 +106,7 @@ def read_settings(x_remote_user_id: str | None = Header(None)):
 
 
 @app.put("/api/settings")
-def write_settings(s: SettingsIn, x_remote_user_id: str | None = Header(None)):
+def write_settings(s: SettingsIn, x_remote_user_id: str | None = Header(None), x_remote_user_display_name: str | None = Header(None)):
     owner = user_from(x_remote_user_id)
     if s.diary_mode is not None:
         if s.diary_mode not in ("meals", "times"):
@@ -140,6 +140,8 @@ def write_settings(s: SettingsIn, x_remote_user_id: str | None = Header(None)):
         set_pref(owner, "frequent", s.frequent)
     if s.features is not None:
         set_pref(owner, "features", {**features(owner), **{k: v for k, v in s.features.items() if k in FEATURES}})
+    if s.goal_mode is not None or s.goal_rate is not None:
+        publish(owner, x_remote_user_display_name or owner)   # goal_mode/goal_rate sensors follow the setting at once
     return {"ok": True}
 
 
@@ -597,6 +599,8 @@ def sensor_extras(owner: str) -> list:
     b = energy_balance(owner, days)
     if b and b["balance"] is not None:
         out.append(("energy_balance", b["balance"], "kcal"))
+    out.append(("goal_mode", get_pref(owner, "goal_mode", "lose"), ""))   # lose | maintain | gain (read by HAFS)
+    out.append(("goal_rate", float(get_pref(owner, "goal_rate", 0.5) or 0), "kg/week"))
     return out
 
 

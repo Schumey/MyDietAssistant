@@ -15,6 +15,8 @@ With the add-on option `publish_sensors` (default: on) the add-on sets sensors i
 | `sensor.mydiet_<name>_weight` | latest weight value |
 | `sensor.mydiet_<name>_weight_trend` | smoothed weight trend |
 | `sensor.mydiet_<name>_energy_balance` | estimated calorie balance per day (30 days, from weight trend and intake; + surplus, − deficit) |
+| `sensor.mydiet_<name>_goal_mode` | goal from the settings: `lose`, `maintain` or `gain` (default `lose` until one is chosen). With `mqtt_discovery` (see below) the sensor survives a Home Assistant restart |
+| `sensor.mydiet_<name>_goal_rate` | intended change in kg per week (positive) |
 | `sensor.mydiet_<name>_current_meal` | name of the meal whose time window is open now, otherwise `none` (only with the [meal schedule](schedule.md); changes on the full minute) |
 | `sensor.mydiet_<name>_next_meal` | name of the next meal whose time window still begins today, otherwise `none` (only with the meal schedule) |
 | `sensor.mydiet_<name>_next_meal_time` | start of that window (`HH:MM`), otherwise `none` |

@@ -59,6 +59,8 @@ Für Tage mit Training rechnet die App die Menge deines Post-Workout-Shakes aus 
 
 **Sensoren:** `training_day` (`yes`/`no`) und `training_shake` (die berechneten Mengen als Text) erlauben Automationen, etwa eine Benachrichtigung „Shake heute: Whey 35 g, Milch 370 g“ (siehe [Sensoren](sensors.md)).
 
+**Mit HAFS (Trainings-App):** Liefert die Integration HAFS den Sensor `sensor.hafs_<name>_training_state`, lege einen Trigger an (Einstellungen → Trigger) mit Entität `sensor.hafs_<name>_training_state`, Wert `done` und dem Shake als gespeicherter Mahlzeit. Sobald das Training beendet ist, bucht der Trigger den Shake, und der Tag gilt als Trainingstag.
+
 **Eiweiß:** Mit „Abendessen sollen das Eiweißziel möglichst erreichen“ (standardmäßig an) bevorzugen die Abendessen-Vorschläge Mengen, die das Eiweißziel des Tages erreichen.
 
 **Mit Trigger:** Trägt ein Trigger (z. B. „im Fitnessstudio“) den Shake ein, setze in den Einstellungen das Häkchen „Trigger tragen den Shake mit den berechneten Mengen ein“. Dann nutzt der Trigger heute die berechneten statt der gespeicherten Mengen. Für geplante Tage in der Zukunft bleiben die gespeicherten Mengen.
