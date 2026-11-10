@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_state.dart';
 import 'gyms_screen.dart';
+import 'history_calendar.dart';
 import 'l10n.dart';
 import 'repo.dart';
 import 'repo_edit.dart';
@@ -25,29 +26,63 @@ String setLine(SetRow s, {String? durationFor}) {
   return '$body$mark';
 }
 
-class HistoryTab extends StatelessWidget {
+class HistoryTab extends StatefulWidget {
   const HistoryTab({super.key, required this.app});
 
   final AppState app;
 
   @override
+  State<HistoryTab> createState() => _HistoryTabState();
+}
+
+class _HistoryTabState extends State<HistoryTab> {
+  static const _page = 100;
+  int _limit = _page;
+  bool _calendar = false;
+
+  void _open(WorkoutSummary s) =>
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => WorkoutDetailScreen(app: widget.app, summary: s)));
+
+  @override
   Widget build(BuildContext context) {
-    final items = app.repo!.history();
+    final items = widget.app.repo!.history(limit: _calendar ? 100000 : _limit + 1);
     if (items.isEmpty) return Center(child: Text(tr('history_empty')));
-    return ListView.separated(
-      itemCount: items.length,
-      separatorBuilder: (_, _) => const Divider(height: 1),
-      itemBuilder: (context, i) {
-        final s = items[i];
-        return ListTile(
-          title: Text(L10n.dayLabel(s.startedAt)),
-          subtitle: Text(workoutSummaryLine(s)),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => Navigator.of(context)
-              .push(MaterialPageRoute<void>(builder: (_) => WorkoutDetailScreen(app: app, summary: s))),
-        );
-      },
-    );
+    final more = !_calendar && items.length > _limit;
+    final shown = more ? items.sublist(0, _limit) : items;
+    return Column(children: [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+        child: SegmentedButton<bool>(
+          showSelectedIcon: false,
+          segments: [
+            ButtonSegment(value: false, label: Text(tr('history_list')), icon: const Icon(Icons.list)),
+            ButtonSegment(value: true, label: Text(tr('history_calendar')), icon: const Icon(Icons.calendar_month)),
+          ],
+          selected: {_calendar},
+          onSelectionChanged: (s) => setState(() => _calendar = s.first),
+        ),
+      ),
+      Expanded(
+        child: _calendar
+            ? SingleChildScrollView(child: HistoryCalendar(items: items, onOpen: _open))
+            : ListView.separated(
+                itemCount: shown.length + (more ? 1 : 0),
+                separatorBuilder: (_, _) => const Divider(height: 1),
+                itemBuilder: (context, i) {
+                  if (i == shown.length) {
+                    return TextButton(onPressed: () => setState(() => _limit += _page * 2), child: Text(tr('history_more')));
+                  }
+                  final s = shown[i];
+                  return ListTile(
+                    title: Text(L10n.dayLabel(s.startedAt)),
+                    subtitle: Text(workoutSummaryLine(s)),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _open(s),
+                  );
+                },
+              ),
+      ),
+    ]);
   }
 }
 

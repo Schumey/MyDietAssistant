@@ -25,6 +25,11 @@ class L10n {
     'en': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   };
 
+  static List<String> get weekdayLabels => _weekdays[lang]!;
+
+  /// „Nov. 2026“
+  static String monthLabel(DateTime d) => '${_months[lang]![d.month - 1]} ${d.year}';
+
   /// „Di, 10. Nov. 2026“ bzw. „Tue, Nov 10 2026“.
   static String dayLabel(DateTime d) {
     final w = _weekdays[lang]![d.weekday - 1];
@@ -238,6 +243,10 @@ const _strings = {
     'hit_help': 'Bei Pyramiden oder abfallenden Wiederholungen hilft „¾“ oder „½“, damit überhaupt gesteigert wird.',
     'drop_set_first': 'Diät: erst einen Satz streichen',
     'drop_set_first_help': 'Vor dem Senken des Gewichts wird zuerst ein Satz weggelassen (Intensität halten).',
+    'calendar_count': '{0} Workouts in diesem Monat',
+    'history_list': 'Liste',
+    'history_calendar': 'Kalender',
+    'history_more': 'Ältere anzeigen',
     'programs_title': 'Programme',
     'programs_empty': 'Noch kein Programm. Ein Programm legt die Reihenfolge deiner Routinen fest (z. B. Push, Pull, Beine); beim Start wird die nächste vorgeschlagen.',
     'program_add': 'Programm anlegen',
@@ -442,6 +451,10 @@ const _strings = {
     'hit_help': 'For pyramids or falling reps, "¾" or "½" lets the weight go up at all.',
     'drop_set_first': 'Cut: drop a set first',
     'drop_set_first_help': 'Before lowering the weight one set is removed (keeps the intensity).',
+    'calendar_count': '{0} workouts this month',
+    'history_list': 'List',
+    'history_calendar': 'Calendar',
+    'history_more': 'Show older',
     'programs_title': 'Programs',
     'programs_empty': 'No program yet. A program sets the order of your routines (e.g. push, pull, legs); the next one is suggested when you start.',
     'program_add': 'Add program',
