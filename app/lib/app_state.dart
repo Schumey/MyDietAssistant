@@ -1,4 +1,5 @@
 import 'plates.dart';
+import 'updater.dart';
 import 'l10n.dart';
 import 'repo_gym.dart';
 import 'templates.dart';
@@ -45,6 +46,9 @@ class AppState extends ChangeNotifier {
   final Map<String, String> settings = {};
 
   bool get hasCredentials => address != null && _token != null;
+
+  /// Self-update from this Home Assistant (Android only), null when not signed in or unsupported.
+  Updater? get updater => hasCredentials && Updater.supported ? Updater(address: address!, token: _token!) : null;
 
   DateTime? get lastSync {
     final s = local?.state('last_sync');

@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -30,11 +32,34 @@ android {
         versionName = flutter.versionName
     }
 
+    // Release key from the private folder HAFS-local next to the repository (never committed).
+    val companion = listOf("../../../HAFS-local")
+        .map { rootProject.file("$it/android") }
+        .firstOrNull { it.isDirectory }
+    val releaseProps = companion?.resolve("release.properties")?.takeIf { it.exists() }?.let { file ->
+        Properties().apply { file.inputStream().use { load(it) } }
+    }
+
+    signingConfigs {
+        if (releaseProps != null) {
+            create("release") {
+                storeFile = companion.resolve(releaseProps.getProperty("storeFile"))
+                storePassword = releaseProps.getProperty("storePassword")
+                keyAlias = releaseProps.getProperty("keyAlias")
+                keyPassword = releaseProps.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Without the key (building from the plain source) fall back to the debug key.
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
+        }
+        debug {
+            // Debug builds use the same key, so `adb install -r` replaces a release build and the other way round
+            // without losing the login or unsent changes.
+            signingConfigs.findByName("release")?.let { signingConfig = it }
         }
     }
 }

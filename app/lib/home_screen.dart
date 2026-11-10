@@ -1,3 +1,4 @@
+import 'update_dialog.dart';
 import 'package:flutter/material.dart';
 
 import 'app_state.dart';
@@ -23,6 +24,18 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _tab = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Once a day (and silently) look for a newer app package on the connected Home Assistant.
+    final updater = widget.app.updater;
+    if (updater != null) {
+      updater.checkDaily().then((offer) {
+        if (offer != null && mounted) showUpdateDialog(context, updater, offer: offer);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

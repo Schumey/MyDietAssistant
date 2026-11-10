@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'app_state.dart';
 import 'l10n.dart';
 import 'plates.dart';
+import 'update_dialog.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class SettingsTab extends StatefulWidget {
   const SettingsTab({super.key, required this.app});
@@ -159,6 +161,20 @@ class _SettingsTabState extends State<SettingsTab> {
           onTap: _editPlates,
         ),
         if (_error != null) Text(_error!, style: TextStyle(color: theme.colorScheme.error)),
+        if (app.updater != null) ...[
+          const SizedBox(height: 24),
+          Text(tr('app_section'), style: theme.textTheme.titleSmall),
+          FutureBuilder<PackageInfo>(
+            future: PackageInfo.fromPlatform(),
+            builder: (context, snap) => ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(tr('check_updates')),
+              subtitle: Text(tr('app_version', [snap.data?.version ?? ''])),
+              trailing: const Icon(Icons.system_update),
+              onTap: () => showUpdateDialog(context, app.updater!),
+            ),
+          ),
+        ],
         const SizedBox(height: 32),
         TextButton.icon(onPressed: _logout, icon: const Icon(Icons.logout), label: Text(tr('logout'))),
       ],
