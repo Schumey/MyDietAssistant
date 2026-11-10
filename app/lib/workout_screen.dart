@@ -3,10 +3,13 @@ import 'package:flutter/services.dart';
 
 import 'app_state.dart';
 import 'exercise_picker.dart';
+import 'gyms_screen.dart';
 import 'history_screen.dart';
 import 'l10n.dart';
 import 'repo.dart';
+import 'repo_gym.dart';
 import 'rest_timer.dart';
+import 'steps.dart';
 import 'wakelock.dart';
 
 /// Das laufende Workout: oben die erfassten Sätze, unten die Satzeingabe für die gewählte Übung.
@@ -31,10 +34,15 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   double _step = 2.5;
   bool _warmup = false;
   int _restSeconds = RestTimer.defaultSeconds;
+  String? _gymId;
+  List<EquipmentInfo> _equipmentOptions = [];
+  String? _equipmentId;
+  List<double>? _steps;
 
   @override
   void initState() {
     super.initState();
+    _gymId = repo.workoutGym(widget.workoutId);
     keepScreenOn(true);
     widget.app.rest.notifier.requestPermission();
   }
@@ -46,21 +54,33 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   }
 
   void _select(ExerciseInfo e) {
-    final d = repo.defaults(e.id, workoutId: widget.workoutId);
-    // Innerhalb dieses Workouts gilt der zuletzt erfasste Satz als Vorbelegung.
+    final gym = _gymId;
+    final options = gym == null ? <EquipmentInfo>[] : repo.equipmentFor(e.id, gym);
+    final remembered = repo.lastEquipmentFor(e.id);
+    final equipment = options.where((o) => o.id == remembered).firstOrNull ?? options.firstOrNull;
+    _equipmentOptions = options;
+    _applyEquipment(e, equipment?.id);
+    widget.app.rest.restSeconds(e.id).then((s) {
+      if (mounted && _exercise?.id == e.id) setState(() => _restSeconds = s);
+    });
+  }
+
+  /// Übernimmt Gerät und Vorbelegung für die Übung (Gewicht auf die Stufen des Geräts gerundet).
+  void _applyEquipment(ExerciseInfo e, String? equipmentId) {
+    final d = repo.defaults(e.id, workoutId: widget.workoutId, equipmentId: equipmentId);
+    // Innerhalb dieses Workouts gilt der zuletzt erfasste Satz an diesem Gerät als Vorbelegung.
     final here = repo.workoutDetail(widget.workoutId).where((x) => x.exercise.id == e.id).toList();
     final lastHere = here.isEmpty ? null : here.first.sets.where((s) => s.kind == 'work').lastOrNull;
     setState(() {
       _exercise = e;
+      _equipmentId = equipmentId;
       _defaults = d;
-      _weight = lastHere?.weight ?? d.weight;
+      _steps = d.steps;
+      _weight = lastHere?.weight != null ? snapToSteps(lastHere!.weight!, d.steps) : d.weight;
       _reps = lastHere?.reps ?? d.reps;
       _minutes = 1;
       _step = d.step;
       _warmup = false;
-    });
-    widget.app.rest.restSeconds(e.id).then((s) {
-      if (mounted && _exercise?.id == e.id) setState(() => _restSeconds = s);
     });
   }
 
@@ -83,6 +103,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     repo.addSet(
       workoutId: widget.workoutId,
       exerciseId: e.id,
+      equipmentId: _equipmentId,
       weight: timed ? null : _weight,
       reps: timed ? null : _reps,
       durationSeconds: timed ? _minutes * 60 : null,
@@ -98,34 +119,103 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   }
 
   Future<void> _finish() async {
-    final empty = repo.workoutDetail(widget.workoutId).isEmpty;
-    final ok = await showDialog<bool>(
+    final detail = repo.workoutDetail(widget.workoutId);
+    final hasRoutine = repo.planned(widget.workoutId).isNotEmpty;
+    // 0 = abbrechen, 1 = beenden, 2 = beenden und als Routine speichern
+    final choice = await showDialog<int>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(tr('finish_confirm')),
-        content: empty ? Text(tr('discard_empty')) : null,
+        content: detail.isEmpty ? Text(tr('discard_empty')) : null,
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('cancel'))),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr('finish'))),
+          TextButton(onPressed: () => Navigator.pop(context, 0), child: Text(tr('cancel'))),
+          if (detail.isNotEmpty && !hasRoutine) TextButton(onPressed: () => Navigator.pop(context, 2), child: Text(tr('save_as_routine'))),
+          FilledButton(onPressed: () => Navigator.pop(context, 1), child: Text(tr('finish'))),
         ],
       ),
     );
-    if (ok != true || !mounted) return;
+    if (choice == null || choice == 0 || !mounted) return;
+    String? routineName;
+    if (choice == 2) {
+      routineName = await askText(context, tr('routine_name'), initial: L10n.dayLabel(DateTime.now()));
+      if (!mounted) return;
+    }
     repo.finishWorkout(widget.workoutId);
+    if (routineName != null && routineName.trim().isNotEmpty) repo.saveRoutineFromWorkout(widget.workoutId, routineName);
     widget.app.rest.stop();
     widget.app.changed();
     Navigator.of(context).pop();
     widget.app.syncNow();
   }
 
+  Widget _exerciseCard(ThemeData theme, ExerciseInfo e, List<SetRow> sets, {PlannedExercise? plan}) {
+    return Card(
+      margin: const EdgeInsets.only(top: 8),
+      color: e.id == _exercise?.id ? theme.colorScheme.secondaryContainer : null,
+      child: InkWell(
+        onTap: () => _select(e),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Expanded(child: Text(e.name, style: theme.textTheme.titleMedium)),
+              if (plan != null)
+                Text(
+                  plan.finished ? '✓ ${tr('planned_progress', [plan.doneSets, plan.targetSets])}' : tr('planned_progress', [plan.doneSets, plan.targetSets]),
+                  style: theme.textTheme.labelMedium,
+                ),
+            ]),
+            if (plan != null && sets.isEmpty) Text(tr('planned_range', [plan.repsMin, plan.repsMax]), style: theme.textTheme.bodySmall),
+            if (sets.isNotEmpty) const SizedBox(height: 6),
+            for (final s in sets)
+              Row(children: [
+                Expanded(child: Text('${tr('set_n', [s.setNo ?? ''])}: ${setLine(s)}')),
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  tooltip: tr('delete_set'),
+                  icon: const Icon(Icons.close, size: 18),
+                  onPressed: () {
+                    repo.deleteSet(s.id);
+                    widget.app.changed();
+                    setState(() {});
+                  },
+                ),
+              ]),
+          ]),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final detail = repo.workoutDetail(widget.workoutId);
+    final plan = repo.planned(widget.workoutId);
+    final byId = {for (final d in detail) d.exercise.id: d};
+    final gyms = repo.gyms();
+    final gymName = gyms.where((g) => g.id == _gymId).firstOrNull?.name;
     return Scaffold(
       appBar: AppBar(
-        title: Text(tr('tab_training')),
-        actions: [TextButton(onPressed: _finish, child: Text(tr('finish_workout')))],
+        title: Text(gymName == null ? tr('tab_training') : '${tr('tab_training')} · $gymName'),
+        actions: [
+          if (gyms.length > 1)
+            PopupMenuButton<String>(
+              tooltip: tr('gym_label'),
+              icon: const Icon(Icons.store),
+              onSelected: (id) {
+                repo.setWorkoutGym(widget.workoutId, id.isEmpty ? null : id);
+                setState(() => _gymId = id.isEmpty ? null : id);
+                final e = _exercise;
+                if (e != null) _select(e);
+              },
+              itemBuilder: (context) => [
+                for (final g in gyms) CheckedPopupMenuItem(value: g.id, checked: g.id == _gymId, child: Text(g.name)),
+                PopupMenuItem(value: '', child: Text(tr('no_gym'))),
+              ],
+            ),
+          TextButton(onPressed: _finish, child: Text(tr('finish_workout'))),
+        ],
       ),
       body: Column(
         children: [
@@ -135,36 +225,11 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               children: [
                 OutlinedButton.icon(onPressed: _addExercise, icon: const Icon(Icons.add), label: Text(tr('add_exercise'))),
                 const SizedBox(height: 8),
-                if (detail.isEmpty) Padding(padding: const EdgeInsets.all(24), child: Center(child: Text(tr('no_sets_yet')))),
+                if (detail.isEmpty && plan.isEmpty) Padding(padding: const EdgeInsets.all(24), child: Center(child: Text(tr('no_sets_yet')))),
+                // geplante Übungen der Routine zuerst, dann alles, was zusätzlich gemacht wurde
+                for (final p in plan) _exerciseCard(theme, p.exercise, byId[p.exercise.id]?.sets ?? const [], plan: p),
                 for (final d in detail)
-                  Card(
-                    margin: const EdgeInsets.only(top: 8),
-                    color: d.exercise.id == _exercise?.id ? theme.colorScheme.secondaryContainer : null,
-                    child: InkWell(
-                      onTap: () => _select(d.exercise),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(d.exercise.name, style: theme.textTheme.titleMedium),
-                          const SizedBox(height: 6),
-                          for (final s in d.sets)
-                            Row(children: [
-                              Expanded(child: Text('${tr('set_n', [s.setNo ?? ''])}: ${setLine(s)}')),
-                              IconButton(
-                                visualDensity: VisualDensity.compact,
-                                tooltip: tr('delete_set'),
-                                icon: const Icon(Icons.close, size: 18),
-                                onPressed: () {
-                                  repo.deleteSet(s.id);
-                                  widget.app.changed();
-                                  setState(() {});
-                                },
-                              ),
-                            ]),
-                        ]),
-                      ),
-                    ),
-                  ),
+                  if (!plan.any((p) => p.exercise.id == d.exercise.id)) _exerciseCard(theme, d.exercise, d.sets),
               ],
             ),
           ),
@@ -191,6 +256,18 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('${e.name} · ${tr('set_n', [done + 1])}', style: theme.textTheme.titleMedium),
+            if (_equipmentOptions.length == 1)
+              Text('${tr('equipment_label')}: ${_equipmentOptions.first.name}', style: theme.textTheme.bodySmall)
+            else if (_equipmentOptions.length > 1)
+              Wrap(spacing: 8, children: [
+                for (final o in _equipmentOptions)
+                  ChoiceChip(
+                    visualDensity: VisualDensity.compact,
+                    label: Text(o.name),
+                    selected: _equipmentId == o.id,
+                    onSelected: (_) => _applyEquipment(e, o.id),
+                  ),
+              ]),
             if (hint != null) ...[
               const SizedBox(height: 2),
               Text('${tr('target')}: ${target!.weight == null ? '' : '${L10n.kg(target.weight!)} kg × '}${target.reps ?? ''}  –  $hint',
@@ -214,13 +291,15 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               Stepper2(
                 label: tr('weight_kg'),
                 value: L10n.kg(_weight),
-                onMinus: () => setState(() => _weight = ((_weight - _step).clamp(0, 1000) * 100).round() / 100),
-                onPlus: () => setState(() => _weight = ((_weight + _step) * 100).round() / 100),
+                onMinus: () => setState(() => _weight = stepDown(_weight, _steps, _step)),
+                onPlus: () => setState(() => _weight = stepUp(_weight, _steps, _step) ?? _weight),
                 onTap: () => _edit(tr('weight_kg'), L10n.kg(_weight), (v) => setState(() => _weight = v.clamp(0, 1000).toDouble())),
-                trailing: ActionChip(
-                  label: Text(tr('step', [L10n.kg(_step)])),
-                  onPressed: () => setState(() => _step = _nextStep(_step)),
-                ),
+                trailing: _steps != null
+                    ? null
+                    : ActionChip(
+                        label: Text(tr('step', [L10n.kg(_step)])),
+                        onPressed: () => setState(() => _step = _nextStep(_step)),
+                      ),
               ),
               const SizedBox(height: 8),
               Stepper2(
@@ -254,11 +333,11 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     );
   }
 
-  static const _steps = [1.0, 2.5, 5.0, 10.0, 25.0];
+  static const _stepPresets = [1.0, 2.5, 5.0, 10.0, 25.0];
 
   double _nextStep(double current) {
-    final i = _steps.indexWhere((s) => s > current + 1e-9);
-    return i == -1 ? _steps.first : _steps[i];
+    final i = _stepPresets.indexWhere((s) => s > current + 1e-9);
+    return i == -1 ? _stepPresets.first : _stepPresets[i];
   }
 
   Future<void> _edit(String label, String current, void Function(double) apply) async {

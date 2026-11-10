@@ -1,0 +1,192 @@
+import 'package:flutter/material.dart';
+
+import 'app_state.dart';
+import 'exercise_picker.dart';
+import 'gyms_screen.dart';
+import 'l10n.dart';
+import 'repo_gym.dart';
+
+String routineLine(RoutineInfo r) => tr('routine_exercises', [r.exercises.length]);
+
+/// Routinen verwalten.
+class RoutinesScreen extends StatefulWidget {
+  const RoutinesScreen({super.key, required this.app});
+
+  final AppState app;
+
+  @override
+  State<RoutinesScreen> createState() => _RoutinesScreenState();
+}
+
+class _RoutinesScreenState extends State<RoutinesScreen> {
+  Future<void> _edit([String? id]) async {
+    await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => RoutineEditor(app: widget.app, routineId: id)));
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final routines = widget.app.repo!.routines();
+    return Scaffold(
+      appBar: AppBar(title: Text(tr('routines_title'))),
+      floatingActionButton: FloatingActionButton.extended(onPressed: () => _edit(), icon: const Icon(Icons.add), label: Text(tr('routine_add'))),
+      body: routines.isEmpty
+          ? Center(child: Text(tr('routines_empty')))
+          : ListView(children: [
+              for (final r in routines)
+                ListTile(
+                  leading: const Icon(Icons.list_alt),
+                  title: Text(r.name),
+                  subtitle: Text(routineLine(r)),
+                  onTap: () => _edit(r.id),
+                ),
+            ]),
+    );
+  }
+}
+
+class _Row {
+  _Row(this.exerciseId, this.name, this.sets, this.repsMin, this.repsMax, this.restSeconds);
+
+  final String exerciseId;
+  final String name;
+  int sets;
+  int repsMin;
+  int repsMax;
+  final int? restSeconds;
+}
+
+/// Routine anlegen oder bearbeiten: Name und Übungen mit Sätzen und Wiederholungsbereich.
+class RoutineEditor extends StatefulWidget {
+  const RoutineEditor({super.key, required this.app, this.routineId});
+
+  final AppState app;
+  final String? routineId;
+
+  @override
+  State<RoutineEditor> createState() => _RoutineEditorState();
+}
+
+class _RoutineEditorState extends State<RoutineEditor> {
+  final _name = TextEditingController();
+  final List<_Row> _rows = [];
+
+  @override
+  void initState() {
+    super.initState();
+    final id = widget.routineId;
+    final r = id == null ? null : widget.app.repo!.routine(id);
+    if (r != null) {
+      _name.text = r.name;
+      for (final x in r.exercises) {
+        _rows.add(_Row(x.exerciseId, x.name, x.sets, x.repsMin, x.repsMax, x.restSeconds));
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _name.dispose();
+    super.dispose();
+  }
+
+  Future<void> _add() async {
+    final e = await Navigator.of(context).push<dynamic>(MaterialPageRoute(builder: (_) => ExercisePicker(repo: widget.app.repo!)));
+    if (e == null) return;
+    setState(() => _rows.add(_Row(e.id as String, e.name as String, 3, 8, 12, null)));
+  }
+
+  void _save() {
+    if (_name.text.trim().isEmpty) return;
+    widget.app.repo!.saveRoutine(
+      id: widget.routineId,
+      name: _name.text,
+      exercises: [
+        for (final r in _rows)
+          RoutineExercise(exerciseId: r.exerciseId, name: r.name, sets: r.sets, repsMin: r.repsMin, repsMax: r.repsMax, restSeconds: r.restSeconds),
+      ],
+    );
+    widget.app.changed();
+    Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.routineId == null ? tr('routine_add') : tr('routine_edit')),
+        actions: [
+          if (widget.routineId != null)
+            IconButton(
+              icon: const Icon(Icons.delete_outline),
+              tooltip: tr('delete'),
+              onPressed: () async {
+                if (await confirm(context, tr('routine_delete_confirm', [_name.text]), tr('delete'))) {
+                  widget.app.repo!.deleteRoutine(widget.routineId!);
+                  widget.app.changed();
+                  if (context.mounted) Navigator.of(context).pop();
+                }
+              },
+            ),
+          TextButton(onPressed: _save, child: Text(tr('save'))),
+        ],
+      ),
+      body: Column(children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: TextField(controller: _name, decoration: InputDecoration(labelText: tr('routine_name'), border: const OutlineInputBorder())),
+        ),
+        Expanded(
+          child: ReorderableListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            onReorderItem: (from, to) => setState(() => _rows.insert(to, _rows.removeAt(from))),
+            children: [
+              for (final (i, r) in _rows.indexed)
+                Card(
+                  key: ValueKey('${r.exerciseId}-$i'),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Row(children: [
+                        Expanded(child: Text(r.name, style: theme.textTheme.titleSmall)),
+                        IconButton(visualDensity: VisualDensity.compact, icon: const Icon(Icons.close), onPressed: () => setState(() => _rows.removeAt(i))),
+                      ]),
+                      Row(children: [
+                        _mini(tr('routine_sets'), r.sets, 1, 20, (v) => setState(() => r.sets = v)),
+                        _mini(tr('routine_reps_min'), r.repsMin, 1, 100, (v) => setState(() {
+                              r.repsMin = v;
+                              if (r.repsMax < v) r.repsMax = v;
+                            })),
+                        _mini(tr('routine_reps_max'), r.repsMax, 1, 100, (v) => setState(() {
+                              r.repsMax = v;
+                              if (r.repsMin > v) r.repsMin = v;
+                            })),
+                      ]),
+                    ]),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: OutlinedButton.icon(onPressed: _add, icon: const Icon(Icons.add), label: Text(tr('add_exercise'))),
+        ),
+      ]),
+    );
+  }
+
+  Widget _mini(String label, int value, int min, int max, void Function(int) onChanged) {
+    return Expanded(
+      child: Column(children: [
+        Text(label, style: Theme.of(context).textTheme.labelSmall),
+        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          IconButton(visualDensity: VisualDensity.compact, icon: const Icon(Icons.remove), onPressed: value > min ? () => onChanged(value - 1) : null),
+          Text('$value', style: Theme.of(context).textTheme.titleMedium),
+          IconButton(visualDensity: VisualDensity.compact, icon: const Icon(Icons.add), onPressed: value < max ? () => onChanged(value + 1) : null),
+        ]),
+      ]),
+    );
+  }
+}

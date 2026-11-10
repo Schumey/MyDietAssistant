@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 
 import 'app_state.dart';
+import 'gyms_screen.dart';
 import 'history_screen.dart';
 import 'l10n.dart';
+import 'repo.dart';
+import 'repo_gym.dart';
+import 'routines_screen.dart';
 import 'settings_screen.dart';
 import 'workout_screen.dart';
 
@@ -87,6 +91,25 @@ class TrainingTab extends StatelessWidget {
     app.changed();
   }
 
+  /// Startet ein Workout. Gibt es Routinen oder mehrere Studios, wird vorher gefragt.
+  Future<void> _start(BuildContext context) async {
+    final repo = app.repo!;
+    final gyms = repo.gyms();
+    final routines = repo.routines();
+    if (routines.isEmpty && gyms.length < 2) {
+      await _open(context, repo.startWorkout(gymId: gyms.firstOrNull?.id));
+      return;
+    }
+    final choice = await showModalBottomSheet<({String? routineId, String gymId})>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => _StartSheet(repo: repo),
+    );
+    if (choice == null || !context.mounted) return;
+    final routine = choice.routineId == null ? null : repo.routine(choice.routineId!);
+    await _open(context, repo.startWorkout(routineId: routine?.id, routineName: routine?.name ?? '', gymId: choice.gymId.isEmpty ? null : choice.gymId));
+  }
+
   @override
   Widget build(BuildContext context) {
     final repo = app.repo!;
@@ -117,11 +140,29 @@ class TrainingTab extends StatelessWidget {
           SizedBox(
             height: 72,
             child: FilledButton.icon(
-              onPressed: () => _open(context, repo.startWorkout()),
+              onPressed: () => _start(context),
               icon: const Icon(Icons.add),
               label: Text(tr('start_workout'), style: theme.textTheme.titleLarge),
             ),
           ),
+        const SizedBox(height: 8),
+        Row(children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => RoutinesScreen(app: app))).then((_) => app.changed()),
+              icon: const Icon(Icons.list_alt),
+              label: Text(tr('routines_title')),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => GymsScreen(app: app))).then((_) => app.changed()),
+              icon: const Icon(Icons.store),
+              label: Text(tr('gyms_title')),
+            ),
+          ),
+        ]),
         const SizedBox(height: 24),
         if (last.isNotEmpty && active == null)
           Card(
@@ -134,6 +175,55 @@ class TrainingTab extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// Auswahl beim Start: Studio und Routine (oder freies Workout).
+class _StartSheet extends StatefulWidget {
+  const _StartSheet({required this.repo});
+
+  final Repo repo;
+
+  @override
+  State<_StartSheet> createState() => _StartSheetState();
+}
+
+class _StartSheetState extends State<_StartSheet> {
+  late final List<GymInfo> gyms = widget.repo.gyms();
+  late String gymId = widget.repo.lastGymId() ?? (gyms.isEmpty ? '' : gyms.first.id);
+
+  @override
+  Widget build(BuildContext context) {
+    final routines = widget.repo.routines();
+    return SafeArea(
+      child: ListView(
+        shrinkWrap: true,
+        padding: const EdgeInsets.all(16),
+        children: [
+          Text(tr('start_with'), style: Theme.of(context).textTheme.titleLarge),
+          if (gyms.length > 1) ...[
+            const SizedBox(height: 12),
+            Wrap(spacing: 8, children: [
+              for (final g in gyms)
+                ChoiceChip(label: Text(g.name), selected: gymId == g.id, onSelected: (_) => setState(() => gymId = g.id)),
+            ]),
+          ],
+          const SizedBox(height: 8),
+          ListTile(
+            leading: const Icon(Icons.add),
+            title: Text(tr('free_workout')),
+            onTap: () => Navigator.pop(context, (routineId: null, gymId: gymId)),
+          ),
+          for (final r in routines)
+            ListTile(
+              leading: const Icon(Icons.list_alt),
+              title: Text(r.name),
+              subtitle: Text(routineLine(r)),
+              onTap: () => Navigator.pop(context, (routineId: r.id, gymId: gymId)),
+            ),
+        ],
+      ),
     );
   }
 }

@@ -201,6 +201,21 @@ extension GymRepo on Repo {
           _equipment(r),
       ];
 
+  String? workoutGym(String workoutId) => local.row('SELECT gym_id FROM workout WHERE id = ?', [workoutId])?['gym_id'] as String?;
+
+  void setWorkoutGym(String workoutId, String? gymId) {
+    final w = local.row('SELECT * FROM workout WHERE id = ?', [workoutId]);
+    if (w == null) return;
+    local.upsert('workout', {...w, 'gym_id': gymId, 'updated_at': nowStamp()}, dirty: true);
+    if (gymId != null) local.setState('last_gym', gymId);
+  }
+
+  /// Das Gerät, an dem die Übung zuletzt erfasst wurde (auch im laufenden Workout), falls bekannt.
+  String? lastEquipmentFor(String exerciseId) => local.row(
+      'SELECT s.equipment_id FROM workout_set s WHERE s.exercise_id = ? AND s.deleted = 0 AND s.equipment_id IS NOT NULL '
+      'ORDER BY s.done_at DESC LIMIT 1',
+      [exerciseId])?['equipment_id'] as String?;
+
   // --- Routinen ---------------------------------------------------------------
 
   List<RoutineInfo> routines() {
