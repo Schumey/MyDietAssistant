@@ -79,6 +79,26 @@ void main() {
     await tester.pumpAndSettle();
   });
 
+  testWidgets('equipment busy offers an exercise for the same muscle', (tester) async {
+    await start(tester);
+    app.local!.upsert('exercise', {
+      'id': 'e4', 'owner': 'u1', 'updated_at': '2026-01-01T00:00:00+00:00', 'name': 'Fliegende', 'kind': 'strength', 'muscles_primary': 'chest', 'muscles_secondary': '',
+    }, dirty: false);
+    app.local!.upsert('exercise', {
+      'id': 'e1', 'owner': 'u1', 'updated_at': '2026-01-02T00:00:00+00:00', 'name': 'Bankdrücken', 'kind': 'strength', 'muscles_primary': 'chest triceps', 'muscles_secondary': '',
+    }, dirty: false);
+    await tester.tap(find.byIcon(Icons.more_vert).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Gerät besetzt'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Statt'), findsOneWidget);
+    expect(find.text('Rudern'), findsNothing); // other muscle group
+    await tester.tap(find.text('Fliegende'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bankdrücken'), findsNothing);
+    expect(find.text('Fliegende'), findsWidgets);
+  });
+
   testWidgets('exercises that already have sets cannot be swapped', (tester) async {
     await start(tester);
     await tester.tap(find.text('Bankdrücken'));

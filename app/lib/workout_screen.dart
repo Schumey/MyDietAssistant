@@ -9,6 +9,7 @@ import 'l10n.dart';
 import 'plates.dart';
 import 'repo.dart';
 import 'repo_gym.dart';
+import 'repo_program.dart';
 import 'rest_timer.dart';
 import 'steps.dart';
 import 'wakelock.dart';
@@ -116,6 +117,30 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     _select(e);
   }
 
+  /// „Gerät besetzt“: schlägt gleichwertige Übungen vor (gleiche Hauptmuskelgruppe) und tauscht die gewählte ein.
+  Future<void> _busy(ExerciseInfo old) async {
+    final alts = repo.alternatives(old.id, gymId: _gymId);
+    if (alts.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr('no_alternatives'))));
+      return;
+    }
+    final pick = await showModalBottomSheet<String>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: ListView(shrinkWrap: true, children: [
+          Padding(padding: const EdgeInsets.all(16), child: Text(tr('alternatives_for', [old.name]), style: Theme.of(context).textTheme.titleMedium)),
+          for (final a in alts)
+            ListTile(title: Text(a.name), subtitle: a.uses > 0 ? Text(tr('sets_count', [a.uses])) : null, onTap: () => Navigator.pop(context, a.id)),
+        ]),
+      ),
+    );
+    final e = pick == null ? null : repo.exercise(pick);
+    if (e == null || !mounted) return;
+    _skipped.add(old.id);
+    _skipped.remove(e.id);
+    _select(e);
+  }
+
   void _saveSet() {
     final e = _exercise;
     if (e == null) return;
@@ -184,8 +209,9 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   tooltip: tr('plan_options'),
                   padding: EdgeInsets.zero,
                   icon: const Icon(Icons.more_vert, size: 20),
-                  onSelected: (v) => v == 'swap' ? _swap(e) : _skip(e),
+                  onSelected: (v) => v == 'swap' ? _swap(e) : (v == 'busy' ? _busy(e) : _skip(e)),
                   itemBuilder: (context) => [
+                    PopupMenuItem(value: 'busy', child: Text(tr('equipment_busy'))),
                     PopupMenuItem(value: 'swap', child: Text(tr('swap_exercise'))),
                     PopupMenuItem(value: 'skip', child: Text(tr('skip_exercise'))),
                   ],

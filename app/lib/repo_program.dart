@@ -110,4 +110,21 @@ extension ProgramRepo on Repo {
     }
     return saveProgram(name: programName, routineIds: ids);
   }
+
+  /// Alternativen zu einer Übung („Gerät besetzt“): gleiche Hauptmuskelgruppe, Kraftübung, die meistgenutzten zuerst.
+  /// Ist ein Studio mit Geräten gewählt, kommen Übungen mit Gerät dort zuerst.
+  List<Candidate> alternatives(String exerciseId, {String? gymId, int limit = 8}) {
+    final all = templateCandidates();
+    final me = all.where((c) => c.id == exerciseId).firstOrNull;
+    if (me == null || me.primary.isEmpty) return [];
+    final same = all.where((c) => c.id != exerciseId && c.kind == 'strength' && c.primary.isNotEmpty && c.primary.first == me.primary.first).toList();
+    bool here(Candidate c) => gymId != null && equipmentFor(c.id, gymId).isNotEmpty;
+    same.sort((a, b) {
+      final h = (here(b) ? 1 : 0) - (here(a) ? 1 : 0);
+      if (h != 0) return h;
+      final u = b.uses.compareTo(a.uses);
+      return u != 0 ? u : a.name.toLowerCase().compareTo(b.name.toLowerCase());
+    });
+    return same.take(limit).toList();
+  }
 }
