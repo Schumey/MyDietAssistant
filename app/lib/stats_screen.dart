@@ -9,24 +9,34 @@ import 'repo_stats.dart';
 import 'stats.dart';
 
 /// Reiter „Statistik“: Trainingshäufigkeit, Sätze je Muskelgruppe, Übungen.
-class StatsTab extends StatelessWidget {
+class StatsTab extends StatefulWidget {
   const StatsTab({super.key, required this.app, this.today});
 
   final AppState app;
   final DateTime? today;
 
   @override
+  State<StatsTab> createState() => _StatsTabState();
+}
+
+class _StatsTabState extends State<StatsTab> {
+  /// Weeks the muscle average covers.
+  int _avgWeeks = 4;
+
+  AppState get app => widget.app;
+
+  @override
   Widget build(BuildContext context) {
     final repo = app.repo!;
-    final now = today ?? DateTime.now();
+    final now = widget.today ?? DateTime.now();
     final theme = Theme.of(context);
     final exercises = repo.trainedExercises();
     if (exercises.isEmpty) return Center(child: Text(tr('stats_empty')));
 
     final weeks = workoutsPerWeek(repo.workoutDays(since: weekStart(now).subtract(const Duration(days: 7 * 11))), today: now);
-    final perWeek = setsPerMuscleAndWeek(repo.muscleSets(weekStart(now).subtract(const Duration(days: 7 * 4))));
+    final perWeek = setsPerMuscleAndWeek(repo.muscleSets(weekStart(now).subtract(Duration(days: 7 * _avgWeeks))));
     final thisWeek = perWeek[weekStart(now)] ?? const <String, double>{};
-    final avg = averageSetsPerWeek(perWeek, today: now);
+    final avg = averageSetsPerWeek(perWeek, today: now, weeks: _avgWeeks);
     final muscles = {...thisWeek.keys, ...avg.keys}.toList()
       ..sort((a, b) => ((avg[b] ?? 0) + (thisWeek[b] ?? 0)).compareTo((avg[a] ?? 0) + (thisWeek[a] ?? 0)));
     final maxSets = muscles.fold<double>(1, (m, k) => [m, thisWeek[k] ?? 0, avg[k] ?? 0].reduce((a, b) => a > b ? a : b));
@@ -40,7 +50,12 @@ class StatsTab extends StatelessWidget {
         const SizedBox(height: 24),
         Text(tr('stats_muscle_sets'), style: theme.textTheme.titleMedium),
         const SizedBox(height: 4),
-        Text('${tr('stats_this_week')} · ${tr('stats_avg')}', style: theme.textTheme.bodySmall),
+        Wrap(spacing: 8, children: [
+          for (final w in const [4, 12, 26, 52])
+            ChoiceChip(label: Text(tr('weeks_n', [w])), selected: _avgWeeks == w, onSelected: (_) => setState(() => _avgWeeks = w)),
+        ]),
+        const SizedBox(height: 4),
+        Text('${tr('stats_this_week')} · ${tr('stats_avg', [_avgWeeks])}', style: theme.textTheme.bodySmall),
         const SizedBox(height: 8),
         for (final m in muscles)
           Padding(

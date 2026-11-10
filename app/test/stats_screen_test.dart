@@ -76,6 +76,18 @@ void main() {
     expect(tiles, ['Bankdrücken', 'Rudern']);
   });
 
+  testWidgets('muscle average range can be widened', (tester) async {
+    // 4 sets bench 6 weeks ago: outside 4 weeks, inside 12 weeks (avg 4 / 12 = 0.3)
+    workout(DateTime(2026, 9, 29, 18), 'bench', [(60, 8), (60, 8), (60, 8), (60, 8)]);
+    workout(DateTime(2026, 11, 9, 18), 'row', [(50, 10)]);
+    await tester.pumpWidget(host(StatsTab(app: app, today: today)));
+    expect(find.text('Brust'), findsNothing);
+    await tester.tap(find.text('12 Wo.'));
+    await tester.pump();
+    expect(find.text('Brust'), findsOneWidget);
+    expect(find.text('0 · 0,3'), findsOneWidget);
+  });
+
   testWidgets('exercise screen: records, metric switch, recent workouts', (tester) async {
     workout(DateTime(2026, 11, 3, 18), 'bench', [(60, 8), (60, 8)]);
     workout(DateTime(2026, 11, 9, 18), 'bench', [(70, 3), (65, 6)]);
