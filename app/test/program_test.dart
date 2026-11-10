@@ -125,7 +125,22 @@ void main() {
     await tester.pumpAndSettle();
     final titles = tester.widgetList<ListTile>(find.byType(ListTile)).map((t) => (t.title as Text).data).toList();
     expect(titles.skipWhile((t) => t != 'Freies Workout').toList(), ['Freies Workout', 'Pull', 'Push', 'Beine']);
-    expect(find.textContaining('Als Nächstes'), findsOneWidget);
+    expect(find.textContaining('Als Nächstes'), findsNWidgets(2)); // the quick-start button and the marked sheet row
+  });
+
+  testWidgets('training tab offers the next routine as a one-tap start', (tester) async {
+    await tester.pumpWidget(HafsApp(app: app));
+    await tester.pumpAndSettle();
+    seed();
+    final p = repo.saveProgram(name: 'PPL', routineIds: [a, b]);
+    did(a, DateTime(2026, 11, 2, 18));
+    expect(repo.nextRoutineId(p), b);
+    app.changed();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Als Nächstes: Pull starten'));
+    await tester.pumpAndSettle();
+    expect(find.text('0/3 Sätze'), findsOneWidget); // the workout screen with the Pull plan
+    expect(repo.activeWorkout(), isNotNull);
   });
 
   testWidgets('create a program on screen', (tester) async {

@@ -149,6 +149,21 @@ class TrainingTab extends StatelessWidget {
               label: Text(tr('start_workout'), style: theme.textTheme.titleLarge),
             ),
           ),
+        if (active == null && repo.suggestedRoutineId() != null) ...[
+          const SizedBox(height: 8),
+          Builder(builder: (context) {
+            final next = repo.routine(repo.suggestedRoutineId()!);
+            if (next == null) return const SizedBox.shrink();
+            return FilledButton.tonalIcon(
+              onPressed: () async {
+                final gym = repo.lastGymId() ?? repo.gyms().firstOrNull?.id;
+                await _open(context, repo.startWorkout(routineId: next.id, routineName: next.name, gymId: gym));
+              },
+              icon: const Icon(Icons.skip_next),
+              label: Text(tr('start_next', [next.name])),
+            );
+          }),
+        ],
         const SizedBox(height: 8),
         Row(children: [
           Expanded(
