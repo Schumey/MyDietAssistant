@@ -4,6 +4,7 @@ import 'app_state.dart';
 import 'exercise_picker.dart';
 import 'gyms_screen.dart';
 import 'l10n.dart';
+import 'programs_screen.dart';
 import 'repo_gym.dart';
 
 String routineLine(RoutineInfo r) => tr('routine_exercises', [r.exercises.length]);
@@ -28,7 +29,16 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
   Widget build(BuildContext context) {
     final routines = widget.app.repo!.routines();
     return Scaffold(
-      appBar: AppBar(title: Text(tr('routines_title'))),
+      appBar: AppBar(
+        title: Text(tr('routines_title')),
+        actions: [
+          TextButton.icon(
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => ProgramsScreen(app: widget.app))),
+            icon: const Icon(Icons.autorenew),
+            label: Text(tr('programs_title')),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(onPressed: () => _edit(), icon: const Icon(Icons.add), label: Text(tr('routine_add'))),
       body: routines.isEmpty
           ? Center(child: Text(tr('routines_empty')))

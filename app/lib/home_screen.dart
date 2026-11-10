@@ -6,6 +6,7 @@ import 'history_screen.dart';
 import 'l10n.dart';
 import 'repo.dart';
 import 'repo_gym.dart';
+import 'repo_program.dart';
 import 'routines_screen.dart';
 import 'settings_screen.dart';
 import 'stats_screen.dart';
@@ -198,7 +199,8 @@ class _StartSheetState extends State<_StartSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final routines = widget.repo.routines();
+    final suggested = widget.repo.suggestedRoutineId();
+    final routines = [...widget.repo.routines()]..sort((a, b) => (b.id == suggested ? 1 : 0) - (a.id == suggested ? 1 : 0));
     return SafeArea(
       child: ListView(
         shrinkWrap: true,
@@ -222,7 +224,8 @@ class _StartSheetState extends State<_StartSheet> {
             ListTile(
               leading: const Icon(Icons.list_alt),
               title: Text(r.name),
-              subtitle: Text(routineLine(r)),
+              subtitle: Text(r.id == suggested ? '${tr('next_in_program')} · ${routineLine(r)}' : routineLine(r)),
+              selected: r.id == suggested,
               onTap: () => Navigator.pop(context, (routineId: r.id, gymId: gymId)),
             ),
         ],
