@@ -8,6 +8,7 @@ import 'repo.dart';
 import 'repo_gym.dart';
 import 'routines_screen.dart';
 import 'settings_screen.dart';
+import 'stats_screen.dart';
 import 'workout_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -36,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
           body: switch (_tab) {
             0 => TrainingTab(app: app),
             1 => HistoryTab(app: app),
+            2 => StatsTab(app: app),
             _ => SettingsTab(app: app),
           },
           bottomNavigationBar: NavigationBar(
@@ -44,6 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
             destinations: [
               NavigationDestination(icon: const Icon(Icons.fitness_center), label: tr('tab_training')),
               NavigationDestination(icon: const Icon(Icons.calendar_month), label: tr('tab_history')),
+              NavigationDestination(icon: const Icon(Icons.show_chart), label: tr('tab_stats')),
               NavigationDestination(icon: const Icon(Icons.settings), label: tr('tab_settings')),
             ],
           ),
