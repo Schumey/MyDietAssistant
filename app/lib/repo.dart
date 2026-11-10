@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:uuid/uuid.dart';
 
 import 'db.dart';
+import 'steps.dart';
 
 class ExerciseInfo {
   ExerciseInfo(this.id, this.name, this.kind, this.catalogKey, this.lastUsed);
@@ -60,13 +61,16 @@ class WorkoutSummary {
 
 /// Vorbelegung für die Satzeingabe einer Übung.
 class EntryDefaults {
-  EntryDefaults({required this.weight, required this.reps, required this.step, this.target, this.lastTime = const []});
+  EntryDefaults({required this.weight, required this.reps, required this.step, this.target, this.lastTime = const [], this.steps});
 
   final double weight;
   final int reps;
   final double step;
   final TargetInfo? target;
   final List<SetRow> lastTime;
+
+  /// Gewichtsstufen des Geräts; ohne sie gilt [step].
+  final List<double>? steps;
 }
 
 /// Die Trainingslogik der App auf der lokalen Datenbank. Jede Änderung wird zum Senden vorgemerkt.
@@ -77,8 +81,9 @@ class Repo {
   final DateTime Function() _clock;
   static const _uuid = Uuid();
 
-  String _id() => _uuid.v4();
-  String _now() => utcStamp(_clock());
+  String newId() => _uuid.v4();
+  String nowStamp() => utcStamp(_clock());
+  DateTime now() => _clock();
 
   // --- Übungen ---------------------------------------------------------------
 
@@ -109,22 +114,26 @@ class Repo {
   Map<String, Object?>? activeWorkout() => local.row(
       "SELECT * FROM workout WHERE deleted = 0 AND ended_at IS NULL AND source = '' ORDER BY started_at DESC LIMIT 1");
 
-  String startWorkout({String routineName = ''}) {
-    final id = _id();
+  String startWorkout({String routineName = '', String? routineId, String? gymId}) {
+    final id = newId();
     local.upsert('workout', {
       'id': id,
       'owner': '',
-      'updated_at': _now(),
+      'updated_at': nowStamp(),
       'deleted': 0,
       'started_at': localStamp(_clock()),
       'routine_name': routineName,
+      'routine_id': routineId,
+      'gym_id': gymId,
     }, dirty: true);
+    if (gymId != null) local.setState('last_gym', gymId);
     return id;
   }
 
   String addSet({
     required String workoutId,
     required String exerciseId,
+    String? equipmentId,
     double? weight,
     int? reps,
     int? durationSeconds,
@@ -134,14 +143,15 @@ class Repo {
   }) {
     final n = local.row('SELECT COUNT(*) c FROM workout_set WHERE workout_id = ? AND exercise_id = ? AND deleted = 0',
         [workoutId, exerciseId])!['c'] as int;
-    final id = _id();
+    final id = newId();
     local.upsert('workout_set', {
       'id': id,
       'owner': '',
-      'updated_at': _now(),
+      'updated_at': nowStamp(),
       'deleted': 0,
       'workout_id': workoutId,
       'exercise_id': exerciseId,
+      'equipment_id': equipmentId,
       'set_no': n + 1,
       'weight': weight,
       'reps': reps,
@@ -162,7 +172,7 @@ class Repo {
       'weight': weight ?? r['weight'],
       'reps': reps ?? r['reps'],
       'kind': kind ?? r['kind'],
-      'updated_at': _now(),
+      'updated_at': nowStamp(),
     }, dirty: true);
   }
 
@@ -171,13 +181,13 @@ class Repo {
     final r = local.row('SELECT * FROM workout_set WHERE id = ?', [id]);
     if (r == null) return;
     local.transaction(() {
-      local.upsert('workout_set', {...r, 'deleted': 1, 'updated_at': _now()}, dirty: true);
+      local.upsert('workout_set', {...r, 'deleted': 1, 'updated_at': nowStamp()}, dirty: true);
       final rest = local.rows(
           'SELECT * FROM workout_set WHERE workout_id = ? AND exercise_id = ? AND deleted = 0 ORDER BY done_at, set_no',
           [r['workout_id'], r['exercise_id']]);
       for (var i = 0; i < rest.length; i++) {
         if (rest[i]['set_no'] != i + 1) {
-          local.upsert('workout_set', {...rest[i], 'set_no': i + 1, 'updated_at': _now()}, dirty: true);
+          local.upsert('workout_set', {...rest[i], 'set_no': i + 1, 'updated_at': nowStamp()}, dirty: true);
         }
       }
     });
@@ -189,12 +199,12 @@ class Repo {
     if (w == null) return false;
     final sets = local.row('SELECT COUNT(*) c FROM workout_set WHERE workout_id = ? AND deleted = 0', [id])!['c'] as int;
     if (sets == 0) {
-      local.upsert('workout', {...w, 'deleted': 1, 'updated_at': _now()}, dirty: true);
+      local.upsert('workout', {...w, 'deleted': 1, 'updated_at': nowStamp()}, dirty: true);
       return false;
     }
     final last = local.row('SELECT MAX(done_at) m FROM workout_set WHERE workout_id = ? AND deleted = 0', [id])!['m'] as String;
     final now = localStamp(_clock());
-    local.upsert('workout', {...w, 'ended_at': now.compareTo(last) > 0 ? now : last, 'updated_at': _now()}, dirty: true);
+    local.upsert('workout', {...w, 'ended_at': now.compareTo(last) > 0 ? now : last, 'updated_at': nowStamp()}, dirty: true);
     return true;
   }
 
@@ -221,12 +231,15 @@ class Repo {
 
   // --- Vorbelegung, Vorschlag, letztes Mal ---------------------------------------
 
-  List<SetRow> lastTime(String exerciseId, {String? excludeWorkoutId}) {
-    final w = local.row(
+  /// Sätze der Übung aus dem letzten früheren Workout. Mit [equipmentId] zählt zuerst das letzte
+  /// Workout an diesem Gerät, sonst das letzte überhaupt.
+  List<SetRow> lastTime(String exerciseId, {String? excludeWorkoutId, String? equipmentId}) {
+    Map<String, Object?>? find(bool onEquipment) => local.row(
         'SELECT s.workout_id FROM workout_set s JOIN workout w ON w.id = s.workout_id '
         'WHERE s.exercise_id = ? AND s.deleted = 0 AND w.deleted = 0 AND s.workout_id != ? '
-        'ORDER BY w.started_at DESC LIMIT 1',
-        [exerciseId, excludeWorkoutId ?? '']);
+        '${onEquipment ? 'AND s.equipment_id = ? ' : ''}ORDER BY w.started_at DESC LIMIT 1',
+        [exerciseId, excludeWorkoutId ?? '', if (onEquipment) equipmentId]);
+    final w = (equipmentId != null ? find(true) : null) ?? find(false);
     if (w == null) return [];
     return [
       for (final r in local.rows(
@@ -239,8 +252,9 @@ class Repo {
   }
 
   /// Zielwert des Servers für die Übung (ohne Gerät), falls vorhanden.
-  TargetInfo? target(String exerciseId) {
-    final r = local.row("SELECT * FROM target WHERE exercise_id = ? AND equipment_id = '' AND deleted = 0", [exerciseId]);
+  TargetInfo? target(String exerciseId, {String equipmentId = ''}) {
+    final r = (equipmentId.isEmpty ? null : local.row('SELECT * FROM target WHERE exercise_id = ? AND equipment_id = ? AND deleted = 0', [exerciseId, equipmentId])) ??
+        local.row("SELECT * FROM target WHERE exercise_id = ? AND equipment_id = '' AND deleted = 0", [exerciseId]);
     if (r == null) return null;
     Map<String, dynamic> params = {};
     try {
@@ -252,17 +266,21 @@ class Repo {
   }
 
   /// Vorbelegung: Vorschlag des Servers, sonst der letzte Arbeitssatz vom letzten Mal, sonst leer.
-  EntryDefaults defaults(String exerciseId, {String? workoutId}) {
-    final last = lastTime(exerciseId, excludeWorkoutId: workoutId);
-    final t = target(exerciseId);
+  /// Mit Gerät: dessen Stufen bestimmen das Gewicht und die Schrittweite.
+  EntryDefaults defaults(String exerciseId, {String? workoutId, String? equipmentId}) {
+    final last = lastTime(exerciseId, excludeWorkoutId: workoutId, equipmentId: equipmentId);
+    final t = target(exerciseId, equipmentId: equipmentId ?? '');
+    final steps = equipmentId == null ? null : expandSteps(local.row('SELECT steps FROM equipment WHERE id = ?', [equipmentId])?['steps'] as String?);
     final work = last.where((s) => s.kind == 'work' && (s.reps ?? 0) > 0).toList();
     final ref = work.isEmpty ? null : work.last;
+    final weight = t?.weight ?? ref?.weight ?? (steps?.first ?? 0);
     return EntryDefaults(
-      weight: t?.weight ?? ref?.weight ?? 0,
+      weight: steps == null ? weight : snapToSteps(weight, steps),
       reps: t?.reps ?? ref?.reps ?? 8,
       step: suggestStep([for (final s in last) s.weight ?? 0]),
       target: t,
       lastTime: last,
+      steps: steps,
     );
   }
 
