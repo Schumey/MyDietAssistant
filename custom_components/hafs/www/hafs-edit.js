@@ -155,7 +155,7 @@ export const newRow = (exercise) => {
 // Whether an exercise has weights (the weight and warm-up fields only make sense then).
 export const hasWeight = (row) => row.kind === "strength" || row.kind === "bodyweight" || !row.kind;
 
-export const REST_CHOICES = [0, 45, 60, 90, 120, 180, 240, 300];
+export const REST_CHOICES = [0, 45, 60, 90, 120, 150, 180, 240, 300];
 
 // Returns {error: key} or {records, weights}. Like the app, all old rows of the routine are replaced by new ones.
 // `weights` = [{exercise_id, weight}] for rows whose weight field was changed: the caller sets them as the next weight

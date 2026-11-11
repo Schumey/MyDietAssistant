@@ -125,6 +125,7 @@ void main() {
   test('rest length per exercise: default, cycling through the presets, wraps around', () async {
     expect(await timer.restSeconds('e1'), 90);
     expect(await timer.cycleRest('e1'), 120);
+    expect(await timer.cycleRest('e1'), 150);
     expect(await timer.cycleRest('e1'), 180);
     expect(await timer.cycleRest('e1'), 240);
     expect(await timer.cycleRest('e1'), 0); // off

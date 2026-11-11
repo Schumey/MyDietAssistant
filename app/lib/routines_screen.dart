@@ -247,7 +247,7 @@ class _RoutineEditorState extends State<RoutineEditor> {
     );
   }
 
-  static const _restChoices = [null, 0, 45, 60, 90, 120, 180, 240, 300];
+  static const _restChoices = [null, 0, 45, 60, 90, 120, 150, 180, 240, 300];
 
   /// Pause je Übung: wie global → keine → 45 s … 300 s → wieder global.
   int? _nextRest(int? current) {

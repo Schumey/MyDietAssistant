@@ -11,7 +11,7 @@ const TABS = ["today", "history", "stats", "plans", "settings"];
 const TAB_KEY = "hafs.tab";
 const WINDOWS = [4, 12, 26, 52];
 const TODAY_BLOCKS = ["next", "facts", "muscles", "recent"];
-const REST_DEFAULTS = [0, 45, 60, 90, 120, 180, 240, 300];
+const REST_DEFAULTS = [0, 45, 60, 90, 120, 150, 180, 240, 300];
 const MAX_CSV = 3_500_000;
 
 class HafsPanel extends HTMLElement {

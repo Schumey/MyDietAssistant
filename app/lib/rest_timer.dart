@@ -74,7 +74,7 @@ class RestTimer extends ChangeNotifier {
   final int syncEvery;
 
   /// Voreinstellungen für die Pausenlänge in Sekunden; 0 = keine Pause.
-  static const presets = [0, 45, 60, 90, 120, 180, 240];
+  static const presets = [0, 45, 60, 90, 120, 150, 180, 240];
   static const defaultSeconds = 90;
   static const extendSeconds = 30;
 
