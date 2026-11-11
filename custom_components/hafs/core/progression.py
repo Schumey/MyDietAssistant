@@ -71,10 +71,32 @@ class Target:
 
 # --- weight steps -----------------------------------------------------------
 
+MAX_STEPS = 2000
+
+
+def _expand_plates(spec: dict) -> list[float] | None:
+    """Plate-loaded machine: sled/lever weight `base` plus plates. With the plates on both sides (`sides` 2, the default)
+    the smallest change is two of the smallest plate; `max` (default: 40 such steps above `base`) limits the load."""
+    try:
+        base = float(spec.get("base") or 0)
+        plates = [float(x) for x in spec["plates"] if float(x) > 0]
+        sides = 1 if spec.get("sides") == 1 else 2
+        unit = sides * min(plates)
+        hi = float(spec["max"]) if spec.get("max") else base + 40 * unit
+    except (TypeError, ValueError, KeyError):
+        return None
+    if base < 0 or not plates or hi < base or (hi - base) / unit > MAX_STEPS:
+        return None
+    n = int(round((hi - base) / unit))
+    return [round(base + i * unit, 4) for i in range(n + 1)]
+
+
 def expand_steps(spec: Any) -> list[float] | None:
     """Equipment steps -> sorted list of weights, or None when unknown.
 
-    Accepts a list of numbers, {"min", "max", "step"} or the JSON text of either."""
+    Accepts a list of numbers, {"min", "max", "step"} or the JSON text of either, and two machine forms:
+    stack-loaded with an optional add-on weight ({"min", "max", "step", "extra"} or {"values": [...], "extra"}: every pin
+    position, with and without the add-on) and plate-loaded ({"base", "plates", "sides", "max"})."""
     if spec in (None, "", []):
         return None
     if isinstance(spec, str):
@@ -83,11 +105,20 @@ def expand_steps(spec: Any) -> list[float] | None:
         except ValueError:
             return None
     if isinstance(spec, dict):
-        lo, hi, step = spec.get("min"), spec.get("max"), spec.get("step")
-        if lo is None or hi is None or not step or step <= 0 or hi < lo:
-            return None
-        n = int(round((hi - lo) / step))
-        return [round(lo + i * step, 4) for i in range(n + 1)]
+        if "plates" in spec:
+            return _expand_plates(spec)
+        if isinstance(spec.get("values"), list):
+            grid = sorted({round(float(v), 4) for v in spec["values"]})
+        else:
+            lo, hi, step = spec.get("min"), spec.get("max"), spec.get("step")
+            if lo is None or hi is None or not step or step <= 0 or hi < lo:
+                return None
+            n = int(round((hi - lo) / step))
+            grid = [round(lo + i * step, 4) for i in range(n + 1)]
+        extra = spec.get("extra")
+        if extra and extra > 0 and grid:
+            grid = sorted(set(grid) | {round(v + extra, 4) for v in grid})
+        return grid or None
     if isinstance(spec, (list, tuple)):
         values = sorted({round(float(v), 4) for v in spec})
         return values or None

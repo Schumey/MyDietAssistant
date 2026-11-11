@@ -103,6 +103,8 @@ def test_exercise_sessions_records_and_picker(conn):
     assert d["target"] is None
     names = [e["name"] for e in run(conn, "exercises")["exercises"]]
     assert names == ["Bankdrücken"]                      # only exercises with sets
+    ex = run(conn, "exercises")["exercises"][0]
+    assert (ex["sets"], ex["times"], ex["last"]) == (3, 2, "2026-10-08")   # sets vs. workouts it was done in
 
 
 def test_plan_lists_loose_routines_and_gyms(conn):

@@ -4,12 +4,21 @@
 // Every record is pushed in full (spread from the record the server sent), because the server needs all
 // required columns and must not lose the ones this editor does not show.
 
-export const EQUIPMENT_TYPES = ["machine", "cable", "barbell", "dumbbell", "bodyweight", "kettlebell", "band", "cardio", "other"];
+export const EQUIPMENT_TYPES = ["machine_stack", "machine_plate", "machine", "cable", "barbell", "dumbbell", "bodyweight", "kettlebell", "band", "cardio", "other"];
 
 // Same format as the server and the app (UTC, seconds, +00:00), so that string comparison of `updated_at` works.
 export const stamp = (d = new Date()) => d.toISOString().replace(/\.\d+Z$/, "+00:00");
 
-export const newId = () => globalThis.crypto.randomUUID();
+// `crypto.randomUUID` exists only on secure origins (https, localhost); Home Assistant is often reached over plain http.
+export const uuidFrom = (c) => {
+  if (typeof c.randomUUID === "function") return c.randomUUID();
+  const b = c.getRandomValues(new Uint8Array(16));
+  b[6] = (b[6] & 0x0f) | 0x40;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  const h = [...b].map((x) => x.toString(16).padStart(2, "0")).join("");
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+};
+export const newId = () => uuidFrom(globalThis.crypto);
 
 // "5-100/5" (5 to 100 in steps of 5) or a list "20 22,5 25"; "" = unknown; null = invalid. Same as `parseStepsInput` of the app.
 export const parseSteps = (input) => {
@@ -33,9 +42,65 @@ export const formatSteps = (json, fmt = (n) => String(n)) => {
   let spec;
   try { spec = JSON.parse(json); } catch { return ""; }
   if (Array.isArray(spec)) return spec.map(fmt).join(" ");
+  if (spec && Array.isArray(spec.values)) return spec.values.map(fmt).join(" ");
   if (spec && typeof spec === "object" && spec.step) return `${fmt(spec.min)}-${fmt(spec.max)}/${fmt(spec.step)}`;
   return "";
 };
+
+// ---- Machines: stack-loaded (pin positions plus an optional add-on weight) and plate-loaded (sled plus plates) ----
+
+export const DEFAULT_PLATES = "25 20 15 10 5 2.5 1.25";
+const num = (text) => {
+  const t = String(text ?? "").trim().replace(",", ".");
+  return t === "" ? null : Number(t);
+};
+const emptyMachine = () => ({ steps: "", base: "", plates: "", max: "", both: true, extra: "" });
+
+// The fields of an equipment record as the editor shows them (the stored `steps` JSON is the single source).
+export const decodeSteps = (json, fmt = (n) => String(n)) => {
+  const out = { ...emptyMachine(), steps: formatSteps(json, fmt) };
+  let spec;
+  try { spec = json ? JSON.parse(json) : null; } catch { spec = null; }
+  if (spec && !Array.isArray(spec) && typeof spec === "object") {
+    if (Array.isArray(spec.plates)) {
+      out.base = spec.base ? fmt(spec.base) : "";
+      out.plates = spec.plates.map(fmt).join(" ");
+      out.max = spec.max ? fmt(spec.max) : "";
+      out.both = spec.sides !== 1;
+    }
+    if (spec.extra) out.extra = fmt(spec.extra);
+  }
+  return out;
+};
+
+// Input of one equipment row -> {steps} (the `steps` JSON text, "" = unknown) or {error}. `base` is the plate machine's sled weight.
+export const buildSteps = (q) => {
+  if (q.type === "machine_plate") {
+    const base = num(q.base) ?? 0;
+    const plates = String(q.plates ?? "").trim().replaceAll(",", ".").split(/[\s;]+/).filter(Boolean).map(Number);
+    const max = num(q.max);
+    if (!Number.isFinite(base) || base < 0 || !plates.length || plates.some((p) => !Number.isFinite(p) || p <= 0)
+        || (max != null && (!Number.isFinite(max) || max <= base))) return { error: "err_plates" };
+    const spec = { base, plates, sides: q.both === false ? 1 : 2 };
+    if (max != null) spec.max = max;
+    return { steps: JSON.stringify(spec), base };
+  }
+  const steps = parseSteps(q.steps);
+  if (steps === null) return { error: "err_steps" };
+  if (q.type === "machine_stack") {
+    const extra = num(q.extra);
+    if (extra != null && (!Number.isFinite(extra) || extra <= 0)) return { error: "err_extra" };
+    if (extra) {
+      if (!steps) return { error: "err_extra" };
+      const spec = JSON.parse(steps);
+      return { steps: JSON.stringify(Array.isArray(spec) ? { values: spec, extra } : { ...spec, extra }) };
+    }
+  }
+  return { steps };
+};
+
+// Called when the type changes: a plate machine starts with the usual plates.
+export const onTypeChange = (q) => { if (q.type === "machine_plate" && !String(q.plates).trim()) q.plates = DEFAULT_PLATES; };
 
 // Group letters for rows; a row flagged `withPrev` joins the group of the row above (the first row cannot).
 export const supersetGroups = (withPrev) => {
@@ -64,21 +129,22 @@ export const routineDraft = (data, id, programId = null) => {
   const rows = data.routine_exercises.filter((x) => x.routine_id === id).sort((a, b) => a.position - b.position)
     .map((x, i, all) => ({
       exerciseId: x.exercise_id, name: names.get(x.exercise_id) || "?", sets: x.target_sets ?? "", repsMin: x.reps_min ?? "", repsMax: x.reps_max ?? "",
-      rest: x.rest_s ?? null, withPrev: i > 0 && !!x.superset_group && all[i - 1].superset_group === x.superset_group,
+      rest: x.rest_s ?? null, range: x.reps_min != null && x.reps_max != null && x.reps_min !== x.reps_max, withPrev: i > 0 && !!x.superset_group && all[i - 1].superset_group === x.superset_group,
     }));
   return { raw, name: raw?.name ?? "", programId: raw ? raw.program_id || "" : programId || "", rows };
 };
 
 export const newRow = (exercise) => {
   const reps = exercise.kind === "strength" || exercise.kind === "bodyweight";
-  return { exerciseId: exercise.id, name: exercise.name, sets: reps ? 3 : 1, repsMin: reps ? 8 : "", repsMax: reps ? 12 : "", rest: null, withPrev: false };
+  return { exerciseId: exercise.id, name: exercise.name, sets: reps ? 3 : 1, repsMin: "", repsMax: reps ? 10 : "", range: false, rest: null, withPrev: false };
 };
 
 // Returns {error: key} or {records}. Like the app, all old rows of the routine are replaced by new ones.
 export const routineRecords = (draft, data, now = stamp(), makeId = newId) => {
   const name = draft.name.trim();
   if (!name) return { error: "err_name" };
-  for (const r of draft.rows) {
+  const rows = draft.rows.map((r) => (r.range ? r : { ...r, repsMin: r.repsMax }));      // target reps: min = max
+  for (const r of rows) {
     const [s, lo, hi] = [toInt(r.sets), toInt(r.repsMin), toInt(r.repsMax)];
     if (Number.isNaN(s) || Number.isNaN(lo) || Number.isNaN(hi) || (s != null && (s < 1 || s > 20)) || (lo != null && lo < 1) || (hi != null && hi > 500) || (lo != null && hi != null && lo > hi)) {
       return { error: "err_numbers", detail: r.name };
@@ -90,9 +156,9 @@ export const routineRecords = (draft, data, now = stamp(), makeId = newId) => {
   const keepsPlace = draft.raw && (draft.raw.program_id || null) === programId;
   const position = keepsPlace ? draft.raw.position : siblings.length ? Math.max(...siblings.map((r) => r.position)) + 1 : 0;
   const routine = [{ ...draft.raw, id, updated_at: now, deleted: 0, program_id: programId, name, position }];
-  const groups = supersetGroups(draft.rows.map((r) => r.withPrev));
+  const groups = supersetGroups(rows.map((r) => r.withPrev));
   const old = data.routine_exercises.filter((x) => x.routine_id === id).map((x) => ({ ...x, deleted: 1, updated_at: now }));
-  const fresh = draft.rows.map((r, i) => ({
+  const fresh = rows.map((r, i) => ({
     id: makeId(), updated_at: now, deleted: 0, routine_id: id, exercise_id: r.exerciseId, position: i,
     target_sets: toInt(r.sets), reps_min: toInt(r.repsMin), reps_max: toInt(r.repsMax), rest_s: r.rest ?? null, superset_group: groups[i],
   }));
@@ -137,11 +203,11 @@ export const programDelete = (id, data, now = stamp()) => ({
 export const gymDraft = (data, id, fmt) => {
   const raw = id ? data.gyms.find((g) => g.id === id) : null;
   const equipment = raw ? data.equipment.filter((q) => q.gym_id === raw.id).map((q) => ({
-    raw: q, name: q.name, type: q.type, steps: formatSteps(q.steps, fmt), outOfOrder: !!q.out_of_order })) : [];
+    raw: q, name: q.name, type: q.type, ...decodeSteps(q.steps, fmt), outOfOrder: !!q.out_of_order })) : [];
   return { raw, name: raw?.name ?? "", equipment, removed: [] };
 };
 
-export const newEquipment = () => ({ raw: null, name: "", type: "machine", steps: "", outOfOrder: false });
+export const newEquipment = () => ({ raw: null, name: "", type: "machine_stack", ...emptyMachine(), outOfOrder: false });
 
 export const gymRecords = (draft, data, now = stamp(), makeId = newId) => {
   const name = draft.name.trim();
@@ -150,9 +216,11 @@ export const gymRecords = (draft, data, now = stamp(), makeId = newId) => {
   const equipment = [];
   for (const q of draft.equipment) {
     if (!q.name.trim()) return { error: "err_name" };
-    const steps = parseSteps(q.steps);
-    if (steps === null) return { error: "err_steps", detail: q.name };
-    equipment.push({ ...q.raw, id: q.raw?.id || makeId(), gym_id: id, name: q.name.trim(), type: q.type, steps, out_of_order: q.outOfOrder ? 1 : 0, updated_at: now, deleted: 0 });
+    const built = buildSteps(q);
+    if (built.error) return { error: built.error, detail: q.name };
+    const rec = { ...q.raw, id: q.raw?.id || makeId(), gym_id: id, name: q.name.trim(), type: q.type, steps: built.steps, out_of_order: q.outOfOrder ? 1 : 0, updated_at: now, deleted: 0 };
+    if (built.base != null) rec.base_weight = built.base;
+    equipment.push(rec);
   }
   const gone = draft.removed.map((q) => q.raw).filter(Boolean);
   const records = { gym: [{ ...draft.raw, id, updated_at: now, deleted: 0, name }], equipment: [...equipment, ...gone.map((q) => ({ ...q, deleted: 1, updated_at: now }))] };
@@ -170,4 +238,13 @@ export const gymDelete = (id, data, now = stamp()) => {
     equipment: equipment.map((q) => ({ ...q, deleted: 1, updated_at: now })),
     exercise_equipment: data.links.filter((l) => ids.has(l.equipment_id)).map((l) => ({ ...l, deleted: 1, updated_at: now })),
   };
+};
+
+// Switch a row between one target and a range; the range starts four below the target.
+export const toggleRange = (row) => {
+  row.range = !row.range;
+  if (row.range && (row.repsMin === "" || Number(row.repsMin) === Number(row.repsMax))) {
+    const hi = Number(row.repsMax);
+    row.repsMin = Number.isInteger(hi) && hi > 0 ? Math.max(1, hi - 4) : "";
+  }
 };

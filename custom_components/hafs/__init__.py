@@ -84,13 +84,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: HafsConfigEntry) -> bool
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)  # platforms register with the hub first
     await hub.async_start()                                                 # then entities are created per user
     integration = await async_get_integration(hass, DOMAIN)
+    www = Path(__file__).parent / "www"
+    # Version plus the newest file time: every change of the panel files busts the browser cache, not just a new release.
+    stamp = await hass.async_add_executor_job(lambda: max((int(f.stat().st_mtime) for f in www.glob("*.js")), default=0))
     await panel_custom.async_register_panel(
         hass,
         frontend_url_path=PANEL_URL_PATH,
         webcomponent_name="hafs-panel",
         sidebar_title="HAFS",
         sidebar_icon="mdi:dumbbell",
-        module_url=f"{PANEL_STATIC_URL}/hafs-panel.js?v={integration.version}",  # the version busts the browser cache
+        module_url=f"{PANEL_STATIC_URL}/hafs-panel.js?v={integration.version}-{stamp}",
     )
     return True
 

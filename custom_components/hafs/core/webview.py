@@ -138,12 +138,12 @@ def workout(conn, owner, now, tz, params) -> dict:
 def exercises(conn, owner, now, tz, params) -> dict:
     """Exercises that have sets, most trained first (the picker of the statistics view)."""
     rows = conn.execute(
-        "SELECT e.id, e.name, e.kind, e.muscles_primary mp, COUNT(s.id) n, MAX(s.done_at) last FROM exercise e "
+        "SELECT e.id, e.name, e.kind, e.muscles_primary mp, COUNT(s.id) n, COUNT(DISTINCT s.workout_id) times, MAX(s.done_at) last FROM exercise e "
         "JOIN workout_set s ON s.exercise_id=e.id AND s.deleted=0 AND s.kind!='warmup' "
         "JOIN workout w ON w.id=s.workout_id AND w.deleted=0 "
         "WHERE e.owner=? AND e.deleted=0 GROUP BY e.id ORDER BY n DESC, e.name COLLATE NOCASE", (owner,)).fetchall()
     return {"exercises": [{"id": r["id"], "name": r["name"], "kind": r["kind"], "muscles": (r["mp"] or "").split(),
-                           "sets": r["n"], "last": (r["last"] or "")[:10]} for r in rows]}
+                           "sets": r["n"], "times": r["times"], "last": (r["last"] or "")[:10]} for r in rows]}
 
 
 def exercise(conn, owner, now, tz, params) -> dict:

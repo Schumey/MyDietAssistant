@@ -32,6 +32,12 @@ class HafsPanel extends HTMLElement {
     this._metric = "e1rm";
     this._range = "12";
     this._filter = "";
+    this._minTimes = 0;      // exercise list: at least this many workouts with the exercise
+    this._within = 0;        // exercise list: done within this many months (0 = any time)
+    try {
+      this._minTimes = Number(localStorage.getItem("hafs.minTimes")) || 0;
+      this._within = Number(localStorage.getItem("hafs.within")) || 0;
+    } catch { /* storage blocked: no filter */ }
     this._csv = null;
     this._edit = null;       // plan/gym editor state while one is open
     // Home Assistant may have set these on the plain element before the class was defined.
@@ -179,12 +185,24 @@ class HafsPanel extends HTMLElement {
       this._filter = e.target.value;
       const list = this.shadowRoot.getElementById("exlist");
       if (list) list.innerHTML = this._exerciseRows(this._cache.exercises?.exercises || []);
+      const count = this.shadowRoot.getElementById("excount");
+      if (count) count.textContent = this._exerciseCount(this._cache.exercises?.exercises || []);
     }
   }
 
   async _onChange(e) {
     const el = e.target;
     if (el.dataset.f && this._edit) { this._editInput(el, true); return; }
+    if (el.dataset.xf) {
+      const value = Number(el.value) || 0;
+      if (el.dataset.xf === "minTimes") this._minTimes = value; else this._within = value;
+      try { localStorage.setItem("hafs." + el.dataset.xf, String(value)); } catch { /* ignore */ }
+      const list = this.shadowRoot.getElementById("exlist");
+      if (list) list.innerHTML = this._exerciseRows(this._cache.exercises?.exercises || []);
+      const count = this.shadowRoot.getElementById("excount");
+      if (count) count.textContent = this._exerciseCount(this._cache.exercises?.exercises || []);
+      return;
+    }
     if (el.id === "csv") {
       const file = el.files?.[0];
       this._csv = null;
@@ -372,18 +390,34 @@ class HafsPanel extends HTMLElement {
     const t = this._t;
     const d = await this._query("exercises");
     this._cache.exercises = d;
+    const opt = (v, label, cur) => `<option value="${v}"${Number(cur) === v ? " selected" : ""}>${esc(label)}</option>`;
+    const times = [0, 2, 3, 5, 10, 20].map((n) => opt(n, n ? t("min_times_n", n) : t("min_times_any"), this._minTimes)).join("");
+    const within = [0, 3, 6, 12, 24].map((n) => opt(n, n ? t("within_months", n) : t("within_any"), this._within)).join("");
     return `<section class="card"><input id="filter" class="search" type="search" placeholder="${esc(t("search_exercise"))}" value="${esc(this._filter)}" autocomplete="off">
+      <div class="filters"><label class="fld"><span>${esc(t("filter_times"))}</span><select data-xf="minTimes">${times}</select></label>
+        <label class="fld"><span>${esc(t("filter_last"))}</span><select data-xf="within">${within}</select></label></div>
+      <p class="hint" id="excount">${esc(this._exerciseCount(d.exercises))}</p>
       <ul class="rows" id="exlist">${this._exerciseRows(d.exercises)}</ul></section>`;
+  }
+
+  // Exercises that pass the name search and the two filters (how often, how recently).
+  _visibleExercises(list) {
+    const q = this._filter.trim().toLowerCase();
+    const cut = this._within ? new Date(Date.now() - this._within * 30.44 * 86400000).toISOString().slice(0, 10) : "";
+    return list.filter((e) => (!q || e.name.toLowerCase().includes(q)) && e.times >= this._minTimes && (!cut || e.last >= cut));
+  }
+
+  _exerciseCount(list) {
+    return this._t("shown_of", this._visibleExercises(list).length, list.length);
   }
 
   _exerciseRows(list) {
     const t = this._t, f = this._f;
-    const q = this._filter.trim().toLowerCase();
-    const rows = list.filter((e) => !q || e.name.toLowerCase().includes(q));
+    const rows = this._visibleExercises(list);
     if (!rows.length) return `<li class="muted pad">${esc(t("no_match"))}</li>`;
     return rows.map((e) => `<li><button class="wrow" data-act="open-exercise" data-v="${esc(e.id)}">
       <span class="wmain"><span class="wname">${esc(e.name)}</span><span class="wsub">${esc(e.muscles.slice(0, 2).map((m) => this._muscle(m)).join(", "))}</span></span>
-      <span class="wmeta">${e.sets} ${esc(t("sets"))}  ${esc(f.dayMonth(e.last))}</span></button></li>`).join("");
+      <span class="wmeta">${t("times_n", e.times)}  ${esc(f.dayMonth(e.last))} ${esc(e.last.slice(0, 4))}</span></button></li>`).join("");
   }
 
   async _exerciseDetail() {
@@ -439,7 +473,13 @@ class HafsPanel extends HTMLElement {
         <div class="grid cards">${p.routines.map(routine).join("")}</div></section>`;
     }).join("");
     const loose = d.loose.length ? `<section class="card"><h2>${esc(t("loose_routines"))}</h2><div class="grid cards">${d.loose.map(routine).join("")}</div></section>` : "";
-    const stepsText = (s) => (Array.isArray(s) ? s.map((n) => f.kg(n)).join(", ") : s && s.step ? `${f.kg(s.min)}–${f.kg(s.max)} / ${f.kg(s.step)}` : "");
+    const stepsText = (s) => {
+      if (Array.isArray(s)) return s.map((n) => f.kg(n)).join(", ");
+      if (!s || typeof s !== "object") return "";
+      const grid = Array.isArray(s.plates) ? t("plate_summary", f.kg(s.base || 0))
+        : Array.isArray(s.values) ? s.values.map((n) => f.kg(n)).join(", ") : s.step ? `${f.kg(s.min)}–${f.kg(s.max)} / ${f.kg(s.step)}` : "";
+      return s.extra ? `${grid} ${t("extra_summary", f.kg(s.extra))}` : grid;
+    };
     const gyms = d.gyms.length ? d.gyms.map((g) => `<section class="card"><div class="head"><h2>${esc(g.name)}</h2>${btn("e-edit-gym", t("edit"), g.id)}</div>
       <ul class="rows">${g.equipment.map((q) => `<li class="eq"><span>${esc(q.name)}${q.out_of_order ? ` <em>${esc(t("out_of_order"))}</em>` : ""}</span>
         <small class="muted">${esc(stepsText(q.steps))}</small></li>`).join("") || `<li class="muted pad">${esc(t("no_equipment"))}</li>`}</ul></section>`).join("") : `<p class="muted">${esc(t("no_gyms"))}</p>`;
@@ -507,7 +547,7 @@ const CSS = EDITOR_CSS + `
   --bg: var(--primary-background-color, #fafafa); --card: var(--card-background-color, #fff);
   --line: var(--divider-color, #e0e0e0); --accent: var(--primary-color, #03a9f4);
   --accent-ink: var(--text-primary-color, #fff); --warn: var(--error-color, #db4437); --ok: var(--success-color, #43a047);
-  display: block; min-height: 100%; background: var(--bg); color: var(--ink); font-family: var(--paper-font-body1_-_font-family, Roboto, system-ui, sans-serif);
+  display: flex; flex-direction: column; height: calc(100vh - var(--xp-taskbar-height, 0px)); overflow: hidden; background: var(--bg); color: var(--ink); font-family: var(--paper-font-body1_-_font-family, Roboto, system-ui, sans-serif);
   font-size: 15px; line-height: 1.45; font-variant-numeric: tabular-nums;
 }
 * { box-sizing: border-box; }
@@ -518,7 +558,8 @@ h1, h2, h3, h4, p, ul, dl, dd { margin: 0; padding: 0; }
 .tabs button { flex: none; border: 0; background: none; color: var(--muted); font: inherit; font-weight: 500; padding: 10px 14px; border-bottom: 3px solid transparent; cursor: pointer; }
 .tabs button[aria-selected=true] { color: var(--ink); border-bottom-color: var(--accent); }
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-main { outline: none; }
+main { outline: none; flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.bar, .tabs { flex: none; }
 .page { max-width: 1120px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 .pad { padding: 16px; } .center { text-align: center; } .muted { color: var(--muted); } small { color: var(--muted); font-size: 12.5px; }
 .grid { display: grid; gap: 16px; } .grid.two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
@@ -538,9 +579,13 @@ h2.sect { font-size: 18px; font-weight: 600; margin-top: 8px; }
 .prow:first-child { border-top: 0; }
 .pname { flex: 1; min-width: 0; font-weight: 500; } .pnum { font-weight: 700; min-width: 3.4em; text-align: right; } .pnum.w { min-width: 5.4em; color: var(--accent); }
 .ss { flex: none; width: 20px; height: 20px; border-radius: 4px; background: var(--accent); color: var(--accent-ink); font-size: 12px; font-weight: 700; display: grid; place-items: center; align-self: center; }
+.filters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .filters select { margin: 0; }
+.fld { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--muted); }
 .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
 .facts > div { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
-.col > .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.col > .filters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .filters select { margin: 0; }
+.fld { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--muted); }
+.facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .facts.compact { gap: 8px; } .facts.compact > div { border: 0; background: none; padding: 4px 0; }
 .facts dt { color: var(--muted); font-size: 13px; } .facts dd { font-size: 24px; font-weight: 700; line-height: 1.2; } .facts dd.small { font-size: 16px; font-weight: 600; }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--muted); margin-bottom: 10px; }

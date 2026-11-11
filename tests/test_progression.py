@@ -273,3 +273,19 @@ def test_describe_content():
     t = go([sess(3, (30, 12), (30, 12))])
     assert "32.5 kg" in p.describe(t, "de") and "32.5 kg" in p.describe(t, "en")
     assert p.describe(t, "fr") == p.describe(t, "en")          # unknown language -> English
+
+
+def test_expand_steps_stack_with_addon_weight():
+    assert p.expand_steps({"min": 7, "max": 21, "step": 7, "extra": 2.5}) == [7, 9.5, 14, 16.5, 21, 23.5]
+    assert p.expand_steps({"values": [10, 20], "extra": 2.5}) == [10, 12.5, 20, 22.5]
+    assert p.expand_steps({"min": 7, "max": 14, "step": 7, "extra": 0}) == [7, 14]
+
+
+def test_expand_steps_plate_loaded():
+    # sled 100 kg, plates on both sides, smallest plate 2.5 -> steps of 5 kg
+    assert p.expand_steps({"base": 100, "plates": [25, 10, 2.5], "max": 120}) == [100, 105, 110, 115, 120]
+    assert p.expand_steps({"base": 20, "plates": [1.25, 5], "sides": 1, "max": 22.5}) == [20, 21.25, 22.5]
+    assert len(p.expand_steps({"base": 0, "plates": [5]})) == 41           # default: 40 steps above the base
+    assert p.expand_steps({"base": 100, "plates": [], "max": 200}) is None
+    assert p.expand_steps({"base": 100, "plates": [2.5], "max": 50}) is None
+    assert p.expand_steps({"base": 0, "plates": [0.001], "max": 100}) is None

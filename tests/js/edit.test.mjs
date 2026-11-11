@@ -60,7 +60,7 @@ test("new routine in a program goes last; validation", () => {
   assert.equal(records.routine[0].program_id, "p1");
   assert.deepEqual([records.routine_exercise[0].target_sets, records.routine_exercise[0].reps_min], [1, null]);
   assert.equal(e.routineRecords({ ...draft, name: " " }, d).error, "err_name");
-  draft.rows[0].repsMin = 12; draft.rows[0].repsMax = 8;
+  draft.rows[0].range = true; draft.rows[0].repsMin = 12; draft.rows[0].repsMax = 8;
   assert.equal(e.routineRecords(draft, d).error, "err_numbers");
 });
 
@@ -109,4 +109,70 @@ test("gym: keeps unknown columns, parses steps, tombstones removed equipment and
   assert.equal(e.gymRecords(draft, d).error, "err_steps");
   const del = e.gymDelete("g1", d, NOW);
   assert.deepEqual([del.gym.length, del.equipment.length, del.exercise_equipment.length], [1, 1, 1]);
+});
+
+test("stack machine: steps plus add-on weight round-trip", () => {
+  const q = { ...e.newEquipment(), name: "Latzug", type: "machine_stack", steps: "7-98/7", extra: "2,5" };
+  const built = e.buildSteps(q);
+  assert.deepEqual(JSON.parse(built.steps), { min: 7, max: 98, step: 7, extra: 2.5 });
+  const back = e.decodeSteps(built.steps);
+  assert.deepEqual([back.steps, back.extra], ["7-98/7", "2.5"]);
+  assert.deepEqual(JSON.parse(e.buildSteps({ ...q, steps: "5 10 15" }).steps), { values: [5, 10, 15], extra: 2.5 });
+  assert.equal(e.buildSteps({ ...q, extra: "" }).steps, '{"min":7,"max":98,"step":7}');
+  assert.equal(e.buildSteps({ ...q, extra: "x" }).error, "err_extra");
+  assert.equal(e.buildSteps({ ...q, steps: "" }).error, "err_extra");     // add-on without steps makes no sense
+});
+
+test("plate-loaded machine: base weight, plates, both sides", () => {
+  const q = e.newEquipment();
+  q.type = "machine_plate"; q.name = "Beinpresse"; q.base = "100"; q.max = "300";
+  e.onTypeChange(q);
+  assert.equal(q.plates, e.DEFAULT_PLATES);
+  const built = e.buildSteps(q);
+  assert.deepEqual(JSON.parse(built.steps), { base: 100, plates: [25, 20, 15, 10, 5, 2.5, 1.25], sides: 2, max: 300 });
+  assert.equal(built.base, 100);
+  const back = e.decodeSteps(built.steps);
+  assert.deepEqual([back.base, back.plates, back.max, back.both], ["100", "25 20 15 10 5 2.5 1.25", "300", true]);
+  assert.equal(e.buildSteps({ ...q, max: "50" }).error, "err_plates");
+  assert.equal(e.buildSteps({ ...q, plates: "0 5" }).error, "err_plates");
+  assert.equal(JSON.parse(e.buildSteps({ ...q, both: false, max: "" }).steps).sides, 1);
+});
+
+test("gym records keep the machine type and set base_weight for plate machines", () => {
+  const d = data();
+  const draft = e.gymDraft(d, "g1");
+  const m = e.newEquipment(); m.name = "Beinpresse"; m.type = "machine_plate"; m.base = "80"; e.onTypeChange(m);
+  draft.equipment.push(m);
+  const { records } = e.gymRecords(draft, d, NOW, id);
+  const rec = records.equipment.find((x) => x.name === "Beinpresse");
+  assert.equal(rec.type, "machine_plate");
+  assert.equal(rec.base_weight, 80);
+  assert.equal(JSON.parse(rec.steps).plates[0], 25);
+  m.plates = "-1";
+  assert.equal(e.gymRecords(draft, d).error, "err_plates");
+});
+
+test("target reps: one number means min = max; a range survives a round trip", () => {
+  const d = data();
+  const draft = e.routineDraft(d, "r1");
+  assert.deepEqual(draft.rows.map((r) => r.range), [true, true, true]);   // loaded ranges stay ranges
+  draft.rows[0].range = false; draft.rows[0].repsMax = "8";               // switch the first row to a target of 8
+  const fresh = e.routineRecords(draft, d, NOW, id).records.routine_exercise.filter((x) => !x.deleted);
+  assert.deepEqual([fresh[0].reps_min, fresh[0].reps_max, fresh[1].reps_min, fresh[1].reps_max], [8, 8, 10, 15]);
+  const again = e.routineDraft({ ...d, routine_exercises: fresh.map((x) => ({ ...x, routine_id: "r1" })) }, "r1");
+  assert.deepEqual(again.rows.map((r) => r.range), [false, true, true]);
+  const row = e.newRow(d.exercises[0]);
+  assert.deepEqual([row.range, row.repsMax], [false, 10]);                // new rows start with a target
+  e.toggleRange(row);
+  assert.deepEqual([row.range, row.repsMin, row.repsMax], [true, 6, 10]);
+  e.toggleRange(row);
+  assert.equal(row.range, false);
+});
+
+test("ids also work without crypto.randomUUID (plain http origins)", () => {
+  const insecure = { getRandomValues: (a) => { a.fill(255); return a; } };     // no randomUUID, like a non-secure page
+  const uuid = e.uuidFrom(insecure);
+  assert.match(uuid, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+  assert.notEqual(e.uuidFrom(globalThis.crypto), e.uuidFrom(globalThis.crypto));
+  assert.match(e.newId(), /^[0-9a-f-]{36}$/);
 });

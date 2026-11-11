@@ -9,6 +9,12 @@ void main() {
     expect(expandSteps('[30, 20, 20, 25]'), [20, 25, 30]);
     expect(expandSteps('{"min":2.5,"max":7.5,"step":2.5}'), [2.5, 5, 7.5]);
     expect(expandSteps(null), isNull);
+    // stack with add-on weight, plate-loaded machine
+    expect(expandSteps('{"min":7,"max":21,"step":7,"extra":2.5}'), [7, 9.5, 14, 16.5, 21, 23.5]);
+    expect(expandSteps('{"values":[10,20],"extra":2.5}'), [10, 12.5, 20, 22.5]);
+    expect(expandSteps('{"base":100,"plates":[25,10,2.5],"max":120}'), [100, 105, 110, 115, 120]);
+    expect(expandSteps('{"base":20,"plates":[1.25,5],"sides":1,"max":22.5}'), [20, 21.25, 22.5]);
+    expect(expandSteps('{"base":100,"plates":[],"max":200}'), isNull);
     expect(expandSteps(''), isNull);
     expect(expandSteps('kaputt'), isNull);
     expect(expandSteps('[]'), isNull);

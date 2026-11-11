@@ -12,18 +12,44 @@ List<double>? expandSteps(String? json) {
     return null;
   }
   if (spec is Map) {
-    final lo = (spec['min'] as num?)?.toDouble();
-    final hi = (spec['max'] as num?)?.toDouble();
-    final step = (spec['step'] as num?)?.toDouble();
-    if (lo == null || hi == null || step == null || step <= 0 || hi < lo) return null;
-    final n = ((hi - lo) / step).round();
-    return [for (var i = 0; i <= n; i++) _round(lo + i * step)];
+    if (spec.containsKey('plates')) return _expandPlates(spec);
+    List<double> grid;
+    final values = spec['values'];
+    if (values is List) {
+      grid = {for (final v in values) if (v is num) _round(v.toDouble())}.toList()..sort();
+    } else {
+      final lo = (spec['min'] as num?)?.toDouble();
+      final hi = (spec['max'] as num?)?.toDouble();
+      final step = (spec['step'] as num?)?.toDouble();
+      if (lo == null || hi == null || step == null || step <= 0 || hi < lo) return null;
+      final n = ((hi - lo) / step).round();
+      grid = [for (var i = 0; i <= n; i++) _round(lo + i * step)];
+    }
+    // Stack-loaded machine with an add-on weight: every pin position with and without it.
+    final extra = (spec['extra'] as num?)?.toDouble();
+    if (extra != null && extra > 0 && grid.isNotEmpty) {
+      grid = {...grid, for (final v in grid) _round(v + extra)}.toList()..sort();
+    }
+    return grid.isEmpty ? null : grid;
   }
   if (spec is List) {
     final values = {for (final v in spec) if (v is num) _round(v.toDouble())}.toList()..sort();
     return values.isEmpty ? null : values;
   }
   return null;
+}
+
+/// Plate-loaded machine: `base` (sled/lever) plus plates; with plates on both sides (`sides` 2, default) the smallest
+/// change is two of the smallest plate. `max` limits the load (default: 40 steps above `base`).
+List<double>? _expandPlates(Map spec) {
+  final plates = [for (final p in (spec['plates'] is List ? spec['plates'] as List : const []) ) if (p is num && p > 0) p.toDouble()];
+  if (plates.isEmpty) return null;
+  final base = (spec['base'] as num?)?.toDouble() ?? 0;
+  final unit = (spec['sides'] == 1 ? 1 : 2) * plates.reduce((a, b) => a < b ? a : b);
+  final hi = (spec['max'] as num?)?.toDouble() ?? base + 40 * unit;
+  if (base < 0 || hi < base || (hi - base) / unit > 2000) return null;
+  final n = ((hi - base) / unit).round();
+  return [for (var i = 0; i <= n; i++) _round(base + i * unit)];
 }
 
 double _round(double v) => (v * 10000).round() / 10000;

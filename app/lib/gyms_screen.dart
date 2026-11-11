@@ -5,7 +5,7 @@ import 'l10n.dart';
 import 'repo_gym.dart';
 import 'steps.dart';
 
-const equipmentTypes = ['machine', 'cable', 'barbell', 'dumbbell', 'bodyweight', 'kettlebell', 'band', 'cardio', 'other'];
+const equipmentTypes = ['machine', 'machine_stack', 'machine_plate', 'cable', 'barbell', 'dumbbell', 'bodyweight', 'kettlebell', 'band', 'cardio', 'other'];
 
 String typeLabel(String type) => type.isEmpty ? '' : tr('type_$type');
 
