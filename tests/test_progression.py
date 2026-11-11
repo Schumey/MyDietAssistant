@@ -289,3 +289,50 @@ def test_expand_steps_plate_loaded():
     assert p.expand_steps({"base": 100, "plates": [], "max": 200}) is None
     assert p.expand_steps({"base": 100, "plates": [2.5], "max": 50}) is None
     assert p.expand_steps({"base": 0, "plates": [0.001], "max": 100}) is None
+
+
+# --- pyramids: every set at another weight ----------------------------------------------
+
+def test_pyramid_is_recognised_only_when_no_weight_is_used_by_more_than_half_of_the_sets():
+    assert p.is_pyramid(sess(1, (300, 10), (325, 10), (350, 3)))
+    assert p.is_pyramid(sess(1, (80, 8), (70, 10)))                       # top set + back-off
+    assert p.is_pyramid(sess(1, (100, 8), (100, 8), (110, 5), (120, 3)))   # no weight above half of 4
+    assert not p.is_pyramid(sess(1, (80, 8), (80, 8), (70, 10)))           # two of three at 80: the normal rule
+    assert not p.is_pyramid(sess(1, (60, 10), (60, 9), (60, 8)))
+    assert not p.is_pyramid(sess(1, (60, 10)))
+
+
+def test_pyramid_working_weight_is_the_top_set():
+    assert p.working_weight(sess(1, (300, 10), (325, 10), (350, 3))) == 350
+    assert p.working_weight(sess(1, (80, 8), (80, 8), (70, 10))) == 80      # unchanged for normal sessions
+
+
+def test_pyramid_top_set_in_the_range_holds_the_weight_instead_of_counting_a_missing_set():
+    steps = [300 + 25 * i for i in range(6)]
+    t = go([sess(1, (300, 10), (325, 10), (350, 8))], lo=6, hi=10, steps=steps, target_sets=3)
+    assert (t.weight, t.reps, t.code) == (350, 9, "hold") and t.params["top_set"] is True
+
+
+def test_pyramid_top_set_at_the_top_of_the_range_goes_up_even_though_only_one_set_is_at_that_weight():
+    steps = [300 + 25 * i for i in range(6)]
+    t = go([sess(1, (300, 10), (325, 10), (350, 10))], lo=6, hi=10, steps=steps, target_sets=3)
+    assert (t.weight, t.code) == (375, "up") and t.sets is None            # no "restore the set count" for a pyramid
+
+
+def test_pyramid_top_set_below_the_range_is_a_miss_like_any_other_set():
+    steps = [300 + 25 * i for i in range(6)]
+    t = go([sess(1, (300, 10), (325, 10), (350, 3)), sess(5, (300, 10), (325, 10), (350, 3))], lo=6, hi=10, steps=steps)
+    assert (t.weight, t.code) == (325, "down")
+
+
+def test_without_a_routine_the_rep_target_of_a_pyramid_is_the_reps_of_its_top_set():
+    sessions = [sess(d, (300, 10), (325, 10), (350, 3)) for d in (1, 5, 9)]
+    assert p.infer_rep_range(sessions) == (3, 3)                            # not 10, the reps of the easier sets
+    t = go(sessions, lo=3, hi=3, steps=None)
+    assert (t.weight, t.code) == (352.5, "up")                              # top set reached its target in a row
+
+
+def test_pyramid_reason_says_so_in_both_languages():
+    t = go([sess(1, (300, 10), (325, 10), (350, 8))], lo=6, hi=10, steps=None)
+    assert "Pyramide" in p.describe(t, "de") and "pyramid" in p.describe(t, "en")
+    assert "Pyramide" not in p.describe(go([sess(1, (60, 10), (60, 9))], lo=8, hi=12, steps=None), "de")

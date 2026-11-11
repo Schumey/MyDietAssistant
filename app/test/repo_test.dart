@@ -142,6 +142,7 @@ void main() {
     L10n.lang = 'en';
     expect(reasonText(t.reasonCode, t.params), 'Top of the range (12 reps) reached → one step up: 32.5 kg');
     expect(reasonText('unbekannt', {}, fallback: 'Text vom Server'), 'Text vom Server');
+    expect(reasonText('hold', {'weight': 350, 'reps': 4, 'reps_min': 3, 'reps_max': 3, 'top_set': true}), contains('pyramid'));
   });
 
   test('suggestStep', () {

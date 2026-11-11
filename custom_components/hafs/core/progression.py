@@ -19,6 +19,11 @@ weight to the nearest step instead of taking it over blindly.
 "Working weight" of a session = the weight used by the most working sets (a tie
 goes to the heavier weight). Warm-up sets, drop sets and sets without
 repetitions do not count.
+
+Pyramids: when no weight is used by more than half of the working sets (every set
+at another weight, e.g. 300x10, 325x10, 350x3), the heaviest set is the top set and
+the working weight. Only it is judged against the rep range, and the number of sets
+does not have to be reached (there is one set at that weight by design).
 """
 from __future__ import annotations
 
@@ -154,11 +159,20 @@ def working_sets(session: Session) -> list[SetRec]:
     return [s for s in session.sets if s.kind in _WORK_KINDS and s.reps and s.reps > 0]
 
 
+def is_pyramid(session: Session) -> bool:
+    """Sets at different weights (no weight used by more than half of the working sets): the top set counts."""
+    sets = working_sets(session)
+    counts = Counter(round(s.weight or 0.0, 2) for s in sets)
+    return len(sets) >= 2 and len(counts) >= 2 and max(counts.values()) * 2 <= len(sets)
+
+
 def working_weight(session: Session) -> float | None:
     sets = working_sets(session)
     if not sets:
         return None
     counts = Counter(round(s.weight or 0.0, 2) for s in sets)
+    if is_pyramid(session):
+        return max(counts)
     top = max(counts.values())
     return max(w for w, c in counts.items() if c == top)
 
@@ -188,6 +202,9 @@ def infer_rep_range(sessions: list[Session], last: int = 5) -> tuple[int, int] |
     for s in sorted(sessions, key=lambda x: x.day, reverse=True)[:last]:
         sets = working_sets(s)
         if sets:
+            if is_pyramid(s):  # the top set is the one that is judged
+                top_weight = working_weight(s)
+                sets = [x for x in sets if round(x.weight or 0.0, 2) == top_weight]
             best.append(max(x.reps for x in sets))
     if not best:
         return None
@@ -231,6 +248,8 @@ def suggest(
     last = ordered[0]
     weight = working_weight(last)
     sets = _at_weight(last, weight)
+    pyramid = is_pyramid(last)
+    extra = {"top_set": True} if pyramid else {}
 
     if foreign:
         new = snap(weight, steps)
@@ -253,7 +272,7 @@ def suggest(
         if working_weight(s) != weight:
             break
         at = _at_weight(s, weight)
-        hit, miss = _is_hit(at, reps_max, target_sets, settings), _is_miss(at, reps_min, settings)
+        hit, miss = _is_hit(at, reps_max, None if is_pyramid(s) else target_sets, settings), _is_miss(at, reps_min, settings)
         counting_hits = counting_hits and hit
         counting_misses = counting_misses and miss
         hits += counting_hits
@@ -269,9 +288,9 @@ def suggest(
         new = step_up(weight, steps, settings.default_step)
         if new is None:
             return Target(weight, reps_max, "at_max", {"weight": weight, "reps_max": reps_max})
-        restore = target_sets if target_sets and n < target_sets else None
+        restore = target_sets if target_sets and n < target_sets and not pyramid else None
         code = "up_cut" if phase == "cut" else "up"
-        return Target(new, reps_min, code, {"from": weight, "weight": new, "reps_max": reps_max, "streak": hits},
+        return Target(new, reps_min, code, {"from": weight, "weight": new, "reps_max": reps_max, "streak": hits, **extra},
                       restore)
 
     if misses >= need_down:
@@ -280,14 +299,14 @@ def suggest(
         new = step_down(weight, steps, settings.default_step)
         if new < weight - 1e-9:
             code = "down_cut" if phase == "cut" else "down"
-            return Target(new, reps_min, code, {"from": weight, "weight": new, "reps_min": reps_min, "streak": misses})
+            return Target(new, reps_min, code, {"from": weight, "weight": new, "reps_min": reps_min, "streak": misses, **extra})
         return Target(weight, reps_min, "at_min", {"weight": weight, "reps_min": reps_min})
 
     lowest = min(s.reps for s in sets)
     reps = min(reps_max, max(reps_min, lowest + 1))
     code = "hold_cut" if phase == "cut" else "hold"
     return Target(weight, reps, code, {"weight": weight, "reps": reps, "reps_min": reps_min, "reps_max": reps_max,
-                                       "hits": hits, "need_up": need_up})
+                                       "hits": hits, "need_up": need_up, **extra})
 
 
 # --- texts -----------------------------------------------------------------------------
@@ -326,7 +345,11 @@ TEXTS: dict[str, dict[str, str]] = {
 }
 
 
+TOP_SET = {"de": " – Pyramide: der schwerste Satz zählt", "en": " – pyramid: the heaviest set counts"}
+
+
 def describe(target: Target, lang: str = "de") -> str:
     table = TEXTS.get(lang, TEXTS["en"])
     p = {k: (_kg(v) if isinstance(v, float) else v) for k, v in {**target.params, "reps": target.reps}.items()}
-    return table[target.code].format(**p)
+    text = table[target.code].format(**p)
+    return text + TOP_SET.get(lang, TOP_SET["en"]) if target.params.get("top_set") else text

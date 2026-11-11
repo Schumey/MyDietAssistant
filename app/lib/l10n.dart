@@ -61,10 +61,13 @@ String reasonText(String code, Map<String, dynamic> params, {String fallback = '
   final template = _reasons[L10n.lang]?[code] ?? _reasons['en']![code];
   if (template == null) return fallback;
   final values = {...params};
-  return template.replaceAllMapped(RegExp(r'\{(\w+)\}'), (m) {
+  final text = template.replaceAllMapped(RegExp(r'\{(\w+)\}'), (m) {
     final v = values[m[1]];
     return v is num ? L10n.kg(v) : '${v ?? ''}';
   });
+  // Pyramide (jeder Satz ein anderes Gewicht): der schwerste Satz ist der Maßstab.
+  if (values['top_set'] == true) return '$text${L10n.lang == 'de' ? ' – Pyramide: der schwerste Satz zählt' : ' – pyramid: the heaviest set counts'}';
+  return text;
 }
 
 const _reasons = {
