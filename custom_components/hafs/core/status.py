@@ -194,6 +194,13 @@ def next_routine(conn: sqlite3.Connection, owner: str, now: datetime | None = No
     return None
 
 
+def warmup_of(x) -> dict | None:
+    """Warm-up sets of a planned exercise ({sets, reps, pct}) or None when there are none."""
+    if not x["warmup_sets"]:
+        return None
+    return {"sets": x["warmup_sets"], "reps": x["warmup_reps"], "pct": x["warmup_pct"]}
+
+
 def plan(conn: sqlite3.Connection, owner: str, now: datetime | None = None) -> dict:
     """All programs with their routines and exercises (sets, rep range, superset group, current target), plus the
     routine that is due next."""
@@ -204,13 +211,15 @@ def plan(conn: sqlite3.Connection, owner: str, now: datetime | None = None) -> d
                               (owner, prog["id"])):
             exercises = []
             for x in conn.execute(
-                    "SELECT x.exercise_id, e.name, x.target_sets, x.reps_min, x.reps_max, x.superset_group, "
+                    "SELECT x.exercise_id, e.name, x.target_sets, x.reps_min, x.reps_max, x.superset_group, x.rest_s, "
+                    "x.warmup_sets, x.warmup_reps, x.warmup_pct, "
                     "(SELECT weight FROM target t WHERE t.owner=x.owner AND t.exercise_id=x.exercise_id AND t.deleted=0 "
                     " ORDER BY t.updated_at DESC LIMIT 1) AS weight "
                     "FROM routine_exercise x JOIN exercise e ON e.id=x.exercise_id "
                     "WHERE x.routine_id=? AND x.deleted=0 AND e.deleted=0 ORDER BY x.position", (r["id"],)):
                 exercises.append({"exercise": x["name"], "sets": x["target_sets"], "reps_min": x["reps_min"], "reps_max": x["reps_max"],
-                                  "superset": x["superset_group"] or None, "target_weight": x["weight"]})
+                                  "superset": x["superset_group"] or None, "target_weight": x["weight"],
+                                  "rest_s": x["rest_s"], "warmup": warmup_of(x)})
             routines.append({"id": r["id"], "routine": r["name"], "exercises": exercises})
         days = parse_rhythm(prog["rhythm"], len(routines))
         programs.append({"id": prog["id"], "program": prog["name"], "weekdays": days or None, "routines": routines})

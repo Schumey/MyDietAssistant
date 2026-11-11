@@ -130,6 +130,12 @@ MIGRATIONS: list[str] = [
     ALTER TABLE target ADD COLUMN reason_code TEXT NOT NULL DEFAULT '';
     ALTER TABLE target ADD COLUMN reason_params TEXT NOT NULL DEFAULT '';
     """,
+    # 4: warm-up sets of a planned exercise (count, reps, weight as percent of the working weight)
+    """
+    ALTER TABLE routine_exercise ADD COLUMN warmup_sets INTEGER;
+    ALTER TABLE routine_exercise ADD COLUMN warmup_reps INTEGER;
+    ALTER TABLE routine_exercise ADD COLUMN warmup_pct REAL;
+    """,
 ]
 
 SCHEMA_VERSION = len(MIGRATIONS)

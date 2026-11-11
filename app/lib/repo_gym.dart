@@ -1,6 +1,7 @@
 import 'package:uuid/uuid.dart';
 
 import 'repo.dart';
+import 'steps.dart';
 
 class GymInfo {
   GymInfo(this.id, this.name, this.equipmentCount, [this.zone = '']);
@@ -34,17 +35,34 @@ class EquipmentInfo {
 }
 
 class RoutineExercise {
-  RoutineExercise({required this.exerciseId, required this.name, this.sets = 3, this.repsMin = 8, this.repsMax = 12, this.restSeconds, this.group = ''});
+  RoutineExercise({
+    required this.exerciseId,
+    required this.name,
+    this.sets = 3,
+    this.repsMin = 8,
+    this.repsMax = 12,
+    this.restSeconds,
+    this.group = '',
+    this.warmupSets = 0,
+    this.warmupReps = 0,
+    this.warmupPct = 0,
+  });
 
   final String exerciseId;
   final String name;
   final int sets;
   final int repsMin;
   final int repsMax;
+  /// Pause nach einem Arbeitssatz in Sekunden (0 = keine); `null` = die globale Pause.
   final int? restSeconds;
 
   /// Superset group letter; exercises with the same non-empty group are done alternately.
   final String group;
+
+  /// Aufwärmsätze: Anzahl, Wiederholungen und Gewicht in Prozent des Arbeitsgewichts (0 Sätze = keine).
+  final int warmupSets;
+  final int warmupReps;
+  final double warmupPct;
 }
 
 class RoutineInfo {
@@ -57,7 +75,8 @@ class RoutineInfo {
 
 /// Eine geplante Übung im laufenden Workout: Soll aus der Routine, Ist aus den erfassten Sätzen.
 class PlannedExercise {
-  PlannedExercise(this.exercise, this.targetSets, this.doneSets, this.repsMin, this.repsMax, [this.group = '']);
+  PlannedExercise(this.exercise, this.targetSets, this.doneSets, this.repsMin, this.repsMax,
+      [this.group = '', this.warmupSets = 0, this.warmupReps = 0, this.warmupPct = 0, this.warmupDone = 0, this.restSeconds]);
 
   final ExerciseInfo exercise;
   final int targetSets;
@@ -65,8 +84,18 @@ class PlannedExercise {
   final int repsMin;
   final int repsMax;
   final String group;
+  final int warmupSets;
+  final int warmupReps;
+  final double warmupPct;
+
+  /// Aufwärmsätze, die in diesem Workout schon erfasst sind.
+  final int warmupDone;
+  final int? restSeconds;
 
   bool get finished => doneSets >= targetSets;
+
+  /// Der nächste Satz ist laut Plan ein Aufwärmsatz.
+  bool get warmupDue => warmupSets > warmupDone && warmupReps > 0 && warmupPct > 0;
 }
 
 const _linkNamespace = '6f3d7c2e-8d41-4a8e-9a5b-2c1e5f0b9d33';
@@ -209,14 +238,27 @@ extension GymRepo on Repo {
     setExercisesOf(equipmentId, linked ? {...now, exerciseId} : ({...now}..remove(exerciseId)));
   }
 
-  /// Geräte im Studio, an denen die Übung geht (ohne „außer Betrieb“).
-  List<EquipmentInfo> equipmentFor(String exerciseId, String gymId) => [
+  /// Verknüpfte Geräte der Übung im Studio (ohne „außer Betrieb“), Stationen und Gerät mit Gewichten zusammen.
+  List<EquipmentInfo> _linkedEquipment(String exerciseId, String gymId) => [
         for (final r in local.rows(
             'SELECT e.* FROM equipment e JOIN exercise_equipment x ON x.equipment_id = e.id '
             'WHERE x.exercise_id = ? AND x.deleted = 0 AND e.deleted = 0 AND e.gym_id = ? AND e.out_of_order = 0 '
             'ORDER BY e.name COLLATE NOCASE',
             [exerciseId, gymId]))
           _equipment(r),
+      ];
+
+  /// Geräte im Studio, an denen die Übung geht und die Gewichte halten (ohne „außer Betrieb“, ohne Stationen).
+  /// Von ihnen kommen Gewichtsstufen; je Gerät merkt sich die App Verlauf und Vorschlag.
+  List<EquipmentInfo> equipmentFor(String exerciseId, String gymId) => [
+        for (final q in _linkedEquipment(exerciseId, gymId))
+          if (!isStationType(q.type)) q,
+      ];
+
+  /// Stationen (Rack, Bank) im Studio, die zur Übung gehören; nur zur Anzeige.
+  List<EquipmentInfo> stationsFor(String exerciseId, String gymId) => [
+        for (final q in _linkedEquipment(exerciseId, gymId))
+          if (isStationType(q.type)) q,
       ];
 
   String? workoutGym(String workoutId) => local.row('SELECT gym_id FROM workout WHERE id = ?', [workoutId])?['gym_id'] as String?;
@@ -248,7 +290,7 @@ extension GymRepo on Repo {
 
   List<RoutineExercise> routineExercises(String routineId) => [
         for (final r in local.rows(
-            'SELECT x.exercise_id, x.target_sets, x.reps_min, x.reps_max, x.rest_s, x.superset_group, e.name '
+            'SELECT x.exercise_id, x.target_sets, x.reps_min, x.reps_max, x.rest_s, x.superset_group, x.warmup_sets, x.warmup_reps, x.warmup_pct, e.name '
             'FROM routine_exercise x JOIN exercise e ON e.id = x.exercise_id '
             'WHERE x.routine_id = ? AND x.deleted = 0 AND e.deleted = 0 ORDER BY x.position',
             [routineId]))
@@ -260,6 +302,9 @@ extension GymRepo on Repo {
             repsMax: (r['reps_max'] as int?) ?? 12,
             restSeconds: r['rest_s'] as int?,
             group: r['superset_group'] as String,
+            warmupSets: (r['warmup_sets'] as int?) ?? 0,
+            warmupReps: (r['warmup_reps'] as int?) ?? 0,
+            warmupPct: (r['warmup_pct'] as num?)?.toDouble() ?? 0,
           ),
       ];
 
@@ -296,6 +341,9 @@ extension GymRepo on Repo {
           'reps_max': x.repsMax,
           'rest_s': x.restSeconds,
           'superset_group': x.group,
+          'warmup_sets': x.warmupSets > 0 ? x.warmupSets : null,
+          'warmup_reps': x.warmupSets > 0 ? x.warmupReps : null,
+          'warmup_pct': x.warmupSets > 0 ? x.warmupPct : null,
         }, dirty: true);
       }
     });
@@ -322,6 +370,10 @@ extension GymRepo on Repo {
       for (final r in local.rows('SELECT exercise_id, COUNT(*) n FROM workout_set WHERE workout_id = ? AND deleted = 0 AND kind != ? GROUP BY exercise_id', [workoutId, 'warmup']))
         r['exercise_id'] as String: r['n'] as int,
     };
+    final warmups = {
+      for (final r in local.rows('SELECT exercise_id, COUNT(*) n FROM workout_set WHERE workout_id = ? AND deleted = 0 AND kind = ? GROUP BY exercise_id', [workoutId, 'warmup']))
+        r['exercise_id'] as String: r['n'] as int,
+    };
     return [
       for (final x in routineExercises(routineId))
         PlannedExercise(
@@ -331,6 +383,11 @@ extension GymRepo on Repo {
           x.repsMin,
           x.repsMax,
           x.group,
+          x.warmupSets,
+          x.warmupReps,
+          x.warmupPct,
+          warmups[x.exerciseId] ?? 0,
+          x.restSeconds,
         ),
     ];
   }

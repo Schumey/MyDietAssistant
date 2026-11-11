@@ -10,6 +10,8 @@ const { installEditor, EDITOR_CSS } = await import(`./hafs-editor.js${version}`)
 const TABS = ["today", "history", "stats", "plans", "settings"];
 const TAB_KEY = "hafs.tab";
 const WINDOWS = [4, 12, 26, 52];
+const TODAY_BLOCKS = ["next", "facts", "muscles", "recent"];
+const REST_DEFAULTS = [0, 45, 60, 90, 120, 180, 240, 300];
 const MAX_CSV = 3_500_000;
 
 class HafsPanel extends HTMLElement {
@@ -214,9 +216,13 @@ class HafsPanel extends HTMLElement {
       for (const b of this.shadowRoot.querySelectorAll("[data-act^=import]")) b.disabled = !this._csv;
       return;
     }
-    const pref = el.dataset.pref;
+    let pref = el.dataset.pref;
+    let value = el.type === "checkbox" ? (el.checked ? "1" : "0") : el.value;
+    if (el.dataset.block) {  // the "Today" blocks are stored as the list of switched-off ones
+      pref = "today_hidden";
+      value = [...this.shadowRoot.querySelectorAll("[data-block]")].filter((b) => !b.checked).map((b) => b.dataset.block).join(",");
+    }
     if (!pref) return;
-    const value = el.type === "checkbox" ? (el.checked ? "1" : "0") : el.value;
     try {
       await this._call({ type: "hafs/pref/set", key: pref, value });
       this._cache = {};
@@ -231,8 +237,10 @@ class HafsPanel extends HTMLElement {
 
   async _view_today() {
     const t = this._t, f = this._f;
-    const d = await this._query("overview");
+    const [d, hiddenPref] = await Promise.all([this._query("overview"), this._call({ type: "hafs/pref/get", key: "today_hidden" }).catch(() => ({ value: "" }))]);
     this._cache.today = d;
+    const hidden = new Set(String(hiddenPref.value || "").split(",").filter(Boolean));
+    const show = (block) => !hidden.has(block);
     const s = d.status;
     let hero;
     if (s.active) {
@@ -259,21 +267,21 @@ class HafsPanel extends HTMLElement {
     const recent = d.recent.length
       ? `<ul class="rows">${d.recent.map((w) => this._workoutRow({ ...w, routine: w.routine, exercises: (w.exercises || []).map((e) => e.name) })).join("")}</ul>`
       : `<p class="muted">${esc(t("empty_history"))}</p>`;
-    return `<div class="grid two">
-      <div class="col">${hero}${facts}</div>
-      <div class="col">
-        <section class="card"><h2>${esc(t("sets_by_muscle"))}</h2>${this._muscleBars(d.weeks, 4)}
-          <p class="hint">${esc(t("muscle_hint"))}</p></section>
-        <section class="card"><h2>${esc(t("recent"))}</h2>${recent}</section>
-      </div></div>`;
+    const left = [show("next") ? hero : "", show("facts") ? facts : ""].join("");
+    const right = [show("muscles") ? `<section class="card"><h2>${esc(t("sets_by_muscle"))}</h2>${this._muscleBars(d.weeks, 4)}
+          <p class="hint">${esc(t("muscle_hint"))}</p></section>` : "",
+    show("recent") ? `<section class="card"><h2>${esc(t("recent"))}</h2>${recent}</section>` : ""].join("");
+    if (!left && !right) return `<p class="muted">${esc(t("today_empty"))}</p>`;
+    return `<div class="grid ${left && right ? "two" : "one"}">${left ? `<div class="col">${left}</div>` : ""}${right ? `<div class="col">${right}</div>` : ""}</div>`;
   }
 
   _planRow(x) {
     const t = this._t, f = this._f;
     const reps = x.reps_min && x.reps_max ? (x.reps_min === x.reps_max ? x.reps_min : t("reps_range", x.reps_min, x.reps_max)) : x.reps_max || x.reps_min || "";
     const sets = x.sets && reps ? t("sets_short", x.sets, reps) : x.sets ? `${x.sets}×` : reps;
+    const extra = [x.warmup ? t("warmup_row", x.warmup.sets, x.warmup.reps, f.kg(x.warmup.pct)) : "", x.rest_s != null ? (x.rest_s === 0 ? `${t("rest_label")}: ${t("rest_off")}` : t("rest_row", x.rest_s)) : ""].filter(Boolean).join(" · ");
     return `<li class="prow">${x.superset ? `<span class="ss" title="${esc(t("superset", x.superset))}">${esc(x.superset)}</span>` : ""}
-      <span class="pname">${esc(x.exercise)}</span><span class="pnum">${esc(sets)}</span>
+      <span class="pname">${esc(x.exercise)}${extra ? `<small class="pextra">${esc(extra)}</small>` : ""}</span><span class="pnum">${esc(sets)}</span>
       <span class="pnum w">${x.target_weight != null ? esc(f.kg(x.target_weight)) + " kg" : ""}</span></li>`;
   }
 
@@ -374,6 +382,7 @@ class HafsPanel extends HTMLElement {
     const t = this._t;
     const seg = `<div class="seg" role="group">${["muscles", "exercises"].map((m) =>
       `<button data-act="stats-mode" data-v="${m}" aria-pressed="${this._statsMode === m}">${esc(t(m))}</button>`).join("")}</div>`;
+    if (this._edit) return this._editorHtml();
     if (this._statsMode === "exercises") return seg + (this._exId ? await this._exerciseDetail() : await this._exerciseList());
     const d = await this._query("muscles", { weeks: 53 });
     const win = this._window;
@@ -422,7 +431,7 @@ class HafsPanel extends HTMLElement {
 
   async _exerciseDetail() {
     const t = this._t, f = this._f;
-    const d = await this._query("exercise", { id: this._exId });
+    const [d, gearData] = await Promise.all([this._query("exercise", { id: this._exId }), this._query("plan_edit")]);
     const ex = d.exercise;
     const all = d.sessions;
     const metrics = [];
@@ -448,15 +457,33 @@ class HafsPanel extends HTMLElement {
     const tg = d.target;
     const tgHtml = tg ? `<section class="card"><h3>${esc(t("suggestion"))}</h3><p class="sugg"><b>${tg.weight != null ? esc(f.kg(tg.weight)) + " kg" : ""}${tg.reps ? " × " + tg.reps : ""}</b></p>${tg.reason ? `<p class="muted">${esc(tg.reason)}</p>` : ""}</section>` : "";
     const lastRows = all.slice(-8).reverse().map((s) => `<tr><td>${esc(f.date(s.date))}</td><td class="val">${s.top && s.top.weight ? esc(f.kg(s.top.weight)) + " kg × " + s.top.reps : s.top ? s.top.reps : ""}</td><td class="muted">${s.sets} ${esc(t("sets"))}</td></tr>`).join("");
+    const gyms = new Map(gearData.gyms.map((g) => [g.id, g.name]));
+    const mine = gearData.links.filter((l) => l.exercise_id === ex.id).map((l) => gearData.equipment.find((q) => q.id === l.equipment_id)).filter(Boolean);
+    const gearRows = mine.map((q) => {
+      let steps = "";
+      try { steps = this._stepsText(q.steps ? JSON.parse(q.steps) : null); } catch { /* unreadable steps: show none */ }
+      return `<li class="eq"><span>${esc(q.name)} <small class="muted">${esc(gyms.get(q.gym_id) || "")}</small></span><small class="muted">${esc(steps || t("type_" + q.type))}</small></li>`;
+    }).join("");
+    const gearHtml = `<section class="card"><div class="head"><h3>${esc(t("gear_title"))}</h3><button class="btn small" data-act="e-gear" data-v="${esc(ex.id)}">${esc(t("edit"))}</button></div>
+      ${gearRows ? `<ul class="rows">${gearRows}</ul>` : `<p class="muted">${esc(t("gear_none"))}</p>`}</section>`;
     return `<p><button class="btn ghost" data-act="close-exercise">← ${esc(t("back"))}</button></p>
       <h2 class="big">${esc(ex.name)}</h2><p class="muted">${esc(ex.muscles.map((m) => this._muscle(m)).join(", "))}</p>
       <div class="grid two"><section class="card"><div class="head">${metrics.length > 1 ? btns(metrics, "metric", metric, (k) => t("metric_" + k)) : `<h3>${esc(metric ? t("metric_" + metric) : "")}</h3>`}
         ${btns(["3", "12", "all"], "range", this._range, (k) => t("range_" + k))}</div>${chart}${metric === "e1rm" ? `<p class="hint">${esc(t("e1rm_hint"))}</p>` : ""}</section>
-      <div class="col">${recHtml ? `<section class="card"><h3>${esc(t("records"))}</h3>${recHtml}</section>` : ""}${tgHtml}
+      <div class="col">${gearHtml}${recHtml ? `<section class="card"><h3>${esc(t("records"))}</h3>${recHtml}</section>` : ""}${tgHtml}
         <section class="card"><h3>${esc(t("last_sessions"))}</h3><table class="sets"><tbody>${lastRows}</tbody></table></section></div></div>`;
   }
 
   // ---- Pläne ----------------------------------------------------------------------------
+
+  _stepsText(s) {
+    const t = this._t, f = this._f;
+    if (Array.isArray(s)) return s.map((n) => f.kg(n)).join(", ");
+    if (!s || typeof s !== "object") return "";
+    const grid = Array.isArray(s.plates) ? t("plate_summary", f.kg(s.base || 0))
+      : Array.isArray(s.values) ? s.values.map((n) => f.kg(n)).join(", ") : s.step ? `${f.kg(s.min)}–${f.kg(s.max)} / ${f.kg(s.step)}` : "";
+    return s.extra ? `${grid} ${t("extra_summary", f.kg(s.extra))}` : grid;
+  }
 
   async _view_plans() {
     if (this._edit) return this._editorHtml();
@@ -473,17 +500,12 @@ class HafsPanel extends HTMLElement {
         <div class="grid cards">${p.routines.map(routine).join("")}</div></section>`;
     }).join("");
     const loose = d.loose.length ? `<section class="card"><h2>${esc(t("loose_routines"))}</h2><div class="grid cards">${d.loose.map(routine).join("")}</div></section>` : "";
-    const stepsText = (s) => {
-      if (Array.isArray(s)) return s.map((n) => f.kg(n)).join(", ");
-      if (!s || typeof s !== "object") return "";
-      const grid = Array.isArray(s.plates) ? t("plate_summary", f.kg(s.base || 0))
-        : Array.isArray(s.values) ? s.values.map((n) => f.kg(n)).join(", ") : s.step ? `${f.kg(s.min)}–${f.kg(s.max)} / ${f.kg(s.step)}` : "";
-      return s.extra ? `${grid} ${t("extra_summary", f.kg(s.extra))}` : grid;
-    };
+    const stepsText = (s) => this._stepsText(s);
     const gyms = d.gyms.length ? d.gyms.map((g) => `<section class="card"><div class="head"><h2>${esc(g.name)}</h2>${btn("e-edit-gym", t("edit"), g.id)}</div>
       <ul class="rows">${g.equipment.map((q) => `<li class="eq"><span>${esc(q.name)}${q.out_of_order ? ` <em>${esc(t("out_of_order"))}</em>` : ""}</span>
         <small class="muted">${esc(stepsText(q.steps))}</small></li>`).join("") || `<li class="muted pad">${esc(t("no_equipment"))}</li>`}</ul></section>`).join("") : `<p class="muted">${esc(t("no_gyms"))}</p>`;
-    return `<div class="actions">${btn("e-new-program", t("new_program"))}${btn("e-new-routine", t("new_routine"))}</div>
+    return `<section class="card intro"><p>${esc(t("plans_intro_plan"))}</p><p>${esc(t("plans_intro_day"))}</p></section>
+      <div class="actions">${btn("e-new-program", t("new_program"))}${btn("e-new-routine", t("new_routine"))}</div>
       ${programs || `<p class="muted">${esc(t("no_plan"))}</p>`}${loose}
       <div class="head"><h2 class="sect">${esc(t("gyms"))}</h2>${btn("e-new-gym", t("new_gym"))}</div><div class="grid cards">${gyms}</div>`;
   }
@@ -493,10 +515,17 @@ class HafsPanel extends HTMLElement {
   async _view_settings() {
     const t = this._t;
     const get = async (key) => { try { return (await this._call({ type: "hafs/pref/get", key })).value || ""; } catch { return ""; } };
-    const [phase, hit, drop] = await Promise.all([get("phase"), get("hit_fraction"), get("cut_drop_set_first")]);
+    const [phase, hit, drop, hiddenText, restText] = await Promise.all([get("phase"), get("hit_fraction"), get("cut_drop_set_first"), get("today_hidden"), get("rest_default")]);
+    const hidden = new Set(hiddenText.split(",").filter(Boolean));
+    const rest = restText === "" ? "90" : restText;
+    const restList = [...new Set([...REST_DEFAULTS, Number(rest)])].sort((a, b) => a - b);
     const opt = (v, label, cur) => `<option value="${v}"${String(cur) === v ? " selected" : ""}>${esc(label)}</option>`;
     const hitCur = hit === "" ? "1" : String(Number(hit));
+    const blocks = TODAY_BLOCKS.map((b) => `<label class="check"><input type="checkbox" data-block="${b}"${hidden.has(b) ? "" : " checked"}> ${esc(t("block_" + b))}</label>`).join("");
     return `<div class="grid two"><div class="col">
+      <section class="card"><h2>${esc(t("today_title"))}</h2><p class="hint" style="margin-top:0">${esc(t("today_hint"))}</p>${blocks}</section>
+      <section class="card"><h2>${esc(t("rest_title"))}</h2><p class="hint" style="margin-top:0">${esc(t("rest_hint"))}</p>
+        <select data-pref="rest_default" aria-label="${esc(t("rest_title"))}">${restList.map((n) => opt(String(n), n === 0 ? t("rest_off") : t("rest_default_opt", n), rest)).join("")}</select></section>
       <section class="card"><h2>${esc(t("settings_phase"))}</h2><p class="hint">${esc(t("settings_phase_hint"))}</p>
         <select data-pref="phase" aria-label="${esc(t("settings_phase"))}">${opt("", t("phase_auto_opt"), phase)}${["bulk", "maintain", "cut"].map((p) => opt(p, t("phase_" + p), phase)).join("")}</select></section>
       <section class="card"><h2>${esc(t("hit_fraction"))}</h2>
@@ -562,7 +591,9 @@ main { outline: none; flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow
 .bar, .tabs { flex: none; }
 .page { max-width: 1120px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 .pad { padding: 16px; } .center { text-align: center; } .muted { color: var(--muted); } small { color: var(--muted); font-size: 12.5px; }
-.grid { display: grid; gap: 16px; } .grid.two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+.grid { display: grid; gap: 16px; } .grid.one { grid-template-columns: minmax(0, 720px); }
+.pextra { display: block; font-weight: 400; margin-top: 1px; } .intro p + p { margin-top: 6px; } .intro { color: var(--muted); }
+.grid.two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
 .grid.cards { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); align-items: start; }
 .col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-width: 0; }

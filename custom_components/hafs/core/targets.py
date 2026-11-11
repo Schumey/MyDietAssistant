@@ -34,6 +34,9 @@ def set_pref(conn: sqlite3.Connection, owner: str, key: str, value: str) -> None
 # Preferences that change the progression rules (besides `phase`). Value checks live here so that the
 # WebSocket layer only asks `valid_pref`.
 SETTING_KEYS = ("hit_fraction", "miss_fraction", "cut_drop_set_first", "break_days")
+# Preferences that do not touch the progression (no recompute when they change).
+TODAY_BLOCKS = ("next", "facts", "muscles", "recent")     # blocks of the panel's "Today" page
+OTHER_KEYS = ("today_hidden", "rest_default", "mda_name")
 
 
 def valid_pref(key: str, value: str) -> bool:
@@ -50,7 +53,40 @@ def valid_pref(key: str, value: str) -> bool:
         return len(value) <= 40 and all(c.isascii() and (c.islower() or c.isdigit() or c == "_") for c in value)
     if key == "break_days":
         return value.isdigit() and 3 <= int(value) <= 120
+    if key == "today_hidden":  # blocks of the "Today" page that are switched off ('' = show all)
+        parts = [p for p in value.split(",") if p]
+        return len(set(parts)) == len(parts) and all(p in TODAY_BLOCKS for p in parts)
+    if key == "rest_default":  # default rest between sets in seconds (0 = no timer)
+        return value.isdigit() and int(value) <= 600
     return False
+
+
+def set_target(conn: sqlite3.Connection, owner: str, exercise_id: str, weight: float) -> int:
+    """Set the next weight of an exercise by hand (a one-time suggestion: the next recompute after a workout replaces it).
+
+    Every existing target of the exercise (one per equipment) gets the weight; without any, the general one is created
+    under the same id `compute_exercise` uses. Returns the number of rows written."""
+    if not 0 <= weight <= 1000:
+        raise ValueError("weight out of range")
+    ex = conn.execute("SELECT kind FROM exercise WHERE id=? AND owner=? AND deleted=0", (exercise_id, owner)).fetchone()
+    if ex is None or ex["kind"] not in ("strength", "bodyweight"):
+        raise ValueError("exercise not found or without weights")
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    reason = "Von Hand gesetzt"
+    with conn:
+        rows = conn.execute("SELECT id FROM target WHERE owner=? AND exercise_id=? AND deleted=0", (owner, exercise_id)).fetchall()
+        if rows:
+            for r in rows:
+                conn.execute("UPDATE target SET weight=?, updated_at=?, reason=?, reason_code='manual', reason_params='{}' WHERE id=?",
+                             (weight, now, reason, r["id"]))
+            return len(rows)
+        tid = str(uuid.uuid5(_NS, f"{owner}|{exercise_id}|"))
+        conn.execute(
+            "INSERT INTO target(id, owner, updated_at, deleted, exercise_id, equipment_id, weight, reps, sets, reason, reason_code, reason_params)"
+            " VALUES (?,?,?,0,?,'',?,NULL,NULL,?,'manual','{}') ON CONFLICT(id) DO UPDATE SET updated_at=excluded.updated_at, deleted=0,"
+            " weight=excluded.weight, reason=excluded.reason, reason_code='manual', reason_params='{}'",
+            (tid, owner, now, exercise_id, weight, reason))
+        return 1
 
 
 def load_settings(conn: sqlite3.Connection, owner: str) -> pr.Settings:

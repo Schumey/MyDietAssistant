@@ -68,14 +68,18 @@ List<String> supersetGroups(List<bool> withPrev) {
 }
 
 class _Row {
-  _Row(this.exerciseId, this.name, this.sets, this.repsMin, this.repsMax, this.restSeconds, [this.withPrev = false]);
+  _Row(this.exerciseId, this.name, this.sets, this.repsMin, this.repsMax, this.restSeconds,
+      [this.withPrev = false, this.warmupSets = 0, this.warmupReps = 5, this.warmupPct = 50]);
 
   final String exerciseId;
   final String name;
   int sets;
   int repsMin;
   int repsMax;
-  final int? restSeconds;
+  int? restSeconds;
+  int warmupSets;
+  int warmupReps;
+  double warmupPct;
 
   /// Done as a superset together with the row above.
   bool withPrev;
@@ -105,7 +109,8 @@ class _RoutineEditorState extends State<RoutineEditor> {
       _name.text = r.name;
       for (final (i, x) in r.exercises.indexed) {
         final linked = i > 0 && x.group.isNotEmpty && x.group == r.exercises[i - 1].group;
-        _rows.add(_Row(x.exerciseId, x.name, x.sets, x.repsMin, x.repsMax, x.restSeconds, linked));
+        _rows.add(_Row(x.exerciseId, x.name, x.sets, x.repsMin, x.repsMax, x.restSeconds, linked, x.warmupSets,
+            x.warmupReps > 0 ? x.warmupReps : 5, x.warmupPct > 0 ? x.warmupPct : 50));
       }
     }
   }
@@ -131,7 +136,16 @@ class _RoutineEditorState extends State<RoutineEditor> {
       exercises: [
         for (final (i, r) in _rows.indexed)
           RoutineExercise(
-              exerciseId: r.exerciseId, name: r.name, sets: r.sets, repsMin: r.repsMin, repsMax: r.repsMax, restSeconds: r.restSeconds, group: groups[i]),
+              exerciseId: r.exerciseId,
+              name: r.name,
+              sets: r.sets,
+              repsMin: r.repsMin,
+              repsMax: r.repsMax,
+              restSeconds: r.restSeconds,
+              group: groups[i],
+              warmupSets: r.warmupSets,
+              warmupReps: r.warmupReps,
+              warmupPct: r.warmupPct),
       ],
     );
     widget.app.changed();
@@ -202,6 +216,23 @@ class _RoutineEditorState extends State<RoutineEditor> {
                               if (r.repsMin > v) r.repsMin = v;
                             })),
                       ]),
+                      Row(children: [
+                        _mini(tr('routine_warmup_sets'), r.warmupSets, 0, 6, (v) => setState(() => r.warmupSets = v)),
+                        if (r.warmupSets > 0) ...[
+                          _mini(tr('routine_warmup_reps'), r.warmupReps, 1, 30, (v) => setState(() => r.warmupReps = v)),
+                          _mini(tr('routine_warmup_pct'), r.warmupPct.round(), 10, 95, (v) => setState(() => r.warmupPct = v.toDouble()), step: 5),
+                        ] else
+                          const Spacer(flex: 2),
+                      ]),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: ActionChip(
+                          visualDensity: VisualDensity.compact,
+                          avatar: const Icon(Icons.timer_outlined, size: 18),
+                          label: Text(r.restSeconds == null ? tr('rest_global') : (r.restSeconds == 0 ? tr('rest_off') : tr('rest_seconds', [r.restSeconds!]))),
+                          onPressed: () => setState(() => r.restSeconds = _nextRest(r.restSeconds)),
+                        ),
+                      ),
                     ]),
                   ),
                 ),
@@ -216,14 +247,22 @@ class _RoutineEditorState extends State<RoutineEditor> {
     );
   }
 
-  Widget _mini(String label, int value, int min, int max, void Function(int) onChanged) {
+  static const _restChoices = [null, 0, 45, 60, 90, 120, 180, 240, 300];
+
+  /// Pause je Übung: wie global → keine → 45 s … 300 s → wieder global.
+  int? _nextRest(int? current) {
+    final i = _restChoices.indexOf(current);
+    return _restChoices[(i + 1) % _restChoices.length];
+  }
+
+  Widget _mini(String label, int value, int min, int max, void Function(int) onChanged, {int step = 1}) {
     return Expanded(
       child: Column(children: [
         Text(label, style: Theme.of(context).textTheme.labelSmall),
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          IconButton(visualDensity: VisualDensity.compact, icon: const Icon(Icons.remove), onPressed: value > min ? () => onChanged(value - 1) : null),
+          IconButton(visualDensity: VisualDensity.compact, icon: const Icon(Icons.remove), onPressed: value > min ? () => onChanged((value - step).clamp(min, max)) : null),
           Text('$value', style: Theme.of(context).textTheme.titleMedium),
-          IconButton(visualDensity: VisualDensity.compact, icon: const Icon(Icons.add), onPressed: value < max ? () => onChanged(value + 1) : null),
+          IconButton(visualDensity: VisualDensity.compact, icon: const Icon(Icons.add), onPressed: value < max ? () => onChanged((value + step).clamp(min, max)) : null),
         ]),
       ]),
     );

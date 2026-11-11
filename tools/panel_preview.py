@@ -19,7 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "custom_components" / "hafs"))
 
-from core import catalog  # noqa: E402
+from core import catalog, targets  # noqa: E402
 from core.store import Store  # noqa: E402
 
 OWNER = "preview"
@@ -59,8 +59,10 @@ def seed(store: Store) -> None:
             "Pull": [("lat_pulldown_machine", 3, 8, 12, 55.0, 5), ("row_seated_cable", 3, 8, 12, 50.0, 5), ("deadlift_barbell", 3, 5, 8, 90.0, 5)]}
     recs: dict[str, list] = {"gym": [{"id": "g1", "name": "CleverFit", "zone": "", "updated_at": stamp}],
                              "equipment": [{"id": "q1", "gym_id": "g1", "name": "Langhantel", "type": "barbell", "steps": "[20, 22.5, 25]", "updated_at": stamp},
+                                           {"id": "q3", "gym_id": "g1", "name": "Rack", "type": "rack", "steps": "", "updated_at": stamp},
                                            {"id": "q2", "gym_id": "g1", "name": "Latzug", "type": "cable", "steps": '{"min": 5, "max": 100, "step": 5}',
                                             "out_of_order": 1, "updated_at": stamp}],
+                             "exercise_equipment": [{"id": "l1", "exercise_id": ids["deadlift_barbell"], "equipment_id": "q1", "updated_at": stamp}],
                              "program": [{"id": "p1", "name": "Push/Pull", "rhythm": "", "updated_at": stamp}],
                              "routine": [], "routine_exercise": [], "workout": [], "workout_set": []}
     for pos, (name, rows) in enumerate(plan.items()):
@@ -122,7 +124,11 @@ class Handler(BaseHTTPRequestHandler):
                 out = catalog.info()
             elif kind == "hafs/pref/get":
                 out = {"key": msg["key"], "value": s.get_pref(OWNER, msg["key"])}
+            elif kind == "hafs/target/set":
+                out = {"written": s.set_target(OWNER, msg["exercise_id"], float(msg["weight"]))}
             elif kind == "hafs/pref/set":
+                if not targets.valid_pref(msg["key"], msg["value"]):
+                    raise ValueError(f"invalid value for {msg['key']}")
                 out = {"key": msg["key"], "value": msg["value"], "targets": s.set_pref(OWNER, msg["key"], msg["value"])}
             elif kind == "hafs/sync/push":
                 out = s.push(OWNER, msg["records"])

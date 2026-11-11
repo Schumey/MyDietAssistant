@@ -141,3 +141,18 @@ def test_plan_edit_returns_full_records_without_owner(conn):
     assert d["equipment"][0]["steps"] == "[20, 22.5]" and {e["id"] for e in d["exercises"]} == {"bench", "row", "plank"}
     # a pushed-back record is accepted as it is
     assert sync.push(conn, OWNER, {"routine": d["routines"]})["rejected"] == []
+
+
+def test_plan_edit_has_next_weights_and_warmup_columns_and_plan_shows_rest_and_warmup(conn):
+    sync.push(conn, OWNER, {"program": [{"id": "p1", "name": "PPL", "rhythm": "", "updated_at": T}],
+                            "routine": [{"id": "r1", "program_id": "p1", "name": "Push", "updated_at": T}],
+                            "routine_exercise": [{"id": "x1", "routine_id": "r1", "exercise_id": "bench", "rest_s": 180, "warmup_sets": 2,
+                                                  "warmup_reps": 5, "warmup_pct": 50, "updated_at": T}],
+                            "target": [{"id": "t1", "exercise_id": "bench", "equipment_id": "", "weight": 62.5, "updated_at": T}]})
+    d = run(conn, "plan_edit")
+    assert d["target_weights"] == {"bench": 62.5}
+    x = d["routine_exercises"][0]
+    assert (x["warmup_sets"], x["warmup_reps"], x["warmup_pct"]) == (2, 5, 50)
+    row = run(conn, "plan")["programs"][0]["routines"][0]["exercises"][0]
+    assert row["rest_s"] == 180 and row["warmup"] == {"sets": 2, "reps": 5, "pct": 50}
+    assert d["exercises"][0]["equipment_type"] == ""

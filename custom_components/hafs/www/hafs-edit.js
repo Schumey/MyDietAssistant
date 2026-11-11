@@ -4,7 +4,12 @@
 // Every record is pushed in full (spread from the record the server sent), because the server needs all
 // required columns and must not lose the ones this editor does not show.
 
-export const EQUIPMENT_TYPES = ["machine_stack", "machine_plate", "machine", "cable", "barbell", "dumbbell", "bodyweight", "kettlebell", "band", "cardio", "other"];
+export const EQUIPMENT_TYPES = ["machine_stack", "machine_plate", "machine", "cable", "barbell", "dumbbell", "rack", "bench", "bodyweight", "kettlebell", "band", "cardio", "other"];
+
+// A station is only a place (rack, bench): it has no weights, the weight steps come from the equipment that holds the weights
+// (barbell, dumbbells, a machine). An exercise can link to both, e.g. bench press = bench + barbell.
+export const STATION_TYPES = ["rack", "bench"];
+export const isStation = (type) => STATION_TYPES.includes(type);
 
 // Same format as the server and the app (UTC, seconds, +00:00), so that string comparison of `updated_at` works.
 export const stamp = (d = new Date()) => d.toISOString().replace(/\.\d+Z$/, "+00:00");
@@ -126,20 +131,35 @@ const toInt = (v) => {
 export const routineDraft = (data, id, programId = null) => {
   const raw = id ? data.routines.find((r) => r.id === id) : null;
   const names = new Map(data.exercises.map((e) => [e.id, e.name]));
+  const kinds = new Map(data.exercises.map((e) => [e.id, e.kind]));
   const rows = data.routine_exercises.filter((x) => x.routine_id === id).sort((a, b) => a.position - b.position)
-    .map((x, i, all) => ({
-      exerciseId: x.exercise_id, name: names.get(x.exercise_id) || "?", sets: x.target_sets ?? "", repsMin: x.reps_min ?? "", repsMax: x.reps_max ?? "",
-      rest: x.rest_s ?? null, range: x.reps_min != null && x.reps_max != null && x.reps_min !== x.reps_max, withPrev: i > 0 && !!x.superset_group && all[i - 1].superset_group === x.superset_group,
-    }));
+    .map((x, i, all) => {
+      const weight = data.target_weights?.[x.exercise_id];
+      return {
+        exerciseId: x.exercise_id, name: names.get(x.exercise_id) || "?", kind: kinds.get(x.exercise_id) || "strength",
+        sets: x.target_sets ?? "", repsMin: x.reps_min ?? "", repsMax: x.reps_max ?? "",
+        rest: x.rest_s ?? null, range: x.reps_min != null && x.reps_max != null && x.reps_min !== x.reps_max, withPrev: i > 0 && !!x.superset_group && all[i - 1].superset_group === x.superset_group,
+        weight: weight == null ? "" : String(weight), weightOrig: weight ?? null,
+        warmSets: x.warmup_sets ?? "", warmReps: x.warmup_reps ?? "", warmPct: x.warmup_pct ?? "",
+      };
+    });
   return { raw, name: raw?.name ?? "", programId: raw ? raw.program_id || "" : programId || "", rows };
 };
 
 export const newRow = (exercise) => {
   const reps = exercise.kind === "strength" || exercise.kind === "bodyweight";
-  return { exerciseId: exercise.id, name: exercise.name, sets: reps ? 3 : 1, repsMin: "", repsMax: reps ? 10 : "", range: false, rest: null, withPrev: false };
+  return { exerciseId: exercise.id, name: exercise.name, kind: exercise.kind, sets: reps ? 3 : 1, repsMin: "", repsMax: reps ? 10 : "", range: false, rest: null, withPrev: false,
+    weight: "", weightOrig: null, warmSets: "", warmReps: "", warmPct: "" };
 };
 
-// Returns {error: key} or {records}. Like the app, all old rows of the routine are replaced by new ones.
+// Whether an exercise has weights (the weight and warm-up fields only make sense then).
+export const hasWeight = (row) => row.kind === "strength" || row.kind === "bodyweight" || !row.kind;
+
+export const REST_CHOICES = [0, 45, 60, 90, 120, 180, 240, 300];
+
+// Returns {error: key} or {records, weights}. Like the app, all old rows of the routine are replaced by new ones.
+// `weights` = [{exercise_id, weight}] for rows whose weight field was changed: the caller sets them as the next weight
+// (`hafs/target/set`); a one-time suggestion, the progression takes over after the next workout.
 export const routineRecords = (draft, data, now = stamp(), makeId = newId) => {
   const name = draft.name.trim();
   if (!name) return { error: "err_name" };
@@ -149,6 +169,29 @@ export const routineRecords = (draft, data, now = stamp(), makeId = newId) => {
     if (Number.isNaN(s) || Number.isNaN(lo) || Number.isNaN(hi) || (s != null && (s < 1 || s > 20)) || (lo != null && lo < 1) || (hi != null && hi > 500) || (lo != null && hi != null && lo > hi)) {
       return { error: "err_numbers", detail: r.name };
     }
+  }
+  const warm = rows.map((r) => {
+    if (!hasWeight(r)) return { sets: null, reps: null, pct: null };
+    const [sets, reps] = [toInt(r.warmSets), toInt(r.warmReps)];
+    const pct = r.warmPct === "" || r.warmPct == null ? null : num(r.warmPct);
+    return { sets, reps, pct };
+  });
+  for (const [i, w] of warm.entries()) {
+    const none = (w.sets == null || w.sets === 0) && w.reps == null && w.pct == null;
+    if (none) { warm[i] = { sets: null, reps: null, pct: null }; continue; }
+    if (Number.isNaN(w.sets) || Number.isNaN(w.reps) || !(w.sets >= 1 && w.sets <= 6) || !(w.reps >= 1 && w.reps <= 50) || !Number.isFinite(w.pct) || w.pct < 10 || w.pct > 95) {
+      return { error: "err_warmup", detail: rows[i].name };
+    }
+  }
+  const weights = [];
+  for (const r of rows) {
+    if (!hasWeight(r) || r.weight === "" || r.weight == null) continue;
+    const w = num(r.weight);
+    if (!Number.isFinite(w) || w < 0 || w > 1000) return { error: "err_weight", detail: r.name };
+    if (w !== r.weightOrig) weights.push({ exercise_id: r.exerciseId, weight: w });
+  }
+  for (const r of rows) {
+    if (r.rest != null && !(Number.isInteger(Number(r.rest)) && r.rest >= 0 && r.rest <= 600)) return { error: "err_rest", detail: r.name };
   }
   const id = draft.raw?.id || makeId();
   const programId = draft.programId || null;
@@ -161,8 +204,9 @@ export const routineRecords = (draft, data, now = stamp(), makeId = newId) => {
   const fresh = rows.map((r, i) => ({
     id: makeId(), updated_at: now, deleted: 0, routine_id: id, exercise_id: r.exerciseId, position: i,
     target_sets: toInt(r.sets), reps_min: toInt(r.repsMin), reps_max: toInt(r.repsMax), rest_s: r.rest ?? null, superset_group: groups[i],
+    warmup_sets: warm[i].sets, warmup_reps: warm[i].reps, warmup_pct: warm[i].pct,
   }));
-  return { records: { routine, routine_exercise: [...old, ...fresh] } };
+  return { records: { routine, routine_exercise: [...old, ...fresh] }, weights };
 };
 
 export const routineDelete = (id, data, now = stamp()) => ({
@@ -238,6 +282,55 @@ export const gymDelete = (id, data, now = stamp()) => {
     equipment: equipment.map((q) => ({ ...q, deleted: 1, updated_at: now })),
     exercise_equipment: data.links.filter((l) => ids.has(l.equipment_id)).map((l) => ({ ...l, deleted: 1, updated_at: now })),
   };
+};
+
+// ---- Exercise: equipment links and weight steps ---------------------------------------------
+
+// Draft for one exercise: every piece of equipment of every gym with a flag whether the exercise is linked to it.
+// Linked pieces can be edited in place (their weight steps are shared by all exercises that use them).
+export const exerciseDraft = (data, id, fmt) => {
+  const raw = data.exercises.find((e) => e.id === id) || null;
+  const linked = new Set(data.links.filter((l) => l.exercise_id === id).map((l) => l.equipment_id));
+  const gyms = new Map(data.gyms.map((g) => [g.id, g.name]));
+  const equipment = data.equipment.map((q) => ({
+    raw: q, gymId: q.gym_id, gymName: gyms.get(q.gym_id) || "", name: q.name, type: q.type, ...decodeSteps(q.steps, fmt),
+    outOfOrder: !!q.out_of_order, linked: linked.has(q.id),
+  })).sort((a, b) => a.gymName.localeCompare(b.gymName) || a.name.localeCompare(b.name));
+  return { raw, name: raw?.name ?? "", equipment };
+};
+
+export const newGear = (gymId, gymName) => ({ raw: null, gymId, gymName, name: "", type: "barbell", ...emptyMachine(), outOfOrder: false, linked: true });
+
+// Returns {error, detail} or {records}: new/changed equipment and the links of this exercise (added, or tombstoned when unchecked).
+export const exerciseRecords = (draft, data, now = stamp(), makeId = newId) => {
+  const exerciseId = draft.raw?.id;
+  if (!exerciseId) return { error: "save_failed", detail: "exercise" };
+  const equipment = [], links = [];
+  const mine = new Map(data.links.filter((l) => l.exercise_id === exerciseId).map((l) => [l.equipment_id, l]));
+  for (const q of draft.equipment) {
+    if (!q.raw && !q.linked) continue;
+    const id = q.raw?.id || makeId();
+    if (q.linked) {
+      if (!q.name.trim()) return { error: "err_name" };
+      if (!q.gymId) return { error: "err_gym" };
+      const built = buildSteps(q);
+      if (built.error) return { error: built.error, detail: q.name };
+      const steps = isStation(q.type) ? "" : built.steps;
+      const same = q.raw && q.raw.name === q.name.trim() && q.raw.type === q.type && q.raw.steps === steps && (built.base == null || (q.raw.base_weight ?? 0) === built.base);
+      if (!same) {
+        const rec = { ...q.raw, id, gym_id: q.gymId, name: q.name.trim(), type: q.type, steps, out_of_order: q.outOfOrder ? 1 : 0, updated_at: now, deleted: 0 };
+        if (built.base != null && !isStation(q.type)) rec.base_weight = built.base;
+        equipment.push(rec);
+      }
+    }
+    const link = mine.get(id);
+    if (q.linked && !link) links.push({ id: makeId(), exercise_id: exerciseId, equipment_id: id, updated_at: now, deleted: 0 });
+    if (!q.linked && link) links.push({ ...link, deleted: 1, updated_at: now });
+  }
+  const records = {};
+  if (equipment.length) records.equipment = equipment;
+  if (links.length) records.exercise_equipment = links;
+  return { records };
 };
 
 // Switch a row between one target and a range; the range starts four below the target.

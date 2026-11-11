@@ -75,12 +75,12 @@ void main() {
     await settle(tester);
     await tester.tap(find.byType(BackButton).last);
     await settle(tester);
-    await tester.tap(find.text('Routinen'));
+    await tester.tap(find.text('Trainingstage'));
     await settle(tester);
-    expect(find.text('Noch keine Routine'), findsOneWidget);
-    await tester.tap(find.text('Routine anlegen'));
+    expect(find.text('Noch kein Trainingstag'), findsOneWidget);
+    await tester.tap(find.text('Trainingstag anlegen'));
     await settle(tester);
-    await tester.enterText(find.widgetWithText(TextField, 'Name der Routine'), 'Push');
+    await tester.enterText(find.widgetWithText(TextField, 'Name des Trainingstags'), 'Push');
     await tester.tap(find.text('Übung hinzufügen'));
     await settle(tester);
     await tester.tap(find.text('Flachbankdrücken Langhantel'));
@@ -124,7 +124,7 @@ void main() {
     await settle(tester);
     await tester.tap(find.text('Workout beenden'));
     await settle(tester);
-    expect(find.text('Als Routine speichern'), findsNothing); // it came from a routine
+    expect(find.text('Als Trainingstag speichern'), findsNothing); // it came from a routine
     await tester.tap(find.text('Beenden'));
     await settle(tester);
     expect(app.repo!.activeWorkout(), isNull);
@@ -147,7 +147,7 @@ void main() {
     await settle(tester);
     await tester.tap(find.text('Workout beenden'));
     await settle(tester);
-    await tester.tap(find.text('Als Routine speichern'));
+    await tester.tap(find.text('Als Trainingstag speichern'));
     await settle(tester);
     await tester.enterText(find.byType(TextField), 'Beine');
     await tester.tap(find.text('Speichern'));

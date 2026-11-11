@@ -74,6 +74,22 @@ void main() {
       expect(repo.equipmentFor('e1', b).single.name, 'MB');
     });
 
+    test('stations (rack, bench) are linked but give no steps: equipmentFor lists only the equipment with weights', () {
+      final g = repo.addGym('A');
+      final bar = repo.saveEquipment(gymId: g, name: 'Langhantel', type: 'barbell', steps: '[20, 22.5]');
+      final bench = repo.saveEquipment(gymId: g, name: 'Flachbank', type: 'bench');
+      final rack = repo.saveEquipment(gymId: g, name: 'Rack', type: 'rack');
+      repo.setExercisesOf(bar, {'e1'});
+      repo.setExercisesOf(bench, {'e1'});
+      repo.setExercisesOf(rack, {'e2'});
+      expect(repo.equipmentFor('e1', g).single.id, bar);
+      expect(repo.stationsFor('e1', g).single.name, 'Flachbank');
+      expect(repo.equipmentFor('e2', g), isEmpty); // only a station: no weights equipment
+      expect(repo.stationsFor('e2', g).single.name, 'Rack');
+      repo.saveEquipment(id: bench, gymId: g, name: 'Flachbank', type: 'bench', outOfOrder: true);
+      expect(repo.stationsFor('e1', g), isEmpty);
+    });
+
     test('last gym is remembered and forgotten when deleted', () {
       final g = repo.addGym('A');
       expect(repo.lastGymId(), isNull);
@@ -205,6 +221,33 @@ void main() {
       repo.finishWorkout(w);
       final r = repo.routine(repo.saveRoutineFromWorkout(w, 'Mein Tag'))!;
       expect([for (final x in r.exercises) (x.name, x.sets, x.repsMax)], [('Bankdrücken', 2, 8), ('Kniebeuge', 1, 10)]);
+    });
+
+    test('warm-up sets and rest of a planned exercise are saved, read back and followed by the workout', () {
+      final id = repo.saveRoutine(name: 'Push', exercises: [
+        RoutineExercise(exerciseId: 'e1', name: 'Bankdrücken', sets: 3, restSeconds: 180, warmupSets: 2, warmupReps: 5, warmupPct: 50),
+        RoutineExercise(exerciseId: 'e3', name: 'Rudern', warmupSets: 0, warmupReps: 9, warmupPct: 40), // no sets: nothing is stored
+      ]);
+      final r = repo.routine(id)!;
+      expect((r.exercises[0].warmupSets, r.exercises[0].warmupReps, r.exercises[0].warmupPct, r.exercises[0].restSeconds), (2, 5, 50.0, 180));
+      expect((r.exercises[1].warmupSets, r.exercises[1].warmupReps, r.exercises[1].warmupPct), (0, 0, 0.0));
+      final w = repo.startWorkout(routineId: id, routineName: 'Push');
+      var p = repo.planned(w).first;
+      expect((p.warmupDue, p.warmupDone, p.restSeconds), (true, 0, 180));
+      repo.addSet(workoutId: w, exerciseId: 'e1', weight: 30, reps: 5, kind: 'warmup');
+      tick();
+      repo.addSet(workoutId: w, exerciseId: 'e1', weight: 30, reps: 5, kind: 'warmup');
+      p = repo.planned(w).first;
+      expect((p.warmupDue, p.warmupDone, p.doneSets), (false, 2, 0)); // warm-ups do not count as work sets
+      expect(repo.planned(w).last.warmupDue, isFalse);
+    });
+
+    test('a changed routine keeps the warm-up of exercises it still contains', () {
+      final id = repo.saveRoutine(name: 'Push', exercises: [RoutineExercise(exerciseId: 'e1', name: 'Bankdrücken', warmupSets: 1, warmupReps: 8, warmupPct: 40)]);
+      final again = repo.routine(id)!.exercises; // what the routine editor loads and saves again
+      repo.saveRoutine(id: id, name: 'Push', exercises: again);
+      expect(repo.routine(id)!.exercises.single.warmupSets, 1);
+      expect(repo.routine(id)!.exercises.single.warmupPct, 40);
     });
 
     test('routine rows use the columns the server reads for its targets', () {

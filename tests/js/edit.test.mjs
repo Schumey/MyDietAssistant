@@ -176,3 +176,101 @@ test("ids also work without crypto.randomUUID (plain http origins)", () => {
   assert.notEqual(e.uuidFrom(globalThis.crypto), e.uuidFrom(globalThis.crypto));
   assert.match(e.newId(), /^[0-9a-f-]{36}$/);
 });
+
+// ---- Warm-up, weight, rest ----
+
+test("routine rows: warm-up sets, rest and the next weight are saved; a changed weight is reported", () => {
+  const d = data();
+  d.target_weights = { bench: 60 };
+  const draft = e.routineDraft(d, "r1");
+  const bench = draft.rows[0];
+  assert.equal(bench.weight, "60");
+  bench.weight = "62,5";
+  bench.rest = 180;
+  Object.assign(bench, { warmSets: "2", warmReps: "5", warmPct: "50" });
+  const r = e.routineRecords(draft, d, NOW, id);
+  const x = r.records.routine_exercise.find((q) => !q.deleted && q.exercise_id === "bench");
+  assert.deepEqual([x.rest_s, x.warmup_sets, x.warmup_reps, x.warmup_pct], [180, 2, 5, 50]);
+  assert.deepEqual(r.weights, [{ exercise_id: "bench", weight: 62.5 }]);
+  // untouched rows have no warm-up and no weight change
+  const other = r.records.routine_exercise.find((q) => !q.deleted && q.exercise_id === "fly");
+  assert.deepEqual([other.rest_s, other.warmup_sets, other.warmup_reps, other.warmup_pct], [null, null, null, null]);
+});
+
+test("routine rows: a loaded warm-up survives a save unchanged", () => {
+  const d = data();
+  d.routine_exercises[0] = { ...d.routine_exercises[0], warmup_sets: 2, warmup_reps: 8, warmup_pct: 40 };
+  const r = e.routineRecords(e.routineDraft(d, "r1"), d, NOW, id);
+  const x = r.records.routine_exercise.find((q) => !q.deleted && q.exercise_id === "bench");
+  assert.deepEqual([x.warmup_sets, x.warmup_reps, x.warmup_pct], [2, 8, 40]);
+  assert.deepEqual(r.weights, []);
+});
+
+test("routine rows: incomplete or silly warm-up, weight and rest are refused", () => {
+  const bad = (patch, error) => {
+    const d = data();
+    const draft = e.routineDraft(d, "r1");
+    Object.assign(draft.rows[0], patch);
+    assert.equal(e.routineRecords(draft, d, NOW, id).error, error, JSON.stringify(patch));
+  };
+  bad({ warmSets: "2" }, "err_warmup");                              // reps and percent missing
+  bad({ warmSets: "2", warmReps: "5", warmPct: "120" }, "err_warmup");
+  bad({ warmSets: "9", warmReps: "5", warmPct: "50" }, "err_warmup");
+  bad({ weight: "abc" }, "err_weight");
+  bad({ weight: "-5" }, "err_weight");
+  bad({ rest: 9999 }, "err_rest");
+});
+
+test("routine rows: time exercises get neither warm-up nor weight", () => {
+  const d = data();
+  const draft = e.routineDraft(d, "r1");
+  draft.rows.push(e.newRow(d.exercises.find((x) => x.id === "plank")));
+  Object.assign(draft.rows[3], { warmSets: "2", warmReps: "5", warmPct: "50", weight: "20" });
+  const r = e.routineRecords(draft, d, NOW, id);
+  const plank = r.records.routine_exercise.find((q) => !q.deleted && q.exercise_id === "plank");
+  assert.equal(plank.warmup_sets, null);
+  assert.deepEqual(r.weights, []);
+});
+
+// ---- Exercise <-> equipment ----
+
+test("exercise gear: link, unlink, edit steps of a linked piece and create new equipment", () => {
+  const d = data();
+  d.equipment.push({ id: "q2", gym_id: "g1", name: "Rack", type: "rack", steps: "", out_of_order: 0 });
+  const draft = e.exerciseDraft(d, "bench");
+  assert.deepEqual(draft.equipment.map((q) => [q.name, q.linked]), [["Bank", true], ["Rack", false]]);
+  draft.equipment[1].linked = true;                                   // + station
+  draft.equipment[0].steps = "20-60/2,5";                              // new steps for the barbell
+  draft.equipment.push({ ...e.newGear("g1", "Studio"), name: "Scheiben", type: "machine_plate", plates: "20 10 5", base: "10" });
+  const r = e.exerciseRecords(draft, d, NOW, id);
+  assert.equal(r.error, undefined);
+  const eq = r.records.equipment;
+  assert.equal(eq.find((q) => q.id === "q1").steps, '{"min":20,"max":60,"step":2.5}');
+  assert.equal(eq.find((q) => q.id === "q1").photo, "p.png");        // unknown columns are kept
+  assert.equal(eq.find((q) => q.name === "Scheiben").gym_id, "g1");
+  assert.equal(eq.some((q) => q.id === "q2"), false);                 // station untouched: not rewritten
+  const links = r.records.exercise_equipment;
+  const newId = eq.find((q) => q.name === "Scheiben").id;
+  assert.deepEqual(links.map((l) => [l.equipment_id, l.deleted]).sort(), [[newId, 0], ["q2", 0]].sort());
+});
+
+test("exercise gear: unchecking tombstones the link; unlinked equipment is not rewritten", () => {
+  const d = data();
+  const draft = e.exerciseDraft(d, "bench");
+  draft.equipment[0].linked = false;
+  const r = e.exerciseRecords(draft, d, NOW, id);
+  assert.deepEqual(r.records, { exercise_equipment: [{ id: "l1", exercise_id: "bench", equipment_id: "q1", deleted: 1, updated_at: NOW }] });
+});
+
+test("exercise gear: nothing changed -> no records; invalid steps are reported", () => {
+  const d = data();
+  assert.deepEqual(e.exerciseRecords(e.exerciseDraft(d, "bench"), d, NOW, id).records, {});
+  const draft = e.exerciseDraft(d, "bench");
+  draft.equipment[0].steps = "kaputt";
+  assert.equal(e.exerciseRecords(draft, d, NOW, id).error, "err_steps");
+});
+
+test("stations are rack and bench only", () => {
+  assert.ok(e.isStation("rack") && e.isStation("bench"));
+  assert.ok(!e.isStation("barbell") && !e.isStation("machine_stack"));
+});

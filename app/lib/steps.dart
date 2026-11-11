@@ -54,6 +54,20 @@ List<double>? _expandPlates(Map spec) {
 
 double _round(double v) => (v * 10000).round() / 10000;
 
+/// Stationen (Rack, Bank) sind nur der Ort der Übung; die Gewichtsstufen kommen von dem Gerät, das die Gewichte hält
+/// (Langhantel, Kurzhanteln, Maschine). Eine Übung kann beides verknüpfen, z. B. Bankdrücken = Bank + Langhantel.
+const stationTypes = {'rack', 'bench'};
+bool isStationType(String type) => stationTypes.contains(type);
+
+/// Gewicht eines Aufwärmsatzes: [pct] Prozent des Arbeitsgewichts auf der nächsten Stufe
+/// (ohne Stufen: auf ein Vielfaches der Schrittweite [step]).
+double warmupWeight(double working, double pct, List<double>? steps, double step) {
+  final raw = working * pct / 100;
+  if (steps != null && steps.isNotEmpty) return snapToSteps(raw, steps);
+  if (step <= 0) return _round(raw);
+  return _round((raw / step).round() * step);
+}
+
 /// Nächst schwerere Stufe; ohne Stufenliste `weight + fallback`; `null` am oberen Ende des Geräts.
 double? stepUp(double weight, List<double>? steps, double fallback) {
   if (steps == null) return _round(weight + fallback);

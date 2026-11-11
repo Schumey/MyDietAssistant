@@ -13,7 +13,8 @@ export const EDITOR_CSS = `
 .ib:disabled { opacity: .35; cursor: default; } .ib.warn { color: var(--warn); }
 .efields { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 8px; color: var(--muted); font-size: 14px; }
 .efields input.num { width: 4.2em; font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); text-align: center; }
-.erow .check { margin-top: 8px; font-size: 14px; }
+.efields select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); margin: 0; width: auto; }
+.erow .check { margin-top: 8px; font-size: 14px; } .etop .check { margin-top: 0; font-size: 15px; font-weight: 600; }
 .eqgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; } .eqgrid .wide { grid-column: 1 / -1; }
 .fld { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--muted); } .fld.wide { grid-column: 1 / -1; } .fld small { color: var(--muted); }
 .eqgrid .fld input[type=text], .eqgrid input[type=text], .eqgrid select { font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); width: 100%; margin: 0; }
@@ -40,6 +41,7 @@ export function installEditor(Panel, { edit, esc }) {
       case "e-new-routine": return this._openEditor("routine", null, v || null);
       case "e-edit-routine": return this._openEditor("routine", v);
       case "e-new-gym": return this._openEditor("gym", null);
+      case "e-gear": return this._openEditor("exercise", v);
       case "e-edit-gym": return this._openEditor("gym", v);
       case "e-cancel": this._edit = null; return this._show();
       case "e-save": return this._editSave();
@@ -48,6 +50,12 @@ export function installEditor(Panel, { edit, esc }) {
     if (!ed) return;
     const d = ed.draft;
     const list = ed.kind === "routine" ? d.rows : ed.kind === "program" ? d.routineIds : d.equipment;
+    if (act === "e-new-gear") {
+      const g = ed.data.gyms.find((x) => x.id === v) || ed.data.gyms[0];
+      if (g) d.equipment.push(edit.newGear(g.id, g.name));
+      ed.error = "";
+      return this._redraw(this._editorHtml());
+    }
     const swap = (a, b) => { [list[a], list[b]] = [list[b], list[a]]; if (ed.kind === "routine") d.rows[0].withPrev = false; };
     switch (act) {
       case "e-toggle-range": edit.toggleRange(d.rows[i]); break;
@@ -88,11 +96,13 @@ export function installEditor(Panel, { edit, esc }) {
       if (list) list.innerHTML = this._pickRows();
       return;
     }
-    const value = el.type === "checkbox" ? el.checked : el.value;
+    let value = el.type === "checkbox" ? el.checked : el.value;
+    if (f === "rest") value = value === "" ? null : Number(value);
     const holder = el.dataset.i === undefined ? ed.draft : (ed.kind === "routine" ? ed.draft.rows : ed.draft.equipment)[Number(el.dataset.i)];
     if (!holder) return;
     holder[f] = value;
-    if (f === "type" && ed.kind === "gym") edit.onTypeChange(holder);
+    if (f === "gymId" && ed.kind === "exercise") holder.gymName = ed.data.gyms.find((g) => g.id === value)?.name || "";
+    if (f === "type" && (ed.kind === "gym" || ed.kind === "exercise")) edit.onTypeChange(holder);
     if (changed && (el.type === "checkbox" || el.tagName === "SELECT")) this._redraw(this._editorHtml());
   };
 
@@ -101,6 +111,7 @@ export function installEditor(Panel, { edit, esc }) {
       const data = await this._query("plan_edit");
       const draft = kind === "routine" ? edit.routineDraft(data, id, programId)
         : kind === "program" ? edit.programDraft(data, id)
+        : kind === "exercise" ? edit.exerciseDraft(data, id, (n) => this._f.kg(n).replace(/\./g, "").replace(",", "."))
         : edit.gymDraft(data, id, (n) => this._f.kg(n).replace(/\./g, "").replace(",", "."));
       this._edit = { kind, id, data, draft, pick: false, pickFilter: "", error: "" };
       this._redraw(this._editorHtml());
@@ -117,12 +128,15 @@ export function installEditor(Panel, { edit, esc }) {
 
   P._editSave = async function () {
     const ed = this._edit, t = this._t;
-    const build = { routine: edit.routineRecords, program: edit.programRecords, gym: edit.gymRecords }[ed.kind];
+    const build = { routine: edit.routineRecords, program: edit.programRecords, gym: edit.gymRecords, exercise: edit.exerciseRecords }[ed.kind];
     let r;
     try { r = build(ed.draft, ed.data); } catch (err) { r = { error: "save_failed", detail: err?.message || String(err) }; }
     if (r.error) { ed.error = t(r.error, r.detail ?? ""); this._redraw(this._editorHtml()); return; }
     try {
-      await this._push(r.records);
+      if (Object.keys(r.records).length) await this._push(r.records);
+      // The next weight is no plan record but a suggestion of the progression: set it through its own command.
+      for (const w of r.weights || []) await this._call({ type: "hafs/target/set", exercise_id: w.exercise_id, weight: w.weight });
+      this._cache = {};
       this._edit = null;
       this._toast(`${t("saved_edit")}. ${t("sync_note")}`);
       this._show();
@@ -145,12 +159,13 @@ export function installEditor(Panel, { edit, esc }) {
 
   P._editorHtml = function () {
     const ed = this._edit, t = this._t;
-    const title = t((ed.draft.raw ? "edit_" : "new_") + ed.kind);
-    const body = ed.kind === "routine" ? this._routineForm() : ed.kind === "program" ? this._programForm() : this._gymForm();
+    const title = ed.kind === "exercise" ? t("edit_exercise", ed.draft.name) : t((ed.draft.raw ? "edit_" : "new_") + ed.kind);
+    const body = ed.kind === "routine" ? this._routineForm() : ed.kind === "program" ? this._programForm()
+      : ed.kind === "exercise" ? this._exerciseForm() : this._gymForm();
     return `<p><button class="btn ghost" data-act="e-cancel">← ${esc(t("back"))}</button></p><h2 class="big">${esc(title)}</h2>${body}
       ${ed.error ? `<p class="formerr" role="alert">${esc(ed.error)}</p>` : ""}
       <div class="savebar"><button class="btn primary" data-act="e-save">${esc(t("save"))}</button><button class="btn" data-act="e-cancel">${esc(t("cancel"))}</button>
-        <span class="grow"></span>${ed.draft.raw ? `<button class="btn danger" data-act="e-delete">${esc(t("delete"))}</button>` : ""}</div>`;
+        <span class="grow"></span>${ed.draft.raw && ed.kind !== "exercise" ? `<button class="btn danger" data-act="e-delete">${esc(t("delete"))}</button>` : ""}</div>`;
   };
 
   const moveButtons = (t, i, n) => `<button class="ib" data-act="e-up" data-i="${i}" aria-label="${esc(t("move_up"))}"${i === 0 ? " disabled" : ""}>↑</button>
@@ -168,13 +183,27 @@ export function installEditor(Panel, { edit, esc }) {
         <label>${esc(t("reps_to"))} <input class="num" inputmode="numeric" data-f="repsMax" data-i="${i}" value="${esc(r.repsMax)}"></label>`
           : `<label>${esc(t("reps_target"))} <input class="num" inputmode="numeric" data-f="repsMax" data-i="${i}" value="${esc(r.repsMax)}"></label>`}
         <button class="btn small linkish" data-act="e-toggle-range" data-i="${i}">${esc(t(r.range ? "use_target" : "use_range"))}</button></div>
+      ${edit.hasWeight(r) ? this._rowExtras(r, i) : ""}
       ${i > 0 ? `<label class="check"><input type="checkbox" data-f="withPrev" data-i="${i}"${r.withPrev ? " checked" : ""}> ${esc(t("superset_prev"))}</label>` : ""}</div>`).join("");
     return `<section class="card"><label class="field"><span>${esc(t("name"))}</span><input type="text" data-f="name" value="${esc(d.name)}" autocomplete="off"></label>
       <label class="field"><span>${esc(t("routine_program"))}</span><select data-f="programId">${programs}</select></label></section>
       <section class="card"><h3>${esc(t("exercises"))}</h3>${rows || `<p class="muted">${esc(t("no_exercises"))}</p>`}
+        ${d.rows.some(edit.hasWeight) ? `<p class="hint">${esc(t("weight_hint"))} ${esc(t("warm_hint"))}</p>` : ""}
         <p><button class="btn" data-act="e-pick-toggle">${esc(t("add_exercise"))}</button></p>
         ${ed.pick ? `<div class="picker"><input id="pick-filter" class="search" type="search" data-f="pickFilter" placeholder="${esc(t("exercise_search"))}" value="${esc(ed.pickFilter)}" autocomplete="off">
           <div id="pick-list" class="rows">${this._pickRows()}</div></div>` : ""}</section>`;
+  };
+
+  // Next weight, rest and warm-up sets of one row of the routine form.
+  P._rowExtras = function (r, i) {
+    const t = this._t;
+    const rests = [...new Set([...edit.REST_CHOICES, ...(r.rest != null ? [r.rest] : [])])].sort((a, b) => a - b);
+    const restOpt = [`<option value=""${r.rest == null ? " selected" : ""}>${esc(t("rest_global"))}</option>`,
+      ...rests.map((s) => `<option value="${s}"${r.rest === s ? " selected" : ""}>${esc(s === 0 ? t("rest_off") : t("rest_s", s))}</option>`)].join("");
+    const num = (f, v, label) => `<label>${esc(label)} <input class="num" inputmode="decimal" data-f="${f}" data-i="${i}" value="${esc(v)}"></label>`;
+    return `<div class="efields">${num("weight", r.weight, t("weight_label"))}
+        <label>${esc(t("rest_label"))} <select class="num wide" data-f="rest" data-i="${i}" aria-label="${esc(t("rest_label"))}">${restOpt}</select></label></div>
+      <div class="efields"><span>${esc(t("warmup_label"))}</span>${num("warmSets", r.warmSets, t("warm_sets"))}${num("warmReps", r.warmReps, t("warm_reps"))}${num("warmPct", r.warmPct, t("warm_pct"))}</div>`;
   };
 
   P._pickRows = function () {
@@ -198,27 +227,56 @@ export function installEditor(Panel, { edit, esc }) {
         <p class="muted">${esc(t("add_routine"))}</p>${free.length ? `<div class="btns">${free.map((r) => `<button class="btn small" data-act="e-add-routine" data-v="${esc(r.id)}">+ ${esc(r.name)}</button>`).join("")}</div>` : `<p class="hint">${esc(t("no_free_routines"))}</p>`}</section>`;
   };
 
+  // Type options and the type-dependent step fields of one piece of equipment (gym form and exercise form).
+  P._typeOptions = function (q) {
+    const t = this._t;
+    const known = edit.EQUIPMENT_TYPES.includes(q.type);
+    return (known || !q.type ? "" : `<option value="${esc(q.type)}" selected>${esc(q.type)}</option>`)
+      + edit.EQUIPMENT_TYPES.map((k) => `<option value="${k}"${q.type === k ? " selected" : ""}>${esc(t("type_" + k))}</option>`).join("");
+  };
+
+  P._stepFields = function (q, i) {
+    const t = this._t;
+    const field = (f, label, hint, wide = false, mode = "text") => `<label class="fld${wide ? " wide" : ""}"><span>${esc(label)}</span>
+      <input type="text" inputmode="${mode}" data-f="${f}" data-i="${i}" value="${esc(q[f])}" placeholder="${esc(hint)}" autocomplete="off"></label>`;
+    if (edit.isStation(q.type)) return "";
+    if (q.type === "machine_plate") {
+      return field("base", t("plate_base"), "0", false, "decimal") + field("max", t("plate_max"), "", false, "decimal")
+        + field("plates", t("plates"), t("plates_hint"), true)
+        + `<label class="check wide"><input type="checkbox" data-f="both" data-i="${i}"${q.both ? " checked" : ""}> ${esc(t("plate_both"))}</label>`;
+    }
+    if (q.type === "machine_stack") {
+      return field("steps", t("stack_steps"), t("stack_steps_hint"), true) + field("extra", t("stack_extra"), "2,5", true, "decimal")
+        + `<small class="wide muted">${esc(t("stack_extra_hint"))}</small>`;
+    }
+    return field("steps", t("equipment_steps"), t("equipment_steps_hint"), true);
+  };
+
+  // Equipment of one exercise: station (rack, bench) and weights (barbell, dumbbells, machine) are linked separately.
+  P._exerciseForm = function () {
+    const ed = this._edit, t = this._t, d = ed.draft;
+    if (!ed.data.gyms.length) return `<section class="card"><p class="muted">${esc(t("gear_no_gym"))}</p></section>`;
+    const row = (q, i) => `<div class="erow"><div class="etop"><label class="check pname"><input type="checkbox" data-f="linked" data-i="${i}"${q.linked ? " checked" : ""}>
+        <span>${esc(q.name || t("equipment_name"))}${q.gymName ? ` <small class="muted">${esc(q.gymName)}</small>` : ""}</span></label></div>
+      ${q.linked ? `<div class="eqgrid"><input type="text" data-f="name" data-i="${i}" value="${esc(q.name)}" placeholder="${esc(t("equipment_name"))}" aria-label="${esc(t("equipment_name"))}" autocomplete="off">
+        <select data-f="type" data-i="${i}" aria-label="${esc(t("equipment_type"))}">${this._typeOptions(q)}</select>
+        ${!q.raw && ed.data.gyms.length > 1 ? `<select data-f="gymId" data-i="${i}" class="wide" aria-label="${esc(t("gear_gym"))}">${ed.data.gyms.map((g) => `<option value="${esc(g.id)}"${g.id === q.gymId ? " selected" : ""}>${esc(g.name)}</option>`).join("")}</select>` : ""}
+        ${this._stepFields(q, i)}</div>` : ""}</div>`;
+    const group = (title, hint, pick) => {
+      const rows = d.equipment.map((q, i) => [q, i]).filter(([q]) => pick(q.type)).map(([q, i]) => row(q, i)).join("");
+      return `<section class="card"><h3>${esc(title)}</h3><p class="hint" style="margin:-4px 0 8px">${esc(hint)}</p>${rows || `<p class="muted">${esc(t("gear_none"))}</p>`}</section>`;
+    };
+    const newButtons = ed.data.gyms.length > 1
+      ? ed.data.gyms.map((g) => `<button class="btn small" data-act="e-new-gear" data-v="${esc(g.id)}">+ ${esc(t("gear_new"))} (${esc(g.name)})</button>`).join("")
+      : `<button class="btn small" data-act="e-new-gear" data-v="${esc(ed.data.gyms[0].id)}">+ ${esc(t("gear_new"))}</button>`;
+    return `${group(t("gear_station"), t("gear_station_hint"), edit.isStation)}${group(t("gear_weights"), t("gear_weights_hint"), (ty) => !edit.isStation(ty))}
+      <p class="btns">${newButtons}</p><p class="hint">${esc(t("gear_shared"))}</p>`;
+  };
+
   P._gymForm = function () {
     const ed = this._edit, t = this._t, d = ed.draft;
-    const type = (q) => {
-      const known = edit.EQUIPMENT_TYPES.includes(q.type);
-      return (known || !q.type ? "" : `<option value="${esc(q.type)}" selected>${esc(q.type)}</option>`)
-        + edit.EQUIPMENT_TYPES.map((k) => `<option value="${k}"${q.type === k ? " selected" : ""}>${esc(t("type_" + k))}</option>`).join("");
-    };
-    const field = (q, i, f, label, hint, wide = false, mode = "text") => `<label class="fld${wide ? " wide" : ""}"><span>${esc(label)}</span>
-      <input type="text" inputmode="${mode}" data-f="${f}" data-i="${i}" value="${esc(q[f])}" placeholder="${esc(hint)}" autocomplete="off"></label>`;
-    const fields = (q, i) => {
-      if (q.type === "machine_plate") {
-        return field(q, i, "base", t("plate_base"), "0", false, "decimal") + field(q, i, "max", t("plate_max"), "", false, "decimal")
-          + field(q, i, "plates", t("plates"), t("plates_hint"), true)
-          + `<label class="check wide"><input type="checkbox" data-f="both" data-i="${i}"${q.both ? " checked" : ""}> ${esc(t("plate_both"))}</label>`;
-      }
-      if (q.type === "machine_stack") {
-        return field(q, i, "steps", t("stack_steps"), t("stack_steps_hint"), true) + field(q, i, "extra", t("stack_extra"), "2,5", true, "decimal")
-          + `<small class="wide muted">${esc(t("stack_extra_hint"))}</small>`;
-      }
-      return field(q, i, "steps", t("equipment_steps"), t("equipment_steps_hint"), true);
-    };
+    const type = (q) => this._typeOptions(q);
+    const fields = (q, i) => this._stepFields(q, i);
     const rows = d.equipment.map((q, i) => `<div class="erow"><div class="etop"><span class="pname">${esc(q.name || t("equipment_name"))}</span>${moveButtons(t, i, d.equipment.length)}</div>
       <div class="eqgrid"><input type="text" data-f="name" data-i="${i}" value="${esc(q.name)}" placeholder="${esc(t("equipment_name"))}" aria-label="${esc(t("equipment_name"))}" autocomplete="off">
         <select data-f="type" data-i="${i}" aria-label="${esc(t("equipment_type"))}">${type(q)}</select>${fields(q, i)}</div>

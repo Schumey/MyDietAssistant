@@ -115,6 +115,10 @@ class Store:
             catalog.seed(conn, owner)
             return targets.recompute(conn, owner, today=today)
 
+    def set_target(self, owner: str, exercise_id: str, weight: float) -> int:
+        with self._conn() as conn:
+            return targets.set_target(conn, owner, exercise_id, weight)
+
     def get_pref(self, owner: str, key: str) -> str:
         with self._conn() as conn:
             return targets.get_pref(conn, owner, key)

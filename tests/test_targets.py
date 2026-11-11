@@ -165,3 +165,42 @@ def test_real_export_produces_sane_targets():
     rows = c.execute("SELECT * FROM target").fetchall()
     assert all(r["weight"] is not None and r["reps"] and r["reason"] and "{" not in r["reason"] for r in rows)
     assert all(r["weight"] >= 0 for r in rows)
+
+
+def test_manual_weight_creates_the_general_target_and_is_replaced_by_the_next_recompute(conn):
+    assert targets.set_target(conn, OWNER, "e1", 55) == 1
+    t = row(conn)
+    assert (t["weight"], t["reason_code"]) == (55, "manual")
+    # a workout later: the progression takes over again, under the same id (no duplicate)
+    add_workout(conn, "w1", "2026-11-05", [(30, 8), (30, 8), (30, 8)])
+    targets.recompute(conn, OWNER, today=TODAY)
+    t = row(conn)
+    assert (t["weight"], t["reason_code"]) == (32.5, "up")
+    assert conn.execute("SELECT COUNT(*) FROM target WHERE exercise_id='e1'").fetchone()[0] == 1
+
+
+def test_manual_weight_updates_every_existing_target_of_the_exercise(conn):
+    put(conn, "target", id="t1", exercise_id="e1", equipment_id="", weight=30, reps=8)
+    put(conn, "target", id="t2", exercise_id="e1", equipment_id="q1", weight=40, reps=8)
+    assert targets.set_target(conn, OWNER, "e1", 45) == 2
+    assert {r["weight"] for r in conn.execute("SELECT weight FROM target WHERE exercise_id='e1'")} == {45}
+
+
+def test_manual_weight_rejects_unknown_or_weightless_exercises(conn):
+    setup_exercise(conn, "t1", kind="time")
+    for ex, w in (("nope", 10), ("t1", 10), ("e1", -1), ("e1", 5000)):
+        with pytest.raises(ValueError):
+            targets.set_target(conn, OWNER, ex, w)
+
+
+def test_panel_prefs_are_validated():
+    assert targets.valid_pref("today_hidden", "") and targets.valid_pref("today_hidden", "facts,recent")
+    assert not targets.valid_pref("today_hidden", "facts,facts") and not targets.valid_pref("today_hidden", "foo")
+    assert targets.valid_pref("rest_default", "90") and targets.valid_pref("rest_default", "0")
+    assert not targets.valid_pref("rest_default", "601") and not targets.valid_pref("rest_default", "-5")
+
+
+def test_panel_prefs_do_not_recompute_targets(tmp_path):
+    store = Store(str(tmp_path / "h.db"))
+    store.init()
+    assert store.set_pref(OWNER, "rest_default", "120") == {} and store.get_pref(OWNER, "rest_default") == "120"

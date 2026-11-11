@@ -25,7 +25,7 @@ from .core.store import Store
 @callback
 def async_register_websocket_commands(hass: HomeAssistant) -> None:
     for command in (ws_info, ws_sync_push, ws_sync_pull, ws_export, ws_import_gymrun, ws_catalog_info,
-                    ws_pref_get, ws_pref_set, ws_targets_recompute, ws_gym_current, ws_plan_suggest, ws_web_query):
+                    ws_pref_get, ws_pref_set, ws_target_set, ws_targets_recompute, ws_gym_current, ws_plan_suggest, ws_web_query):
         websocket_api.async_register_command(hass, command)
 
 
@@ -98,7 +98,7 @@ def ws_catalog_info(hass: HomeAssistant, connection: websocket_api.ActiveConnect
     connection.send_result(msg["id"], catalog.info())
 
 
-PREF_KEYS = ["phase", *targets.SETTING_KEYS, "mda_name"]
+PREF_KEYS = ["phase", *targets.SETTING_KEYS, *targets.OTHER_KEYS]
 
 
 @websocket_api.websocket_command({vol.Required("type"): "hafs/pref/get", vol.Required("key"): vol.In(PREF_KEYS)})
@@ -122,6 +122,17 @@ async def ws_pref_set(hass, connection, msg, store: Store) -> dict:
     if (hub := hass.data.get(DOMAIN)) is not None:
         await hub.async_after_pref(connection.user.id)
     return {"key": msg["key"], "value": msg["value"], "targets": targets_result}
+
+
+@websocket_api.websocket_command(
+    {vol.Required("type"): "hafs/target/set", vol.Required("exercise_id"): str, vol.Required("weight"): vol.All(vol.Coerce(float), vol.Range(min=0, max=1000))}
+)
+@websocket_api.async_response
+@_with_store
+async def ws_target_set(hass, connection, msg, store: Store) -> dict:
+    """Set the next weight of one exercise by hand (the plan editor's weight field). A one-time suggestion:
+    the progression takes over again after the next workout with the exercise."""
+    return {"written": await hass.async_add_executor_job(store.set_target, connection.user.id, msg["exercise_id"], msg["weight"])}
 
 
 @websocket_api.websocket_command({vol.Required("type"): "hafs/gym/current"})

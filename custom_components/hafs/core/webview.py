@@ -196,9 +196,10 @@ def plan(conn, owner, now, tz, params) -> dict:
             "WHERE r.owner=? AND r.deleted=0 AND p.id IS NULL ORDER BY r.name COLLATE NOCASE", (owner,)):
         loose.append({"id": r["id"], "routine": r["name"], "exercises": [
             {"exercise": x["name"], "sets": x["target_sets"], "reps_min": x["reps_min"], "reps_max": x["reps_max"],
-             "superset": x["superset_group"] or None, "target_weight": None}
+             "superset": x["superset_group"] or None, "target_weight": None, "rest_s": x["rest_s"], "warmup": st.warmup_of(x)}
             for x in conn.execute(
-                "SELECT e.name, x.target_sets, x.reps_min, x.reps_max, x.superset_group FROM routine_exercise x "
+                "SELECT e.name, x.target_sets, x.reps_min, x.reps_max, x.superset_group, x.rest_s, x.warmup_sets, x.warmup_reps, x.warmup_pct "
+                "FROM routine_exercise x "
                 "JOIN exercise e ON e.id=x.exercise_id WHERE x.routine_id=? AND x.deleted=0 AND e.deleted=0 ORDER BY x.position",
                 (r["id"],))]})
     gyms = []
@@ -220,8 +221,9 @@ def plan_edit(conn, owner, now, tz, params) -> dict:
     def rows(sql: str) -> list[dict]:
         return [{k: v for k, v in dict(r).items() if k != "owner"} for r in conn.execute(sql, (owner,))]
 
-    ex = [{"id": r["id"], "name": r["name"], "kind": r["kind"], "muscles": (r["mp"] or "").split()} for r in conn.execute(
-        "SELECT id, name, kind, muscles_primary mp FROM exercise WHERE owner=? AND deleted=0 ORDER BY name COLLATE NOCASE", (owner,))]
+    ex = [{"id": r["id"], "name": r["name"], "kind": r["kind"], "muscles": (r["mp"] or "").split(), "equipment_type": r["equipment_type"]}
+          for r in conn.execute(
+        "SELECT id, name, kind, muscles_primary mp, equipment_type FROM exercise WHERE owner=? AND deleted=0 ORDER BY name COLLATE NOCASE", (owner,))]
     return {
         "programs": rows("SELECT * FROM program WHERE owner=? AND deleted=0 ORDER BY name COLLATE NOCASE"),
         "routines": rows("SELECT * FROM routine WHERE owner=? AND deleted=0 ORDER BY position, name COLLATE NOCASE"),
@@ -230,6 +232,9 @@ def plan_edit(conn, owner, now, tz, params) -> dict:
         "equipment": rows("SELECT * FROM equipment WHERE owner=? AND deleted=0 ORDER BY name COLLATE NOCASE"),
         "links": rows("SELECT * FROM exercise_equipment WHERE owner=? AND deleted=0"),
         "exercises": ex,
+        # the weight the next workout starts with, per exercise (latest target; the plan editor shows and sets it)
+        "target_weights": {r["exercise_id"]: r["weight"] for r in conn.execute(
+            "SELECT exercise_id, weight FROM target WHERE owner=? AND deleted=0 AND weight IS NOT NULL ORDER BY updated_at", (owner,))},
     }
 
 

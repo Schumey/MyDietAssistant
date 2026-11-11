@@ -113,6 +113,15 @@ void main() {
     expect(RestTimer.format(const Duration(minutes: 12, seconds: 3)), '12:03');
   });
 
+  test('rest length order: device choice for the exercise, then the training day, then the global setting, then 90 s', () async {
+    expect(await timer.restSeconds('e1'), 90);
+    expect(await timer.restSeconds('e1', global: 120), 120);
+    expect(await timer.restSeconds('e1', planned: 180, global: 120), 180);
+    expect(await timer.restSeconds('e1', planned: 0, global: 120), 0); // 0 = no timer, not "unset"
+    expect(await timer.cycleRest('e1', planned: 180, global: 120), 240); // cycling starts from what applies
+    expect(await timer.restSeconds('e1', planned: 180, global: 120), 240); // and the device choice wins from then on
+  });
+
   test('rest length per exercise: default, cycling through the presets, wraps around', () async {
     expect(await timer.restSeconds('e1'), 90);
     expect(await timer.cycleRest('e1'), 120);

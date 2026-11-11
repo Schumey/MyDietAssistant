@@ -169,11 +169,14 @@ class RestTimer extends ChangeNotifier {
 
   // --- Pausenlänge je Übung ----------------------------------------------------------
 
-  Future<int> restSeconds(String exerciseId) async => await store.restFor(exerciseId) ?? defaultSeconds;
+  /// Pausenlänge einer Übung: was auf dem Gerät für die Übung eingestellt wurde, sonst die Pause aus dem Trainingstag
+  /// ([planned]), sonst die globale Pause vom Server ([global]), sonst 90 s.
+  Future<int> restSeconds(String exerciseId, {int? planned, int? global}) async =>
+      await store.restFor(exerciseId) ?? planned ?? global ?? defaultSeconds;
 
   /// Schaltet die Pausenlänge der Übung auf die nächste Voreinstellung und gibt sie zurück.
-  Future<int> cycleRest(String exerciseId) async {
-    final current = await restSeconds(exerciseId);
+  Future<int> cycleRest(String exerciseId, {int? planned, int? global}) async {
+    final current = await restSeconds(exerciseId, planned: planned, global: global);
     final i = presets.indexWhere((p) => p > current);
     final next = i == -1 ? presets.first : presets[i];
     await store.setRestFor(exerciseId, next);

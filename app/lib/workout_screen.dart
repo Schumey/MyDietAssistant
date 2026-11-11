@@ -39,6 +39,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   int _restSeconds = RestTimer.defaultSeconds;
   String? _gymId;
   List<EquipmentInfo> _equipmentOptions = [];
+  List<EquipmentInfo> _stations = []; // Rack, Bank: nur zur Anzeige
   String? _equipmentId;
   List<double>? _steps;
 
@@ -56,14 +57,17 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     super.dispose();
   }
 
+  PlannedExercise? _plannedFor(String exerciseId) => repo.planned(widget.workoutId).where((p) => p.exercise.id == exerciseId).firstOrNull;
+
   void _select(ExerciseInfo e) {
     final gym = _gymId;
     final options = gym == null ? <EquipmentInfo>[] : repo.equipmentFor(e.id, gym);
+    _stations = gym == null ? [] : repo.stationsFor(e.id, gym);
     final remembered = repo.lastEquipmentFor(e.id);
     final equipment = options.where((o) => o.id == remembered).firstOrNull ?? options.firstOrNull;
     _equipmentOptions = options;
     _applyEquipment(e, equipment?.id);
-    widget.app.rest.restSeconds(e.id).then((s) {
+    widget.app.rest.restSeconds(e.id, planned: _plannedFor(e.id)?.restSeconds, global: widget.app.restDefault).then((s) {
       if (mounted && _exercise?.id == e.id) setState(() => _restSeconds = s);
     });
   }
@@ -74,6 +78,9 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     // Innerhalb dieses Workouts gilt der zuletzt erfasste Satz an diesem Gerät als Vorbelegung.
     final here = repo.workoutDetail(widget.workoutId).where((x) => x.exercise.id == e.id).toList();
     final lastHere = here.isEmpty ? null : here.first.sets.where((s) => s.kind == 'work').lastOrNull;
+    // Sind laut Trainingstag noch Aufwärmsätze dran, ist der nächste Satz einer: Gewicht in Prozent des Arbeitsgewichts.
+    final plan = _plannedFor(e.id);
+    final warmupNext = plan != null && plan.warmupDue && d.weight > 0;
     setState(() {
       _exercise = e;
       _equipmentId = equipmentId;
@@ -84,6 +91,11 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       _minutes = 1;
       _step = d.step;
       _warmup = false;
+      if (warmupNext) {
+        _warmup = true;
+        _weight = warmupWeight(d.weight, plan.warmupPct, d.steps, d.step);
+        _reps = plan.warmupReps;
+      }
     });
   }
 
@@ -132,7 +144,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   Future<void> _cycleRest() async {
     final e = _exercise;
     if (e == null) return;
-    final s = await widget.app.rest.cycleRest(e.id);
+    final s = await widget.app.rest.cycleRest(e.id, planned: _plannedFor(e.id)?.restSeconds, global: widget.app.restDefault);
     if (mounted) setState(() => _restSeconds = s);
   }
 
@@ -228,6 +240,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     final e = _exercise;
     if (e == null) return;
     final timed = e.kind == 'time' || e.kind == 'cardio';
+    final wasWarmup = _warmup;
     repo.addSet(
       workoutId: widget.workoutId,
       exerciseId: e.id,
@@ -249,7 +262,11 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       _warmup = false;
       _note = '';
     });
-    if (round.go != null) _select(round.go!);
+    if (round.go != null) {
+      _select(round.go!);
+    } else if (wasWarmup && (_plannedFor(e.id)?.warmupSets ?? 0) > 0) {
+      _applyEquipment(e, _equipmentId); // next warm-up set, or the working weight once the warm-ups are done
+    }
   }
 
   Future<void> _finish() async {
@@ -322,6 +339,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             ]),
             if (plan != null && plan.group.isNotEmpty) Text(tr('superset_label', [plan.group]), style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.primary)),
             if (plan != null && sets.isEmpty) Text(tr('planned_range', [plan.repsMin, plan.repsMax]), style: theme.textTheme.bodySmall),
+            if (plan != null && plan.warmupSets > 0)
+              Text(tr('planned_warmup', [plan.warmupDone, plan.warmupSets, plan.warmupReps, L10n.kg(plan.warmupPct)]), style: theme.textTheme.bodySmall),
             if (sets.isNotEmpty) const SizedBox(height: 6),
             for (final s in sets)
               Row(children: [
@@ -428,6 +447,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('${e.name} · ${tr('set_n', [done + 1])}', style: theme.textTheme.titleMedium),
+            if (_stations.isNotEmpty)
+              Text('${tr('station_label')}: ${_stations.map((s) => s.name).join(', ')}', style: theme.textTheme.bodySmall),
             if (_gymId != null && _equipmentOptions.isEmpty)
               Align(
                 alignment: Alignment.centerLeft,

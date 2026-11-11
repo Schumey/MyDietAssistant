@@ -63,4 +63,19 @@ void main() {
     expect(stepsSummary('[20, 22.5, 25]', fmt, rangeText: range, listText: list), '20, 22.5, 25 kg');
     expect(stepsSummary(null, fmt, rangeText: range, listText: list), isNull);
   });
+
+  group('warm-up weight and stations', () {
+    test('warmupWeight: percent of the working weight on the nearest step', () {
+      expect(warmupWeight(100, 50, [for (var w = 20.0; w <= 140; w += 2.5) w], 2.5), 50);
+      expect(warmupWeight(77.5, 50, [20, 30, 40, 50], 5), 40); // 38.75 -> nearest step
+      expect(warmupWeight(77.5, 50, null, 2.5), 40); // no steps: multiples of the step size (38.75 -> 40)
+      expect(warmupWeight(60, 60, null, 5), 35); // 36 -> 35
+      expect(warmupWeight(0, 50, null, 2.5), 0);
+    });
+
+    test('stations are rack and bench only', () {
+      expect(isStationType('rack') && isStationType('bench'), isTrue);
+      expect(isStationType('barbell') || isStationType('machine_stack') || isStationType(''), isFalse);
+    });
+  });
 }
