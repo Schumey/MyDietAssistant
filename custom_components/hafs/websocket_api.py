@@ -18,14 +18,14 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.loader import async_get_integration
 
 from .const import API_VERSION, DOMAIN
-from .core import aiplan, catalog, sync, targets
+from .core import aiplan, catalog, sync, targets, webview
 from .core.store import Store
 
 
 @callback
 def async_register_websocket_commands(hass: HomeAssistant) -> None:
     for command in (ws_info, ws_sync_push, ws_sync_pull, ws_export, ws_import_gymrun, ws_catalog_info,
-                    ws_pref_get, ws_pref_set, ws_targets_recompute, ws_gym_current, ws_plan_suggest):
+                    ws_pref_get, ws_pref_set, ws_targets_recompute, ws_gym_current, ws_plan_suggest, ws_web_query):
         websocket_api.async_register_command(hass, command)
 
 
@@ -173,6 +173,23 @@ async def ws_plan_suggest(hass, connection, msg, store: Store) -> dict:
     if not isinstance(text, str):
         text = json.dumps(answer) if answer else str((result or {}).get("text", ""))
     return {"days": aiplan.parse_draft(text, req["known"])}
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "hafs/web/query",
+        vol.Required("q"): vol.In(sorted(webview.QUERIES)),
+        vol.Optional("params", default=dict): dict,
+    }
+)
+@websocket_api.async_response
+@_with_store
+async def ws_web_query(hass, connection, msg, store: Store) -> dict:
+    """One read-only view for the web panel: overview, muscles, workouts, workout, exercises, exercise, plan."""
+    from homeassistant.util import dt as dt_util
+
+    now = dt_util.now()
+    return await hass.async_add_executor_job(store.web_query, connection.user.id, msg["q"], msg["params"], now, now.tzinfo)
 
 
 @websocket_api.websocket_command({vol.Required("type"): "hafs/targets/recompute"})

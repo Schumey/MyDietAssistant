@@ -211,8 +211,8 @@ def plan(conn: sqlite3.Connection, owner: str, now: datetime | None = None) -> d
                     "WHERE x.routine_id=? AND x.deleted=0 AND e.deleted=0 ORDER BY x.position", (r["id"],)):
                 exercises.append({"exercise": x["name"], "sets": x["target_sets"], "reps_min": x["reps_min"], "reps_max": x["reps_max"],
                                   "superset": x["superset_group"] or None, "target_weight": x["weight"]})
-            routines.append({"routine": r["name"], "exercises": exercises})
+            routines.append({"id": r["id"], "routine": r["name"], "exercises": exercises})
         days = parse_rhythm(prog["rhythm"], len(routines))
-        programs.append({"program": prog["name"], "weekdays": days or None, "routines": routines})
+        programs.append({"id": prog["id"], "program": prog["name"], "weekdays": days or None, "routines": routines})
     nxt = next_routine(conn, owner, now)
     return {"programs": programs, "next": {k: nxt[k] for k in ("routine", "program")} if nxt else None}

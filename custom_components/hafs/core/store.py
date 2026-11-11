@@ -6,7 +6,7 @@ import os
 from contextlib import closing
 from typing import Any
 
-from . import aiplan, catalog, db, gymrun, status, sync, targets, zones
+from . import aiplan, catalog, db, gymrun, status, sync, targets, webview, zones
 
 
 class Store:
@@ -91,6 +91,11 @@ class Store:
             phase = targets.get_pref(conn, owner, "phase") or targets.get_pref(conn, owner, "phase_auto")
         return {"instructions": aiplan.build_instructions(days, minutes, goal, notes, phase, exercises, lang),
                 "known": {e["id"]: e["name"] for e in exercises}}
+
+    def web_query(self, owner: str, q: str, params: dict | None = None, now=None, tz=None) -> dict:
+        """One read-only view for the web panel (see `core/webview.py`)."""
+        with self._conn() as conn:
+            return webview.run(conn, owner, q, params, now, tz)
 
     def owners(self) -> list[str]:
         with self._conn() as conn:

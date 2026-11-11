@@ -3,7 +3,7 @@
   "name": "HAFS",
   "codeowners": [],
   "config_flow": true,
-  "dependencies": ["http", "websocket_api"],
+  "dependencies": ["http", "websocket_api", "frontend", "panel_custom"],
   "documentation": "https://github.com/Schumey/HAFS",
   "integration_type": "service",
   "iot_class": "local_push",

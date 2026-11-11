@@ -2,15 +2,20 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
+from homeassistant.components import frontend, panel_custom
+from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
+from homeassistant.loader import async_get_integration
 from homeassistant.exceptions import HomeAssistantError
 import voluptuous as vol
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.typing import ConfigType
 
-from .const import DB_SUBPATH, DOMAIN
+from .const import DB_SUBPATH, DOMAIN, PANEL_STATIC_URL, PANEL_URL_PATH
 from .core.store import Store
 from .hub import HafsHub
 from .views import async_register_views
@@ -26,6 +31,9 @@ type HafsConfigEntry = ConfigEntry[Store]
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     async_register_websocket_commands(hass)
     async_register_views(hass)
+    await hass.http.async_register_static_paths(
+        [StaticPathConfig(PANEL_STATIC_URL, str(Path(__file__).parent / "www"), cache_headers=False)]
+    )
 
     async def get_workouts(call: ServiceCall) -> dict:
         """Recent finished workouts of a user (default: the user who called the service)."""
@@ -75,6 +83,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: HafsConfigEntry) -> bool
     hass.data[DOMAIN] = hub
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)  # platforms register with the hub first
     await hub.async_start()                                                 # then entities are created per user
+    integration = await async_get_integration(hass, DOMAIN)
+    await panel_custom.async_register_panel(
+        hass,
+        frontend_url_path=PANEL_URL_PATH,
+        webcomponent_name="hafs-panel",
+        sidebar_title="HAFS",
+        sidebar_icon="mdi:dumbbell",
+        module_url=f"{PANEL_STATIC_URL}/hafs-panel.js?v={integration.version}",  # the version busts the browser cache
+    )
     return True
 
 
@@ -82,4 +99,5 @@ async def async_unload_entry(hass: HomeAssistant, entry: HafsConfigEntry) -> boo
     ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if ok and (hub := hass.data.pop(DOMAIN, None)):
         hub.async_stop()
+        frontend.async_remove_panel(hass, PANEL_URL_PATH, warn_if_unknown=False)
     return ok

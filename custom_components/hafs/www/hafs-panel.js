@@ -1,0 +1,591 @@
+// HAFS panel: training log of the hafs integration, shown in the Home Assistant sidebar.
+// Plain web component without build step. Reads through `hafs/web/query`, writes settings through the
+// normal `hafs/pref/*` commands. Colors come from the Home Assistant theme, so it follows light and dark.
+
+const version = new URL(import.meta.url).search;
+const { makeT, language, makeFormat, esc, lineChart, barChart } = await import(`./hafs-common.js${version}`);
+const edit = await import(`./hafs-edit.js${version}`);
+const { installEditor, EDITOR_CSS } = await import(`./hafs-editor.js${version}`);
+
+const TABS = ["today", "history", "stats", "plans", "settings"];
+const TAB_KEY = "hafs.tab";
+const WINDOWS = [4, 12, 26, 52];
+const MAX_CSV = 3_500_000;
+
+class HafsPanel extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+    this._tab = "today";
+    try {
+      const stored = localStorage.getItem(TAB_KEY);
+      if (TABS.includes(stored)) this._tab = stored;
+    } catch { /* storage blocked: start on Today */ }
+    this._seq = 0;
+    this._cache = {};        // last answer per query, shown while the next one loads
+    this._catalog = null;    // muscle labels
+    this._history = { list: [], more: false };
+    this._detail = null;     // workout id on the history tab
+    this._statsMode = "muscles";
+    this._window = 12;
+    this._exId = null;
+    this._metric = "e1rm";
+    this._range = "12";
+    this._filter = "";
+    this._csv = null;
+    this._edit = null;       // plan/gym editor state while one is open
+    // Home Assistant may have set these on the plain element before the class was defined.
+    for (const prop of ["narrow", "hass"]) {
+      if (Object.prototype.hasOwnProperty.call(this, prop)) {
+        const value = this[prop];
+        delete this[prop];
+        this[prop] = value;
+      }
+    }
+  }
+
+  set hass(hass) {
+    const first = !this._hass;
+    this._hass = hass;
+    if (this._menu) this._menu.hass = hass;
+    if (first) {
+      this._lang = language(hass.language);
+      this._t = makeT(this._lang);
+      this._f = makeFormat(hass.language);
+      this._build();
+      this._show();
+    }
+  }
+
+  set narrow(narrow) {
+    this._narrow = narrow;
+    if (this._menu) this._menu.narrow = narrow;
+    this.toggleAttribute("narrow", !!narrow);
+  }
+
+  // ---- Frame ----------------------------------------------------------------------------
+
+  _build() {
+    const t = this._t;
+    this.shadowRoot.innerHTML = `<style>${CSS}</style>
+      <header class="bar"><span id="menu"></span><h1>${esc(t("title"))}</h1></header>
+      <nav class="tabs" role="tablist">${TABS.map((k) => `<button role="tab" data-tab="${k}">${esc(t("tab_" + k))}</button>`).join("")}</nav>
+      <main id="main" tabindex="-1"></main>
+      <div class="toast" id="toast" role="status" hidden></div>`;
+    this._menu = document.createElement("ha-menu-button");
+    this._menu.hass = this._hass;
+    this._menu.narrow = this._narrow;
+    this.shadowRoot.getElementById("menu").append(this._menu);
+    this._main = this.shadowRoot.getElementById("main");
+    this.shadowRoot.addEventListener("click", (e) => this._onClick(e));
+    this.shadowRoot.addEventListener("input", (e) => this._onInput(e));
+    this.shadowRoot.addEventListener("change", (e) => this._onChange(e));
+  }
+
+  _call(msg) {
+    return this._hass.connection.sendMessagePromise(msg);
+  }
+
+  _query(q, params = {}) {
+    return this._call({ type: "hafs/web/query", q, params });
+  }
+
+  async _loadCatalog() {
+    if (!this._catalog) {
+      try { this._catalog = (await this._call({ type: "hafs/catalog/info" })).muscles || {}; } catch { this._catalog = {}; }
+    }
+  }
+
+  _muscle(key) {
+    const m = this._catalog?.[key];
+    return m ? m[this._lang] || m.en : key;
+  }
+
+  _toast(text) {
+    const el = this.shadowRoot.getElementById("toast");
+    el.textContent = text;
+    el.hidden = false;
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => { el.hidden = true; }, 3500);
+  }
+
+  _errorHtml(err) {
+    const t = this._t;
+    const msg = err?.code === "not_found" ? t("not_loaded") : t("load_failed", esc(err?.message || err?.code || err));
+    return `<div class="notice"><p>${msg}</p><button class="btn" data-act="reload">${esc(t("retry"))}</button></div>`;
+  }
+
+  // Run a loader and draw its result; stale answers (the user moved on) are dropped.
+  async _show() {
+    const seq = ++this._seq;
+    for (const b of this.shadowRoot.querySelectorAll(".tabs button")) {
+      const on = b.dataset.tab === this._tab;
+      b.setAttribute("aria-selected", on ? "true" : "false");
+      b.tabIndex = on ? 0 : -1;
+    }
+    const t = this._t;
+    const cached = this._cache[this._tab];
+    if (!cached) this._main.innerHTML = `<p class="muted pad">${esc(t("loading"))}</p>`;
+    try {
+      await this._loadCatalog();
+      const html = await this[`_view_${this._tab}`]();
+      if (seq === this._seq) this._main.innerHTML = `<div class="page">${html}</div>`;
+    } catch (err) {
+      if (seq === this._seq) this._main.innerHTML = `<div class="page">${this._errorHtml(err)}</div>`;
+    }
+  }
+
+  _redraw(html) {
+    this._main.innerHTML = `<div class="page">${html}</div>`;
+  }
+
+  // ---- Events ---------------------------------------------------------------------------
+
+  _onClick(e) {
+    const tab = e.target.closest("[data-tab]");
+    if (tab) {
+      this._tab = tab.dataset.tab;
+      try { localStorage.setItem(TAB_KEY, this._tab); } catch { /* ignore */ }
+      this._detail = null;
+      this._exId = null;
+      this._edit = null;
+      this._show();
+      return;
+    }
+    const el = e.target.closest("[data-act]");
+    if (!el) return;
+    if (el.dataset.act.startsWith("e-")) { this._editClick(el); return; }
+    const v = el.dataset.v;
+    switch (el.dataset.act) {
+      case "reload": this._cache = {}; this._history = { list: [], more: false }; this._show(); break;
+      case "open-workout": this._detail = v; this._show(); break;
+      case "close-detail": this._detail = null; this._show(); break;
+      case "more-history": this._moreHistory(); break;
+      case "stats-mode": this._statsMode = v; this._exId = null; this._show(); break;
+      case "window": this._window = Number(v); this._show(); break;
+      case "open-exercise": this._exId = v; this._metric = "e1rm"; this._show(); break;
+      case "close-exercise": this._exId = null; this._show(); break;
+      case "metric": this._metric = v; this._show(); break;
+      case "range": this._range = v; this._show(); break;
+      case "import-dry": this._import(true); break;
+      case "import-run": this._import(false); break;
+      case "export": this._export(); break;
+    }
+  }
+
+  _onInput(e) {
+    if (e.target.dataset.f && this._edit) { this._editInput(e.target); return; }
+    if (e.target.id === "filter") {
+      this._filter = e.target.value;
+      const list = this.shadowRoot.getElementById("exlist");
+      if (list) list.innerHTML = this._exerciseRows(this._cache.exercises?.exercises || []);
+    }
+  }
+
+  async _onChange(e) {
+    const el = e.target;
+    if (el.dataset.f && this._edit) { this._editInput(el, true); return; }
+    if (el.id === "csv") {
+      const file = el.files?.[0];
+      this._csv = null;
+      this.shadowRoot.getElementById("import-out").innerHTML = "";
+      if (file) {
+        if (file.size > MAX_CSV) { this._toast(this._t("import_too_big")); el.value = ""; }
+        else this._csv = await file.text();
+      }
+      for (const b of this.shadowRoot.querySelectorAll("[data-act^=import]")) b.disabled = !this._csv;
+      return;
+    }
+    const pref = el.dataset.pref;
+    if (!pref) return;
+    const value = el.type === "checkbox" ? (el.checked ? "1" : "0") : el.value;
+    try {
+      await this._call({ type: "hafs/pref/set", key: pref, value });
+      this._cache = {};
+      this._toast(this._t("saved"));
+    } catch (err) {
+      this._toast(this._t("load_failed", err?.message || err?.code));
+      this._show();
+    }
+  }
+
+  // ---- Heute ----------------------------------------------------------------------------
+
+  async _view_today() {
+    const t = this._t, f = this._f;
+    const d = await this._query("overview");
+    this._cache.today = d;
+    const s = d.status;
+    let hero;
+    if (s.active) {
+      hero = `<section class="card hero board"><p class="kicker">${esc(t("running_since", f.time(d.active_since) || ""))}</p><h2 class="big">${esc(s.next ? s.next.routine : t("free_workout"))}</h2></section>`;
+    } else if (s.next) {
+      const rows = (d.next_exercises || []).map((x) => this._planRow(x)).join("")
+        || (s.next.exercises || []).map((n) => `<li class="prow"><span class="pname">${esc(n)}</span></li>`).join("");
+      hero = `<section class="card hero board">
+        <p class="kicker">${esc(s.state === "done" ? t("done_today") : t("next_up"))}</p>
+        <h2 class="big">${esc(s.next.routine)}</h2>
+        <p class="muted">${esc(t("next_program", s.next.program))}</p>
+        <ul class="plist">${rows}</ul></section>`;
+    } else {
+      hero = `<section class="card hero"><h2>${esc(t("rest_day"))}</h2><p class="muted">${esc(t("no_plan"))}</p></section>`;
+    }
+    const phaseLabel = d.phase ? t("phase_" + d.phase) : t("phase_none");
+    const phaseSource = d.phase_manual ? t("phase_manual_label") : d.phase ? t("phase_auto") : "";
+    const last = s.last_workout_at ? f.date(s.last_workout_at) : t("never");
+    const facts = `<dl class="facts">
+      <div><dt>${esc(t("workouts_week"))}</dt><dd>${f.int(s.workouts_week)}</dd></div>
+      <div><dt>${esc(t("volume_week"))}</dt><dd>${esc(f.tonnes(s.volume_week_kg))}</dd></div>
+      <div><dt>${esc(t("phase"))}</dt><dd>${esc(phaseLabel)}</dd>${phaseSource ? `<small>${esc(phaseSource)}</small>` : ""}</div>
+      <div><dt>${esc(t("last_workout"))}</dt><dd class="small">${esc(last)}</dd></div></dl>`;
+    const recent = d.recent.length
+      ? `<ul class="rows">${d.recent.map((w) => this._workoutRow({ ...w, routine: w.routine, exercises: (w.exercises || []).map((e) => e.name) })).join("")}</ul>`
+      : `<p class="muted">${esc(t("empty_history"))}</p>`;
+    return `<div class="grid two">
+      <div class="col">${hero}${facts}</div>
+      <div class="col">
+        <section class="card"><h2>${esc(t("sets_by_muscle"))}</h2>${this._muscleBars(d.weeks, 4)}
+          <p class="hint">${esc(t("muscle_hint"))}</p></section>
+        <section class="card"><h2>${esc(t("recent"))}</h2>${recent}</section>
+      </div></div>`;
+  }
+
+  _planRow(x) {
+    const t = this._t, f = this._f;
+    const reps = x.reps_min && x.reps_max ? (x.reps_min === x.reps_max ? x.reps_min : t("reps_range", x.reps_min, x.reps_max)) : x.reps_max || x.reps_min || "";
+    const sets = x.sets && reps ? t("sets_short", x.sets, reps) : x.sets ? `${x.sets}×` : reps;
+    return `<li class="prow">${x.superset ? `<span class="ss" title="${esc(t("superset", x.superset))}">${esc(x.superset)}</span>` : ""}
+      <span class="pname">${esc(x.exercise)}</span><span class="pnum">${esc(sets)}</span>
+      <span class="pnum w">${x.target_weight != null ? esc(f.kg(x.target_weight)) + " kg" : ""}</span></li>`;
+  }
+
+  _muscleBars(weeks, win) {
+    const t = this._t, f = this._f;
+    const rows = Object.entries(weeks.muscles).map(([key, arr]) => {
+      const cur = arr[arr.length - 1] || 0;
+      const prev = arr.slice(Math.max(0, arr.length - 1 - win), arr.length - 1);
+      const avg = prev.length ? prev.reduce((a, b) => a + b, 0) / prev.length : 0;
+      return { key, cur, avg };
+    }).filter((r) => r.cur > 0 || r.avg >= 0.5).sort((a, b) => Math.max(b.cur, b.avg) - Math.max(a.cur, a.avg));
+    if (!rows.length) return `<p class="muted">${esc(t("no_sets"))}</p>`;
+    const max = Math.max(1, ...rows.map((r) => Math.max(r.cur, r.avg)));
+    const pct = (v) => Math.min(100, (v / max) * 100).toFixed(1);
+    return `<div class="legend"><span><i class="sw fill"></i>${esc(t("this_week"))}</span><span><i class="sw avg"></i>${esc(t("average", win))}</span></div>`
+      + rows.map((r) => `<div class="mrow"><span class="mname">${esc(this._muscle(r.key))}</span>
+        <div class="track"><i class="fill" style="width:${pct(r.cur)}%"></i><b class="avg" style="left:${pct(r.avg)}%"></b></div>
+        <span class="mnum">${f.num(r.cur)}<small>${esc(f.num(r.avg))}</small></span></div>`).join("");
+  }
+
+  _workoutRow(w) {
+    const t = this._t, f = this._f;
+    const d = new Date(w.started_at);
+    const meta = [w.sets ? `${w.sets} ${t("sets")}` : "", w.volume_kg ? f.tonnes(w.volume_kg) : "", w.duration_min ? t("minutes", w.duration_min) : ""].filter(Boolean).join("  ");
+    const name = w.routine || t("free_workout");
+    return `<li><button class="wrow" data-act="open-workout" data-v="${esc(w.id || w.workout_id)}">
+      <span class="wdate"><b>${isNaN(d) ? "" : d.getDate()}</b><small>${isNaN(d) ? "" : esc(d.toLocaleDateString(this._hass.language, { weekday: "short" }))}</small></span>
+      <span class="wmain"><span class="wname">${esc(name)}${w.ended_at ? "" : ` <em>${esc(t("unfinished"))}</em>`}</span>
+        <span class="wsub">${esc((w.exercises || []).slice(0, 5).join(", "))}</span></span>
+      <span class="wmeta">${esc(meta)}</span></button></li>`;
+  }
+
+  // ---- Verlauf --------------------------------------------------------------------------
+
+  async _view_history() {
+    if (this._detail) return this._workoutDetail(this._detail);
+    const t = this._t, f = this._f;
+    if (!this._history.list.length) {
+      const r = await this._query("workouts", { limit: 30 });
+      this._history = { list: r.workouts, more: r.more };
+    }
+    return this._historyHtml();
+  }
+
+  _historyHtml() {
+    const t = this._t, f = this._f;
+    const { list, more } = this._history;
+    if (!list.length) return `<p class="muted">${esc(t("empty_history"))}</p>`;
+    let html = "", month = "";
+    for (const w of list) {
+      const m = f.monthYear(w.started_at);
+      if (m !== month) { if (month) html += "</ul></section>"; html += `<section class="card"><h2>${esc(m)}</h2><ul class="rows">`; month = m; }
+      html += this._workoutRow(w);
+    }
+    html += "</ul></section>";
+    if (more) html += `<p class="center"><button class="btn" data-act="more-history">${esc(t("more"))}</button></p>`;
+    return html;
+  }
+
+  async _moreHistory() {
+    const last = this._history.list[this._history.list.length - 1];
+    if (!last) return;
+    try {
+      const r = await this._query("workouts", { limit: 50, before: last.started_at });
+      this._history = { list: [...this._history.list, ...r.workouts], more: r.more };
+      this._redraw(this._historyHtml());
+    } catch (err) { this._toast(this._t("load_failed", err?.message || err?.code)); }
+  }
+
+  async _workoutDetail(id) {
+    const t = this._t, f = this._f;
+    const w = await this._query("workout", { id });
+    const chips = [
+      w.gym ? `${t("gym")}: ${w.gym}` : "", w.sets ? `${w.sets} ${t("sets")}` : "", w.volume_kg ? f.tonnes(w.volume_kg) : "",
+      w.duration_min ? t("minutes", w.duration_min) : "", w.phase ? t("phase_" + w.phase) : "", w.source === "gymrun" ? t("imported") : "",
+    ].filter(Boolean).map((c) => `<span class="chip">${esc(c)}</span>`).join("");
+    const groups = w.exercises.map((g) => `<section class="card"><h3>${esc(g.name)}${g.equipment ? ` <small class="muted">${esc(g.equipment)}</small>` : ""}</h3>
+      <table class="sets"><tbody>${g.sets.map((s, i) => this._setRow(s, i)).join("")}</tbody></table></section>`).join("");
+    return `<p><button class="btn ghost" data-act="close-detail">← ${esc(t("back"))}</button></p>
+      <h2 class="big">${esc(w.routine || t("free_workout"))}</h2><p class="muted">${esc(f.date(w.started_at))}, ${esc(f.time(w.started_at))}</p>
+      <div class="chips">${chips}</div>${w.note ? `<p class="note">${esc(w.note)}</p>` : ""}<div class="grid cards">${groups}</div>`;
+  }
+
+  _setRow(s, i) {
+    const t = this._t, f = this._f;
+    let main;
+    if (s.duration_s && !s.reps) main = `${Math.floor(s.duration_s / 60)}:${String(s.duration_s % 60).padStart(2, "0")} min`;
+    else if (s.weight) main = `${f.kg(s.weight)} kg × ${s.reps ?? "–"}`;
+    else main = `${s.reps ?? "–"}`;
+    const kind = s.kind && s.kind !== "work" ? `<span class="badge">${esc(t(s.kind))}</span>` : "";
+    const target = s.target_weight || s.target_reps ? `<small class="muted">${esc(t("target"))} ${s.target_weight ? f.kg(s.target_weight) + " kg" : ""}${s.target_reps ? " × " + s.target_reps : ""}</small>` : "";
+    return `<tr><td class="no">${s.no ?? i + 1}</td><td class="val">${esc(main)}</td><td>${kind}${target}${s.note ? ` <span class="snote">${esc(s.note)}</span>` : ""}</td></tr>`;
+  }
+
+  // ---- Statistik ------------------------------------------------------------------------
+
+  async _view_stats() {
+    const t = this._t;
+    const seg = `<div class="seg" role="group">${["muscles", "exercises"].map((m) =>
+      `<button data-act="stats-mode" data-v="${m}" aria-pressed="${this._statsMode === m}">${esc(t(m))}</button>`).join("")}</div>`;
+    if (this._statsMode === "exercises") return seg + (this._exId ? await this._exerciseDetail() : await this._exerciseList());
+    const d = await this._query("muscles", { weeks: 53 });
+    const win = this._window;
+    const wins = `<div class="seg" role="group">${WINDOWS.map((w) =>
+      `<button data-act="window" data-v="${w}" aria-pressed="${w === win}">${esc(t("weeks_n_short", w))}</button>`).join("")}</div>`;
+    const f = this._f;
+    const last12 = d.weeks.slice(-12).map((w, i, a) => ({ label: f.dayMonth(w), short: f.dayMonth(w), value: d.workouts.slice(-12)[i] }));
+    return `${seg}<div class="grid two">
+      <section class="card"><div class="head"><h2>${esc(t("sets_by_muscle"))}</h2>${wins}</div>${this._muscleBars(d, win)}<p class="hint">${esc(t("muscle_hint"))}</p></section>
+      <section class="card"><h2>${esc(t("workouts_per_week"))}</h2>${barChart(last12, { ariaLabel: t("workouts_per_week") })}</section></div>`;
+  }
+
+  async _exerciseList() {
+    const t = this._t;
+    const d = await this._query("exercises");
+    this._cache.exercises = d;
+    return `<section class="card"><input id="filter" class="search" type="search" placeholder="${esc(t("search_exercise"))}" value="${esc(this._filter)}" autocomplete="off">
+      <ul class="rows" id="exlist">${this._exerciseRows(d.exercises)}</ul></section>`;
+  }
+
+  _exerciseRows(list) {
+    const t = this._t, f = this._f;
+    const q = this._filter.trim().toLowerCase();
+    const rows = list.filter((e) => !q || e.name.toLowerCase().includes(q));
+    if (!rows.length) return `<li class="muted pad">${esc(t("no_match"))}</li>`;
+    return rows.map((e) => `<li><button class="wrow" data-act="open-exercise" data-v="${esc(e.id)}">
+      <span class="wmain"><span class="wname">${esc(e.name)}</span><span class="wsub">${esc(e.muscles.slice(0, 2).map((m) => this._muscle(m)).join(", "))}</span></span>
+      <span class="wmeta">${e.sets} ${esc(t("sets"))}  ${esc(f.dayMonth(e.last))}</span></button></li>`).join("");
+  }
+
+  async _exerciseDetail() {
+    const t = this._t, f = this._f;
+    const d = await this._query("exercise", { id: this._exId });
+    const ex = d.exercise;
+    const all = d.sessions;
+    const metrics = [];
+    if (all.some((s) => s.e1rm > 0)) metrics.push("e1rm");
+    if (all.some((s) => s.best_weight > 0)) metrics.push("weight");
+    if (all.some((s) => s.volume > 0 || s.total_reps > 0)) metrics.push(all.some((s) => s.volume > 0) ? "volume" : "reps");
+    if (all.some((s) => s.total_s > 0)) metrics.push("duration");
+    const metric = metrics.includes(this._metric) ? this._metric : metrics[0];
+    const cut = this._range === "all" ? 0 : Date.now() - Number(this._range) * 30.5 * 86400000;
+    const sessions = all.filter((s) => new Date(s.date).getTime() >= cut);
+    const pick = { e1rm: (s) => s.e1rm, weight: (s) => s.best_weight, volume: (s) => s.volume, reps: (s) => s.total_reps, duration: (s) => s.total_s / 60 };
+    const unit = { e1rm: " kg", weight: " kg", volume: " kg", reps: "", duration: " min" };
+    const points = metric ? sessions.filter((s) => pick[metric](s) > 0).map((s) => ({
+      t: new Date(s.date).getTime(), y: pick[metric](s), label: `${f.date(s.date)}: ${f.kg(Math.round(pick[metric](s) * 10) / 10)}${unit[metric]}` })) : [];
+    const chart = lineChart(points, { fmtX: (ms) => f.shortMonth(new Date(ms).toISOString()), fmtY: (v) => f.kg(Math.round(v * 10) / 10), ariaLabel: ex.name })
+      || `<p class="muted">${esc(t("no_data"))}</p>`;
+    const btns = (items, act, current, label) => `<div class="seg" role="group">${items.map((k) =>
+      `<button data-act="${act}" data-v="${k}" aria-pressed="${k === current}">${esc(label(k))}</button>`).join("")}</div>`;
+    const rec = d.records;
+    const recItems = [["best_weight", rec.weight, " kg"], ["best_e1rm", rec.e1rm, " kg"], ["best_volume", rec.volume, " kg"]].filter((r) => r[1] > 0)
+      .concat(rec.volume > 0 ? [] : rec.reps > 0 ? [["best_reps", rec.reps, ""]] : []);
+    const recHtml = recItems.length ? `<dl class="facts compact">${recItems.map(([k, v, u]) => `<div><dt>${esc(t(k))}</dt><dd>${esc(f.kg(v))}${u}</dd></div>`).join("")}</dl>` : "";
+    const tg = d.target;
+    const tgHtml = tg ? `<section class="card"><h3>${esc(t("suggestion"))}</h3><p class="sugg"><b>${tg.weight != null ? esc(f.kg(tg.weight)) + " kg" : ""}${tg.reps ? " × " + tg.reps : ""}</b></p>${tg.reason ? `<p class="muted">${esc(tg.reason)}</p>` : ""}</section>` : "";
+    const lastRows = all.slice(-8).reverse().map((s) => `<tr><td>${esc(f.date(s.date))}</td><td class="val">${s.top && s.top.weight ? esc(f.kg(s.top.weight)) + " kg × " + s.top.reps : s.top ? s.top.reps : ""}</td><td class="muted">${s.sets} ${esc(t("sets"))}</td></tr>`).join("");
+    return `<p><button class="btn ghost" data-act="close-exercise">← ${esc(t("back"))}</button></p>
+      <h2 class="big">${esc(ex.name)}</h2><p class="muted">${esc(ex.muscles.map((m) => this._muscle(m)).join(", "))}</p>
+      <div class="grid two"><section class="card"><div class="head">${metrics.length > 1 ? btns(metrics, "metric", metric, (k) => t("metric_" + k)) : `<h3>${esc(metric ? t("metric_" + metric) : "")}</h3>`}
+        ${btns(["3", "12", "all"], "range", this._range, (k) => t("range_" + k))}</div>${chart}${metric === "e1rm" ? `<p class="hint">${esc(t("e1rm_hint"))}</p>` : ""}</section>
+      <div class="col">${recHtml ? `<section class="card"><h3>${esc(t("records"))}</h3>${recHtml}</section>` : ""}${tgHtml}
+        <section class="card"><h3>${esc(t("last_sessions"))}</h3><table class="sets"><tbody>${lastRows}</tbody></table></section></div></div>`;
+  }
+
+  // ---- Pläne ----------------------------------------------------------------------------
+
+  async _view_plans() {
+    if (this._edit) return this._editorHtml();
+    const t = this._t, f = this._f;
+    const d = await this._query("plan");
+    const btn = (act, label, v = "") => `<button class="btn small" data-act="${act}"${v ? ` data-v="${esc(v)}"` : ""}>${esc(label)}</button>`;
+    const routine = (r) => `<div class="routine"><div class="head"><h4>${esc(r.routine)}</h4>${btn("e-edit-routine", t("edit"), r.id)}</div>
+      <ul class="plist">${r.exercises.map((x) => this._planRow(x)).join("")}</ul></div>`;
+    const programs = d.programs.map((p) => {
+      const days = p.weekdays ? p.weekdays.map((n) => new Date(2024, 0, n).toLocaleDateString(this._hass.language, { weekday: "short" })).join(", ") : t("rotation");
+      const next = d.next && d.next.program === p.program ? d.next.routine : null;
+      return `<section class="card"><div class="head"><h2>${esc(p.program)}</h2><span class="btns">${btn("e-new-routine", t("new_routine"), p.id)}${btn("e-edit-program", t("edit"), p.id)}</span></div>
+        <p class="muted">${esc(days)}${next ? ` – ${esc(t("next_up"))}: ${esc(next)}` : ""}</p>
+        <div class="grid cards">${p.routines.map(routine).join("")}</div></section>`;
+    }).join("");
+    const loose = d.loose.length ? `<section class="card"><h2>${esc(t("loose_routines"))}</h2><div class="grid cards">${d.loose.map(routine).join("")}</div></section>` : "";
+    const stepsText = (s) => (Array.isArray(s) ? s.map((n) => f.kg(n)).join(", ") : s && s.step ? `${f.kg(s.min)}–${f.kg(s.max)} / ${f.kg(s.step)}` : "");
+    const gyms = d.gyms.length ? d.gyms.map((g) => `<section class="card"><div class="head"><h2>${esc(g.name)}</h2>${btn("e-edit-gym", t("edit"), g.id)}</div>
+      <ul class="rows">${g.equipment.map((q) => `<li class="eq"><span>${esc(q.name)}${q.out_of_order ? ` <em>${esc(t("out_of_order"))}</em>` : ""}</span>
+        <small class="muted">${esc(stepsText(q.steps))}</small></li>`).join("") || `<li class="muted pad">${esc(t("no_equipment"))}</li>`}</ul></section>`).join("") : `<p class="muted">${esc(t("no_gyms"))}</p>`;
+    return `<div class="actions">${btn("e-new-program", t("new_program"))}${btn("e-new-routine", t("new_routine"))}</div>
+      ${programs || `<p class="muted">${esc(t("no_plan"))}</p>`}${loose}
+      <div class="head"><h2 class="sect">${esc(t("gyms"))}</h2>${btn("e-new-gym", t("new_gym"))}</div><div class="grid cards">${gyms}</div>`;
+  }
+
+  // ---- Einstellungen --------------------------------------------------------------------
+
+  async _view_settings() {
+    const t = this._t;
+    const get = async (key) => { try { return (await this._call({ type: "hafs/pref/get", key })).value || ""; } catch { return ""; } };
+    const [phase, hit, drop] = await Promise.all([get("phase"), get("hit_fraction"), get("cut_drop_set_first")]);
+    const opt = (v, label, cur) => `<option value="${v}"${String(cur) === v ? " selected" : ""}>${esc(label)}</option>`;
+    const hitCur = hit === "" ? "1" : String(Number(hit));
+    return `<div class="grid two"><div class="col">
+      <section class="card"><h2>${esc(t("settings_phase"))}</h2><p class="hint">${esc(t("settings_phase_hint"))}</p>
+        <select data-pref="phase" aria-label="${esc(t("settings_phase"))}">${opt("", t("phase_auto_opt"), phase)}${["bulk", "maintain", "cut"].map((p) => opt(p, t("phase_" + p), phase)).join("")}</select></section>
+      <section class="card"><h2>${esc(t("hit_fraction"))}</h2>
+        <select data-pref="hit_fraction" aria-label="${esc(t("hit_fraction"))}">${opt("1", t("hit_all"), hitCur)}${opt("0.75", t("hit_75"), hitCur)}${opt("0.5", t("hit_50"), hitCur)}</select>
+        <label class="check"><input type="checkbox" data-pref="cut_drop_set_first"${drop === "1" ? " checked" : ""}> ${esc(t("cut_drop_set"))}</label></section></div>
+      <div class="col"><section class="card"><h2>${esc(t("import_title"))}</h2><p class="hint">${esc(t("import_hint"))}</p>
+        <input id="csv" type="file" accept=".csv,text/csv" aria-label="${esc(t("import_pick"))}">
+        <p class="actions"><button class="btn" data-act="import-dry" disabled>${esc(t("import_dry"))}</button>
+        <button class="btn primary" data-act="import-run" disabled>${esc(t("import_run"))}</button></p><div id="import-out"></div></section>
+      <section class="card"><h2>${esc(t("export_title"))}</h2><p><button class="btn" data-act="export">${esc(t("export_json"))}</button></p></section></div></div>`;
+  }
+
+  async _import(dry) {
+    const t = this._t;
+    const out = this.shadowRoot.getElementById("import-out");
+    if (!this._csv) return;
+    out.innerHTML = `<p class="muted">${esc(t("loading"))}</p>`;
+    try {
+      const r = await this._call({ type: "hafs/import/gymrun", csv: this._csv, dry_run: dry });
+      const s = r.summary || {};
+      const rows = [["sum_rows", s.rows], ["sum_workouts", s.workouts], ["sum_sets", s.sets], ["sum_exercises", s.exercises], ["sum_duplicates", s.duplicates],
+        ["sum_first", s.first && this._f.date(s.first)], ["sum_last", s.last && this._f.date(s.last)]].filter((x) => x[1] != null && x[1] !== "");
+      const warn = (s.warnings || []).length ? `<p class="muted">${esc(t("sum_warnings"))}: ${esc(s.warnings.slice(0, 5).join("; "))}</p>` : "";
+      const done = r.added ? `<p class="ok">${esc(t("import_done", r.added.workouts ?? 0, r.added.sets ?? 0))}</p>` : "";
+      out.innerHTML = `${done}<dl class="facts compact">${rows.map(([k, v]) => `<div><dt>${esc(t(k))}</dt><dd class="small">${esc(v)}</dd></div>`).join("")}</dl>${warn}`;
+      if (!dry) { this._cache = {}; this._history = { list: [], more: false }; }
+    } catch (err) {
+      out.innerHTML = `<p class="err">${esc(err?.message || err?.code || err)}</p>`;
+    }
+  }
+
+  async _export() {
+    try {
+      const data = await this._call({ type: "hafs/export" });
+      const url = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: "application/json" }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `hafs-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } catch (err) { this._toast(this._t("load_failed", err?.message || err?.code)); }
+  }
+}
+
+const CSS = EDITOR_CSS + `
+:host {
+  --ink: var(--primary-text-color, #212121); --muted: var(--secondary-text-color, #727272);
+  --bg: var(--primary-background-color, #fafafa); --card: var(--card-background-color, #fff);
+  --line: var(--divider-color, #e0e0e0); --accent: var(--primary-color, #03a9f4);
+  --accent-ink: var(--text-primary-color, #fff); --warn: var(--error-color, #db4437); --ok: var(--success-color, #43a047);
+  display: block; min-height: 100%; background: var(--bg); color: var(--ink); font-family: var(--paper-font-body1_-_font-family, Roboto, system-ui, sans-serif);
+  font-size: 15px; line-height: 1.45; font-variant-numeric: tabular-nums;
+}
+* { box-sizing: border-box; }
+h1, h2, h3, h4, p, ul, dl, dd { margin: 0; padding: 0; }
+.bar { display: flex; align-items: center; gap: 4px; height: 56px; padding: 0 12px; background: var(--app-header-background-color, var(--card)); color: var(--app-header-text-color, var(--ink)); border-bottom: 1px solid var(--line); }
+.bar h1 { font-size: 20px; font-weight: 600; margin-left: 4px; }
+.tabs { display: flex; gap: 4px; padding: 8px 12px 0; overflow-x: auto; border-bottom: 1px solid var(--line); background: var(--card); scrollbar-width: none; }
+.tabs button { flex: none; border: 0; background: none; color: var(--muted); font: inherit; font-weight: 500; padding: 10px 14px; border-bottom: 3px solid transparent; cursor: pointer; }
+.tabs button[aria-selected=true] { color: var(--ink); border-bottom-color: var(--accent); }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+main { outline: none; }
+.page { max-width: 1120px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+.pad { padding: 16px; } .center { text-align: center; } .muted { color: var(--muted); } small { color: var(--muted); font-size: 12.5px; }
+.grid { display: grid; gap: 16px; } .grid.two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+.grid.cards { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); align-items: start; }
+.col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-width: 0; }
+.card h2, .card h3 { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
+.card h4 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+h2.big { font-size: 28px; font-weight: 700; line-height: 1.15; letter-spacing: -0.01em; }
+h2.sect { font-size: 18px; font-weight: 600; margin-top: 8px; }
+.head { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; margin-bottom: 10px; } .head h2, .head h3 { margin: 0; }
+.hint { color: var(--muted); font-size: 13px; margin-top: 10px; }
+.kicker { color: var(--accent); font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+.hero.board { padding: 20px; border-left: 6px solid var(--accent); }
+.plist { list-style: none; margin-top: 14px; } .plist.compact { margin-top: 6px; }
+.prow { display: flex; align-items: baseline; gap: 10px; padding: 9px 0; border-top: 1px dashed var(--line); }
+.prow:first-child { border-top: 0; }
+.pname { flex: 1; min-width: 0; font-weight: 500; } .pnum { font-weight: 700; min-width: 3.4em; text-align: right; } .pnum.w { min-width: 5.4em; color: var(--accent); }
+.ss { flex: none; width: 20px; height: 20px; border-radius: 4px; background: var(--accent); color: var(--accent-ink); font-size: 12px; font-weight: 700; display: grid; place-items: center; align-self: center; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.facts > div { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.col > .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.facts.compact { gap: 8px; } .facts.compact > div { border: 0; background: none; padding: 4px 0; }
+.facts dt { color: var(--muted); font-size: 13px; } .facts dd { font-size: 24px; font-weight: 700; line-height: 1.2; } .facts dd.small { font-size: 16px; font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+.sw { display: inline-block; width: 14px; height: 8px; border-radius: 2px; margin-right: 6px; vertical-align: middle; } .sw.fill { background: var(--accent); } .sw.avg { width: 3px; height: 14px; background: var(--ink); border-radius: 1px; }
+.mrow { display: grid; grid-template-columns: minmax(96px, 34%) 1fr auto; align-items: center; gap: 10px; padding: 5px 0; }
+.mname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.track { position: relative; height: 12px; background: color-mix(in srgb, var(--line) 60%, transparent); border-radius: 6px; }
+.track .fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); border-radius: 6px; min-width: 2px; }
+.track .avg { position: absolute; top: -3px; bottom: -3px; width: 3px; margin-left: -1.5px; background: var(--ink); border-radius: 1px; }
+.mnum { font-weight: 700; text-align: right; min-width: 5.2em; } .mnum small { margin-left: 6px; font-weight: 400; }
+.rows { list-style: none; } .rows li + li { border-top: 1px solid var(--line); }
+.wrow { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; width: 100%; text-align: left; background: none; border: 0; color: inherit; font: inherit; padding: 10px 4px; cursor: pointer; border-radius: 8px; }
+.wrow:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.wdate { display: flex; flex-direction: column; align-items: center; width: 40px; line-height: 1.1; } .wdate b { font-size: 20px; }
+.wmain { display: flex; flex-direction: column; min-width: 0; } .wname { font-weight: 600; } .wname em { color: var(--warn); font-style: normal; font-weight: 400; font-size: 13px; }
+.wsub { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wmeta { color: var(--muted); font-size: 13px; text-align: right; white-space: pre; }
+#exlist .wrow { grid-template-columns: 1fr auto; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; } .chip { background: color-mix(in srgb, var(--accent) 12%, transparent); border-radius: 999px; padding: 3px 12px; font-size: 13px; }
+.note { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+table.sets { width: 100%; border-collapse: collapse; } .sets td { padding: 6px 4px; border-top: 1px solid var(--line); vertical-align: baseline; } .sets tr:first-child td { border-top: 0; }
+.sets .no { color: var(--muted); width: 2em; } .sets .val { font-weight: 700; white-space: nowrap; }
+.badge { font-size: 12px; background: var(--line); border-radius: 4px; padding: 1px 6px; margin-right: 6px; } .snote { color: var(--muted); font-size: 13px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: none; color: var(--ink); font: inherit; font-size: 13.5px; padding: 6px 12px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); } .seg button[aria-pressed=true] { background: var(--accent); color: var(--accent-ink); }
+.btn { font: inherit; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); } .btn.ghost { border: 0; background: none; padding-left: 0; color: var(--accent); }
+.btn:disabled { opacity: .45; cursor: default; }
+.search, select, input[type=file] { width: 100%; font: inherit; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); margin-bottom: 10px; }
+.check { display: flex; gap: 8px; align-items: center; margin-top: 12px; } .actions { display: flex; gap: 8px; margin-top: 4px; }
+.sugg { font-size: 22px; } .eq { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; } .eq em { color: var(--warn); font-style: normal; font-size: 13px; }
+.routine { padding-top: 4px; } .routine + .routine { border-top: 1px solid var(--line); padding-top: 14px; }
+.card > h2 + p.muted { margin: -6px 0 12px; }
+.chart { width: 100%; height: auto; display: block; } .chart .gl { stroke: var(--line); stroke-width: 1; } .chart .tick { fill: var(--muted); font-size: 11px; }
+.chart .ln { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; } .chart .pt { fill: var(--card); stroke: var(--accent); stroke-width: 2; }
+.chart .bar { fill: color-mix(in srgb, var(--ink) 28%, transparent); } .chart .bar.now { fill: var(--accent); } .chart .val { fill: var(--ink); font-size: 11px; font-weight: 600; }
+.notice { text-align: center; padding: 32px 16px; } .notice .btn { margin-top: 12px; }
+.ok { color: var(--ok); font-weight: 600; } .err { color: var(--warn); }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 8px; max-width: 90vw; z-index: 5; }
+@media (max-width: 760px) {
+  .grid.two { grid-template-columns: minmax(0, 1fr); } .page { padding: 12px; gap: 12px; }
+  h2.big { font-size: 24px; } .wmeta { display: none; } .mrow { grid-template-columns: minmax(84px, 38%) 1fr auto; }
+}
+`;
+
+installEditor(HafsPanel, { edit, esc });
+customElements.define("hafs-panel", HafsPanel);
