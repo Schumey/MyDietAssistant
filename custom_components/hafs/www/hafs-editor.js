@@ -6,18 +6,20 @@ export const EDITOR_CSS = `
 .btn.small { padding: 5px 12px; font-size: 13.5px; } .btns { display: inline-flex; gap: 8px; flex-wrap: wrap; }
 .actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; } .field > span { font-size: 13px; color: var(--muted); }
-.field input, .field select, .erow input[type=text] { font: inherit; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); margin: 0; width: 100%; }
+.field input, .field select, .erow input[type=text] { font: inherit; padding: 9px 12px; border-radius: 6px 6px 0 0; border: 0; border-bottom: 2px solid var(--line); background: var(--field); color: var(--ink); margin: 0; width: 100%; }
 .erow { padding: 12px 0; border-top: 1px solid var(--line); } .erow:first-of-type { border-top: 0; }
 .etop { display: flex; align-items: center; gap: 8px; } .etop .pname { flex: 1; min-width: 0; font-weight: 600; }
-.ib { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font-size: 16px; cursor: pointer; }
+.ib { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: none; color: var(--ink); font-size: 16px; cursor: pointer; }
 .ib:disabled { opacity: .35; cursor: default; } .ib.warn { color: var(--warn); }
 .efields { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 8px; color: var(--muted); font-size: 14px; }
-.efields input.num { width: 4.2em; font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); text-align: center; }
-.efields select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); margin: 0; width: auto; }
+.efields input.num { width: 4.2em; font: inherit; padding: 6px 8px; border-radius: 6px 6px 0 0; border: 0; border-bottom: 2px solid var(--line); background: var(--field); color: var(--ink); text-align: center; }
+.efields select { font: inherit; padding: 6px 8px; border-radius: 6px 6px 0 0; border: 0; border-bottom: 2px solid var(--line); background: var(--field); color: var(--ink); margin: 0; width: auto; }
 .erow .check { margin-top: 8px; font-size: 14px; } .etop .check { margin-top: 0; font-size: 15px; font-weight: 600; }
 .eqgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; } .eqgrid .wide { grid-column: 1 / -1; }
 .fld { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--muted); } .fld.wide { grid-column: 1 / -1; } .fld small { color: var(--muted); }
-.eqgrid .fld input[type=text], .eqgrid input[type=text], .eqgrid select { font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); width: 100%; margin: 0; }
+.eqgrid .fld input[type=text], .eqgrid input[type=text], .eqgrid select { font: inherit; padding: 8px 10px; border-radius: 6px 6px 0 0; border: 0; border-bottom: 2px solid var(--line); background: var(--field); color: var(--ink); width: 100%; margin: 0; }
+.mgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 2px 12px; } .mgrid .check { margin-top: 4px; font-size: 14px; }
+.field textarea { font: inherit; padding: 8px 10px; border-radius: 6px 6px 0 0; border: 0; border-bottom: 2px solid var(--divider-color); background: var(--input-fill-color, var(--secondary-background-color)); color: var(--ink); width: 100%; resize: vertical; }
 .picker { margin-top: 12px; border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
 .picker .rows { max-height: 280px; overflow-y: auto; }
 .pickrow { display: block; width: 100%; text-align: left; border: 0; background: none; color: inherit; font: inherit; padding: 9px 6px; cursor: pointer; border-radius: 6px; }
@@ -41,7 +43,8 @@ export function installEditor(Panel, { edit, esc }) {
       case "e-new-routine": return this._openEditor("routine", null, v || null);
       case "e-edit-routine": return this._openEditor("routine", v);
       case "e-new-gym": return this._openEditor("gym", null);
-      case "e-gear": return this._openEditor("exercise", v);
+      case "e-gear": return this._openEditor("exercise", v || null);
+      case "e-new-exercise": return this._openEditor("exercise", null);
       case "e-edit-gym": return this._openEditor("gym", v);
       case "e-cancel": this._edit = null; return this._show();
       case "e-save": return this._editSave();
@@ -97,6 +100,17 @@ export function installEditor(Panel, { edit, esc }) {
       return;
     }
     let value = el.type === "checkbox" ? el.checked : el.value;
+    if (f === "musc") {  // idempotent: both the input and the change event arrive for a checkbox
+      const meta = ed.draft.meta, list = el.dataset.list;
+      if (meta[list].includes(el.dataset.m) !== el.checked) edit.toggleMuscle(meta, list, el.dataset.m);
+      if (changed) this._redraw(this._editorHtml());
+      return;
+    }
+    if (f.startsWith("meta.") || f === "weight" && ed.kind === "exercise") {
+      if (f === "weight") ed.draft.weight = value; else ed.draft.meta[f.slice(5)] = value;
+      if (changed && (el.type === "checkbox" || el.tagName === "SELECT")) this._redraw(this._editorHtml());
+      return;
+    }
     if (f === "rest") value = value === "" ? null : Number(value);
     const holder = el.dataset.i === undefined ? ed.draft : (ed.kind === "routine" ? ed.draft.rows : ed.draft.equipment)[Number(el.dataset.i)];
     if (!holder) return;
@@ -109,6 +123,7 @@ export function installEditor(Panel, { edit, esc }) {
   P._openEditor = async function (kind, id, programId = null) {
     try {
       const data = await this._query("plan_edit");
+      await this._loadCatalog();
       const draft = kind === "routine" ? edit.routineDraft(data, id, programId)
         : kind === "program" ? edit.programDraft(data, id)
         : kind === "exercise" ? edit.exerciseDraft(data, id, (n) => this._f.kg(n).replace(/\./g, "").replace(",", "."))
@@ -137,6 +152,7 @@ export function installEditor(Panel, { edit, esc }) {
       // The next weight is no plan record but a suggestion of the progression: set it through its own command.
       for (const w of r.weights || []) await this._call({ type: "hafs/target/set", exercise_id: w.exercise_id, weight: w.weight });
       this._cache = {};
+      if (ed.kind === "exercise") this._exId = ed.draft.id;
       this._edit = null;
       this._toast(`${t("saved_edit")}. ${t("sync_note")}`);
       this._show();
@@ -159,7 +175,7 @@ export function installEditor(Panel, { edit, esc }) {
 
   P._editorHtml = function () {
     const ed = this._edit, t = this._t;
-    const title = ed.kind === "exercise" ? t("edit_exercise", ed.draft.name) : t((ed.draft.raw ? "edit_" : "new_") + ed.kind);
+    const title = ed.kind === "exercise" ? (ed.draft.isNew ? t("new_exercise") : t("edit_exercise", ed.draft.name)) : t((ed.draft.raw ? "edit_" : "new_") + ed.kind);
     const body = ed.kind === "routine" ? this._routineForm() : ed.kind === "program" ? this._programForm()
       : ed.kind === "exercise" ? this._exerciseForm() : this._gymForm();
     return `<p><button class="btn ghost" data-act="e-cancel">← ${esc(t("back"))}</button></p><h2 class="big">${esc(title)}</h2>${body}
@@ -252,10 +268,36 @@ export function installEditor(Panel, { edit, esc }) {
     return field("steps", t("equipment_steps"), t("equipment_steps_hint"), true);
   };
 
+  // Master data of the exercise, its next weight and its muscles.
+  P._exerciseMeta = function () {
+    const ed = this._edit, t = this._t, m = ed.draft.meta;
+    const opt = (v, label, cur) => `<option value="${esc(v)}"${v === cur ? " selected" : ""}>${esc(label)}</option>`;
+    const field = (f, label, inner) => `<label class="field"><span>${esc(label)}</span>${inner}</label>`;
+    const kinds = edit.EXERCISE_KINDS.map((k) => opt(k, t("kind_" + k), m.kind)).join("");
+    const types = [opt("", t("none_opt"), m.equipmentType), ...edit.EXERCISE_EQUIPMENT.map((k) => opt(k, t("type_" + k), m.equipmentType))].join("");
+    const hasWeight = m.kind === "strength" || m.kind === "bodyweight";
+    const muscleKeys = Object.keys(this._catalog || {});
+    const boxes = (list) => muscleKeys.map((k) => `<label class="check"><input type="checkbox" data-f="musc" data-list="${list}" data-m="${esc(k)}"${m[list].includes(k) ? " checked" : ""}> ${esc(this._muscle(k))}</label>`).join("");
+    return `<section class="card">
+      ${m.own ? field("name", t("exercise_name"), `<input type="text" data-f="meta.name" value="${esc(m.name)}" autocomplete="off">`)
+        : `<h3>${esc(ed.draft.name)}</h3><p class="hint" style="margin:-4px 0 10px">${esc(t("catalog_fixed"))}</p>`}
+      <div class="eqgrid">
+        ${m.own ? field("kind", t("exercise_kind"), `<select data-f="meta.kind">${kinds}</select>`) : ""}
+        ${field("type", t("exercise_equipment"), `<select data-f="meta.equipmentType">${types}</select>`)}
+        ${hasWeight ? field("weight", t("weight_label"), `<input type="text" inputmode="decimal" data-f="weight" value="${esc(ed.draft.weight)}" autocomplete="off">`) : ""}
+      </div>
+      ${hasWeight ? `<p class="hint">${esc(t("weight_hint"))}</p>` : ""}
+      <label class="check"><input type="checkbox" data-f="meta.unilateral"${m.unilateral ? " checked" : ""}> ${esc(t("unilateral"))}</label>
+      ${field("notes", t("exercise_notes"), `<textarea rows="2" data-f="meta.notes">${esc(m.notes)}</textarea>`)}
+    </section>
+    <section class="card"><h3>${esc(t("muscles_primary"))}</h3><div class="mgrid">${boxes("primary")}</div></section>
+    <section class="card"><h3>${esc(t("muscles_secondary"))}</h3><div class="mgrid">${boxes("secondary")}</div></section>`;
+  };
+
   // Equipment of one exercise: station (rack, bench) and weights (barbell, dumbbells, machine) are linked separately.
   P._exerciseForm = function () {
     const ed = this._edit, t = this._t, d = ed.draft;
-    if (!ed.data.gyms.length) return `<section class="card"><p class="muted">${esc(t("gear_no_gym"))}</p></section>`;
+    if (!ed.data.gyms.length) return `${this._exerciseMeta()}<section class="card"><p class="muted">${esc(t("gear_no_gym"))}</p></section>`;
     const row = (q, i) => `<div class="erow"><div class="etop"><label class="check pname"><input type="checkbox" data-f="linked" data-i="${i}"${q.linked ? " checked" : ""}>
         <span>${esc(q.name || t("equipment_name"))}${q.gymName ? ` <small class="muted">${esc(q.gymName)}</small>` : ""}</span></label></div>
       ${q.linked ? `<div class="eqgrid"><input type="text" data-f="name" data-i="${i}" value="${esc(q.name)}" placeholder="${esc(t("equipment_name"))}" aria-label="${esc(t("equipment_name"))}" autocomplete="off">
@@ -269,7 +311,7 @@ export function installEditor(Panel, { edit, esc }) {
     const newButtons = ed.data.gyms.length > 1
       ? ed.data.gyms.map((g) => `<button class="btn small" data-act="e-new-gear" data-v="${esc(g.id)}">+ ${esc(t("gear_new"))} (${esc(g.name)})</button>`).join("")
       : `<button class="btn small" data-act="e-new-gear" data-v="${esc(ed.data.gyms[0].id)}">+ ${esc(t("gear_new"))}</button>`;
-    return `${group(t("gear_station"), t("gear_station_hint"), edit.isStation)}${group(t("gear_weights"), t("gear_weights_hint"), (ty) => !edit.isStation(ty))}
+    return `${this._exerciseMeta()}${group(t("gear_station"), t("gear_station_hint"), edit.isStation)}${group(t("gear_weights"), t("gear_weights_hint"), (ty) => !edit.isStation(ty))}
       <p class="btns">${newButtons}</p><p class="hint">${esc(t("gear_shared"))}</p>`;
   };
 

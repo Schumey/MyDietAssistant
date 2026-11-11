@@ -163,3 +163,20 @@ def test_workout_detail_shows_the_attachment_of_cable_sets(conn):
     sync.push(conn, OWNER, {"workout_set": [{"id": "w1-1", "workout_id": "w1", "exercise_id": "bench", "set_no": 1, "weight": 40, "reps": 10,
                                               "kind": "work", "done_at": "2026-11-09T10:01:00", "attachment": "rope", "updated_at": "2026-11-12T10:00:00+00:00"}]})
     assert run(conn, "workout", id="w1")["exercises"][0]["sets"][0]["attachment"] == "rope"
+
+
+def test_exercises_list_can_include_untrained_ones_and_marks_own_exercises(conn):
+    add(conn, "w1", "2026-11-09", [(60, 8, "work")])
+    sync.push(conn, OWNER, {"exercise": [{"id": "cat", "name": "Katalog", "kind": "strength", "catalog_key": "k", "muscles_primary": "chest", "updated_at": T}]})
+    default = run(conn, "exercises")["exercises"]
+    assert [e["id"] for e in default] == ["bench"]                       # only what was trained
+    everything = {e["id"]: e for e in run(conn, "exercises", all=True)["exercises"]}
+    assert set(everything) == {"bench", "row", "plank", "cat"}
+    assert everything["cat"]["own"] is False and everything["row"]["own"] is True
+    assert (everything["row"]["times"], everything["row"]["last"]) == (0, "") and everything["bench"]["times"] == 1
+
+
+def test_plan_edit_exercises_are_full_records_for_the_exercise_editor(conn):
+    ex = next(e for e in run(conn, "plan_edit")["exercises"] if e["id"] == "bench")
+    assert ex["muscles_secondary"] == "triceps" and ex["catalog_key"] == "" and "owner" not in ex and ex["muscles"] == ["chest"]
+    assert sync.push(conn, OWNER, {"exercise": [{k: v for k, v in ex.items() if k != "muscles"}]})["rejected"] == []

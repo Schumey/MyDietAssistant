@@ -7,7 +7,8 @@ const { makeT, language, makeFormat, esc, lineChart, barChart } = await import(`
 const edit = await import(`./hafs-edit.js${version}`);
 const { installEditor, EDITOR_CSS } = await import(`./hafs-editor.js${version}`);
 
-const TABS = ["today", "history", "stats", "plans", "settings"];
+const TABS = ["today", "training", "exercises", "plans", "settings"];
+const OLD_TABS = { history: "training", stats: "training" };
 const TAB_KEY = "hafs.tab";
 const WINDOWS = [4, 12, 26, 52];
 const TODAY_BLOCKS = ["next", "facts", "muscles", "recent"];
@@ -21,14 +22,14 @@ class HafsPanel extends HTMLElement {
     this._tab = "today";
     try {
       const stored = localStorage.getItem(TAB_KEY);
-      if (TABS.includes(stored)) this._tab = stored;
+      if (TABS.includes(stored)) this._tab = stored; else if (OLD_TABS[stored]) this._tab = OLD_TABS[stored];
     } catch { /* storage blocked: start on Today */ }
     this._seq = 0;
     this._cache = {};        // last answer per query, shown while the next one loads
     this._catalog = null;    // muscle labels
     this._history = { list: [], more: false };
     this._detail = null;     // workout id on the history tab
-    this._statsMode = "muscles";
+    this._trainMode = "workouts";   // training tab: workouts | muscles
     this._window = 12;
     this._exId = null;
     this._metric = "e1rm";
@@ -36,7 +37,9 @@ class HafsPanel extends HTMLElement {
     this._filter = "";
     this._minTimes = 0;      // exercise list: at least this many workouts with the exercise
     this._within = 0;        // exercise list: done within this many months (0 = any time)
+    this._muscleFilter = ""; // exercise list: only this primary muscle group ("" = all)
     try {
+      this._muscleFilter = localStorage.getItem("hafs.muscle") || "";
       this._minTimes = Number(localStorage.getItem("hafs.minTimes")) || 0;
       this._within = Number(localStorage.getItem("hafs.within")) || 0;
     } catch { /* storage blocked: no filter */ }
@@ -76,8 +79,8 @@ class HafsPanel extends HTMLElement {
   _build() {
     const t = this._t;
     this.shadowRoot.innerHTML = `<style>${CSS}</style>
-      <header class="bar"><span id="menu"></span><h1>${esc(t("title"))}</h1></header>
-      <nav class="tabs" role="tablist">${TABS.map((k) => `<button role="tab" data-tab="${k}">${esc(t("tab_" + k))}</button>`).join("")}</nav>
+      <header class="bar"><span id="menu"></span><h1>${esc(t("title"))}</h1>
+        <nav class="tabs" role="tablist">${TABS.map((k) => `<button role="tab" data-tab="${k}">${esc(t("tab_" + k))}</button>`).join("")}</nav></header>
       <main id="main" tabindex="-1"></main>
       <div class="toast" id="toast" role="status" hidden></div>`;
     this._menu = document.createElement("ha-menu-button");
@@ -166,10 +169,10 @@ class HafsPanel extends HTMLElement {
     const v = el.dataset.v;
     switch (el.dataset.act) {
       case "reload": this._cache = {}; this._history = { list: [], more: false }; this._show(); break;
-      case "open-workout": this._detail = v; this._show(); break;
+      case "open-workout": this._tab = "training"; this._trainMode = "workouts"; this._detail = v; this._show(); break;
       case "close-detail": this._detail = null; this._show(); break;
       case "more-history": this._moreHistory(); break;
-      case "stats-mode": this._statsMode = v; this._exId = null; this._show(); break;
+      case "train-mode": this._trainMode = v; this._detail = null; this._show(); break;
       case "window": this._window = Number(v); this._show(); break;
       case "open-exercise": this._exId = v; this._metric = "e1rm"; this._show(); break;
       case "close-exercise": this._exId = null; this._show(); break;
@@ -197,8 +200,9 @@ class HafsPanel extends HTMLElement {
     if (el.dataset.f && this._edit) { this._editInput(el, true); return; }
     if (el.dataset.xf) {
       const value = Number(el.value) || 0;
-      if (el.dataset.xf === "minTimes") this._minTimes = value; else this._within = value;
-      try { localStorage.setItem("hafs." + el.dataset.xf, String(value)); } catch { /* ignore */ }
+      if (el.dataset.xf === "muscle") this._muscleFilter = el.value;
+      else if (el.dataset.xf === "minTimes") this._minTimes = value; else this._within = value;
+      try { localStorage.setItem("hafs." + el.dataset.xf, el.dataset.xf === "muscle" ? el.value : String(value)); } catch { /* ignore */ }
       const list = this.shadowRoot.getElementById("exlist");
       if (list) list.innerHTML = this._exerciseRows(this._cache.exercises?.exercises || []);
       const count = this.shadowRoot.getElementById("excount");
@@ -314,9 +318,17 @@ class HafsPanel extends HTMLElement {
       <span class="wmeta">${esc(meta)}</span></button></li>`;
   }
 
-  // ---- Verlauf --------------------------------------------------------------------------
+  // ---- Training (Verlauf + Muskelgruppen) -----------------------------------------------
 
-  async _view_history() {
+  async _view_training() {
+    const t = this._t;
+    const seg = `<div class="seg" role="group">${["workouts", "muscles"].map((m) =>
+      `<button data-act="train-mode" data-v="${m}" aria-pressed="${this._trainMode === m}">${esc(t(m === "workouts" ? "workouts_mode" : "muscles"))}</button>`).join("")}</div>`;
+    if (this._trainMode === "muscles") return seg + (await this._muscleView());
+    return seg + (await this._historyView());
+  }
+
+  async _historyView() {
     if (this._detail) return this._workoutDetail(this._detail);
     const t = this._t, f = this._f;
     if (!this._history.list.length) {
@@ -377,33 +389,36 @@ class HafsPanel extends HTMLElement {
     return `<tr><td class="no">${s.no ?? i + 1}</td><td class="val">${esc(main)}</td><td>${kind}${att}${target}${s.note ? ` <span class="snote">${esc(s.note)}</span>` : ""}</td></tr>`;
   }
 
-  // ---- Statistik ------------------------------------------------------------------------
-
-  async _view_stats() {
-    const t = this._t;
-    const seg = `<div class="seg" role="group">${["muscles", "exercises"].map((m) =>
-      `<button data-act="stats-mode" data-v="${m}" aria-pressed="${this._statsMode === m}">${esc(t(m))}</button>`).join("")}</div>`;
-    if (this._edit) return this._editorHtml();
-    if (this._statsMode === "exercises") return seg + (this._exId ? await this._exerciseDetail() : await this._exerciseList());
+  async _muscleView() {
+    const t = this._t, f = this._f;
     const d = await this._query("muscles", { weeks: 53 });
     const win = this._window;
     const wins = `<div class="seg" role="group">${WINDOWS.map((w) =>
       `<button data-act="window" data-v="${w}" aria-pressed="${w === win}">${esc(t("weeks_n_short", w))}</button>`).join("")}</div>`;
-    const f = this._f;
-    const last12 = d.weeks.slice(-12).map((w, i, a) => ({ label: f.dayMonth(w), short: f.dayMonth(w), value: d.workouts.slice(-12)[i] }));
-    return `${seg}<div class="grid two">
+    const last12 = d.weeks.slice(-12).map((w, i) => ({ label: f.dayMonth(w), short: f.dayMonth(w), value: d.workouts.slice(-12)[i] }));
+    return `<div class="grid two">
       <section class="card"><div class="head"><h2>${esc(t("sets_by_muscle"))}</h2>${wins}</div>${this._muscleBars(d, win)}<p class="hint">${esc(t("muscle_hint"))}</p></section>
       <section class="card"><h2>${esc(t("workouts_per_week"))}</h2>${barChart(last12, { ariaLabel: t("workouts_per_week") })}</section></div>`;
   }
 
+  // ---- Übungen --------------------------------------------------------------------------
+
+  async _view_exercises() {
+    if (this._edit) return this._editorHtml();
+    return this._exId ? this._exerciseDetail() : this._exerciseList();
+  }
+
   async _exerciseList() {
     const t = this._t;
-    const d = await this._query("exercises");
+    const d = await this._query("exercises", { all: true });
     this._cache.exercises = d;
     const opt = (v, label, cur) => `<option value="${v}"${Number(cur) === v ? " selected" : ""}>${esc(label)}</option>`;
     const times = [0, 2, 3, 5, 10, 20].map((n) => opt(n, n ? t("min_times_n", n) : t("min_times_any"), this._minTimes)).join("");
     const within = [0, 3, 6, 12, 24].map((n) => opt(n, n ? t("within_months", n) : t("within_any"), this._within)).join("");
-    return `<section class="card"><input id="filter" class="search" type="search" placeholder="${esc(t("search_exercise"))}" value="${esc(this._filter)}" autocomplete="off">
+    return `<div class="actions"><button class="btn" data-act="e-new-exercise">+ ${esc(t("new_exercise_btn"))}</button></div>
+      <section class="card"><input id="filter" class="search" type="search" placeholder="${esc(t("search_exercise"))}" value="${esc(this._filter)}" autocomplete="off">
+      <div class="filters one"><label class="fld"><span>${esc(t("filter_muscle"))}</span><select data-xf="muscle"><option value="">${esc(t("muscle_all"))}</option>${
+        Object.keys(this._catalog || {}).map((k) => `<option value="${esc(k)}"${k === this._muscleFilter ? " selected" : ""}>${esc(this._muscle(k))}</option>`).join("")}</select></label></div>
       <div class="filters"><label class="fld"><span>${esc(t("filter_times"))}</span><select data-xf="minTimes">${times}</select></label>
         <label class="fld"><span>${esc(t("filter_last"))}</span><select data-xf="within">${within}</select></label></div>
       <p class="hint" id="excount">${esc(this._exerciseCount(d.exercises))}</p>
@@ -414,7 +429,8 @@ class HafsPanel extends HTMLElement {
   _visibleExercises(list) {
     const q = this._filter.trim().toLowerCase();
     const cut = this._within ? new Date(Date.now() - this._within * 30.44 * 86400000).toISOString().slice(0, 10) : "";
-    return list.filter((e) => (!q || e.name.toLowerCase().includes(q)) && e.times >= this._minTimes && (!cut || e.last >= cut));
+    return list.filter((e) => (!q || e.name.toLowerCase().includes(q)) && e.times >= this._minTimes && (!cut || e.last >= cut)  // untrained: times 0, last ""
+      && (!this._muscleFilter || e.muscles.includes(this._muscleFilter)));
   }
 
   _exerciseCount(list) {
@@ -425,9 +441,19 @@ class HafsPanel extends HTMLElement {
     const t = this._t, f = this._f;
     const rows = this._visibleExercises(list);
     if (!rows.length) return `<li class="muted pad">${esc(t("no_match"))}</li>`;
-    return rows.map((e) => `<li><button class="wrow" data-act="open-exercise" data-v="${esc(e.id)}">
-      <span class="wmain"><span class="wname">${esc(e.name)}</span><span class="wsub">${esc(e.muscles.slice(0, 2).map((m) => this._muscle(m)).join(", "))}</span></span>
-      <span class="wmeta">${t("times_n", e.times)}  ${esc(f.dayMonth(e.last))} ${esc(e.last.slice(0, 4))}</span></button></li>`).join("");
+    const row = (e) => `<li><button class="wrow" data-act="open-exercise" data-v="${esc(e.id)}">
+      <span class="wmain"><span class="wname">${esc(e.name)}${e.own ? ` <small class="tag">${esc(t("own_tag"))}</small>` : ""}</span><span class="wsub">${esc(e.muscles.slice(0, 2).map((m) => this._muscle(m)).join(", "))}</span></span>
+      <span class="wmeta">${e.times ? `${t("times_n", e.times)}  ${esc(f.dayMonth(e.last))} ${esc(e.last.slice(0, 4))}` : ""}</span></button></li>`;
+    // grouped by the first primary muscle group (in the order of the catalog), exercises without one at the end
+    const order = Object.keys(this._catalog || {});
+    const groups = new Map();
+    for (const e of rows) {
+      const key = e.muscles[0] && order.includes(e.muscles[0]) ? e.muscles[0] : "";
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(e);
+    }
+    return [...groups.entries()].sort((a, b) => (a[0] === "" ? 1 : b[0] === "" ? -1 : order.indexOf(a[0]) - order.indexOf(b[0])))
+      .map(([key, list]) => `<li class="grouphead">${esc(key ? this._muscle(key) : t("muscle_other"))} <small>${list.length}</small></li>${list.map(row).join("")}`).join("");
   }
 
   async _exerciseDetail() {
@@ -468,7 +494,8 @@ class HafsPanel extends HTMLElement {
     const gearHtml = `<section class="card"><div class="head"><h3>${esc(t("gear_title"))}</h3><button class="btn small" data-act="e-gear" data-v="${esc(ex.id)}">${esc(t("edit"))}</button></div>
       ${gearRows ? `<ul class="rows">${gearRows}</ul>` : `<p class="muted">${esc(t("gear_none"))}</p>`}</section>`;
     return `<p><button class="btn ghost" data-act="close-exercise">← ${esc(t("back"))}</button></p>
-      <h2 class="big">${esc(ex.name)}</h2><p class="muted">${esc(ex.muscles.map((m) => this._muscle(m)).join(", "))}</p>
+      <div class="head"><h2 class="big">${esc(ex.name)}</h2><button class="btn" data-act="e-gear" data-v="${esc(ex.id)}">${esc(t("exercise_settings"))}</button></div>
+      <p class="muted">${esc(ex.muscles.map((m) => this._muscle(m)).join(", "))}</p>
       <div class="grid two"><section class="card"><div class="head">${metrics.length > 1 ? btns(metrics, "metric", metric, (k) => t("metric_" + k)) : `<h3>${esc(metric ? t("metric_" + metric) : "")}</h3>`}
         ${btns(["3", "12", "all"], "range", this._range, (k) => t("range_" + k))}</div>${chart}${metric === "e1rm" ? `<p class="hint">${esc(t("e1rm_hint"))}</p>` : ""}</section>
       <div class="col">${gearHtml}${recHtml ? `<section class="card"><h3>${esc(t("records"))}</h3>${recHtml}</section>` : ""}${tgHtml}
@@ -574,32 +601,40 @@ class HafsPanel extends HTMLElement {
 const CSS = EDITOR_CSS + `
 :host {
   --ink: var(--primary-text-color, #212121); --muted: var(--secondary-text-color, #727272);
-  --bg: var(--primary-background-color, #fafafa); --card: var(--card-background-color, #fff);
+  --bg: var(--primary-background-color, #fafafa); --card: var(--ha-card-background, var(--card-background-color, #fff));
+  --field: var(--input-fill-color, var(--secondary-background-color, #e5e5e5));
   --line: var(--divider-color, #e0e0e0); --accent: var(--primary-color, #03a9f4);
   --accent-ink: var(--text-primary-color, #fff); --warn: var(--error-color, #db4437); --ok: var(--success-color, #43a047);
-  display: flex; flex-direction: column; height: calc(100vh - var(--xp-taskbar-height, 0px)); overflow: hidden; background: var(--bg); color: var(--ink); font-family: var(--paper-font-body1_-_font-family, Roboto, system-ui, sans-serif);
-  font-size: 15px; line-height: 1.45; font-variant-numeric: tabular-nums;
+  --radius: var(--ha-card-border-radius, 12px); --pill: var(--ha-button-border-radius, 18px);
+  display: flex; flex-direction: column; height: calc(100vh - var(--xp-taskbar-height, 0px)); overflow: hidden; background: var(--bg); color: var(--ink);
+  font-family: var(--ha-font-family-body, var(--primary-font-family, var(--paper-font-body1_-_font-family, Roboto, Noto, system-ui, sans-serif)));
+  font-size: 14px; line-height: 1.4; font-variant-numeric: tabular-nums;
 }
 * { box-sizing: border-box; }
 h1, h2, h3, h4, p, ul, dl, dd { margin: 0; padding: 0; }
-.bar { display: flex; align-items: center; gap: 4px; height: 56px; padding: 0 12px; background: var(--app-header-background-color, var(--card)); color: var(--app-header-text-color, var(--ink)); border-bottom: 1px solid var(--line); }
-.bar h1 { font-size: 20px; font-weight: 600; margin-left: 4px; }
-.tabs { display: flex; gap: 4px; padding: 8px 12px 0; overflow-x: auto; border-bottom: 1px solid var(--line); background: var(--card); scrollbar-width: none; }
-.tabs button { flex: none; border: 0; background: none; color: var(--muted); font: inherit; font-weight: 500; padding: 10px 14px; border-bottom: 3px solid transparent; cursor: pointer; }
-.tabs button[aria-selected=true] { color: var(--ink); border-bottom-color: var(--accent); }
-button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* one app bar with the tabs inside, like MyDietAssistant */
+.bar { display: flex; align-items: center; gap: 4px 16px; flex-wrap: wrap; padding: 0 12px; min-height: 56px; flex: none;
+  background: var(--app-header-background-color, var(--accent)); color: var(--app-header-text-color, var(--accent-ink)); }
+.bar h1 { font-size: 20px; font-weight: 400; margin: 0; }
+.tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.tabs button { flex: none; background: none; border: 0; border-bottom: 3px solid transparent; border-radius: 0; box-shadow: none; color: inherit; opacity: .78;
+  padding: 17px 12px 14px; font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+.tabs button:hover { opacity: 1; } .tabs button[aria-selected=true] { opacity: 1; border-bottom-color: currentColor; }
+.tabs button:focus-visible { outline-color: currentColor; outline-offset: -4px; }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 main { outline: none; flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-.bar, .tabs { flex: none; }
-.page { max-width: 1120px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+.page { max-width: 960px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 .pad { padding: 16px; } .center { text-align: center; } .muted { color: var(--muted); } small { color: var(--muted); font-size: 12.5px; }
 .grid { display: grid; gap: 16px; } .grid.one { grid-template-columns: minmax(0, 720px); }
+.grouphead { padding: 12px 4px 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 500; }
+.rows li.grouphead + li, .rows li.grouphead { border-top: 0; } .filters.one { grid-template-columns: 1fr; margin-bottom: 10px; }
 .pextra { display: block; font-weight: 400; margin-top: 1px; } .intro p + p { margin-top: 6px; } .intro { color: var(--muted); }
 .grid.two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
 .grid.cards { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); align-items: start; }
 .col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-width: 0; }
-.card h2, .card h3 { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
-.card h4 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.card { background: var(--card); border: var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--line)); border-radius: var(--radius); box-shadow: var(--ha-card-box-shadow, none); padding: 16px; min-width: 0; }
+.card h2, .card h3 { font-size: 16px; font-weight: 500; margin-bottom: 10px; }
+.card h4 { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
 h2.big { font-size: 28px; font-weight: 700; line-height: 1.15; letter-spacing: -0.01em; }
 h2.sect { font-size: 18px; font-weight: 600; margin-top: 8px; }
 .head { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; margin-bottom: 10px; } .head h2, .head h3 { margin: 0; }
@@ -614,12 +649,12 @@ h2.sect { font-size: 18px; font-weight: 600; margin-top: 8px; }
 .filters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .filters select { margin: 0; }
 .fld { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--muted); }
 .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
-.facts > div { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.facts > div { background: var(--field); border-radius: var(--radius); padding: 10px 14px; }
 .col > .filters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .filters select { margin: 0; }
 .fld { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--muted); }
 .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .facts.compact { gap: 8px; } .facts.compact > div { border: 0; background: none; padding: 4px 0; }
-.facts dt { color: var(--muted); font-size: 13px; } .facts dd { font-size: 24px; font-weight: 700; line-height: 1.2; } .facts dd.small { font-size: 16px; font-weight: 600; }
+.facts dt { color: var(--muted); font-size: 12px; } .facts dd { font-size: 22px; font-weight: 500; line-height: 1.2; } .facts dd.small { font-size: 16px; font-weight: 500; }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
 .sw { display: inline-block; width: 14px; height: 8px; border-radius: 2px; margin-right: 6px; vertical-align: middle; } .sw.fill { background: var(--accent); } .sw.avg { width: 3px; height: 14px; background: var(--ink); border-radius: 1px; }
 .mrow { display: grid; grid-template-columns: minmax(96px, 34%) 1fr auto; align-items: center; gap: 10px; padding: 5px 0; }
@@ -630,7 +665,7 @@ h2.sect { font-size: 18px; font-weight: 600; margin-top: 8px; }
 .mnum { font-weight: 700; text-align: right; min-width: 5.2em; } .mnum small { margin-left: 6px; font-weight: 400; }
 .rows { list-style: none; } .rows li + li { border-top: 1px solid var(--line); }
 .wrow { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; width: 100%; text-align: left; background: none; border: 0; color: inherit; font: inherit; padding: 10px 4px; cursor: pointer; border-radius: 8px; }
-.wrow:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.wrow:hover { background: var(--field); }
 .wdate { display: flex; flex-direction: column; align-items: center; width: 40px; line-height: 1.1; } .wdate b { font-size: 20px; }
 .wmain { display: flex; flex-direction: column; min-width: 0; } .wname { font-weight: 600; } .wname em { color: var(--warn); font-style: normal; font-weight: 400; font-size: 13px; }
 .wsub { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -640,14 +675,17 @@ h2.sect { font-size: 18px; font-weight: 600; margin-top: 8px; }
 .note { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
 table.sets { width: 100%; border-collapse: collapse; } .sets td { padding: 6px 4px; border-top: 1px solid var(--line); vertical-align: baseline; } .sets tr:first-child td { border-top: 0; }
 .sets .no { color: var(--muted); width: 2em; } .sets .val { font-weight: 700; white-space: nowrap; }
-.badge { font-size: 12px; background: var(--line); border-radius: 4px; padding: 1px 6px; margin-right: 6px; } .snote { color: var(--muted); font-size: 13px; }
-.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
-.seg button { border: 0; background: none; color: var(--ink); font: inherit; font-size: 13.5px; padding: 6px 12px; cursor: pointer; }
-.seg button + button { border-left: 1px solid var(--line); } .seg button[aria-pressed=true] { background: var(--accent); color: var(--accent-ink); }
-.btn { font: inherit; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; }
-.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); } .btn.ghost { border: 0; background: none; padding-left: 0; color: var(--accent); }
+.badge { font-size: 12px; background: var(--field); border-radius: 4px; padding: 1px 6px; margin-right: 6px; } .snote { color: var(--muted); font-size: 13px; }
+.tag { background: color-mix(in srgb, var(--accent) 14%, transparent); border-radius: 10px; padding: 0 7px; font-size: 11px; color: var(--ink); font-weight: 400; }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.seg button { background: none; color: var(--muted); border: 1px solid var(--line); border-radius: 16px; font: inherit; font-size: 13px; padding: 4px 12px; cursor: pointer; }
+.seg button[aria-pressed=true] { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--ink); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+.btn { font: inherit; font-weight: 500; padding: 8px 18px; border-radius: var(--pill); border: 0; cursor: pointer;
+  background: var(--wa-color-brand-fill-loud, var(--accent)); color: var(--wa-color-brand-on-loud, var(--accent-ink)); box-shadow: var(--ha-button-box-shadow, none); }
+.btn.ghost { background: var(--wa-color-brand-fill-quiet, none); color: var(--wa-color-brand-on-quiet, var(--accent)); padding-left: 10px; padding-right: 10px; }
+.btn.danger { background: none; color: var(--warn); }
 .btn:disabled { opacity: .45; cursor: default; }
-.search, select, input[type=file] { width: 100%; font: inherit; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); margin-bottom: 10px; }
+.search, select, input[type=file] { width: 100%; font: inherit; padding: 8px 10px; border-radius: 6px 6px 0 0; border: 0; border-bottom: 2px solid var(--line); background: var(--field); color: var(--ink); margin-bottom: 10px; }
 .check { display: flex; gap: 8px; align-items: center; margin-top: 12px; } .actions { display: flex; gap: 8px; margin-top: 4px; }
 .sugg { font-size: 22px; } .eq { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; } .eq em { color: var(--warn); font-style: normal; font-size: 13px; }
 .routine { padding-top: 4px; } .routine + .routine { border-top: 1px solid var(--line); padding-top: 14px; }

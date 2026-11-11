@@ -137,13 +137,16 @@ def workout(conn, owner, now, tz, params) -> dict:
 
 
 def exercises(conn, owner, now, tz, params) -> dict:
-    """Exercises that have sets, most trained first (the picker of the statistics view)."""
+    """Exercises, most trained first (the list of the exercises page). By default only those with sets; with
+    `all` also the ones never trained (catalog entries, new own exercises). `own` = not from the catalog."""
     rows = conn.execute(
-        "SELECT e.id, e.name, e.kind, e.muscles_primary mp, COUNT(s.id) n, COUNT(DISTINCT s.workout_id) times, MAX(s.done_at) last FROM exercise e "
-        "JOIN workout_set s ON s.exercise_id=e.id AND s.deleted=0 AND s.kind!='warmup' "
-        "JOIN workout w ON w.id=s.workout_id AND w.deleted=0 "
-        "WHERE e.owner=? AND e.deleted=0 GROUP BY e.id ORDER BY n DESC, e.name COLLATE NOCASE", (owner,)).fetchall()
-    return {"exercises": [{"id": r["id"], "name": r["name"], "kind": r["kind"], "muscles": (r["mp"] or "").split(),
+        "SELECT e.id, e.name, e.kind, e.muscles_primary mp, e.catalog_key ck, COUNT(s.id) n, COUNT(DISTINCT s.workout_id) times, MAX(s.done_at) last "
+        "FROM exercise e "
+        "LEFT JOIN (SELECT s.* FROM workout_set s JOIN workout w ON w.id=s.workout_id AND w.deleted=0 WHERE s.deleted=0 AND s.kind!='warmup') s "
+        "ON s.exercise_id=e.id "
+        "WHERE e.owner=? AND e.deleted=0 GROUP BY e.id " + ("" if params.get("all") else "HAVING n > 0 ") +
+        "ORDER BY n DESC, e.name COLLATE NOCASE", (owner,)).fetchall()
+    return {"exercises": [{"id": r["id"], "name": r["name"], "kind": r["kind"], "muscles": (r["mp"] or "").split(), "own": not r["ck"],
                            "sets": r["n"], "times": r["times"], "last": (r["last"] or "")[:10]} for r in rows]}
 
 
@@ -222,9 +225,9 @@ def plan_edit(conn, owner, now, tz, params) -> dict:
     def rows(sql: str) -> list[dict]:
         return [{k: v for k, v in dict(r).items() if k != "owner"} for r in conn.execute(sql, (owner,))]
 
-    ex = [{"id": r["id"], "name": r["name"], "kind": r["kind"], "muscles": (r["mp"] or "").split(), "equipment_type": r["equipment_type"]}
-          for r in conn.execute(
-        "SELECT id, name, kind, muscles_primary mp, equipment_type FROM exercise WHERE owner=? AND deleted=0 ORDER BY name COLLATE NOCASE", (owner,))]
+    # full exercise records (the exercise editor pushes them back), plus the muscle list the pickers use
+    ex = [{**{k: v for k, v in dict(r).items() if k != "owner"}, "muscles": (r["muscles_primary"] or "").split()}
+          for r in conn.execute("SELECT * FROM exercise WHERE owner=? AND deleted=0 ORDER BY name COLLATE NOCASE", (owner,))]
     return {
         "programs": rows("SELECT * FROM program WHERE owner=? AND deleted=0 ORDER BY name COLLATE NOCASE"),
         "routines": rows("SELECT * FROM routine WHERE owner=? AND deleted=0 ORDER BY position, name COLLATE NOCASE"),

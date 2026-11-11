@@ -274,3 +274,64 @@ test("stations are rack and bench only", () => {
   assert.ok(e.isStation("rack") && e.isStation("bench"));
   assert.ok(!e.isStation("barbell") && !e.isStation("machine_stack"));
 });
+
+// ---- Exercise master data ----
+
+test("exercise: a new own exercise is created with its muscles, equipment type and links", () => {
+  const d = data();
+  const draft = e.exerciseDraft(d, null);
+  assert.equal(draft.isNew, true);
+  Object.assign(draft.meta, { name: "  Kabel-Curl  ", kind: "strength", equipmentType: "cable" });
+  e.toggleMuscle(draft.meta, "primary", "biceps");
+  e.toggleMuscle(draft.meta, "secondary", "forearms");
+  draft.equipment[0].linked = true;
+  draft.weight = "12,5";
+  const r = e.exerciseRecords(draft, d, NOW, id);
+  assert.equal(r.error, undefined);
+  const x = r.records.exercise[0];
+  assert.deepEqual([x.id, x.name, x.kind, x.muscles_primary, x.muscles_secondary, x.equipment_type, x.unilateral, x.catalog_key, x.deleted],
+    [draft.id, "Kabel-Curl", "strength", "biceps", "forearms", "cable", 0, "", 0]);
+  assert.equal(r.records.exercise_equipment[0].exercise_id, draft.id);
+  assert.deepEqual(r.weights, [{ exercise_id: draft.id, weight: 12.5 }]);
+});
+
+test("exercise: names must be given and unique (ignoring case); the own name may stay", () => {
+  const d = data();
+  const draft = e.exerciseDraft(d, null);
+  assert.equal(e.exerciseRecords(draft, d, NOW, id).error, "err_name");
+  draft.meta.name = "fliegende";
+  assert.equal(e.exerciseRecords(draft, d, NOW, id).error, "err_dup");
+  const same = e.exerciseDraft(d, "fly");
+  assert.equal(e.exerciseRecords(same, d, NOW, id).error, undefined);
+});
+
+test("exercise: catalog exercises keep name and kind, but muscles, type and notes can change", () => {
+  const d = data();
+  d.exercises[0] = { ...d.exercises[0], catalog_key: "bench_press", muscles_primary: "chest", kind: "strength" };
+  const draft = e.exerciseDraft(d, "bench");
+  assert.equal(draft.meta.own, false);
+  Object.assign(draft.meta, { name: "Anders", kind: "time", notes: "Schultern fest" });
+  e.toggleMuscle(draft.meta, "secondary", "triceps");
+  const x = e.exerciseRecords(draft, d, NOW, id).records.exercise[0];
+  assert.deepEqual([x.name, x.kind, x.notes, x.muscles_secondary, x.catalog_key], ["Bank", "strength", "Schultern fest", "triceps", "bench_press"]);
+});
+
+test("exercise: a muscle is never primary and secondary; unchanged data writes nothing", () => {
+  const meta = { primary: ["chest"], secondary: ["triceps"] };
+  e.toggleMuscle(meta, "secondary", "chest");
+  assert.deepEqual(meta, { primary: [], secondary: ["triceps", "chest"] });
+  e.toggleMuscle(meta, "primary", "triceps");
+  assert.deepEqual(meta, { primary: ["triceps"], secondary: ["chest"] });
+  const d = data();
+  assert.deepEqual(e.exerciseRecords(e.exerciseDraft(d, "bench"), d, NOW, id).records, {});
+});
+
+test("exercise: time exercises take no next weight; a bad weight is refused", () => {
+  const d = data();
+  const plank = e.exerciseDraft(d, "plank");
+  plank.weight = "20";
+  assert.deepEqual(e.exerciseRecords(plank, d, NOW, id).weights, []);
+  const bench = e.exerciseDraft(d, "bench");
+  bench.weight = "viel";
+  assert.equal(e.exerciseRecords(bench, d, NOW, id).error, "err_weight");
+});

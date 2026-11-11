@@ -29,9 +29,9 @@ PAGE = """<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name=
 <title>HAFS preview</title><style>
 html,body{margin:0;height:100%}
 body{--primary-color:#03a9f4;--primary-text-color:#212121;--secondary-text-color:#727272;--primary-background-color:#fafafa;
---card-background-color:#fff;--divider-color:#e0e0e0;--text-primary-color:#fff;--error-color:#db4437;--success-color:#43a047;
+--card-background-color:#fff;--secondary-background-color:#e5e5e5;--app-header-background-color:#03a9f4;--app-header-text-color:#fff;--divider-color:#e0e0e0;--text-primary-color:#fff;--error-color:#db4437;--success-color:#43a047;
 font-family:Roboto,system-ui,sans-serif}
-body.dark{--primary-text-color:#e1e1e1;--secondary-text-color:#9b9b9b;--primary-background-color:#111;--card-background-color:#1c1c1c;--divider-color:#333}
+body.dark{--primary-text-color:#e1e1e1;--secondary-text-color:#9b9b9b;--primary-background-color:#111;--card-background-color:#1c1c1c;--secondary-background-color:#202020;--divider-color:#333}
 hafs-panel{display:block;height:100%;overflow:auto}
 </style></head><body><hafs-panel></hafs-panel><script type="module">
 if (location.search.includes("dark")) document.body.classList.add("dark");

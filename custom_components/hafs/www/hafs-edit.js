@@ -286,25 +286,66 @@ export const gymDelete = (id, data, now = stamp()) => {
 
 // ---- Exercise: equipment links and weight steps ---------------------------------------------
 
-// Draft for one exercise: every piece of equipment of every gym with a flag whether the exercise is linked to it.
-// Linked pieces can be edited in place (their weight steps are shared by all exercises that use them).
+// Draft for one exercise (existing or new): master data, the next weight and every piece of equipment of every gym with a flag
+// whether the exercise is linked to it. Linked pieces can be edited in place (their weight steps are shared by all exercises
+// that use them). Name and kind of catalog exercises are fixed (`meta.own` false); muscles, equipment type and notes can change.
+export const EXERCISE_KINDS = ["strength", "bodyweight", "time", "cardio"];
+export const EXERCISE_EQUIPMENT = ["machine", "cable", "barbell", "dumbbell", "bodyweight", "kettlebell", "band", "cardio", "other"];
+const words = (text) => String(text ?? "").split(/\s+/).filter(Boolean);
+
 export const exerciseDraft = (data, id, fmt) => {
-  const raw = data.exercises.find((e) => e.id === id) || null;
-  const linked = new Set(data.links.filter((l) => l.exercise_id === id).map((l) => l.equipment_id));
+  const raw = (id && data.exercises.find((e) => e.id === id)) || null;
+  const linked = new Set(raw ? data.links.filter((l) => l.exercise_id === raw.id).map((l) => l.equipment_id) : []);
   const gyms = new Map(data.gyms.map((g) => [g.id, g.name]));
   const equipment = data.equipment.map((q) => ({
     raw: q, gymId: q.gym_id, gymName: gyms.get(q.gym_id) || "", name: q.name, type: q.type, ...decodeSteps(q.steps, fmt),
     outOfOrder: !!q.out_of_order, linked: linked.has(q.id),
   })).sort((a, b) => a.gymName.localeCompare(b.gymName) || a.name.localeCompare(b.name));
-  return { raw, name: raw?.name ?? "", equipment };
+  const weight = raw ? data.target_weights?.[raw.id] : null;
+  return {
+    id: raw ? raw.id : newId(), isNew: !raw, raw, name: raw?.name ?? "", equipment,
+    meta: {
+      name: raw?.name ?? "", kind: raw?.kind ?? "strength", primary: words(raw?.muscles_primary), secondary: words(raw?.muscles_secondary),
+      equipmentType: raw?.equipment_type ?? "", unilateral: !!raw?.unilateral, notes: raw?.notes ?? "", own: !raw || !raw.catalog_key,
+    },
+    weight: weight == null ? "" : String(weight), weightOrig: weight ?? null,
+  };
+};
+
+// Toggle a muscle in the primary or secondary list; a muscle is never both.
+export const toggleMuscle = (meta, list, key) => {
+  const other = list === "primary" ? "secondary" : "primary";
+  meta[list] = meta[list].includes(key) ? meta[list].filter((k) => k !== key) : [...meta[list], key];
+  meta[other] = meta[other].filter((k) => !meta[list].includes(k));
 };
 
 export const newGear = (gymId, gymName) => ({ raw: null, gymId, gymName, name: "", type: "barbell", ...emptyMachine(), outOfOrder: false, linked: true });
 
-// Returns {error, detail} or {records}: new/changed equipment and the links of this exercise (added, or tombstoned when unchecked).
+// Returns {error, detail} or {records, weights}: the exercise itself (new or changed), new/changed equipment and the links of this
+// exercise (added, or tombstoned when unchecked). `weights` = [{exercise_id, weight}] for the next-weight field when it changed.
 export const exerciseRecords = (draft, data, now = stamp(), makeId = newId) => {
-  const exerciseId = draft.raw?.id;
-  if (!exerciseId) return { error: "save_failed", detail: "exercise" };
+  const exerciseId = draft.id;
+  const meta = draft.meta;
+  const records = {};
+  const hasWeights = meta.kind === "strength" || meta.kind === "bodyweight";
+  // the exercise record
+  const name = meta.name.trim();
+  if (meta.own) {
+    if (!name) return { error: "err_name" };
+    if (data.exercises.some((e) => e.id !== exerciseId && e.name.trim().toLowerCase() === name.toLowerCase())) return { error: "err_dup", detail: name };
+  }
+  const primary = [...new Set(meta.primary)];
+  const secondary = [...new Set(meta.secondary)].filter((k) => !primary.includes(k));
+  const fields = {
+    name: meta.own ? name : draft.raw.name, kind: meta.own ? meta.kind : draft.raw.kind,
+    muscles_primary: primary.join(" "), muscles_secondary: secondary.join(" "),
+    equipment_type: meta.equipmentType, unilateral: meta.unilateral ? 1 : 0, notes: meta.notes.trim(),
+  };
+  const before = draft.raw ? { muscles_primary: "", muscles_secondary: "", equipment_type: "", unilateral: 0, notes: "", ...draft.raw } : null;
+  if (!before || Object.entries(fields).some(([k, v]) => before[k] !== v)) {
+    records.exercise = [{ catalog_key: "", ...draft.raw, id: exerciseId, updated_at: now, deleted: 0, ...fields }];
+  }
+  // equipment and links
   const equipment = [], links = [];
   const mine = new Map(data.links.filter((l) => l.exercise_id === exerciseId).map((l) => [l.equipment_id, l]));
   for (const q of draft.equipment) {
@@ -327,10 +368,16 @@ export const exerciseRecords = (draft, data, now = stamp(), makeId = newId) => {
     if (q.linked && !link) links.push({ id: makeId(), exercise_id: exerciseId, equipment_id: id, updated_at: now, deleted: 0 });
     if (!q.linked && link) links.push({ ...link, deleted: 1, updated_at: now });
   }
-  const records = {};
   if (equipment.length) records.equipment = equipment;
   if (links.length) records.exercise_equipment = links;
-  return { records };
+  // the next weight (a suggestion of the progression, set through its own command)
+  const weights = [];
+  if (hasWeights && draft.weight !== "" && draft.weight != null) {
+    const w = num(draft.weight);
+    if (!Number.isFinite(w) || w < 0 || w > 1000) return { error: "err_weight", detail: name || draft.name };
+    if (w !== draft.weightOrig) weights.push({ exercise_id: exerciseId, weight: w });
+  }
+  return { records, weights };
 };
 
 // Switch a row between one target and a range; the range starts four below the target.
