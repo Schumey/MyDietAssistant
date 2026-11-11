@@ -61,4 +61,39 @@ void main() {
     await tester.tap(find.text('Stop')); // the rest after the work set
     await tester.pumpAndSettle();
   });
+
+  testWidgets('after the planned sets the main button moves on to the next exercise; an extra set stays possible', (tester) async {
+    await tester.pumpWidget(HafsApp(app: app));
+    await tester.pumpAndSettle();
+    app.repo!.local.upsert('exercise', {
+      'id': 'e2', 'owner': 'u1', 'updated_at': '2026-01-01T00:00:00+00:00', 'name': 'Kniebeuge', 'kind': 'strength'}, dirty: false);
+    app.repo!.saveRoutine(name: 'Mix', exercises: [
+      RoutineExercise(exerciseId: 'e1', name: 'Bankdrücken', sets: 1),
+      RoutineExercise(exerciseId: 'e2', name: 'Kniebeuge', sets: 1),
+    ]);
+    await tester.tap(find.text('Workout starten'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mix'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Bankdrücken'));
+    await tester.pumpAndSettle();
+    expect(find.text('Satz fertig'), findsOneWidget);
+    expect(find.text('Nächste Übung'), findsNothing);
+    await tester.tap(find.text('Satz fertig'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Satz fertig'), findsNothing); // the one planned set is done
+    expect(find.text('Zusätzlichen Satz erfassen'), findsOneWidget);
+    await tester.tap(find.text('Nächste Übung'));
+    await tester.pumpAndSettle();
+    expect(find.text('Satz fertig'), findsOneWidget); // now Kniebeuge is open
+    await tester.tap(find.text('Satz fertig'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Nächste Übung'), findsNothing); // nothing planned left: the button finishes the workout
+    expect(find.text('Workout beenden'), findsWidgets);
+    await tester.tap(find.text('Zusätzlichen Satz erfassen'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(app.repo!.local.rows('SELECT id FROM workout_set WHERE exercise_id = ?', ['e2']), hasLength(2));
+    await tester.tap(find.text('Stop'));
+    await tester.pumpAndSettle();
+  });
 }

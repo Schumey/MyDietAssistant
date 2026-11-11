@@ -269,6 +269,14 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     }
   }
 
+  /// The next planned exercise that is still open (in the shown order), `null` when everything planned is done.
+  ExerciseInfo? _nextOpen(String currentId) {
+    for (final p in _sorted(repo.planned(widget.workoutId))) {
+      if (p.exercise.id != currentId && !p.finished && !_skipped.contains(p.exercise.id)) return p.exercise;
+    }
+    return null;
+  }
+
   Future<void> _finish() async {
     final detail = repo.workoutDetail(widget.workoutId);
     final hasRoutine = repo.planned(widget.workoutId).isNotEmpty;
@@ -438,6 +446,9 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     final target = d.target;
     final hint = target == null ? null : reasonText(target.reasonCode, target.params, fallback: target.reasonDe);
     final done = repo.workoutDetail(widget.workoutId).where((x) => x.exercise.id == e.id).firstOrNull?.sets.length ?? 0;
+    final planned = _plannedFor(e.id);
+    final planDone = planned != null && planned.finished && !_warmup;
+    final next = planDone ? _nextOpen(e.id) : null;
     return Material(
       elevation: 8,
       color: theme.colorScheme.surfaceContainerHigh,
@@ -536,11 +547,24 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               ),
             ]),
             const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: FilledButton(onPressed: _saveSet, child: Text(tr('save_set'), style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onPrimary))),
-            ),
+            // All planned sets of this exercise are done: the main button moves on instead of adding yet another set.
+            if (planDone) ...[
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: FilledButton(
+                  onPressed: next != null ? () => _select(next) : _finish,
+                  child: Text(next != null ? tr('next_exercise') : tr('finish_workout'),
+                      style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onPrimary)),
+                ),
+              ),
+              Align(alignment: Alignment.center, child: TextButton(onPressed: _saveSet, child: Text(tr('extra_set')))),
+            ] else
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: FilledButton(onPressed: _saveSet, child: Text(tr('save_set'), style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onPrimary))),
+              ),
           ]),
         ),
       ),
