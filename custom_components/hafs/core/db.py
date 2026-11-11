@@ -136,6 +136,10 @@ MIGRATIONS: list[str] = [
     ALTER TABLE routine_exercise ADD COLUMN warmup_reps INTEGER;
     ALTER TABLE routine_exercise ADD COLUMN warmup_pct REAL;
     """,
+    # 5: attachment of a cable set (rope, straight bar, ...), a key the apps translate
+    """
+    ALTER TABLE workout_set ADD COLUMN attachment TEXT NOT NULL DEFAULT '';
+    """,
 ]
 
 SCHEMA_VERSION = len(MIGRATIONS)

@@ -250,6 +250,25 @@ void main() {
       expect(repo.routine(id)!.exercises.single.warmupPct, 40);
     });
 
+    test('cable attachment: stored with the set, remembered per exercise, only for cable exercises', () {
+      local.upsert('exercise', {'id': 'k1', 'owner': 'u1', 'updated_at': '2026-01-01T00:00:00+00:00', 'name': 'Trizepsdrücken am Kabel', 'kind': 'strength', 'equipment_type': 'cable'}, dirty: false);
+      expect(repo.isCableExercise('k1'), isTrue);
+      expect(repo.isCableExercise('e1'), isFalse);
+      final g = repo.addGym('A');
+      final cable = repo.saveEquipment(gymId: g, name: 'Kabelturm', type: 'cable');
+      repo.setExercisesOf(cable, {'e1'}); // an exercise linked to a cable machine counts too
+      expect(repo.isCableExercise('e1'), isTrue);
+      expect(repo.lastAttachment('k1'), '');
+      final w = repo.startWorkout();
+      repo.addSet(workoutId: w, exerciseId: 'k1', weight: 20, reps: 12, attachment: 'rope');
+      tick();
+      repo.addSet(workoutId: w, exerciseId: 'k1', weight: 20, reps: 10, attachment: 'straight');
+      expect(repo.lastAttachment('k1'), 'straight');
+      expect([for (final s in repo.workoutDetail(w).single.sets) s.attachment], ['rope', 'straight']);
+      repo.addSet(workoutId: w, exerciseId: 'e2', weight: 50, reps: 8); // no attachment is the default
+      expect(repo.workoutDetail(w).last.sets.single.attachment, '');
+    });
+
     test('routine rows use the columns the server reads for its targets', () {
       repo.saveRoutine(name: 'R', exercises: [RoutineExercise(exerciseId: 'e1', name: 'Bankdrücken', sets: 3, repsMin: 6, repsMax: 8)]);
       final row = local.row('SELECT target_sets, reps_min, reps_max FROM routine_exercise WHERE deleted = 0')!;

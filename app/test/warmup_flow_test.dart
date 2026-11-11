@@ -96,4 +96,30 @@ void main() {
     await tester.tap(find.text('Stop'));
     await tester.pumpAndSettle();
   });
+
+  testWidgets('cable exercise: choose the rope, it is saved with the sets and offered again next time', (tester) async {
+    await tester.pumpWidget(HafsApp(app: app));
+    await tester.pumpAndSettle();
+    app.repo!.local.upsert('exercise', {
+      'id': 'k1', 'owner': 'u1', 'updated_at': '2026-01-01T00:00:00+00:00', 'name': 'Trizepsdrücken am Kabel', 'kind': 'strength', 'equipment_type': 'cable'}, dirty: false);
+    app.repo!.saveRoutine(name: 'Arme', exercises: [RoutineExercise(exerciseId: 'k1', name: 'Trizepsdrücken am Kabel', sets: 3)]);
+    await tester.tap(find.text('Workout starten'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Arme'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Trizepsdrücken am Kabel'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Seil/Stange'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Seil'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Satz fertig'));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.text('Satz fertig')); // the choice stays for the next set
+    await tester.pump(const Duration(milliseconds: 300));
+    expect([for (final r in app.repo!.local.rows('SELECT attachment FROM workout_set ORDER BY done_at, set_no')) r['attachment']], ['rope', 'rope']);
+    expect(find.textContaining('· Seil'), findsWidgets); // shown behind the set
+    await tester.tap(find.text('Stop'));
+    await tester.pumpAndSettle();
+  });
 }

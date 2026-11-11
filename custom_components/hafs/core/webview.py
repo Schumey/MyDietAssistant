@@ -127,7 +127,8 @@ def workout(conn, owner, now, tz, params) -> dict:
                                                   "equipment": r["eq_name"], "sets": []})
         g["sets"].append({"no": r["set_no"], "weight": r["weight"], "reps": r["reps"], "duration_s": r["duration_s"],
                           "distance_m": r["distance_m"], "kind": r["kind"], "rir": r["rir"], "note": r["note"],
-                          "target_weight": r["target_weight"], "target_reps": r["target_reps"], "done_at": r["done_at"]})
+                          "target_weight": r["target_weight"], "target_reps": r["target_reps"], "done_at": r["done_at"],
+                          "attachment": r["attachment"]})
     stats = st.workout_stats(conn, owner, wid) or {}
     return {"id": wid, "started_at": w["started_at"], "ended_at": w["ended_at"], "routine": w["routine_name"], "gym": w["gym"],
             "note": w["note"], "phase": w["phase"], "source": w["source"], "feeling": w["feeling"],

@@ -372,8 +372,9 @@ class HafsPanel extends HTMLElement {
     else if (s.weight) main = `${f.kg(s.weight)} kg × ${s.reps ?? "–"}`;
     else main = `${s.reps ?? "–"}`;
     const kind = s.kind && s.kind !== "work" ? `<span class="badge">${esc(t(s.kind))}</span>` : "";
+    const att = s.attachment ? `<span class="badge">${esc(t("att_" + s.attachment) !== "att_" + s.attachment ? t("att_" + s.attachment) : s.attachment)}</span>` : "";
     const target = s.target_weight || s.target_reps ? `<small class="muted">${esc(t("target"))} ${s.target_weight ? f.kg(s.target_weight) + " kg" : ""}${s.target_reps ? " × " + s.target_reps : ""}</small>` : "";
-    return `<tr><td class="no">${s.no ?? i + 1}</td><td class="val">${esc(main)}</td><td>${kind}${target}${s.note ? ` <span class="snote">${esc(s.note)}</span>` : ""}</td></tr>`;
+    return `<tr><td class="no">${s.no ?? i + 1}</td><td class="val">${esc(main)}</td><td>${kind}${att}${target}${s.note ? ` <span class="snote">${esc(s.note)}</span>` : ""}</td></tr>`;
   }
 
   // ---- Statistik ------------------------------------------------------------------------

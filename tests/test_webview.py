@@ -156,3 +156,10 @@ def test_plan_edit_has_next_weights_and_warmup_columns_and_plan_shows_rest_and_w
     row = run(conn, "plan")["programs"][0]["routines"][0]["exercises"][0]
     assert row["rest_s"] == 180 and row["warmup"] == {"sets": 2, "reps": 5, "pct": 50}
     assert d["exercises"][0]["equipment_type"] == ""
+
+
+def test_workout_detail_shows_the_attachment_of_cable_sets(conn):
+    add(conn, "w1", "2026-11-09", [(40, 10, "work")])
+    sync.push(conn, OWNER, {"workout_set": [{"id": "w1-1", "workout_id": "w1", "exercise_id": "bench", "set_no": 1, "weight": 40, "reps": 10,
+                                              "kind": "work", "done_at": "2026-11-09T10:01:00", "attachment": "rope", "updated_at": "2026-11-12T10:00:00+00:00"}]})
+    assert run(conn, "workout", id="w1")["exercises"][0]["sets"][0]["attachment"] == "rope"

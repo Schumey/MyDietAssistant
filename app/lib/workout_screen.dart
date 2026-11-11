@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'app_state.dart';
+import 'attachments.dart';
 import 'exercise_picker.dart';
 import 'gyms_screen.dart';
 import 'history_screen.dart';
@@ -36,6 +37,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   double _step = 2.5;
   bool _warmup = false;
   String _note = ''; // note for the next set (e.g. "links", tempo)
+  String _attachment = ''; // rope / bar of a cable exercise, kept from set to set
   int _restSeconds = RestTimer.defaultSeconds;
   String? _gymId;
   List<EquipmentInfo> _equipmentOptions = [];
@@ -91,6 +93,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       _minutes = 1;
       _step = d.step;
       _warmup = false;
+      _attachment = repo.isCableExercise(e.id) ? repo.lastAttachment(e.id) : '';
       if (warmupNext) {
         _warmup = true;
         _weight = warmupWeight(d.weight, plan.warmupPct, d.steps, d.step);
@@ -252,6 +255,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       targetWeight: _defaults?.target?.weight,
       targetReps: _defaults?.target?.reps,
       note: _note,
+      attachment: repo.isCableExercise(e.id) ? _attachment : '',
     );
     HapticFeedback.lightImpact();
     widget.app.changed();
@@ -267,6 +271,25 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     } else if (wasWarmup && (_plannedFor(e.id)?.warmupSets ?? 0) > 0) {
       _applyEquipment(e, _equipmentId); // next warm-up set, or the working weight once the warm-ups are done
     }
+  }
+
+  /// Sheet to choose the rope or bar used at the cable (tap the chosen one again to clear it).
+  Future<void> _pickAttachment() async {
+    final pick = await showModalBottomSheet<String>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: ListView(shrinkWrap: true, children: [
+          Padding(padding: const EdgeInsets.all(16), child: Text(tr('attachment_title'), style: Theme.of(context).textTheme.titleMedium)),
+          for (final k in attachmentKeys)
+            ListTile(
+              title: Text(attachmentLabel(k)),
+              trailing: _attachment == k ? const Icon(Icons.check) : null,
+              onTap: () => Navigator.pop(context, _attachment == k ? '' : k),
+            ),
+        ]),
+      ),
+    );
+    if (pick != null && mounted) setState(() => _attachment = pick);
   }
 
   /// The next planned exercise that is still open (in the shown order), `null` when everything planned is done.
@@ -532,6 +555,12 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             const SizedBox(height: 12),
             Wrap(spacing: 8, runSpacing: 0, children: [
               FilterChip(label: Text(tr('kind_warmup')), selected: _warmup, onSelected: (v) => setState(() => _warmup = v)),
+              if (repo.isCableExercise(e.id))
+                ActionChip(
+                  avatar: const Icon(Icons.cable, size: 18),
+                  label: Text(_attachment.isEmpty ? tr('attachment_pick') : attachmentLabel(_attachment)),
+                  onPressed: _pickAttachment,
+                ),
               ActionChip(
                 avatar: const Icon(Icons.edit_note, size: 18),
                 label: Text(_note.isEmpty ? tr('set_note') : _note, overflow: TextOverflow.ellipsis),
