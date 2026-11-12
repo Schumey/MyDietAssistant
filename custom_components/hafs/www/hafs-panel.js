@@ -253,7 +253,8 @@ class HafsPanel extends HTMLElement {
       const rows = (d.next_exercises || []).map((x) => this._planRow(x)).join("")
         || (s.next.exercises || []).map((n) => `<li class="prow"><span class="pname">${esc(n)}</span></li>`).join("");
       hero = `<section class="card hero board">
-        <p class="kicker">${esc(s.state === "done" ? t("done_today") : t("next_up"))}</p>
+        ${s.state === "done" ? `<p class="done-line">✓ ${esc(t("done_line", s.last?.routine || t("free_workout")))}</p>` : ""}
+        <p class="kicker">${esc(t("next_up"))}</p>
         <h2 class="big">${esc(s.next.routine)}</h2>
         <p class="muted">${esc(t("next_program", s.next.program))}</p>
         <ul class="plist">${rows}</ul></section>`;
@@ -640,6 +641,7 @@ h2.sect { font-size: 18px; font-weight: 600; margin-top: 8px; }
 .head { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; margin-bottom: 10px; } .head h2, .head h3 { margin: 0; }
 .hint { color: var(--muted); font-size: 13px; margin-top: 10px; }
 .kicker { color: var(--accent); font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+.done-line { margin: 0 0 12px; font-size: 14px; color: var(--success-color, #43a047); font-weight: 500; }
 .hero.board { padding: 20px; border-left: 6px solid var(--accent); }
 .plist { list-style: none; margin-top: 14px; } .plist.compact { margin-top: 6px; }
 .prow { display: flex; align-items: baseline; gap: 10px; padding: 9px 0; border-top: 1px dashed var(--line); }

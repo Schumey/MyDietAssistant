@@ -91,7 +91,7 @@ class HafsCard extends HTMLElement {
         hero = `<p class="kicker">${esc(t("running_since", f.time(d.active_since) || ""))}</p><h2>${esc(s.next ? s.next.routine : t("free_workout"))}</h2>`;
       } else if (s.next) {
         const rows = c.exercises === false ? "" : `<ul>${this._rows(d.next_exercises || []) || (s.next.exercises || []).map((n) => `<li><span class="n">${esc(n)}</span></li>`).join("")}</ul>`;
-        hero = `<p class="kicker">${esc(s.state === "done" ? t("done_today") : t("next_up"))}</p><h2>${esc(s.next.routine)}</h2>
+        hero = `${s.state === "done" ? `<p class="done">✓ ${esc(t("done_line", s.last?.routine || t("free_workout")))}</p>` : ""}<p class="kicker">${esc(t("next_up"))}</p><h2>${esc(s.next.routine)}</h2>
           <p class="muted">${esc(t("next_program", s.next.program))}</p>${rows}`;
       } else {
         hero = `<h2>${esc(t("rest_day"))}</h2><p class="muted">${esc(t("no_plan"))}</p>`;
@@ -107,6 +107,7 @@ class HafsCard extends HTMLElement {
       .title { font-size: 14px; color: var(--secondary-text-color); margin: 0 0 8px; }
       .kicker { margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--primary-color); }
       h2 { margin: 2px 0 4px; font-size: 22px; font-weight: 500; color: var(--primary-text-color); }
+      .done { margin: 0 0 10px; font-size: 14px; color: var(--success-color, #43a047); }
       .muted { margin: 0 0 8px; color: var(--secondary-text-color); font-size: 14px; }
       ul { list-style: none; margin: 8px 0 0; padding: 0; }
       li { display: flex; gap: 12px; padding: 6px 0; border-top: 1px solid var(--divider-color); font-size: 14px; color: var(--primary-text-color); }
