@@ -100,8 +100,17 @@ class AppState extends ChangeNotifier {
     final trimmed = addr.trim();
     final connection = await _connector(trimmed, token.trim());
     try {
+      // Another user than the one whose data is on the device: start clean instead of mixing the two
+      // (and instead of sending the previous user's unsent changes to the new account).
+      final userId = await _serverUser(connection);
+      if (userId != null && local!.userId != null && local!.userId != userId) {
+        local!.clearUserData();
+        phase = '';
+        settings.updateAll((_, _) => '');
+      }
       final result = SyncService(local!, connection);
       await result.sync();
+      if (userId != null) local!.setState('user_id', userId);
     } finally {
       await connection.close();
     }
@@ -110,6 +119,16 @@ class AppState extends ChangeNotifier {
     _token = token.trim();
     syncError = null;
     notifyListeners();
+  }
+
+  /// The id of the signed-in HA user from `hafs/info` (`null` for older servers).
+  Future<String?> _serverUser(HaConnection connection) async {
+    try {
+      final info = await connection.call('hafs/info') as Map;
+      return info['user_id'] as String?;
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Asks Home Assistant which gym the user is at (zone of the person entity matched with the gyms' zone) and makes it the
@@ -162,7 +181,13 @@ class AppState extends ChangeNotifier {
     HaConnection? connection;
     try {
       connection = await _connector(address!, _token!);
+      final userId = await _serverUser(connection);
+      if (userId != null && local!.userId != null && local!.userId != userId) {
+        // the token now belongs to another user than the data on the device (should not happen: login() cleans up)
+        throw HaException('The data on this device belongs to another user. Please sign out and in again.');
+      }
       await SyncService(local!, connection).sync();
+      if (userId != null && local!.userId == null) local!.setState('user_id', userId);
       final p = (await connection.call('hafs/pref/get', {'key': 'phase'}) as Map)['value'] as String? ?? '';
       phase = p;
       local!.setState('phase', p);
@@ -231,6 +256,7 @@ class AppState extends ChangeNotifier {
 
   /// Meldet ab. Die lokalen Daten (auch noch nicht gesendete) bleiben auf dem Gerät.
   Future<void> logout() async {
+    if (pending > 0) await syncNow(); // best effort: whatever is not sent now is lost if another user signs in next
     await credentials.clear();
     address = null;
     _token = null;

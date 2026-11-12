@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -142,7 +141,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     final live = widget.app.live;
     if (entry == null || live == null) return;
     entry.rev = _seenRev = live.nextRev();
-    live.store.write(jsonEncode(entry.toJson())).then((_) => live.notifier.show(entry));
+    live.publishEntry(entry);
   }
 
   /// Takes over what the notification buttons changed (weight, reps, a saved set, the next exercise).

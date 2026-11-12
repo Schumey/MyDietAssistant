@@ -1,11 +1,13 @@
+import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:hafs_live/hafs_live.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'db_open.dart';
 import 'l10n.dart';
 import 'repo.dart';
+import 'rest_timer.dart';
 import 'rest_android.dart';
 import 'workout_live.dart';
 
@@ -22,85 +24,68 @@ class PrefsLiveStore implements LiveStore {
   Future<void> write(String? json) => json == null ? _prefs.remove('live_entry') : _prefs.setString('live_entry', json);
 }
 
-const _mainId = 7003;
-const _repsId = 7004;
+/// Id of the rest-timer action that adds 30 seconds (handled in `rest_android.dart`).
+const restAddAction = 'rest_add';
 
-/// The permanent workout notification on Android. Two notifications, because Android shows at most three buttons:
-/// the main one (exercise, set, weight, reps) with „weight −“, „weight +“ and „set done“, and a small one for the reps.
-/// Both cannot be swiped away and stay silent when they change.
+/// The permanent workout notification on Android: ONE notification with its own layout (plugin `hafs_live`): exercise and set,
+/// weight and reps with minus/plus, the main button („set done“, or „next exercise“ once the planned sets are done) and the
+/// rest countdown while the pause runs. It cannot be swiped away and stays silent when it changes.
 class AndroidLiveNotifier implements LiveNotifier {
-  AndroidLiveNotifier({FlutterLocalNotificationsPlugin? plugin}) : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
+  AndroidLiveNotifier({RestStore? restStore}) : _rest = restStore ?? PrefsRestStore();
 
-  final FlutterLocalNotificationsPlugin _plugin;
-  late final AndroidRestNotifier _initializer = AndroidRestNotifier(plugin: _plugin);
-
-  AndroidNotificationDetails _details(List<AndroidNotificationAction> actions) => AndroidNotificationDetails(
-        'workout_live',
-        tr('live_channel'),
-        importance: Importance.low,
-        priority: Priority.low,
-        ongoing: true,
-        autoCancel: false,
-        onlyAlertOnce: true,
-        showWhen: false,
-        category: AndroidNotificationCategory.status,
-        actions: actions,
-      );
-
-  AndroidNotificationAction _button(String id, String title) => AndroidNotificationAction(id, title, cancelNotification: false);
+  final RestStore _rest;
 
   @override
   Future<void> show(LiveEntry e) async {
-    await _init();
-    final unit = e.timed ? tr('live_minutes_short') : tr('live_weight_short');
     final set = e.plannedSets == null ? tr('set_n', [e.setNo]) : '${tr('set_n', [e.setNo])}/${e.plannedSets}';
-    final line = e.timed ? liveWeightText(e, L10n.kg) : '${liveWeightText(e, L10n.kg)} × ${e.reps}';
-    await _plugin.show(
-      id: _mainId,
-      title: '${e.exerciseName} · $set',
-      body: e.warmup ? '${tr('kind_warmup')}: $line' : line,
-      notificationDetails: NotificationDetails(
-        android: _details([
-          _button(LiveAction.weightMinus, '$unit −'),
-          _button(LiveAction.weightPlus, '$unit +'),
-          _button(LiveAction.done, tr('save_set')),
-        ]),
-      ),
-    );
-    if (e.timed) {
-      await _plugin.cancel(id: _repsId);
-      return;
-    }
-    await _plugin.show(
-      id: _repsId,
-      title: '${tr('live_reps_short')}: ${e.reps}',
-      notificationDetails: NotificationDetails(
-        android: _details([
-          _button(LiveAction.repsMinus, '${tr('live_reps_short')} −'),
-          _button(LiveAction.repsPlus, '${tr('live_reps_short')} +'),
-        ]),
-      ),
-    );
+    final restEnd = await _rest.endMs() ?? 0;
+    final hasNext = e.planDone && e.nextName != null;
+    final doneText = hasNext ? tr('next_exercise') : (e.planDone ? tr('extra_set') : tr('save_set'));
+    final subtitle = [
+      if (e.warmup) tr('kind_warmup'),
+      if (hasNext) '${tr('next_exercise')}: ${e.nextName}',
+      if (restEnd > DateTime.now().millisecondsSinceEpoch) tr('live_tap_rest'),
+    ].join(' · ');
+    await HafsLive.show({
+      'title': '${e.exerciseName} · $set',
+      'subtitle': subtitle,
+      'weightText': liveWeightText(e, L10n.kg),
+      'repsText': e.timed ? '' : '${e.reps} ${tr('live_reps_short')}',
+      'doneText': doneText,
+      'doneAction': hasNext ? LiveAction.next : LiveAction.done,
+      'weightMinus': LiveAction.weightMinus,
+      'weightPlus': LiveAction.weightPlus,
+      'repsMinus': LiveAction.repsMinus,
+      'repsPlus': LiveAction.repsPlus,
+      'restEndMs': restEnd,
+      'restFormat': tr('live_rest_format'),
+      'restAddAction': restAddAction,
+      'channelName': tr('live_channel'),
+    });
   }
 
   @override
-  Future<void> cancel() async {
-    await _init();
-    await _plugin.cancel(id: _mainId);
-    await _plugin.cancel(id: _repsId);
-  }
-
-  /// The plugin is initialised by the rest timer's notifier with the click handlers; this only makes sure it is.
-  Future<void> _init() => _initializer.requestInit();
+  Future<void> cancel() => HafsLive.cancel();
 }
 
 LiveStore createLiveStore() => PrefsLiveStore();
 
 LiveNotifier createLiveNotifier() => Platform.isAndroid ? AndroidLiveNotifier() : NoopLiveNotifier();
 
-/// A button of the notification while the app is not in front: does the work with its own connection to the
-/// database (the app may not even be running), then updates the notification. The open screen sees the change
-/// through the revision of the live entry.
+/// Shows the notification again with the current rest (called by the rest timer when it starts, ends or is changed).
+Future<void> refreshLiveNotification() async {
+  if (!Platform.isAndroid) return;
+  final entry = await PrefsLiveStore().read();
+  if (entry == null) return;
+  try {
+    await AndroidLiveNotifier().show(LiveEntry.fromJson((jsonDecode(entry) as Map).cast<String, dynamic>()));
+  } catch (_) {
+    // a broken stored entry: nothing to refresh
+  }
+}
+
+/// A button of the notification: does the work with its own connection to the database (the app may not even be
+/// running), then updates the notification. The open screen sees the change through the revision of the live entry.
 Future<void> handleLiveAction(String action) async {
   final local = await openAppDatabase();
   final rest = createRestTimer();

@@ -112,6 +112,24 @@ class LocalDb {
     }
   }
 
+  /// Setting kept on the device when another user signs in (not data of the previous user).
+  static const _deviceKeys = {'server_schema', 'plate_bar', 'plate_set'};
+
+  /// The HA user whose data this database holds (`null` = unknown, from before the app tracked it).
+  String? get userId => state('user_id');
+
+  /// Deletes everything that belongs to the previous user: all records, also those not sent yet, the sync cursors and
+  /// the cached settings. Device settings (plate calculator) stay. Used when another HA user signs in on this device.
+  void clearUserData() {
+    transaction(() {
+      for (final t in schema.syncTables) {
+        db.execute('DELETE FROM $t');
+      }
+      final keep = _deviceKeys.map((k) => "'$k'").join(', ');
+      db.execute('DELETE FROM sync_state WHERE key NOT IN ($keep)');
+    });
+  }
+
   /// Anzahl der Datensätze, die noch an den Server gehen.
   int pendingCount() {
     var n = 0;

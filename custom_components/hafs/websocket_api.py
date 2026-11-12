@@ -60,7 +60,8 @@ def _with_store(handler: Callable[..., Any]):
 async def ws_info(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]) -> None:
     integration = await async_get_integration(hass, DOMAIN)
     store = _get_store(hass)
-    result: dict[str, Any] = {"api_version": API_VERSION, "version": str(integration.version), "ready": store is not None}
+    result: dict[str, Any] = {"api_version": API_VERSION, "version": str(integration.version), "ready": store is not None,
+                              "user_id": connection.user.id}  # lets the app notice that another user signed in on the device
     if store is not None:
         result.update(await hass.async_add_executor_job(store.info))
     connection.send_result(msg["id"], result)

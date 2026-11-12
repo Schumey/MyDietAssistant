@@ -12,6 +12,7 @@ class LiveAction {
   static const repsMinus = 'live_r_minus';
   static const repsPlus = 'live_r_plus';
   static const done = 'live_done';
+  static const next = 'live_next';
 
   static bool isLive(String? id) => id != null && id.startsWith('live_');
 }
@@ -41,6 +42,8 @@ class LiveEntry {
     this.attachment = '',
     this.restSeconds = RestTimer.defaultSeconds,
     this.rev = 0,
+    this.planDone = false,
+    this.nextName,
   });
 
   final String workoutId;
@@ -66,6 +69,12 @@ class LiveEntry {
   /// Changes with every write; whoever wrote it remembers it, everybody else sees a change.
   int rev;
 
+  /// All planned sets of this exercise are done (set when the entry is published).
+  bool planDone;
+
+  /// Name of the next planned exercise that is still open, while [planDone].
+  String? nextName;
+
   LiveEntry copy() => LiveEntry.fromJson(toJson());
 
   Map<String, Object?> toJson() => {
@@ -89,6 +98,8 @@ class LiveEntry {
         'attachment': attachment,
         'restSeconds': restSeconds,
         'rev': rev,
+        'planDone': planDone,
+        'nextName': nextName,
       };
 
   factory LiveEntry.fromJson(Map<String, dynamic> j) => LiveEntry(
@@ -112,6 +123,8 @@ class LiveEntry {
         attachment: j['attachment'] as String? ?? '',
         restSeconds: j['restSeconds'] as int? ?? RestTimer.defaultSeconds,
         rev: j['rev'] as int? ?? 0,
+        planDone: j['planDone'] as bool? ?? false,
+        nextName: j['nextName'] as String?,
       );
 
   /// Weight one step up / down (in the steps of the equipment); the weight stays at the ends of the equipment.
@@ -216,6 +229,18 @@ EntryPreset entryPreset(Repo repo, String workoutId, ExerciseInfo e, String? equ
   return (go: again?.exercise, rest: true);
 }
 
+/// The next planned exercise that is still open (in plan order, after [currentId]), `null` when everything is done.
+ExerciseInfo? nextOpenExercise(Repo repo, String workoutId, String currentId, {Set<String> skipped = const {}}) {
+  final plan = repo.planned(workoutId);
+  final open = [for (final p in plan) if (!p.finished && !skipped.contains(p.exercise.id)) p.exercise];
+  final here = plan.indexWhere((p) => p.exercise.id == currentId);
+  // first the ones after the current exercise, then the ones before it that were left open
+  for (var i = here + 1; i < plan.length; i++) {
+    if (open.any((e) => e.id == plan[i].exercise.id)) return plan[i].exercise;
+  }
+  return open.where((e) => e.id != currentId).firstOrNull;
+}
+
 /// The entry for an exercise at the start of its sets (equipment as remembered unless [equipmentId] is given).
 Future<LiveEntry> liveEntryFor(Repo repo, RestTimer rest, String workoutId, ExerciseInfo e, {String? equipmentId, int? globalRest}) async {
   final gym = repo.workoutGym(workoutId);
@@ -281,9 +306,17 @@ class LiveController {
   /// Stores the entry and shows it in the notification. Returns the revision written.
   Future<int> publish(LiveEntry entry) async {
     entry.rev = nextRev();
+    await publishEntry(entry);
+    return entry.rev;
+  }
+
+  /// Like [publish] with the revision the caller has set (it remembers it to recognise its own write).
+  Future<void> publishEntry(LiveEntry entry) async {
+    final plan = repo.planned(entry.workoutId).where((p) => p.exercise.id == entry.exerciseId).firstOrNull;
+    entry.planDone = plan != null && plan.finished && !entry.warmup;
+    entry.nextName = entry.planDone ? nextOpenExercise(repo, entry.workoutId, entry.exerciseId)?.name : null;
     await store.write(jsonEncode(entry.toJson()));
     await notifier.show(entry);
-    return entry.rev;
   }
 
   Future<void> clear() async {
@@ -314,6 +347,12 @@ class LiveController {
         entry.changeReps(1);
       case LiveAction.done:
         return _complete(entry);
+      case LiveAction.next:
+        final target = nextOpenExercise(repo, entry.workoutId, entry.exerciseId);
+        if (target == null) return entry;
+        final next = await liveEntryFor(repo, rest, entry.workoutId, target, globalRest: _globalRest);
+        await publish(next);
+        return next;
       default:
         return entry;
     }

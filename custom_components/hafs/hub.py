@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import logging
 from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
@@ -63,7 +64,11 @@ class HafsHub:
         return slugify(self.names.get(owner) or owner[:8])
 
     def mda_name(self, owner: str) -> str:
-        return self.mda_names.get(owner) or self.object_name(owner)
+        """The name in MDA's entity ids: MDA builds it from the display name with `[^a-z0-9]+` -> `_` (so "Jörg" is
+        `j_rg`, not Home Assistant's `joerg`). An override per user wins."""
+        if override := self.mda_names.get(owner):
+            return override
+        return re.sub(r"[^a-z0-9]+", "_", (self.names.get(owner) or owner[:8]).lower()).strip("_") or "default"
 
     async def _track_mda(self, owner: str) -> None:
         """(Re)subscribe to the MDA sensors of this user; the name can be overridden with the `mda_name` pref."""

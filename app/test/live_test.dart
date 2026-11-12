@@ -197,6 +197,38 @@ void main() {
     expect(notifier.cancels, 1);
   });
 
+  test('after the planned sets the main button goes to the next open exercise (and back to extra sets when none is left)', () async {
+    repo.saveRoutine(name: 'Mix', exercises: [
+      RoutineExercise(exerciseId: 'e1', name: 'Bankdrücken', sets: 1),
+      RoutineExercise(exerciseId: 'e2', name: 'Rudern', sets: 1),
+    ]);
+    final w = repo.startWorkout(routineId: repo.routines().single.id);
+    await live.publish(await liveEntryFor(repo, rest, w, repo.exercise('e1')!));
+    expect((await live.current())!.planDone, isFalse);
+
+    await live.handle(LiveAction.done); // the only planned set of the first exercise
+    var cur = (await live.current())!;
+    expect(cur.exerciseId, 'e1');
+    expect(cur.planDone, isTrue);
+    expect(cur.nextName, 'Rudern');
+
+    await live.handle(LiveAction.next);
+    cur = (await live.current())!;
+    expect(cur.exerciseId, 'e2');
+    expect(cur.planDone, isFalse);
+    expect(cur.nextName, isNull);
+
+    await live.handle(LiveAction.done);
+    cur = (await live.current())!;
+    expect(cur.exerciseId, 'e2');
+    expect(cur.planDone, isTrue);
+    expect(cur.nextName, isNull); // nothing open: the button offers an extra set instead
+    await live.handle(LiveAction.next); // no target: nothing changes
+    expect((await live.current())!.exerciseId, 'e2');
+    await live.handle(LiveAction.done);
+    expect(repo.workoutDetail(w).last.sets, hasLength(2));
+  });
+
   test('entry survives the round trip through JSON', () {
     final e = LiveEntry(workoutId: 'w', exerciseId: 'e', exerciseName: 'X', equipmentId: 'q', steps: [5, 7.5], plannedSets: 3, weight: 7.5, note: 'links', attachment: 'rope');
     final back = LiveEntry.fromJson(e.toJson());

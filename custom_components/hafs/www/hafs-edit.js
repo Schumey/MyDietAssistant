@@ -380,6 +380,32 @@ export const exerciseRecords = (draft, data, now = stamp(), makeId = newId) => {
   return { records, weights };
 };
 
+// Names of the equipment linked to an exercise (for the summary line of a routine row).
+export const linkedGearNames = (data, exerciseId) => {
+  const ids = new Set(data.links.filter((l) => l.exercise_id === exerciseId).map((l) => l.equipment_id));
+  return data.equipment.filter((q) => ids.has(q.id)).map((q) => q.name).sort((a, b) => a.localeCompare(b));
+};
+
+// The equipment and links of the rows whose "Equipment" section was opened in the routine editor, as one records object
+// (pieces shared by several rows are written once). `error`/`detail` when a piece is invalid.
+export const rowGearRecords = (rows, data, now = stamp(), makeId = newId) => {
+  const out = { equipment: [], exercise_equipment: [] };
+  const seen = { equipment: new Set(), exercise_equipment: new Set() };
+  for (const row of rows) {
+    if (!row.gear) continue;
+    const r = exerciseRecords(row.gear, data, now, makeId);
+    if (r.error) return { error: r.error, detail: r.detail };
+    for (const table of Object.keys(out)) {
+      for (const rec of r.records[table] || []) {
+        if (seen[table].has(rec.id)) continue;
+        seen[table].add(rec.id);
+        out[table].push(rec);
+      }
+    }
+  }
+  return { records: Object.fromEntries(Object.entries(out).filter(([, v]) => v.length)) };
+};
+
 // Switch a row between one target and a range; the range starts four below the target.
 export const toggleRange = (row) => {
   row.range = !row.range;

@@ -21,6 +21,7 @@ class FakeServer implements HaConnection {
   final List<String> calls = [];
   final Map<String, String> prefs = {};
   bool offline = false;
+  String? userId; // the HA user of this connection, reported by hafs/info
   String? currentGymId;
   List<Map<String, Object?>> planDays = [];
   String? planError;
@@ -41,7 +42,7 @@ class FakeServer implements HaConnection {
     if (offline) throw HaException('offline');
     switch (type) {
       case 'hafs/info':
-        return {'api_version': apiVersion, 'version': '0.1.0', 'ready': ready, 'schema_version': 3};
+        return {'api_version': apiVersion, 'version': '0.1.0', 'ready': ready, 'schema_version': 3, if (userId != null) 'user_id': userId};
       case 'hafs/plan/suggest':
         planRequests.add(payload);
         if (planError != null) throw HaException(planError!);

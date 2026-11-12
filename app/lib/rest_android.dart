@@ -39,7 +39,7 @@ class PrefsRestStore implements RestStore {
 
 const _runningId = 7001;
 const _doneId = 7002;
-const _actionAdd = 'rest_add';
+const _actionAdd = restAddAction;
 const _actionStop = 'rest_stop';
 
 /// Benachrichtigungen des Pausen-Timers auf Android: ein Countdown, der nicht wegzuwischen ist
@@ -73,6 +73,8 @@ class AndroidRestNotifier implements RestNotifier {
     await _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
   }
 
+  /// The countdown is part of the workout notification (`hafs_live`); here only the „rest over“ alert is scheduled for the
+  /// exact time, and the workout notification is asked to show the countdown.
   @override
   Future<void> show(DateTime endsAt, String exerciseName) async {
     await init(onResponse: _onResponse, onBackground: restNotificationBackground);
@@ -80,31 +82,6 @@ class AndroidRestNotifier implements RestNotifier {
     await _plugin.cancel(id: _runningId);
     await _plugin.cancel(id: _doneId);
     if (remaining <= Duration.zero) return;
-    await _plugin.show(
-      id: _runningId,
-      title: tr('rest_title'),
-      body: exerciseName.isEmpty ? null : exerciseName,
-      notificationDetails: NotificationDetails(
-        android: AndroidNotificationDetails(
-          'rest_running',
-          tr('rest_channel_running'),
-          importance: Importance.low,
-          priority: Priority.low,
-          ongoing: true,
-          onlyAlertOnce: true,
-          showWhen: true,
-          when: endsAt.millisecondsSinceEpoch,
-          usesChronometer: true,
-          chronometerCountDown: true,
-          timeoutAfter: remaining.inMilliseconds,
-          category: AndroidNotificationCategory.progress,
-          actions: [
-            AndroidNotificationAction(_actionAdd, tr('rest_add')),
-            AndroidNotificationAction(_actionStop, tr('rest_stop'), cancelNotification: true),
-          ],
-        ),
-      ),
-    );
     await _plugin.zonedSchedule(
       id: _doneId,
       title: tr('rest_over'),
@@ -124,6 +101,7 @@ class AndroidRestNotifier implements RestNotifier {
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
+    await refreshLiveNotification();
   }
 
   @override
@@ -131,6 +109,7 @@ class AndroidRestNotifier implements RestNotifier {
     await init(onResponse: _onResponse, onBackground: restNotificationBackground);
     await _plugin.cancel(id: _runningId);
     await _plugin.cancel(id: _doneId);
+    await refreshLiveNotification();
   }
 }
 

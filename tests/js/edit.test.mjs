@@ -341,3 +341,49 @@ test("exercise: time exercises take no next weight; a bad weight is refused", ()
   bench.weight = "viel";
   assert.equal(e.exerciseRecords(bench, d, NOW, id).error, "err_weight");
 });
+
+test("routine rows: several pieces of equipment per exercise, edited next to the routine", () => {
+  const d = data();
+  d.equipment.push({ id: "q2", gym_id: "g1", name: "Brustpresse", type: "machine_stack", steps: '{"min":10,"max":100,"step":10}', out_of_order: 0 });
+  assert.deepEqual(e.linkedGearNames(d, "bench"), ["Bank"]);
+  assert.deepEqual(e.linkedGearNames(d, "fly"), []);
+
+  const routine = e.routineDraft(d, "r1");
+  const bench = routine.rows.find((r) => r.exerciseId === "bench");
+  bench.gear = e.exerciseDraft(d, "bench");
+  // nothing changed: no equipment or link records
+  assert.deepEqual(e.rowGearRecords(routine.rows, d, NOW, id), { records: {} });
+
+  // add the machine to the exercise and change the steps of the bench
+  bench.gear.equipment.find((q) => q.raw?.id === "q2").linked = true;
+  bench.gear.equipment.find((q) => q.raw?.id === "q1").steps = "20 25 30";
+  const r = e.rowGearRecords(routine.rows, d, NOW, id).records;
+  assert.equal(r.exercise_equipment.length, 1);
+  assert.equal(r.exercise_equipment[0].equipment_id, "q2");
+  assert.equal(r.exercise_equipment[0].exercise_id, "bench");
+  assert.equal(r.equipment.length, 1);
+  assert.equal(r.equipment[0].id, "q1");
+  assert.equal(r.equipment[0].steps, "[20,25,30]");
+  assert.equal(r.equipment[0].photo, "p.png"); // unknown columns stay
+
+  // unlinking writes a tombstone for the link
+  bench.gear.equipment.find((q) => q.raw?.id === "q1").linked = false;
+  const gone = e.rowGearRecords(routine.rows, d, NOW, id).records;
+  assert.equal(gone.exercise_equipment.find((l) => l.id === "l1").deleted, 1);
+});
+
+test("routine rows: a piece shared by two rows is written once; invalid steps are reported", () => {
+  const d = data();
+  d.links.push({ id: "l2", exercise_id: "fly", equipment_id: "q1" });
+  const routine = e.routineDraft(d, "r1");
+  const bench = routine.rows.find((r) => r.exerciseId === "bench"), fly = routine.rows.find((r) => r.exerciseId === "fly");
+  bench.gear = e.exerciseDraft(d, "bench");
+  fly.gear = e.exerciseDraft(d, "fly");
+  bench.gear.equipment[0].steps = "20 25";
+  fly.gear.equipment[0].steps = "20 25";
+  const r = e.rowGearRecords(routine.rows, d, NOW, id).records;
+  assert.equal(r.equipment.length, 1);
+  fly.gear.equipment[0].steps = "kaputt";
+  const bad = e.rowGearRecords(routine.rows, d, NOW, id);
+  assert.equal(bad.error, "err_steps");
+});
