@@ -319,11 +319,14 @@ export function installEditor(Panel, { edit, esc }) {
     const ed = this._edit, t = this._t, d = ed.draft;
     const type = (q) => this._typeOptions(q);
     const fields = (q, i) => this._stepFields(q, i);
+    const zones = Object.keys(this._hass?.states || {}).filter((k) => k.startsWith("zone.")).sort();
     const rows = d.equipment.map((q, i) => `<div class="erow"><div class="etop"><span class="pname">${esc(q.name || t("equipment_name"))}</span>${moveButtons(t, i, d.equipment.length)}</div>
       <div class="eqgrid"><input type="text" data-f="name" data-i="${i}" value="${esc(q.name)}" placeholder="${esc(t("equipment_name"))}" aria-label="${esc(t("equipment_name"))}" autocomplete="off">
         <select data-f="type" data-i="${i}" aria-label="${esc(t("equipment_type"))}">${type(q)}</select>${fields(q, i)}</div>
       <label class="check"><input type="checkbox" data-f="outOfOrder" data-i="${i}"${q.outOfOrder ? " checked" : ""}> ${esc(t("out_of_order_check"))}</label></div>`).join("");
-    return `<section class="card"><label class="field"><span>${esc(t("name"))}</span><input type="text" data-f="name" value="${esc(d.name)}" autocomplete="off"></label></section>
+    return `<section class="card"><label class="field"><span>${esc(t("name"))}</span><input type="text" data-f="name" value="${esc(d.name)}" autocomplete="off"></label>
+      <label class="field"><span>${esc(t("gym_zone"))}</span><input type="text" data-f="zone" value="${esc(d.zone)}" list="zone-list" placeholder="zone.…" autocomplete="off"></label>
+      <datalist id="zone-list">${zones.map((z) => `<option value="${esc(z)}"></option>`).join("")}</datalist><p class="hint">${esc(t("gym_zone_hint"))}</p></section>
       <section class="card"><h3>${esc(t("equipment"))}</h3>${rows || `<p class="muted">${esc(t("no_equipment"))}</p>`}
         <p><button class="btn" data-act="e-add-equipment">${esc(t("new_equipment"))}</button></p></section>`;
   };

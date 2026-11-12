@@ -248,7 +248,7 @@ export const gymDraft = (data, id, fmt) => {
   const raw = id ? data.gyms.find((g) => g.id === id) : null;
   const equipment = raw ? data.equipment.filter((q) => q.gym_id === raw.id).map((q) => ({
     raw: q, name: q.name, type: q.type, ...decodeSteps(q.steps, fmt), outOfOrder: !!q.out_of_order })) : [];
-  return { raw, name: raw?.name ?? "", equipment, removed: [] };
+  return { raw, name: raw?.name ?? "", zone: raw?.zone ?? "", equipment, removed: [] };
 };
 
 export const newEquipment = () => ({ raw: null, name: "", type: "machine_stack", ...emptyMachine(), outOfOrder: false });
@@ -267,7 +267,7 @@ export const gymRecords = (draft, data, now = stamp(), makeId = newId) => {
     equipment.push(rec);
   }
   const gone = draft.removed.map((q) => q.raw).filter(Boolean);
-  const records = { gym: [{ ...draft.raw, id, updated_at: now, deleted: 0, name }], equipment: [...equipment, ...gone.map((q) => ({ ...q, deleted: 1, updated_at: now }))] };
+  const records = { gym: [{ ...draft.raw, id, updated_at: now, deleted: 0, name, zone: (draft.zone || "").trim() }], equipment: [...equipment, ...gone.map((q) => ({ ...q, deleted: 1, updated_at: now }))] };
   const goneIds = new Set(gone.map((q) => q.id));
   const links = data.links.filter((l) => goneIds.has(l.equipment_id)).map((l) => ({ ...l, deleted: 1, updated_at: now }));
   if (links.length) records.exercise_equipment = links;

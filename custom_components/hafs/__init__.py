@@ -19,11 +19,13 @@ from .const import DB_SUBPATH, DOMAIN, PANEL_STATIC_URL, PANEL_URL_PATH
 from .core.store import Store
 from .hub import HafsHub
 from .views import async_register_views
-from .websocket_api import async_register_websocket_commands
+from .websocket_api import async_register_websocket_commands, async_suggest_plan
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
+
+CARD_URL_KEY = f"{DOMAIN}_card_url"
 
 type HafsConfigEntry = ConfigEntry[Store]
 
@@ -58,6 +60,63 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         now = dt_util.now()
         return {"user_id": owner, **await hass.async_add_executor_job(hub.store.plan, owner, now)}
 
+    def _owner(call: ServiceCall) -> tuple[HafsHub, str]:
+        hub: HafsHub | None = hass.data.get(DOMAIN)
+        if hub is None:
+            raise HomeAssistantError("HAFS is not set up")
+        owner = call.data.get("user_id") or call.context.user_id
+        if not owner:
+            raise HomeAssistantError("user_id is required when the caller is not a user")
+        return hub, owner
+
+    async def export_data(call: ServiceCall) -> dict:
+        """Everything of a user as JSON (the same data as the export button)."""
+        hub, owner = _owner(call)
+        return {"user_id": owner, **await hass.async_add_executor_job(hub.store.export_all, owner)}
+
+    async def import_data(call: ServiceCall) -> dict:
+        """Import a GymRun CSV (text). Dry run by default: only the summary is returned."""
+        hub, owner = _owner(call)
+        try:
+            result = await hass.async_add_executor_job(hub.store.import_gymrun, owner, call.data["csv"], call.data["dry_run"])
+        except ValueError as err:
+            raise HomeAssistantError(str(err)) from err
+        return {"user_id": owner, **result}
+
+    async def suggest_program(call: ServiceCall) -> dict:
+        """A training plan draft from the AI set up in Home Assistant. Nothing is saved."""
+        hub, owner = _owner(call)
+        try:
+            return {"user_id": owner, **await async_suggest_plan(
+                hass, hub.store, owner, call.data["days"], call.data["minutes"], call.data["goal"],
+                call.data["notes"], call.data["language"], call.data.get("entity_id"))}
+        except ValueError as err:
+            raise HomeAssistantError(str(err)) from err
+
+    hass.services.async_register(DOMAIN, "export", export_data, schema=vol.Schema({vol.Optional("user_id"): cv.string}),
+                                 supports_response=SupportsResponse.ONLY)
+    hass.services.async_register(
+        DOMAIN, "import", import_data,
+        schema=vol.Schema({
+            vol.Optional("user_id"): cv.string,
+            vol.Required("csv"): cv.string,
+            vol.Optional("dry_run", default=True): cv.boolean,
+        }),
+        supports_response=SupportsResponse.ONLY,
+    )
+    hass.services.async_register(
+        DOMAIN, "suggest_program", suggest_program,
+        schema=vol.Schema({
+            vol.Optional("user_id"): cv.string,
+            vol.Required("days"): vol.All(int, vol.Range(min=1, max=6)),
+            vol.Optional("minutes", default=60): vol.All(int, vol.Range(min=20, max=180)),
+            vol.Optional("goal", default=""): vol.All(cv.string, vol.Length(max=200)),
+            vol.Optional("notes", default=""): vol.All(cv.string, vol.Length(max=500)),
+            vol.Optional("language", default="de"): cv.string,
+            vol.Optional("entity_id"): cv.entity_id,
+        }),
+        supports_response=SupportsResponse.ONLY,
+    )
     hass.services.async_register(
         DOMAIN, "get_plan", get_plan,
         schema=vol.Schema({vol.Optional("user_id"): cv.string}),
@@ -95,6 +154,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: HafsConfigEntry) -> bool
         sidebar_icon="mdi:dumbbell",
         module_url=f"{PANEL_STATIC_URL}/hafs-panel.js?v={integration.version}-{stamp}",
     )
+    # The dashboard card is loaded on every dashboard (no manual resource entry needed): `type: custom:hafs-card`.
+    hass.data[CARD_URL_KEY] = f"{PANEL_STATIC_URL}/hafs-card.js?v={integration.version}-{stamp}"
+    frontend.add_extra_js_url(hass, hass.data[CARD_URL_KEY])
     return True
 
 
@@ -103,4 +165,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: HafsConfigEntry) -> boo
     if ok and (hub := hass.data.pop(DOMAIN, None)):
         hub.async_stop()
         frontend.async_remove_panel(hass, PANEL_URL_PATH, warn_if_unknown=False)
+        if url := hass.data.pop(CARD_URL_KEY, None):
+            frontend.remove_extra_js_url(hass, url)
     return ok

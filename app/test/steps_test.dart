@@ -78,4 +78,55 @@ void main() {
       expect(isStationType('barbell') || isStationType('machine_stack') || isStationType(''), isFalse);
     });
   });
+
+  group('equipment form', () {
+    test('stack machine: range plus add-on weight, and back', () {
+      final json = encodeStepsForm('machine_stack', StepsForm(input: '7-91/7', extra: '2,5'))!;
+      expect(jsonDecode(json), {'min': 7.0, 'max': 91.0, 'step': 7.0, 'extra': 2.5});
+      expect(expandSteps(json), containsAll([7, 9.5, 14, 16.5]));
+      final f = decodeStepsForm(json);
+      expect((f.input, f.extra), ('7-91/7', '2,5'));
+      // saving the decoded form again changes nothing
+      expect(jsonDecode(encodeStepsForm('machine_stack', f)!), jsonDecode(json));
+    });
+
+    test('stack machine: list with add-on weight becomes values + extra; no add-on stays a plain list', () {
+      expect(jsonDecode(encodeStepsForm('machine_stack', StepsForm(input: '10 20 30', extra: '1.25'))!), {'values': [10.0, 20.0, 30.0], 'extra': 1.25});
+      expect(jsonDecode(encodeStepsForm('machine_stack', StepsForm(input: '10 20 30'))!), [10.0, 20.0, 30.0]);
+      expect(decodeStepsForm('{"values":[10,20],"extra":2.5}').extra, '2,5');
+      expect(encodeStepsForm('machine_stack', StepsForm(input: '10 20', extra: 'x')), isNull);
+      expect(encodeStepsForm('machine_stack', StepsForm(input: 'bad')), isNull);
+      expect(encodeStepsForm('machine_stack', StepsForm()), '');
+    });
+
+    test('other types ignore the add-on field', () {
+      expect(jsonDecode(encodeStepsForm('machine', StepsForm(input: '5-20/5', extra: '2.5'))!), {'min': 5.0, 'max': 20.0, 'step': 5.0});
+    });
+
+    test('plate-loaded: base, plates, sides and maximum, round trip keeps the plate form', () {
+      final json = encodeStepsForm('machine_plate', StepsForm(base: '20', plates: '25 10 5 2,5', sides: 2, max: '220'))!;
+      expect(jsonDecode(json), {'base': 20.0, 'plates': [25.0, 10.0, 5.0, 2.5], 'sides': 2, 'max': 220.0});
+      expect(expandSteps(json)!.take(3), [20, 25, 30]); // 2 x 2.5 kg
+      final f = decodeStepsForm(json);
+      expect((f.base, f.plates, f.sides, f.max), ('20', '25 10 5 2,5', 2, '220'));
+      expect(jsonDecode(encodeStepsForm('machine_plate', f)!), jsonDecode(json));
+    });
+
+    test('plate-loaded: one side, no base, no maximum; invalid input is rejected', () {
+      final json = encodeStepsForm('machine_plate', StepsForm(plates: '10 5', sides: 1))!;
+      expect(jsonDecode(json), {'base': 0.0, 'plates': [10.0, 5.0], 'sides': 1});
+      expect(expandSteps(json)!.take(3), [0, 5, 10]);
+      expect(encodeStepsForm('machine_plate', StepsForm(base: '20')), isNull); // no plates
+      expect(encodeStepsForm('machine_plate', StepsForm(base: '20', plates: '5 x')), isNull);
+      expect(encodeStepsForm('machine_plate', StepsForm(base: '50', plates: '5', max: '20')), isNull);
+      expect(encodeStepsForm('machine_plate', StepsForm()), '');
+    });
+
+    test('decode: empty, broken and old forms', () {
+      expect(decodeStepsForm(null).input, '');
+      expect(decodeStepsForm('nonsense').plates, '');
+      expect(decodeStepsForm('[5,7.5]').input, '5 7,5');
+      expect(usesPlateFields('machine_plate') && !usesPlateFields('machine_stack'), isTrue);
+    });
+  });
 }

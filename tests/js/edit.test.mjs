@@ -98,6 +98,12 @@ test("gym: keeps unknown columns, parses steps, tombstones removed equipment and
   draft.equipment.push(extra);
   let { records } = e.gymRecords(draft, d, NOW, id);
   assert.equal(records.gym[0].zone, "zone.x");
+  assert.equal(draft.zone, "zone.x");
+  draft.zone = "  zone.studio ";
+  assert.equal(e.gymRecords(draft, d, NOW, id).records.gym[0].zone, "zone.studio");
+  draft.zone = "";
+  assert.equal(e.gymRecords(draft, d, NOW, id).records.gym[0].zone, "");
+  draft.zone = "zone.x";
   assert.equal(records.equipment[0].photo, "p.png");
   assert.equal(records.equipment[0].steps, "[20,25]");
   assert.equal(records.equipment[1].gym_id, "g1");

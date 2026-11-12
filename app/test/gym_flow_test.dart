@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hafs/app_state.dart';
@@ -5,6 +7,7 @@ import 'package:hafs/credentials.dart';
 import 'package:hafs/l10n.dart';
 import 'package:hafs/main.dart';
 import 'package:hafs/repo_gym.dart';
+import 'package:hafs/steps.dart';
 
 import 'support.dart';
 
@@ -130,6 +133,58 @@ void main() {
     expect(app.repo!.activeWorkout(), isNull);
     final w = app.repo!.history().single;
     expect(w.routineName, 'Push');
+  });
+
+  testWidgets('plate-loaded and stack machines can be entered in the app', (tester) async {
+    await tester.pumpWidget(HafsApp(app: app));
+    await settle(tester);
+    final g = app.repo!.addGym('Studio A');
+    app.changed();
+    await tester.tap(find.text('Studios und Geräte'));
+    await settle(tester);
+    await tester.tap(find.text('Studio A'));
+    await settle(tester);
+
+    Future<void> pickType(String label) async {
+      await tester.tap(find.byType(DropdownButtonFormField<String>));
+      await settle(tester);
+      await tester.tap(find.text(label).last);
+      await settle(tester);
+    }
+
+    await tester.tap(find.text('Gerät hinzufügen'));
+    await settle(tester);
+    await tester.enterText(find.widgetWithText(TextField, 'Name des Geräts'), 'Beinpresse');
+    await pickType('Maschine, Scheiben (Plate-Loaded)');
+    expect(find.widgetWithText(TextField, 'Gewichtsstufen'), findsNothing);
+    await tester.enterText(find.widgetWithText(TextField, 'Grundgewicht (kg)'), '50');
+    await tester.enterText(find.widgetWithText(TextField, 'Vorhandene Scheiben (kg)'), '25 10 5');
+    await tester.enterText(find.widgetWithText(TextField, 'Höchstgewicht (kg, optional)'), '250');
+    await tester.tap(find.text('Speichern'));
+    await settle(tester);
+    var q = app.repo!.equipment(g).single;
+    expect(q.type, 'machine_plate');
+    expect(expandSteps(q.steps)!.take(3), [50, 60, 70]); // 2 x 5 kg
+    expect(app.repo!.local.row('SELECT base_weight FROM equipment WHERE id = ?', [q.id])!['base_weight'], 50);
+
+    // editing it again shows the plate fields, not a flattened list
+    await tester.tap(find.text('Beinpresse'));
+    await settle(tester);
+    expect(find.widgetWithText(TextField, 'Vorhandene Scheiben (kg)'), findsOneWidget);
+    await tester.tap(find.text('Speichern'));
+    await settle(tester);
+    expect(jsonDecode(app.repo!.equipment(g).single.steps), containsPair('plates', [25.0, 10.0, 5.0]));
+
+    await tester.tap(find.text('Gerät hinzufügen'));
+    await settle(tester);
+    await tester.enterText(find.widgetWithText(TextField, 'Name des Geräts'), 'Latzug');
+    await pickType('Maschine, Gewichtsblock (Stack)');
+    await tester.enterText(find.widgetWithText(TextField, 'Gewichtsstufen'), '7-91/7');
+    await tester.enterText(find.widgetWithText(TextField, 'Zusatzgewicht (optional)'), '2,5');
+    await tester.tap(find.text('Speichern'));
+    await settle(tester);
+    q = app.repo!.equipment(g).firstWhere((e) => e.name == 'Latzug');
+    expect(expandSteps(q.steps)!.take(4), [7, 9.5, 14, 16.5]);
   });
 
   testWidgets('free workout can be saved as a routine', (tester) async {

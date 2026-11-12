@@ -128,3 +128,80 @@ String? stepsSummary(String? json, String Function(num) fmt, {required String ra
   }
   return listText.replaceAll('{0}', steps.map(fmt).join(', '));
 }
+
+/// The input of the equipment form, one piece per field. Stack machines use [input] (range or list) and [extra]
+/// (an add-on weight); plate-loaded machines use [base], [plates], [sides] and [max]; everything else only [input].
+class StepsForm {
+  StepsForm({this.input = '', this.extra = '', this.base = '', this.plates = '', this.sides = 2, this.max = ''});
+
+  final String input;
+  final String extra;
+  final String base;
+  final String plates;
+  final int sides;
+  final String max;
+}
+
+/// Is [type] entered with the plate fields?
+bool usesPlateFields(String type) => type == 'machine_plate';
+
+/// Is [type] entered with an add-on weight?
+bool usesExtraField(String type) => type == 'machine_stack';
+
+double? _number(String text) => double.tryParse(text.trim().replaceAll(',', '.'));
+
+String _num(num v) {
+  final r = (v.toDouble() * 10000).round() / 10000;
+  return r == r.roundToDouble() ? r.toStringAsFixed(0) : r.toString().replaceAll('.', ',');
+}
+
+/// Reads the stored JSON back into the form fields without expanding it (so nothing is flattened by editing).
+StepsForm decodeStepsForm(String? json) {
+  if (json == null || json.trim().isEmpty) return StepsForm();
+  Object? spec;
+  try {
+    spec = jsonDecode(json);
+  } catch (_) {
+    return StepsForm();
+  }
+  if (spec is List) return StepsForm(input: [for (final v in spec) if (v is num) _num(v)].join(' '));
+  if (spec is! Map) return StepsForm();
+  if (spec.containsKey('plates')) {
+    final plates = spec['plates'];
+    return StepsForm(
+      base: spec['base'] is num ? _num(spec['base'] as num) : '',
+      plates: plates is List ? [for (final p in plates) if (p is num) _num(p)].join(' ') : '',
+      sides: spec['sides'] == 1 ? 1 : 2,
+      max: spec['max'] is num ? _num(spec['max'] as num) : '',
+    );
+  }
+  final extra = spec['extra'] is num ? _num(spec['extra'] as num) : '';
+  if (spec['values'] is List) return StepsForm(input: [for (final v in spec['values'] as List) if (v is num) _num(v)].join(' '), extra: extra);
+  if (spec['min'] is num && spec['max'] is num && spec['step'] is num) {
+    return StepsForm(input: '${_num(spec['min'] as num)}-${_num(spec['max'] as num)}/${_num(spec['step'] as num)}', extra: extra);
+  }
+  return StepsForm(extra: extra);
+}
+
+/// The JSON for the database from the form of [type]; `''` = no steps known; `null` = invalid input.
+String? encodeStepsForm(String type, StepsForm f) {
+  if (usesPlateFields(type)) {
+    final plates = [for (final p in f.plates.trim().replaceAll(',', '.').split(RegExp(r'[\s;]+'))) if (p.isNotEmpty) double.tryParse(p)];
+    final hasAny = f.base.trim().isNotEmpty || plates.isNotEmpty || f.max.trim().isNotEmpty;
+    if (!hasAny) return '';
+    if (plates.isEmpty || plates.contains(null) || plates.any((p) => p! <= 0)) return null;
+    final base = f.base.trim().isEmpty ? 0.0 : _number(f.base);
+    final max = f.max.trim().isEmpty ? null : _number(f.max);
+    if (base == null || base < 0) return null;
+    if (f.max.trim().isNotEmpty && (max == null || max < base)) return null;
+    final spec = {'base': base, 'plates': plates.cast<double>(), 'sides': f.sides == 1 ? 1 : 2, 'max': ?max};
+    return expandSteps(jsonEncode(spec)) == null ? null : jsonEncode(spec);
+  }
+  final parsed = parseStepsInput(f.input);
+  if (parsed == null || parsed.isEmpty) return parsed;
+  if (!usesExtraField(type) || f.extra.trim().isEmpty) return parsed;
+  final extra = _number(f.extra);
+  if (extra == null || extra <= 0) return null;
+  final spec = jsonDecode(parsed);
+  return jsonEncode(spec is List ? {'values': spec, 'extra': extra} : {...(spec as Map), 'extra': extra});
+}

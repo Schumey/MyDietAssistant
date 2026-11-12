@@ -162,8 +162,14 @@ async def ws_gym_current(hass, connection, msg, store: Store) -> dict:
 async def ws_plan_suggest(hass, connection, msg, store: Store) -> dict:
     """Ask the AI configured in Home Assistant (`ai_task.generate_data`) for a plan draft built from the user's own
     exercises. Returns validated days; nothing is saved."""
-    req = await hass.async_add_executor_job(
-        store.plan_request, connection.user.id, msg["days"], msg["minutes"], msg["goal"], msg["notes"], msg["language"])
+    return await async_suggest_plan(
+        hass, store, connection.user.id, msg["days"], msg["minutes"], msg["goal"], msg["notes"], msg["language"], msg.get("entity_id"))
+
+
+async def async_suggest_plan(hass, store: Store, owner: str, days: int, minutes: int, goal: str, notes: str,
+                             language: str, entity_id: str | None = None) -> dict:
+    """The plan draft for [owner] (shared by the WebSocket command and the service `hafs.suggest_program`)."""
+    req = await hass.async_add_executor_job(store.plan_request, owner, days, minutes, goal, notes, language)
     if not req["known"]:
         raise ValueError("no exercises to build a plan from")
     if not hass.services.has_service("ai_task", "generate_data"):
@@ -173,11 +179,11 @@ async def ws_plan_suggest(hass, connection, msg, store: Store) -> dict:
         "instructions": req["instructions"],
         "structure": {"plan": {"description": "The plan as JSON text", "required": True, "selector": {"text": {"multiline": True}}}},
     }
-    if msg.get("entity_id"):
-        data["entity_id"] = msg["entity_id"]
+    if entity_id:
+        data["entity_id"] = entity_id
     try:
         result = await hass.services.async_call("ai_task", "generate_data", data, blocking=True, return_response=True)
-    except Exception as err:  # noqa: BLE001 - surface any provider error to the app as a message
+    except Exception as err:  # noqa: BLE001 - surface any provider error to the caller as a message
         raise ValueError(f"AI request failed: {err}") from err
     answer = (result or {}).get("data", {})
     text = answer.get("plan") if isinstance(answer, dict) else None

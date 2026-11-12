@@ -183,6 +183,11 @@ class EquipmentScreen extends StatefulWidget {
 class _EquipmentScreenState extends State<EquipmentScreen> {
   final _name = TextEditingController();
   final _steps = TextEditingController();
+  final _extra = TextEditingController();
+  final _base = TextEditingController();
+  final _plates = TextEditingController();
+  final _max = TextEditingController();
+  int _sides = 2;
   final _settings = TextEditingController();
   String _type = 'machine';
   bool _outOfOrder = false;
@@ -201,26 +206,26 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
         _type = e.type.isEmpty ? 'other' : e.type;
         _settings.text = e.settings;
         _outOfOrder = e.outOfOrder;
-        final steps = expandSteps(e.steps);
-        if (steps != null) _steps.text = _stepsText(e.steps, steps);
+        final f = decodeStepsForm(e.steps);
+        _steps.text = f.input;
+        _extra.text = f.extra;
+        _base.text = f.base;
+        _plates.text = f.plates;
+        _max.text = f.max;
+        _sides = f.sides;
       }
       _exercises = repo.exercisesOf(id);
     }
-  }
-
-  /// Rückübersetzung in die Eingabeform: Bereich als „5-100/5“, sonst Liste.
-  String _stepsText(String json, List<double> steps) {
-    if (steps.length > 2) {
-      final diffs = {for (var i = 1; i < steps.length; i++) ((steps[i] - steps[i - 1]) * 10000).round() / 10000};
-      if (diffs.length == 1) return '${L10n.kg(steps.first)}-${L10n.kg(steps.last)}/${L10n.kg(diffs.first)}';
-    }
-    return steps.map(L10n.kg).join(' ');
   }
 
   @override
   void dispose() {
     _name.dispose();
     _steps.dispose();
+    _extra.dispose();
+    _base.dispose();
+    _plates.dispose();
+    _max.dispose();
     _settings.dispose();
     super.dispose();
   }
@@ -256,7 +261,8 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
   }
 
   void _save() {
-    final steps = parseStepsInput(_steps.text);
+    final steps = encodeStepsForm(
+        _type, StepsForm(input: _steps.text, extra: _extra.text, base: _base.text, plates: _plates.text, sides: _sides, max: _max.text));
     if (_name.text.trim().isEmpty) return;
     if (steps == null) {
       setState(() => _error = tr('equipment_steps_invalid'));
@@ -271,11 +277,56 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
       steps: steps,
       outOfOrder: _outOfOrder,
       settings: _settings.text.trim(),
+      baseWeight: usesPlateFields(_type) ? (double.tryParse(_base.text.trim().replaceAll(',', '.')) ?? 0) : null,
     );
     repo.setExercisesOf(id, _exercises);
     widget.app.changed();
     Navigator.of(context).pop();
   }
+
+  /// Plate-loaded machine: base weight, the plates there are, plates on one or both sides, optional maximum.
+  List<Widget> _plateFields() => [
+        TextField(
+          controller: _base,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(
+            labelText: tr('equipment_base'),
+            helperText: tr('equipment_base_help'),
+            helperMaxLines: 2,
+            border: const OutlineInputBorder(),
+          ),
+          onChanged: (_) => setState(() => _error = null),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: _plates,
+          decoration: InputDecoration(
+            labelText: tr('equipment_plates'),
+            helperText: tr('equipment_plates_help'),
+            helperMaxLines: 2,
+            errorText: _error,
+            border: const OutlineInputBorder(),
+          ),
+          onChanged: (_) => setState(() => _error = null),
+        ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(tr('equipment_both_sides')),
+          value: _sides == 2,
+          onChanged: (v) => setState(() => _sides = v ? 2 : 1),
+        ),
+        TextField(
+          controller: _max,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(
+            labelText: tr('equipment_max'),
+            helperText: tr('equipment_max_help'),
+            helperMaxLines: 2,
+            border: const OutlineInputBorder(),
+          ),
+          onChanged: (_) => setState(() => _error = null),
+        ),
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -310,18 +361,34 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
             onChanged: (v) => setState(() => _type = v ?? 'other'),
           ),
           const SizedBox(height: 16),
-          TextField(
-            controller: _steps,
-            keyboardType: TextInputType.text,
-            decoration: InputDecoration(
-              labelText: tr('equipment_steps'),
-              helperText: tr('equipment_steps_help'),
-              helperMaxLines: 2,
-              errorText: _error,
-              border: const OutlineInputBorder(),
+          if (usesPlateFields(_type)) ..._plateFields() else ...[
+            TextField(
+              controller: _steps,
+              keyboardType: TextInputType.text,
+              decoration: InputDecoration(
+                labelText: tr('equipment_steps'),
+                helperText: tr('equipment_steps_help'),
+                helperMaxLines: 2,
+                errorText: _error,
+                border: const OutlineInputBorder(),
+              ),
+              onChanged: (_) => setState(() => _error = null),
             ),
-            onChanged: (_) => setState(() => _error = null),
-          ),
+            if (usesExtraField(_type)) ...[
+              const SizedBox(height: 16),
+              TextField(
+                controller: _extra,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  labelText: tr('equipment_extra'),
+                  helperText: tr('equipment_extra_help'),
+                  helperMaxLines: 2,
+                  border: const OutlineInputBorder(),
+                ),
+                onChanged: (_) => setState(() => _error = null),
+              ),
+            ],
+          ],
           const SizedBox(height: 16),
           TextField(controller: _settings, decoration: InputDecoration(labelText: tr('equipment_settings'), border: const OutlineInputBorder())),
           SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(tr('equipment_out_of_order')), value: _outOfOrder, onChanged: (v) => setState(() => _outOfOrder = v)),

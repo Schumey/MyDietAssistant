@@ -48,6 +48,25 @@ el.narrow = innerWidth < 760; el.hass = hass;
 </script></body></html>"""
 
 
+CARD_PAGE = PAGE.split("</style>")[0] + """.row{padding:16px;max-width:460px}
+ha-card{display:block;background:var(--card-background-color);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+</style></head><body><div class="row"><hafs-card id="c"></hafs-card></div><script type="module">
+if (location.search.includes("dark")) document.body.classList.add("dark");
+const lang = new URLSearchParams(location.search).get("lang") || "de";
+const hass = { language: lang, states: {}, connection: { sendMessagePromise: async (msg) => {
+  const r = await fetch("/ws", { method: "POST", body: JSON.stringify(msg) });
+  const j = await r.json();
+  if (!r.ok) throw j;
+  return j;
+} } };
+if (!customElements.get("ha-card")) customElements.define("ha-card", class extends HTMLElement {});
+await import("/hafs_static/hafs-card.js?v=preview");
+const el = document.getElementById("c");
+el.setConfig({});
+el.hass = hass;
+</script></body></html>"""
+
+
 def seed(store: Store) -> None:
     store.recompute_targets(OWNER)             # seeds the catalog and creates the exercise rows
     with store._conn() as conn:
@@ -107,6 +126,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         if self.path.split("?")[0] == "/":
             return self._send(200, PAGE.encode(), "text/html; charset=utf-8")
+        if self.path.split("?")[0] == "/card":
+            return self._send(200, CARD_PAGE.encode(), "text/html; charset=utf-8")
         if self.path.startswith("/hafs_static/"):
             f = (WWW / self.path.split("?")[0].removeprefix("/hafs_static/")).resolve()
             if f.is_file() and WWW in f.parents:

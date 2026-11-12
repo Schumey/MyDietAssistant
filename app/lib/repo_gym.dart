@@ -168,7 +168,7 @@ extension GymRepo on Repo {
         settings: r['settings'] as String,
       );
 
-  String saveEquipment({String? id, required String gymId, required String name, String type = '', String steps = '', bool outOfOrder = false, String settings = ''}) {
+  String saveEquipment({String? id, required String gymId, required String name, String type = '', String steps = '', bool outOfOrder = false, String settings = '', double? baseWeight}) {
     final eid = id ?? newId();
     final old = id == null ? null : local.row('SELECT * FROM equipment WHERE id = ?', [id]);
     local.upsert('equipment', {
@@ -183,6 +183,7 @@ extension GymRepo on Repo {
       'steps': steps,
       'out_of_order': outOfOrder ? 1 : 0,
       'settings': settings,
+      'base_weight': ?baseWeight,
     }, dirty: true);
     return eid;
   }
