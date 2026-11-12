@@ -43,6 +43,8 @@ class LocalDb {
 
   static LocalDb open(Database db, Schema schema) {
     final local = LocalDb._(db, schema);
+    // Another connection (the notification buttons in the background) may be writing: wait instead of failing.
+    db.execute('PRAGMA busy_timeout = 5000');
     local._migrate();
     return local;
   }

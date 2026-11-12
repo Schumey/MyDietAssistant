@@ -9,6 +9,8 @@ import 'package:timezone/timezone.dart' as tz;
 
 import 'l10n.dart';
 import 'rest_timer.dart';
+import 'workout_live.dart';
+import 'workout_notification.dart';
 
 /// Zustand des Pausen-Timers in den Einstellungen des Geräts (auch aus dem Hintergrund lesbar).
 class PrefsRestStore implements RestStore {
@@ -61,6 +63,9 @@ class AndroidRestNotifier implements RestNotifier {
     );
     _ready = true;
   }
+
+  /// Initialises the plugin with the handlers for the notification buttons (once).
+  Future<void> requestInit() => init(onResponse: _onResponse, onBackground: restNotificationBackground);
 
   @override
   Future<void> requestPermission() async {
@@ -141,6 +146,10 @@ void restNotificationBackground(NotificationResponse response) {
 }
 
 Future<void> _handleAction(String? action) async {
+  if (LiveAction.isLive(action)) {
+    await handleLiveAction(action!);
+    return;
+  }
   final store = PrefsRestStore();
   final notifier = AndroidRestNotifier();
   if (action == _actionStop) {

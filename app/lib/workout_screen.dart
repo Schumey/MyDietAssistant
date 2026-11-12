@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -14,6 +17,7 @@ import 'repo_program.dart';
 import 'rest_timer.dart';
 import 'steps.dart';
 import 'wakelock.dart';
+import 'workout_live.dart';
 
 /// Das laufende Workout: oben die erfassten Sätze, unten die Satzeingabe für die gewählte Übung.
 class WorkoutScreen extends StatefulWidget {
@@ -40,6 +44,9 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   String _attachment = ''; // rope / bar of a cable exercise, kept from set to set
   int _restSeconds = RestTimer.defaultSeconds;
   String? _gymId;
+  Timer? _poll;
+  int _seenRev = 0; // revision of the live entry this screen wrote or adopted last
+  bool _polling = false;
   List<EquipmentInfo> _equipmentOptions = [];
   List<EquipmentInfo> _stations = []; // Rack, Bank: nur zur Anzeige
   String? _equipmentId;
@@ -51,55 +58,126 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     _gymId = repo.workoutGym(widget.workoutId);
     keepScreenOn(true);
     widget.app.rest.notifier.requestPermission();
+    _poll = Timer.periodic(const Duration(seconds: 1), (_) => _pollLive());
   }
 
   @override
   void dispose() {
+    _poll?.cancel();
     keepScreenOn(false);
     super.dispose();
   }
 
   PlannedExercise? _plannedFor(String exerciseId) => repo.planned(widget.workoutId).where((p) => p.exercise.id == exerciseId).firstOrNull;
 
-  void _select(ExerciseInfo e) {
+  void _select(ExerciseInfo e, {String? equipmentId}) {
     final gym = _gymId;
     final options = gym == null ? <EquipmentInfo>[] : repo.equipmentFor(e.id, gym);
     _stations = gym == null ? [] : repo.stationsFor(e.id, gym);
     final remembered = repo.lastEquipmentFor(e.id);
-    final equipment = options.where((o) => o.id == remembered).firstOrNull ?? options.firstOrNull;
+    final equipment = options.where((o) => o.id == (equipmentId ?? remembered)).firstOrNull ?? options.firstOrNull;
     _equipmentOptions = options;
     _applyEquipment(e, equipment?.id);
     widget.app.rest.restSeconds(e.id, planned: _plannedFor(e.id)?.restSeconds, global: widget.app.restDefault).then((s) {
-      if (mounted && _exercise?.id == e.id) setState(() => _restSeconds = s);
+      if (mounted && _exercise?.id == e.id) {
+        setState(() => _restSeconds = s);
+        _publish();
+      }
     });
   }
 
   /// Übernimmt Gerät und Vorbelegung für die Übung (Gewicht auf die Stufen des Geräts gerundet).
   void _applyEquipment(ExerciseInfo e, String? equipmentId) {
-    final d = repo.defaults(e.id, workoutId: widget.workoutId, equipmentId: equipmentId);
-    // Innerhalb dieses Workouts gilt der zuletzt erfasste Satz an diesem Gerät als Vorbelegung.
-    final here = repo.workoutDetail(widget.workoutId).where((x) => x.exercise.id == e.id).toList();
-    final lastHere = here.isEmpty ? null : here.first.sets.where((s) => s.kind == 'work').lastOrNull;
-    // Sind laut Trainingstag noch Aufwärmsätze dran, ist der nächste Satz einer: Gewicht in Prozent des Arbeitsgewichts.
-    final plan = _plannedFor(e.id);
-    final warmupNext = plan != null && plan.warmupDue && d.weight > 0;
+    final p = entryPreset(repo, widget.workoutId, e, equipmentId);
+    final d = p.defaults;
     setState(() {
       _exercise = e;
       _equipmentId = equipmentId;
       _defaults = d;
       _steps = d.steps;
-      _weight = lastHere?.weight != null ? snapToSteps(lastHere!.weight!, d.steps) : d.weight;
-      _reps = lastHere?.reps ?? d.reps;
+      _weight = p.weight;
+      _reps = p.reps;
       _minutes = 1;
       _step = d.step;
-      _warmup = false;
+      _warmup = p.warmup;
       _attachment = repo.isCableExercise(e.id) ? repo.lastAttachment(e.id) : '';
-      if (warmupNext) {
-        _warmup = true;
-        _weight = warmupWeight(d.weight, plan.warmupPct, d.steps, d.step);
-        _reps = plan.warmupReps;
-      }
     });
+    _publish();
+  }
+
+  // --- permanent notification ------------------------------------------------------
+
+  /// The entry as shown in the panel, for the notification; `null` while no exercise is chosen.
+  LiveEntry? _entry() {
+    final e = _exercise;
+    if (e == null) return null;
+    final plan = _plannedFor(e.id);
+    final done = repo.workoutDetail(widget.workoutId).where((x) => x.exercise.id == e.id).firstOrNull?.sets.length ?? 0;
+    return LiveEntry(
+      workoutId: widget.workoutId,
+      exerciseId: e.id,
+      exerciseName: e.name,
+      equipmentId: _equipmentId,
+      timed: e.kind == 'time' || e.kind == 'cardio',
+      cable: repo.isCableExercise(e.id),
+      setNo: done + 1,
+      plannedSets: plan?.targetSets,
+      warmup: _warmup,
+      weight: _weight,
+      reps: _reps,
+      minutes: _minutes,
+      step: _step,
+      steps: _steps,
+      targetWeight: _defaults?.target?.weight,
+      targetReps: _defaults?.target?.reps,
+      note: _note,
+      attachment: _attachment,
+      restSeconds: _restSeconds,
+    );
+  }
+
+  /// Shows the current entry in the notification (and keeps it for the notification buttons).
+  void _publish() {
+    final entry = _entry();
+    final live = widget.app.live;
+    if (entry == null || live == null) return;
+    entry.rev = _seenRev = live.nextRev();
+    live.store.write(jsonEncode(entry.toJson())).then((_) => live.notifier.show(entry));
+  }
+
+  /// Takes over what the notification buttons changed (weight, reps, a saved set, the next exercise).
+  Future<void> _pollLive() async {
+    final live = widget.app.live;
+    if (live == null || _polling || !mounted) return;
+    _polling = true;
+    try {
+      final cur = await live.current();
+      if (cur == null || cur.workoutId != widget.workoutId || cur.rev == _seenRev || !mounted) return;
+      _seenRev = cur.rev;
+      final e = repo.exercise(cur.exerciseId);
+      if (e == null) return;
+      if (_exercise?.id != e.id || _equipmentId != cur.equipmentId) _select(e, equipmentId: cur.equipmentId);
+      setState(() {
+        _weight = cur.weight;
+        _reps = cur.reps;
+        _minutes = cur.minutes;
+        _warmup = cur.warmup;
+        _note = cur.note;
+        _attachment = cur.attachment;
+        _restSeconds = cur.restSeconds;
+      });
+      _seenRev = cur.rev; // _select may have published on top
+      widget.app.rest.restore();
+      widget.app.changed();
+    } finally {
+      _polling = false;
+    }
+  }
+
+  /// A change of the entry in the panel: redraw and show it in the notification.
+  void _upd(VoidCallback change) {
+    setState(change);
+    _publish();
   }
 
   /// Sheet to assign the current exercise to equipment of this gym (or to a new one).
@@ -148,7 +226,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     final e = _exercise;
     if (e == null) return;
     final s = await widget.app.rest.cycleRest(e.id, planned: _plannedFor(e.id)?.restSeconds, global: widget.app.restDefault);
-    if (mounted) setState(() => _restSeconds = s);
+    if (mounted) _upd(() => _restSeconds = s);
   }
 
   Future<void> _addExercise() async {
@@ -224,39 +302,13 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     _select(e);
   }
 
-  /// What happens after a work set: `go` = exercise to switch to (superset partner), `rest` = start the rest timer.
-  /// In a superset there is no rest until the last exercise of the round; then the round starts again with the first.
-  ({ExerciseInfo? go, bool rest}) _supersetRound(ExerciseInfo e) {
-    final plan = repo.planned(widget.workoutId);
-    final me = plan.where((p) => p.exercise.id == e.id).firstOrNull;
-    if (me == null || me.group.isEmpty) return (go: null, rest: true);
-    final group = [for (final p in plan) if (p.group == me.group && !_skipped.contains(p.exercise.id)) p];
-    final myIndex = group.indexWhere((p) => p.exercise.id == e.id);
-    for (var i = myIndex + 1; i < group.length; i++) {
-      if (!group[i].finished) return (go: group[i].exercise, rest: false);
-    }
-    final again = group.where((p) => !p.finished && p.exercise.id != e.id).firstOrNull;
-    return (go: again?.exercise, rest: true);
-  }
+  ({ExerciseInfo? go, bool rest}) _supersetRound(ExerciseInfo e) => supersetRound(repo, widget.workoutId, e, skipped: _skipped);
 
   void _saveSet() {
     final e = _exercise;
     if (e == null) return;
-    final timed = e.kind == 'time' || e.kind == 'cardio';
     final wasWarmup = _warmup;
-    repo.addSet(
-      workoutId: widget.workoutId,
-      exerciseId: e.id,
-      equipmentId: _equipmentId,
-      weight: timed ? null : _weight,
-      reps: timed ? null : _reps,
-      durationSeconds: timed ? _minutes * 60 : null,
-      kind: _warmup ? 'warmup' : 'work',
-      targetWeight: _defaults?.target?.weight,
-      targetReps: _defaults?.target?.reps,
-      note: _note,
-      attachment: repo.isCableExercise(e.id) ? _attachment : '',
-    );
+    _entry()!.save(repo);
     HapticFeedback.lightImpact();
     widget.app.changed();
     // Nach einem Aufwärmsatz läuft keine Pause; im Supersatz erst nach der letzten Übung der Runde.
@@ -270,6 +322,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       _select(round.go!);
     } else if (wasWarmup && (_plannedFor(e.id)?.warmupSets ?? 0) > 0) {
       _applyEquipment(e, _equipmentId); // next warm-up set, or the working weight once the warm-ups are done
+    } else {
+      _publish(); // the next set number
     }
   }
 
@@ -289,7 +343,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         ]),
       ),
     );
-    if (pick != null && mounted) setState(() => _attachment = pick);
+    if (pick != null && mounted) _upd(() => _attachment = pick);
   }
 
   /// The next planned exercise that is still open (in the shown order), `null` when everything planned is done.
@@ -325,6 +379,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     repo.finishWorkout(widget.workoutId);
     if (routineName != null && routineName.trim().isNotEmpty) repo.saveRoutineFromWorkout(widget.workoutId, routineName);
     widget.app.rest.stop();
+    widget.app.live?.clear();
     widget.app.changed();
     Navigator.of(context).pop();
     widget.app.syncNow();
@@ -524,22 +579,22 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               Stepper2(
                 label: tr('duration_min', ['']).trim(),
                 value: '$_minutes',
-                onMinus: () => setState(() => _minutes = (_minutes - 1).clamp(1, 600)),
-                onPlus: () => setState(() => _minutes += 1),
-                onTap: () => _edit(tr('duration_min', ['']).trim(), '$_minutes', (v) => setState(() => _minutes = v.round().clamp(1, 600))),
+                onMinus: () => _upd(() => _minutes = (_minutes - 1).clamp(1, 600)),
+                onPlus: () => _upd(() => _minutes += 1),
+                onTap: () => _edit(tr('duration_min', ['']).trim(), '$_minutes', (v) => _upd(() => _minutes = v.round().clamp(1, 600))),
               )
             else ...[
               Stepper2(
                 label: tr('weight_kg'),
                 value: L10n.kg(_weight),
-                onMinus: () => setState(() => _weight = stepDown(_weight, _steps, _step)),
-                onPlus: () => setState(() => _weight = stepUp(_weight, _steps, _step) ?? _weight),
-                onTap: () => _edit(tr('weight_kg'), L10n.kg(_weight), (v) => setState(() => _weight = v.clamp(0, 1000).toDouble())),
+                onMinus: () => _upd(() => _weight = stepDown(_weight, _steps, _step)),
+                onPlus: () => _upd(() => _weight = stepUp(_weight, _steps, _step) ?? _weight),
+                onTap: () => _edit(tr('weight_kg'), L10n.kg(_weight), (v) => _upd(() => _weight = v.clamp(0, 1000).toDouble())),
                 trailing: _steps != null
                     ? null
                     : ActionChip(
                         label: Text(tr('step', [L10n.kg(_step)])),
-                        onPressed: () => setState(() => _step = _nextStep(_step)),
+                        onPressed: () => _upd(() => _step = _nextStep(_step)),
                       ),
               ),
               if (_isBarbell) _platesHint(theme),
@@ -547,14 +602,14 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               Stepper2(
                 label: tr('reps'),
                 value: '$_reps',
-                onMinus: () => setState(() => _reps = (_reps - 1).clamp(0, 200)),
-                onPlus: () => setState(() => _reps += 1),
-                onTap: () => _edit(tr('reps'), '$_reps', (v) => setState(() => _reps = v.round().clamp(0, 200))),
+                onMinus: () => _upd(() => _reps = (_reps - 1).clamp(0, 200)),
+                onPlus: () => _upd(() => _reps += 1),
+                onTap: () => _edit(tr('reps'), '$_reps', (v) => _upd(() => _reps = v.round().clamp(0, 200))),
               ),
             ],
             const SizedBox(height: 12),
             Wrap(spacing: 8, runSpacing: 0, children: [
-              FilterChip(label: Text(tr('kind_warmup')), selected: _warmup, onSelected: (v) => setState(() => _warmup = v)),
+              FilterChip(label: Text(tr('kind_warmup')), selected: _warmup, onSelected: (v) => _upd(() => _warmup = v)),
               if (repo.isCableExercise(e.id))
                 ActionChip(
                   avatar: const Icon(Icons.cable, size: 18),
@@ -566,7 +621,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 label: Text(_note.isEmpty ? tr('set_note') : _note, overflow: TextOverflow.ellipsis),
                 onPressed: () async {
                   final n = await askText(context, tr('set_note'), initial: _note);
-                  if (n != null && mounted) setState(() => _note = n.trim());
+                  if (n != null && mounted) _upd(() => _note = n.trim());
                 },
               ),
               ActionChip(

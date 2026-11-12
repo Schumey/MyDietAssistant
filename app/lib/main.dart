@@ -1,31 +1,19 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
-import 'package:sqlite3/sqlite3.dart';
 
 import 'app_state.dart';
 import 'credentials.dart';
-import 'db.dart';
+import 'db_open.dart';
 import 'home_screen.dart';
 import 'l10n.dart';
 import 'login_screen.dart';
 import 'rest_android.dart';
-
-Future<LocalDb> _openDatabase() async {
-  final schema = Schema.parse(await rootBundle.loadString('assets/schema.json'));
-  final dir = await getApplicationSupportDirectory();
-  await Directory(dir.path).create(recursive: true);
-  return LocalDb.open(sqlite3.open(p.join(dir.path, 'hafs.db')), schema);
-}
+import 'workout_notification.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   L10n.lang = L10n.resolve(WidgetsBinding.instance.platformDispatcher.locale.languageCode);
-  runApp(HafsApp(app: AppState(SecureCredentialStore(), openDb: _openDatabase, rest: createRestTimer())));
+  runApp(HafsApp(app: AppState(SecureCredentialStore(), openDb: openAppDatabase, rest: createRestTimer(), liveStore: createLiveStore(), liveNotifier: createLiveNotifier())));
 }
 
 /// Blau des Standard-Themes von Home Assistant, wie in der tHAsk-App.
