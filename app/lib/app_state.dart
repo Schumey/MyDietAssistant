@@ -2,6 +2,7 @@ import 'health_export.dart';
 import 'plates.dart';
 import 'updater.dart';
 import 'l10n.dart';
+import 'photo.dart';
 import 'repo_gym.dart';
 import 'templates.dart';
 import 'dart:async';
@@ -23,8 +24,9 @@ typedef Connector = Future<HaConnection> Function(String address, String token);
 /// Die Datenbank ist immer offen, auch ohne Verbindung: Training erfassen geht offline,
 /// abgeglichen wird, wenn eine Verbindung da ist.
 class AppState extends ChangeNotifier {
-  AppState(this.credentials, {required this.openDb, Connector? connector, RestTimer? rest, WorkoutSink? workoutSink, LiveStore? liveStore, LiveNotifier? liveNotifier})
-      : _connector = connector ?? ((a, t) => HaClient.connect(a, t)),
+  AppState(this.credentials, {required this.openDb, Connector? connector, RestTimer? rest, WorkoutSink? workoutSink, LiveStore? liveStore, LiveNotifier? liveNotifier, PhotoSource? photoSource})
+      : photoSource = photoSource ?? ImagePickerSource(),
+        _connector = connector ?? ((a, t) => HaClient.connect(a, t)),
         // ignore: prefer_initializing_formals
         _workoutSink = workoutSink,
         _liveStore = liveStore ?? MemoryLiveStore(),
@@ -34,6 +36,7 @@ class AppState extends ChangeNotifier {
   final WorkoutSink? _workoutSink;
   final LiveStore _liveStore;
   final LiveNotifier _liveNotifier;
+  final PhotoSource photoSource;
 
   /// The set entry of the running workout, shared with the permanent notification; null before the database is open.
   LiveController? live;

@@ -1,7 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 import 'app_state.dart';
 import 'l10n.dart';
+import 'photo.dart';
 import 'repo_gym.dart';
 import 'steps.dart';
 
@@ -191,6 +194,8 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
   final _settings = TextEditingController();
   String _type = 'machine';
   bool _outOfOrder = false;
+  String _photo = '';
+  bool _photoChanged = false;
   Set<String> _exercises = {};
   String? _error;
 
@@ -214,6 +219,7 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
         _max.text = f.max;
         _sides = f.sides;
       }
+      _photo = repo.equipmentPhoto(id);
       _exercises = repo.exercisesOf(id);
     }
   }
@@ -260,6 +266,32 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
     if (result != null) setState(() => _exercises = result);
   }
 
+  Future<void> _takePhoto(bool camera) async {
+    try {
+      final p = await widget.app.photoSource.pick(camera: camera);
+      if (p != null && mounted) setState(() { _photo = p; _photoChanged = true; });
+    } catch (_) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr('photo_failed'))));
+    }
+  }
+
+  Widget _photoSection() {
+    final bytes = photoBytes(_photo);
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      if (bytes != null)
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.memory(Uint8List.fromList(bytes), key: const Key('equipment-photo'), height: 160, fit: BoxFit.cover, gaplessPlayback: true),
+        ),
+      Wrap(spacing: 8, children: [
+        OutlinedButton.icon(key: const Key('photo-camera'), icon: const Icon(Icons.photo_camera_outlined), label: Text(tr('photo_take')), onPressed: () => _takePhoto(true)),
+        OutlinedButton.icon(key: const Key('photo-gallery'), icon: const Icon(Icons.photo_library_outlined), label: Text(tr('photo_gallery')), onPressed: () => _takePhoto(false)),
+        if (bytes != null)
+          TextButton(key: const Key('photo-remove'), onPressed: () => setState(() { _photo = ''; _photoChanged = true; }), child: Text(tr('photo_remove'))),
+      ]),
+    ]);
+  }
+
   void _save() {
     final steps = encodeStepsForm(
         _type, StepsForm(input: _steps.text, extra: _extra.text, base: _base.text, plates: _plates.text, sides: _sides, max: _max.text));
@@ -277,6 +309,7 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
       steps: steps,
       outOfOrder: _outOfOrder,
       settings: _settings.text.trim(),
+      photo: _photoChanged ? _photo : null,
       baseWeight: usesPlateFields(_type) ? (double.tryParse(_base.text.trim().replaceAll(',', '.')) ?? 0) : null,
     );
     repo.setExercisesOf(id, _exercises);
@@ -391,6 +424,8 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
           ],
           const SizedBox(height: 16),
           TextField(controller: _settings, decoration: InputDecoration(labelText: tr('equipment_settings'), border: const OutlineInputBorder())),
+          const SizedBox(height: 8),
+          _photoSection(),
           SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(tr('equipment_out_of_order')), value: _outOfOrder, onChanged: (v) => setState(() => _outOfOrder = v)),
           ListTile(
             contentPadding: EdgeInsets.zero,

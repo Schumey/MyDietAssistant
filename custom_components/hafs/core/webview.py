@@ -222,13 +222,13 @@ def plan(conn, owner, now, tz, params) -> dict:
     gyms = []
     for g in conn.execute("SELECT id, name, zone FROM gym WHERE owner=? AND deleted=0 ORDER BY name COLLATE NOCASE", (owner,)):
         eq = []
-        for q in conn.execute("SELECT name, type, steps, out_of_order FROM equipment WHERE gym_id=? AND deleted=0 "
+        for q in conn.execute("SELECT name, type, steps, out_of_order, photo FROM equipment WHERE gym_id=? AND deleted=0 "
                               "ORDER BY name COLLATE NOCASE", (g["id"],)):
             try:
                 steps = json.loads(q["steps"]) if q["steps"] else None
             except ValueError:
                 steps = None
-            eq.append({"name": q["name"], "type": q["type"], "steps": steps, "out_of_order": bool(q["out_of_order"])})
+            eq.append({"name": q["name"], "type": q["type"], "steps": steps, "out_of_order": bool(q["out_of_order"]), "photo": q["photo"]})
         gyms.append({"id": g["id"], "name": g["name"], "zone": g["zone"], "equipment": eq})
     return {**out, "loose": loose, "gyms": gyms}
 

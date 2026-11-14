@@ -168,7 +168,7 @@ extension GymRepo on Repo {
         settings: r['settings'] as String,
       );
 
-  String saveEquipment({String? id, required String gymId, required String name, String type = '', String steps = '', bool outOfOrder = false, String settings = '', double? baseWeight}) {
+  String saveEquipment({String? id, required String gymId, required String name, String type = '', String steps = '', bool outOfOrder = false, String settings = '', double? baseWeight, String? photo}) {
     final eid = id ?? newId();
     final old = id == null ? null : local.row('SELECT * FROM equipment WHERE id = ?', [id]);
     local.upsert('equipment', {
@@ -184,9 +184,13 @@ extension GymRepo on Repo {
       'out_of_order': outOfOrder ? 1 : 0,
       'settings': settings,
       'base_weight': ?baseWeight,
+      'photo': ?photo, // null keeps the stored photo, '' removes it
     }, dirty: true);
     return eid;
   }
+
+  /// The photo of a piece of equipment as data URL ('' = none).
+  String equipmentPhoto(String id) => (local.row('SELECT photo FROM equipment WHERE id = ?', [id])?['photo'] as String?) ?? '';
 
   void deleteEquipment(String id) {
     final r = local.row('SELECT * FROM equipment WHERE id = ?', [id]);

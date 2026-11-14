@@ -105,3 +105,14 @@ def test_store_roundtrip_with_gymrun(tmp_path):
     pulled = store.pull("u1", None, 1000)["records"]
     assert len(pulled["workout_set"]) == 1
     assert any(e["name"] == "Rudern" for e in pulled["exercise"])  # unknown name stays a custom exercise
+
+
+def test_equipment_photo_must_be_a_small_image_data_url():
+    c = db.connect(":memory:")
+    base = {"gym_id": "g", "name": "Latzug", "updated_at": "2026-01-01T00:00:00+00:00"}
+    ok = {"id": "q1", **base, "photo": "data:image/jpeg;base64,/9j/AAAA"}
+    big = {"id": "q2", **base, "photo": "data:image/jpeg;base64," + "A" * 300_000}
+    other = {"id": "q3", **base, "photo": "https://example.com/x.jpg"}
+    res = sync.push(c, "u1", {"equipment": [ok, big, other, {"id": "q4", **base}]})
+    assert res["applied"] == 2
+    assert {r["id"]: r["reason"] for r in res["rejected"]} == {"q2": "photo too large", "q3": "photo must be an image data URL"}

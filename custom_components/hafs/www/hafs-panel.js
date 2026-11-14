@@ -520,7 +520,7 @@ class HafsPanel extends HTMLElement {
     const gearRows = mine.map((q) => {
       let steps = "";
       try { steps = this._stepsText(q.steps ? JSON.parse(q.steps) : null); } catch { /* unreadable steps: show none */ }
-      return `<li class="eq"><span>${esc(q.name)} <small class="muted">${esc(gyms.get(q.gym_id) || "")}</small></span><small class="muted">${esc(steps || t("type_" + q.type))}</small></li>`;
+      return `<li class="eq">${/^data:image\//.test(q.photo || "") ? `<img class="eqphoto" alt="" src="${esc(q.photo)}">` : ""}<span>${esc(q.name)} <small class="muted">${esc(gyms.get(q.gym_id) || "")}</small></span><small class="muted">${esc(steps || t("type_" + q.type))}</small></li>`;
     }).join("");
     const gearHtml = `<section class="card"><div class="head"><h3>${esc(t("gear_title"))}</h3><button class="btn small" data-act="e-gear" data-v="${esc(ex.id)}">${esc(t("edit"))}</button></div>
       ${gearRows ? `<ul class="rows">${gearRows}</ul>` : `<p class="muted">${esc(t("gear_none"))}</p>`}</section>`;
@@ -561,7 +561,7 @@ class HafsPanel extends HTMLElement {
     const loose = d.loose.length ? `<section class="card"><h2>${esc(t("loose_routines"))}</h2><div class="grid cards">${d.loose.map(routine).join("")}</div></section>` : "";
     const stepsText = (s) => this._stepsText(s);
     const gyms = d.gyms.length ? d.gyms.map((g) => `<section class="card"><div class="head"><h2>${esc(g.name)}</h2>${btn("e-edit-gym", t("edit"), g.id)}</div>
-      <ul class="rows">${g.equipment.map((q) => `<li class="eq"><span>${esc(q.name)}${q.out_of_order ? ` <em>${esc(t("out_of_order"))}</em>` : ""}</span>
+      <ul class="rows">${g.equipment.map((q) => `<li class="eq">${/^data:image\//.test(q.photo || "") ? `<img class="eqphoto" alt="" src="${esc(q.photo)}">` : ""}<span>${esc(q.name)}${q.out_of_order ? ` <em>${esc(t("out_of_order"))}</em>` : ""}</span>
         <small class="muted">${esc(stepsText(q.steps))}</small></li>`).join("") || `<li class="muted pad">${esc(t("no_equipment"))}</li>`}</ul></section>`).join("") : `<p class="muted">${esc(t("no_gyms"))}</p>`;
     return `<section class="card intro"><p>${esc(t("plans_intro_plan"))}</p><p>${esc(t("plans_intro_day"))}</p></section>
       <div class="actions">${btn("e-new-program", t("new_program"))}${btn("e-new-routine", t("new_routine"))}</div>
@@ -719,7 +719,7 @@ table.sets { width: 100%; border-collapse: collapse; } .sets td { padding: 6px 4
 .btn:disabled { opacity: .45; cursor: default; }
 .search, select, input[type=file] { width: 100%; font: inherit; padding: 8px 10px; border-radius: 6px 6px 0 0; border: 0; border-bottom: 2px solid var(--line); background: var(--field); color: var(--ink); margin-bottom: 10px; }
 .check { display: flex; gap: 8px; align-items: center; margin-top: 12px; } .actions { display: flex; gap: 8px; margin-top: 4px; }
-.sugg { font-size: 22px; } .eq { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; } .eq em { color: var(--warn); font-style: normal; font-size: 13px; }
+.sugg { font-size: 22px; } .eq { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; } .eqphoto { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; flex: none; } .eq { align-items: center; } .eq span { flex: 1; } .eq em { color: var(--warn); font-style: normal; font-size: 13px; }
 .routine { padding-top: 4px; } .routine + .routine { border-top: 1px solid var(--line); padding-top: 14px; }
 .card > h2 + p.muted { margin: -6px 0 12px; }
 .chart { width: 100%; height: auto; display: block; } .chart .gl { stroke: var(--line); stroke-width: 1; } .chart .tick { fill: var(--muted); font-size: 11px; }

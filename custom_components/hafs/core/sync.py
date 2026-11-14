@@ -24,6 +24,20 @@ def _columns(conn: sqlite3.Connection, table: str) -> list[sqlite3.Row]:
     return conn.execute(f"PRAGMA table_info({table})").fetchall()
 
 
+MAX_PHOTO = 300_000  # characters of the data URL (a 640 px JPEG is about 50 to 100 KB, base64 adds a third)
+
+
+def _photo_problem(photo: Any) -> str | None:
+    """Equipment photos are small images stored as data URLs in `equipment.photo`; anything else is refused."""
+    if photo in (None, ""):
+        return None
+    if not isinstance(photo, str) or not photo.startswith("data:image/"):
+        return "photo must be an image data URL"
+    if len(photo) > MAX_PHOTO:
+        return "photo too large"
+    return None
+
+
 def push(conn: sqlite3.Connection, owner: str, records: dict[str, list[dict[str, Any]]]) -> dict:
     """Upsert records per table. Returns {"applied": n, "skipped": n, "rejected": [...]}.
 
@@ -50,6 +64,9 @@ def push(conn: sqlite3.Connection, owner: str, records: dict[str, list[dict[str,
                     reason = "missing " + ", ".join(sorted(missing | ({"id"} if not rid else set())
                                                            | ({"updated_at"} if not data.get("updated_at") else set())))
                     rejected.append({"table": table, "id": rid, "reason": reason})
+                    continue
+                if table == "equipment" and (bad := _photo_problem(data.get("photo"))):
+                    rejected.append({"table": table, "id": rid, "reason": bad})
                     continue
                 data["owner"] = owner
                 names = list(data)
