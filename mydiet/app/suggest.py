@@ -216,8 +216,24 @@ def best_fit(cand: dict, addons: list, target: dict, prio: dict, opts: dict) -> 
     return best
 
 
-def rank(cands: list, addons: list, target: dict, prio: dict, opts: dict, limit: int = 8, full: int = 14) -> list:
-    """Fit all candidates (pre-ranked with the cheap estimate, the best `full` get the full treatment); sorted by cost."""
+# A macro may exceed its target by this share or by this much, whichever is larger; stricter while losing weight.
+MAX_OVER = {False: (0.4, {"kcal": 120.0, "protein": 15.0, "carbs": 15.0, "fat": 10.0}),
+            True: (0.25, {"kcal": 70.0, "protein": 10.0, "carbs": 10.0, "fat": 7.0})}
+
+
+def too_far(total: dict, target: dict, w: dict, strict: bool = False) -> bool:
+    """True when a weighted macro overshoots its target massively (such a suggestion is hidden, not just ranked low)."""
+    frac, ab = MAX_OVER[bool(strict)]
+    for k in KEYS:
+        t = target.get(k)
+        if w[k] and t is not None and total[k] - t > max(frac * t, ab[k]):
+            return True
+    return False
+
+
+def rank(cands: list, addons: list, target: dict, prio: dict, opts: dict, limit: int = 8, full: int = 14, stats: dict | None = None) -> list:
+    """Fit all candidates (pre-ranked with the cheap estimate, the best `full` get the full treatment); sorted by cost.
+    Fits that overshoot a macro massively are dropped; stats["hidden"] receives how many."""
     w = weights(prio, target)
     over, under = multipliers(opts)
     pre = []
@@ -232,5 +248,9 @@ def rank(cands: list, addons: list, target: dict, prio: dict, opts: dict, limit:
         r = best_fit(cand, addons, target, prio, opts)
         if r:
             out.append({**r, "cand": cand})
+    kept = [r for r in out if not too_far(r["totals"], target, w, opts.get("goal_mode") == "lose")]
+    if stats is not None:
+        stats["hidden"] = len(out) - len(kept)
+    out = kept
     out.sort(key=lambda r: r["cost"] + r["cand"].get("bias", 0.0))
     return out[:limit]

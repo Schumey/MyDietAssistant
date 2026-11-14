@@ -2,6 +2,15 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.40.0
+
+### New
+- **Adjustable shake share:** In the training-day settings you set what percentage of the still-open macros the shake may cover at most (default 50 %). With 80 g of open protein, a shake with 60 g protein now aims for 40 g, leaving 40 g for dinner. This also applies to the `training_shake` sensor and to triggers with calculated amounts.
+- **“Training day” button with the schedule:** With the “Schedule” feature on and the shake’s meal currently due, the button appears before the shake is entered.
+
+### Changed
+- **Suggestions that overshoot massively are hidden:** A suggestion that exceeds a macro clearly (more than 40 % of the target or 120 kcal / 15 g protein / 15 g carbs / 10 g fat) no longer appears. With the goal “lose”, tighter limits apply (25 % or 70 kcal / 10 g / 10 g / 7 g). If nothing fits, “No suggestion fits well enough with what is still open.” is shown.
+
 ## 1.39.0
 
 ### New

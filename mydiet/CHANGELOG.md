@@ -2,6 +2,15 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.40.0
+
+### Neu
+- **Anteil des Shakes einstellbar:** In den Trainingstag-Einstellungen legst Du fest, wie viel Prozent des noch Offenen der Shake höchstens decken darf (Standard 50 %). Bei 80 g offenem Eiweiß zielt ein Shake mit 60 g Eiweiß so nur noch auf 40 g, und dem Abendessen bleiben 40 g. Das gilt auch für den Sensor `training_shake` und für Trigger mit berechneten Mengen.
+- **Knopf „Trainingstag“ mit Zeitplan:** Ist die Zusatzfunktion „Zeitplan“ an und die Mahlzeit des Shakes gerade dran, erscheint der Knopf schon vor dem Eintragen.
+
+### Geändert
+- **Vorschläge mit starker Überschreitung werden ausgeblendet:** Überschreitet ein Vorschlag ein Makro deutlich (mehr als 40 % des Ziels oder 120 kcal / 15 g Eiweiß / 15 g KH / 10 g Fett), erscheint er nicht mehr. Beim Ziel „Abnehmen“ gelten engere Grenzen (25 % oder 70 kcal / 10 g / 10 g / 7 g). Passt gar nichts, steht dort „Keine Vorschläge passen gut genug zu dem, was noch offen ist.“
+
 ## 1.39.0
 
 ### Neu

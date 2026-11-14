@@ -32,7 +32,12 @@ def suggest_config(owner: str) -> dict:
     return {"prio": prio, "kcal_cap": bool(saved.get("kcal_cap")), "protein_min": bool(saved.get("protein_min")),
             "scope": saved.get("scope") if saved.get("scope") in ("day", "next") else "day",
             "excluded": [e for e in saved.get("excluded") or [] if isinstance(e, dict) and e.get("key")],
-            "training": training_clean(saved.get("training"))}
+            "training": training_clean(saved.get("training")), "goal_mode": get_pref(owner, "goal_mode", "lose")}
+
+
+def share_pct(v) -> float:
+    """Share (percent) of the open macros the shake may cover; 10..100, default 50."""
+    return float(min(max(v, 10), 100)) if isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v) else 50.0
 
 
 def training_clean(t) -> dict:
@@ -46,7 +51,7 @@ def training_clean(t) -> dict:
             "shake_meal_id": t.get("shake_meal_id") if isinstance(t.get("shake_meal_id"), int) else None,
             "dinner_meal_id": t.get("dinner_meal_id") if isinstance(t.get("dinner_meal_id"), int) else None,
             "auto": bool(t.get("auto")), "always": bool(t.get("always")), "dinner_protein": bool(t.get("dinner_protein", True)),
-            "activity_kcal": pos(t.get("activity_kcal")) or 0.0}
+            "activity_kcal": pos(t.get("activity_kcal")) or 0.0, "shake_share": share_pct(t.get("shake_share"))}
 
 
 class ConfigIn(BaseModel):
@@ -274,10 +279,12 @@ def suggest_list(day: str, meal_id: int | None = None, scope: str | None = None,
         cands, addons = gather(c, owner, day, cfg, meal["name"] if meal else "")
     if not any(v for v in target.values()):
         return {"remaining": remaining, "target": target, "scope": scope, "slots": share, "items": [], "reached": True}
-    ranked = suggest.rank(cands, addons, target, cfg["prio"], cfg, limit=SHOWN)
+    stats = {}
+    ranked = suggest.rank(cands, addons, target, cfg["prio"], cfg, limit=SHOWN, stats=stats)
     return {"remaining": {k: (round(v, 1) if v is not None else None) for k, v in remaining.items()},
             "target": {k: (round(v, 1) if v is not None else None) for k, v in target.items()},
-            "scope": scope, "slots": share, "reached": False, "items": [proposal(r, remaining, target) for r in ranked]}
+            "scope": scope, "slots": share, "reached": False, "hidden": stats.get("hidden", 0),
+            "items": [proposal(r, remaining, target) for r in ranked]}
 
 
 # --- use a suggestion ----------------------------------------------------------------------
@@ -363,6 +370,7 @@ class TrainingIn(BaseModel):
     auto: bool = False                    # a trigger that enters the shake uses the fitted amounts
     always: bool = False                  # show the training-day button on every day, not only on training days
     dinner_protein: bool = True           # dinners must reach the day's protein goal as far as possible
+    shake_share: float = 50               # the shake covers at most this percent of what is still open
     activity_kcal: float = 0              # burned kcal from which a day counts as a training day (needs "Activity"; 0 = off)
 
 
@@ -392,7 +400,8 @@ def fit_shake(c, owner: str, cfg: dict, remaining: dict):
     cand = next((cd for cd in saved_candidates(c, owner) if cd["saved_meal_id"] == t["saved_meal_id"]), None) if t["saved_meal_id"] else None
     if not cand:
         return None
-    target = {k: (min(v, remaining[k]) if v is not None and remaining.get(k) is not None else v) for k, v in t["target"].items()}
+    # the shake never takes more than its share (default 50 %) of what is left, so the dinner keeps a sensible rest
+    target = {k: (min(v, remaining[k] * t["shake_share"] / 100.0) if v is not None and remaining.get(k) is not None else v) for k, v in t["target"].items()}
     if all(v is None for v in target.values()):
         return None
     prio = {k: (max(cfg["prio"][k], 1) if target[k] is not None else 0) for k in suggest.KEYS}
@@ -434,8 +443,9 @@ def suggest_training(day: str, x_remote_user_id: str | None = Header(None)):
     rnd = {k: (round(v, 1) if v is not None else None) for k, v in after.items()}
     reached = not any(v for v in after.values())
     opts = {**cfg, "protein_min": cfg["protein_min"] or t["dinner_protein"]}
-    ranked = [] if reached else suggest.rank(cands, addons, after, cfg["prio"], opts, limit=SHOWN)
-    return {"configured": True, "eaten": eaten, "shake": shake, "remaining": {k: (round(v, 1) if v is not None else None) for k, v in remaining.items()},
+    stats = {}
+    ranked = [] if reached else suggest.rank(cands, addons, after, cfg["prio"], opts, limit=SHOWN, stats=stats)
+    return {"configured": True, "eaten": eaten, "hidden": stats.get("hidden", 0), "shake": shake, "remaining": {k: (round(v, 1) if v is not None else None) for k, v in remaining.items()},
             "after": rnd, "reached": reached, "shake_meal_id": t["shake_meal_id"], "dinner_meal_id": t["dinner_meal_id"],
             "items": [proposal(r, after, after) for r in ranked]}
 
@@ -451,7 +461,18 @@ def suggest_training_status(day: str, x_remote_user_id: str | None = Header(None
     if not t["saved_meal_id"]:
         return {"configured": False, "show": True}      # not set up yet: keep the button so the setup can be found
     with db.conn() as c:
-        return {"configured": True, "show": t["always"] or is_training_day(c, owner, day, t)}
+        return {"configured": True, "show": t["always"] or is_training_day(c, owner, day, t) or shake_meal_due(owner, day, t)}
+
+
+def shake_meal_due(owner: str, day: str, t: dict) -> bool:
+    """With the meal schedule: today, and the diary meal for the shake (e.g. "Sport") is the meal that is due now."""
+    if day != date.today().isoformat() or not t["shake_meal_id"] or not feature_on(owner, "schedule"):
+        return False
+    try:
+        import extras9
+        return extras9.schedule(owner)["current"] == t["shake_meal_id"]
+    except Exception:   # the schedule is a convenience only
+        return False
 
 
 def is_training_day(c, owner: str, day: str, t: dict) -> bool:

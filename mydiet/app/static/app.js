@@ -457,6 +457,7 @@ const EN = {
   "Anteil für diese Mahlzeit": "Share for this meal",
   "Ziel für diese Mahlzeit: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Target for this meal: {} kcal · KH {} g · Fett {} g · Eiweiß {} g",
   "Dein Tagesziel ist schon erreicht – es gibt nichts aufzufüllen.": "You have already reached your daily goal – there is nothing to fill up.",
+  "Keine Vorschläge passen gut genug zu dem, was noch offen ist.": "No suggestion fits well enough with what is still open.",
   "Noch keine Vorschläge: Speichere Mahlzeiten im Tagebuch über „Speichern / Kopieren“ oder iss Kombinationen mindestens zweimal, dann tauchen sie hier auf.": "No suggestions yet: save meals in the diary via “Save / copy”, or eat combinations at least twice, then they show up here.",
   "Weitere Vorschläge": "More suggestions",
   "Beigabe": "Add-on",
@@ -570,6 +571,7 @@ const EN = {
   "Gelöscht.": "Deleted.",
   "Endgültig löschen": "Delete permanently",
   "Abendessen sollen das Eiweißziel möglichst erreichen": "Dinners should reach the protein goal as far as possible",
+  "Der Shake darf höchstens so viel vom noch Offenen decken (%)": "The shake may cover at most this much of what is still open (%)", "So bleibt dem Abendessen genug übrig. Bei 50 % und 80 g offenem Eiweiß zielt der Shake auf höchstens 40 g.": "This leaves enough for dinner. At 50 % and 80 g of open protein the shake aims for 40 g at most.",
   "Knopf „Trainingstag“ an jedem Tag zeigen (sonst nur, wenn der Shake eingetragen oder per Trigger gebucht wurde)": "Show the “Training day” button every day (otherwise only when the shake is entered or a trigger booked it)",
   "Einkaufsliste": "Shopping list",
   "Wähle Rezepte (Portionen) und gespeicherte Mahlzeiten (Vielfaches, 1 = einmal): Die Zutaten werden zusammengezählt.": "Choose recipes (portions) and saved meals (multiple, 1 = once): the ingredients are added up.",
@@ -1481,6 +1483,7 @@ Object.assign(LANGS, {
     "Anteil für diese Mahlzeit": "Part pour ce repas",
     "Ziel für diese Mahlzeit: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Objectif pour ce repas : {} kcal · KH {} g · Fett {} g · Eiweiß {} g",
     "Dein Tagesziel ist schon erreicht – es gibt nichts aufzufüllen.": "Ton objectif du jour est déjà atteint – il n'y a rien à compléter.",
+    "Keine Vorschläge passen gut genug zu dem, was noch offen ist.": "Aucune suggestion ne correspond assez bien à ce qui reste à faire.",
     "Noch keine Vorschläge: Speichere Mahlzeiten im Tagebuch über „Speichern / Kopieren“ oder iss Kombinationen mindestens zweimal, dann tauchen sie hier auf.": "Pas encore de suggestions : enregistre des repas dans le journal via « Enregistrer / Copier » ou mange des combinaisons au moins deux fois, elles apparaîtront ici.",
     "Weitere Vorschläge": "Autres suggestions",
     "Beigabe": "Accompagnement",
@@ -1594,6 +1597,7 @@ Object.assign(LANGS, {
     "Gelöscht.": "Supprimé.",
     "Endgültig löschen": "Supprimer définitivement",
     "Abendessen sollen das Eiweißziel möglichst erreichen": "Les dîners doivent atteindre au mieux l’objectif de protéines",
+    "Der Shake darf höchstens so viel vom noch Offenen decken (%)": "Le shake peut couvrir au maximum cette part de ce qui reste (%)", "So bleibt dem Abendessen genug übrig. Bei 50 % und 80 g offenem Eiweiß zielt der Shake auf höchstens 40 g.": "Il en reste assez pour le dîner. À 50 % et 80 g de protéines restantes, le shake vise 40 g au maximum.",
     "Knopf „Trainingstag“ an jedem Tag zeigen (sonst nur, wenn der Shake eingetragen oder per Trigger gebucht wurde)": "Afficher le bouton « Jour d’entraînement » chaque jour (sinon seulement si le shake est saisi ou enregistré par un déclencheur)",
     "Einkaufsliste": "Liste de courses",
     "Wähle Rezepte (Portionen) und gespeicherte Mahlzeiten (Vielfaches, 1 = einmal): Die Zutaten werden zusammengezählt.": "Choisis des recettes (portions) et des repas enregistrés (multiple, 1 = une fois) : les ingrédients sont additionnés.",
@@ -2496,6 +2500,7 @@ Object.assign(LANGS, {
     "Anteil für diese Mahlzeit": "Parte para esta comida",
     "Ziel für diese Mahlzeit: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Objetivo para esta comida: {} kcal · KH {} g · Fett {} g · Eiweiß {} g",
     "Dein Tagesziel ist schon erreicht – es gibt nichts aufzufüllen.": "Ya has alcanzado tu objetivo diario: no queda nada que completar.",
+    "Keine Vorschläge passen gut genug zu dem, was noch offen ist.": "Ninguna sugerencia encaja lo bastante bien con lo que queda pendiente.",
     "Noch keine Vorschläge: Speichere Mahlzeiten im Tagebuch über „Speichern / Kopieren“ oder iss Kombinationen mindestens zweimal, dann tauchen sie hier auf.": "Aún no hay sugerencias: guarda comidas en el diario con «Guardar / Copiar» o come combinaciones al menos dos veces y aparecerán aquí.",
     "Weitere Vorschläge": "Más sugerencias",
     "Beigabe": "Complemento",
@@ -2609,6 +2614,7 @@ Object.assign(LANGS, {
     "Gelöscht.": "Eliminado.",
     "Endgültig löschen": "Eliminar definitivamente",
     "Abendessen sollen das Eiweißziel möglichst erreichen": "Las cenas deben alcanzar en lo posible el objetivo de proteínas",
+    "Der Shake darf höchstens so viel vom noch Offenen decken (%)": "El batido puede cubrir como máximo este porcentaje de lo que queda (%)", "So bleibt dem Abendessen genug übrig. Bei 50 % und 80 g offenem Eiweiß zielt der Shake auf höchstens 40 g.": "Así queda suficiente para la cena. Con 50 % y 80 g de proteína pendiente, el batido apunta a 40 g como máximo.",
     "Knopf „Trainingstag“ an jedem Tag zeigen (sonst nur, wenn der Shake eingetragen oder per Trigger gebucht wurde)": "Mostrar el botón «Día de entrenamiento» todos los días (si no, solo cuando el batido está registrado o lo registró un disparador)",
     "Einkaufsliste": "Lista de la compra",
     "Wähle Rezepte (Portionen) und gespeicherte Mahlzeiten (Vielfaches, 1 = einmal): Die Zutaten werden zusammengezählt.": "Elige recetas (raciones) y comidas guardadas (múltiplo, 1 = una vez): los ingredientes se suman.",
@@ -3523,6 +3529,7 @@ Object.assign(LANGS, {
     "Anteil für diese Mahlzeit": "Aandeel voor deze maaltijd",
     "Ziel für diese Mahlzeit: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Doel voor deze maaltijd: {} kcal · koolh. {} g · vet {} g · eiwit {} g",
     "Dein Tagesziel ist schon erreicht – es gibt nichts aufzufüllen.": "Je dagdoel is al bereikt – er valt niets aan te vullen.",
+    "Keine Vorschläge passen gut genug zu dem, was noch offen ist.": "Geen enkele suggestie past goed genoeg bij wat er nog open staat.",
     "Noch keine Vorschläge: Speichere Mahlzeiten im Tagebuch über „Speichern / Kopieren“ oder iss Kombinationen mindestens zweimal, dann tauchen sie hier auf.": "Nog geen suggesties: sla maaltijden op in het dagboek via “Opslaan / kopiëren” of eet combinaties minstens twee keer, dan verschijnen ze hier.",
     "Weitere Vorschläge": "Meer suggesties",
     "Beigabe": "Toevoeging",
@@ -3636,6 +3643,7 @@ Object.assign(LANGS, {
     "Gelöscht.": "Verwijderd.",
     "Endgültig löschen": "Definitief verwijderen",
     "Abendessen sollen das Eiweißziel möglichst erreichen": "Avondeten moet het eiwitdoel zo goed mogelijk halen",
+    "Der Shake darf höchstens so viel vom noch Offenen decken (%)": "De shake mag hooguit dit deel van wat nog open staat dekken (%)", "So bleibt dem Abendessen genug übrig. Bei 50 % und 80 g offenem Eiweiß zielt der Shake auf höchstens 40 g.": "Zo blijft er genoeg over voor het avondeten. Bij 50 % en 80 g open eiwit mikt de shake op maximaal 40 g.",
     "Knopf „Trainingstag“ an jedem Tag zeigen (sonst nur, wenn der Shake eingetragen oder per Trigger gebucht wurde)": "Knop “Trainingsdag” elke dag tonen (anders alleen als de shake is ingevoerd of door een trigger is geboekt)",
     "Einkaufsliste": "Boodschappenlijst",
     "Wähle Rezepte (Portionen) und gespeicherte Mahlzeiten (Vielfaches, 1 = einmal): Die Zutaten werden zusammengezählt.": "Kies recepten (porties) en opgeslagen maaltijden (veelvoud, 1 = eenmaal): de ingrediënten worden opgeteld.",
@@ -4550,6 +4558,7 @@ Object.assign(LANGS, {
     "Anteil für diese Mahlzeit": "Quota per questo pasto",
     "Ziel für diese Mahlzeit: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Obiettivo per questo pasto: {} kcal · carboidrati {} g · grassi {} g · proteine {} g",
     "Dein Tagesziel ist schon erreicht – es gibt nichts aufzufüllen.": "Hai già raggiunto il tuo obiettivo giornaliero – non c’è nulla da integrare.",
+    "Keine Vorschläge passen gut genug zu dem, was noch offen ist.": "Nessun suggerimento si adatta abbastanza bene a ciò che resta da coprire.",
     "Noch keine Vorschläge: Speichere Mahlzeiten im Tagebuch über „Speichern / Kopieren“ oder iss Kombinationen mindestens zweimal, dann tauchen sie hier auf.": "Ancora nessun suggerimento: salva pasti nel diario con “Salva / Copia”, oppure mangia le combinazioni almeno due volte, e compariranno qui.",
     "Weitere Vorschläge": "Altri suggerimenti",
     "Beigabe": "Componente",
@@ -4663,6 +4672,7 @@ Object.assign(LANGS, {
     "Gelöscht.": "Eliminato.",
     "Endgültig löschen": "Elimina definitivamente",
     "Abendessen sollen das Eiweißziel möglichst erreichen": "Le cene dovrebbero raggiungere il più possibile l’obiettivo proteico",
+    "Der Shake darf höchstens so viel vom noch Offenen decken (%)": "Il frullato può coprire al massimo questa quota di ciò che resta (%)", "So bleibt dem Abendessen genug übrig. Bei 50 % und 80 g offenem Eiweiß zielt der Shake auf höchstens 40 g.": "Così resta abbastanza per la cena. Con il 50 % e 80 g di proteine aperte il frullato punta al massimo a 40 g.",
     "Knopf „Trainingstag“ an jedem Tag zeigen (sonst nur, wenn der Shake eingetragen oder per Trigger gebucht wurde)": "Mostra il pulsante “Giorno di allenamento” ogni giorno (altrimenti solo quando lo shake è registrato o un trigger lo ha registrato)",
     "Einkaufsliste": "Lista della spesa",
     "Wähle Rezepte (Portionen) und gespeicherte Mahlzeiten (Vielfaches, 1 = einmal): Die Zutaten werden zusammengezählt.": "Scegli ricette (porzioni) e pasti salvati (multiplo, 1 = una volta): gli ingredienti vengono sommati.",
@@ -5577,6 +5587,7 @@ Object.assign(LANGS, {
     "Anteil für diese Mahlzeit": "Parte para esta refeição",
     "Ziel für diese Mahlzeit: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Meta para esta refeição: {} kcal · carboidratos {} g · gordura {} g · proteína {} g",
     "Dein Tagesziel ist schon erreicht – es gibt nichts aufzufüllen.": "Você já atingiu sua meta diária – não há nada a completar.",
+    "Keine Vorschläge passen gut genug zu dem, was noch offen ist.": "Nenhuma sugestão combina bem o suficiente com o que ainda falta.",
     "Noch keine Vorschläge: Speichere Mahlzeiten im Tagebuch über „Speichern / Kopieren“ oder iss Kombinationen mindestens zweimal, dann tauchen sie hier auf.": "Ainda sem sugestões: salve refeições no diário com “Salvar / Copiar”, ou coma combinações pelo menos duas vezes, e elas aparecerão aqui.",
     "Weitere Vorschläge": "Mais sugestões",
     "Beigabe": "Complemento",
@@ -5690,6 +5701,7 @@ Object.assign(LANGS, {
     "Gelöscht.": "Excluído.",
     "Endgültig löschen": "Excluir permanentemente",
     "Abendessen sollen das Eiweißziel möglichst erreichen": "Os jantares devem atingir a meta de proteína o máximo possível",
+    "Der Shake darf höchstens so viel vom noch Offenen decken (%)": "O shake pode cobrir no máximo esta parte do que ainda falta (%)", "So bleibt dem Abendessen genug übrig. Bei 50 % und 80 g offenem Eiweiß zielt der Shake auf höchstens 40 g.": "Assim sobra o suficiente para o jantar. Com 50 % e 80 g de proteína em aberto, o shake mira no máximo 40 g.",
     "Knopf „Trainingstag“ an jedem Tag zeigen (sonst nur, wenn der Shake eingetragen oder per Trigger gebucht wurde)": "Mostrar o botão “Dia de treino” todos os dias (senão só quando o shake está registrado ou um gatilho o registrou)",
     "Einkaufsliste": "Lista de compras",
     "Wähle Rezepte (Portionen) und gespeicherte Mahlzeiten (Vielfaches, 1 = einmal): Die Zutaten werden zusammengezählt.": "Escolha receitas (porções) e refeições salvas (múltiplo, 1 = uma vez): os ingredientes são somados.",
@@ -6604,6 +6616,7 @@ Object.assign(LANGS, {
     "Anteil für diese Mahlzeit": "Część na ten posiłek",
     "Ziel für diese Mahlzeit: {} kcal · KH {} g · Fett {} g · Eiweiß {} g": "Cel na ten posiłek: {} kcal · węglowodany {} g · tłuszcz {} g · białko {} g",
     "Dein Tagesziel ist schon erreicht – es gibt nichts aufzufüllen.": "Dzienny cel już osiągnięty – nie ma czego uzupełniać.",
+    "Keine Vorschläge passen gut genug zu dem, was noch offen ist.": "Żadna propozycja nie pasuje wystarczająco dobrze do tego, co jeszcze zostało.",
     "Noch keine Vorschläge: Speichere Mahlzeiten im Tagebuch über „Speichern / Kopieren“ oder iss Kombinationen mindestens zweimal, dann tauchen sie hier auf.": "Brak propozycji: zapisz posiłki w dzienniku przez „Zapisz / Kopiuj” albo zjedz kombinacje co najmniej dwa razy, a pojawią się tutaj.",
     "Weitere Vorschläge": "Więcej propozycji",
     "Beigabe": "Dodatek",
@@ -6717,6 +6730,7 @@ Object.assign(LANGS, {
     "Gelöscht.": "Usunięto.",
     "Endgültig löschen": "Usuń trwale",
     "Abendessen sollen das Eiweißziel möglichst erreichen": "Kolacje powinny jak najlepiej osiągać cel białka",
+    "Der Shake darf höchstens so viel vom noch Offenen decken (%)": "Shake może pokryć co najwyżej taką część tego, co zostało (%)", "So bleibt dem Abendessen genug übrig. Bei 50 % und 80 g offenem Eiweiß zielt der Shake auf höchstens 40 g.": "Dzięki temu zostaje dość na kolację. Przy 50 % i 80 g otwartego białka shake celuje maksymalnie w 40 g.",
     "Knopf „Trainingstag“ an jedem Tag zeigen (sonst nur, wenn der Shake eingetragen oder per Trigger gebucht wurde)": "Pokazuj przycisk „Dzień treningowy” codziennie (w przeciwnym razie tylko gdy shake jest zapisany lub zapisał go wyzwalacz)",
     "Einkaufsliste": "Lista zakupów",
     "Wähle Rezepte (Portionen) und gespeicherte Mahlzeiten (Vielfaches, 1 = einmal): Die Zutaten werden zusammengezählt.": "Wybierz przepisy (porcje) i zapisane posiłki (wielokrotność, 1 = raz): składniki zostaną zsumowane.",
@@ -7341,7 +7355,8 @@ function suggestDialog(opts = {}) {
     } else parts.push(h("div", { class: "muted" }, "Für den Shake lässt sich kein Vorschlag berechnen: Wähle in den Einstellungen mindestens ein Ziel."));
     parts.push(h("h3", {}, "Abendessen"));
     if (r.reached) parts.push(h("div", { class: "muted" }, "Dein Tagesziel ist damit erreicht – es bleibt nichts für ein Abendessen übrig."));
-    else if (!r.items.length) parts.push(h("div", { class: "muted" }, "Noch keine Vorschläge: Speichere Mahlzeiten im Tagebuch über „Speichern / Kopieren“."));
+    else if (!r.items.length) parts.push(h("div", { class: "muted" }, r.hidden ? "Keine Vorschläge passen gut genug zu dem, was noch offen ist."
+      : "Noch keine Vorschläge: Speichere Mahlzeiten im Tagebuch über „Speichern / Kopieren“."));
     else {
       parts.push(h("div", { class: "muted" }, (r.eaten || !r.shake ? `Noch offen: ${sugText(r.after)}` : `Offen nach dem Shake: ${sugText(r.after)}`)),
         ...r.items.slice(0, shown).map(p => sugCard(p, { target: r.after, remaining: r.after, scope: "day" }, { meal: r.dinner_meal_id })));
@@ -7354,7 +7369,7 @@ function suggestDialog(opts = {}) {
     const head = h("div", { class: "muted" }, `Ziel für diese Mahlzeit: ${sugText(r.target)}`);
     if (r.reached) { body.replaceChildren(h("div", { class: "muted" }, "Dein Tagesziel ist schon erreicht – es gibt nichts aufzufüllen.")); return; }
     if (!r.items.length) {
-      body.replaceChildren(head, h("div", { class: "muted", style: "margin-top:12px" },
+      body.replaceChildren(head, h("div", { class: "muted", style: "margin-top:12px" }, r.hidden ? "Keine Vorschläge passen gut genug zu dem, was noch offen ist." :
         "Noch keine Vorschläge: Speichere Mahlzeiten im Tagebuch über „Speichern / Kopieren“ oder iss Kombinationen mindestens zweimal, dann tauchen sie hier auf."));
       return;
     }
@@ -7467,6 +7482,10 @@ async function suggestSettings(back) {
       h("div", { class: "list" }, SUG_KEYS.map(([k, label]) => h("div", {}, h("div", { class: "grow" }, label),
         h("input", { type: "number", step: "any", min: "0", style: "width:80px;flex:none", placeholder: "egal", value: tr.target[k] || "",
           onchange: e => { tr.target[k] = Number(e.target.value) || null; } }), h("span", { class: "muted" }, k === "kcal" ? "kcal" : "g")))),
+      h("label", {}, "Der Shake darf höchstens so viel vom noch Offenen decken (%)"),
+      h("input", { type: "number", step: "5", min: "10", max: "100", value: tr.shake_share ?? 50,
+        onchange: e => { tr.shake_share = Number(e.target.value) || 50; } }),
+      h("div", { class: "muted" }, "So bleibt dem Abendessen genug übrig. Bei 50 % und 80 g offenem Eiweiß zielt der Shake auf höchstens 40 g."),
       dayMeals.length ? [h("label", {}, "Shake eintragen in"),
         h("select", { onchange: e => { tr.shake_meal_id = Number(e.target.value) || null; } },
           h("option", { value: "" }, "erste Mahlzeit"), dayMeals.map(m => h("option", { value: m.id, selected: m.id === tr.shake_meal_id }, m.name))),

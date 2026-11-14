@@ -51,7 +51,7 @@ On training days the app works out the amount of your post-workout shake and the
 3. Under “Training day” choose the shake and enter the target, e.g. 40 g protein and 50 g carbs. Fields you leave empty do not count. Optionally choose which diary meals the shake and the dinner go into.
 4. Save.
 
-**Use it:** Tap “Training day” in the diary. The shake with the calculated amounts is at the top (“Enter” or “Adjust”), below it dinners that fit what is left of the daily goal after the shake. The shake’s target is never larger than what is left of the day. If the shake is already entered for today, only the dinners are shown.
+**Use it:** Tap “Training day” in the diary. The shake with the calculated amounts is at the top (“Enter” or “Adjust”), below it dinners that fit what is left of the daily goal after the shake. The shake’s target is never larger than its share of what is left of the day (default 50 %, set under “The shake may cover at most this much of what is still open”). That leaves enough for dinner: with 80 g of open protein and 50 % the shake aims for 40 g at most. If the shake is already entered for today, only the dinners are shown.
 
 **When the button appears:** In the diary, “Training day” shows up once the shake is entered for the day or a trigger booked it, that is on days with training. As long as the training day is not set up, the button is always there. With the checkbox “Show the “Training day” button every day” it appears on all days.
 

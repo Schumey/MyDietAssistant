@@ -54,10 +54,10 @@ def test_shake_is_fitted_and_dinners_fit_the_rest(user):
     assert r["items"][0]["totals"]["protein"] > 0
 
 
-def test_target_is_capped_by_what_is_left_of_the_day(user):
+def test_target_is_capped_by_a_share_of_what_is_left_of_the_day(user):
     c, shake, _ = shake_setup(user, target={"protein": 400})
     r = c.get(f"/api/suggest/training?day={DAY}").json()
-    assert r["shake"]["target"]["protein"] == 150      # the day's protein goal
+    assert r["shake"]["target"]["protein"] == 75       # half of the day's protein goal, the dinner keeps the rest
 
 
 def test_eaten_shake_is_not_proposed_again(user):
@@ -160,3 +160,9 @@ def test_training_sensors(user):
     out = {k: v for k, v, _ in extras13.training_sensor(c.uid)}
     assert out == {"training_day": "yes", "training_shake": "none"}
     assert extras13.training_sensor(user().uid) == []
+
+
+def test_shake_share_is_adjustable(user):
+    c, shake, _ = shake_setup(user, target={"protein": 400}, shake_share=30)
+    r = c.get(f"/api/suggest/training?day={DAY}").json()
+    assert r["shake"]["target"]["protein"] == 45       # 30 % of 150
