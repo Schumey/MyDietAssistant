@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.40.1
+
+### Neu
+- **Hinweis auf die Android-App:** Wer MyDietAssistant in der Home-Assistant-Companion-App (Android) öffnet und nicht die eigene MyDietAssistant-App nutzt, sieht im Tagebuch einen Tipp mit Download-Knopf (mit „Nicht mehr zeigen“) und in den Einstellungen eine feste Karte. Die Erkennung läuft über die Kennung der Companion-App im Browser-Agent; in Browser und in der MyDietAssistant-App erscheint nichts.
+
 ## 1.40.0
 
 ### Neu

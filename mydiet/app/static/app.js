@@ -85,6 +85,10 @@ const EN = {
   "Bearbeiten": "Edit", "Entfernen": "Remove", "Kalorien": "Calories", "Kohlenhydrate": "Carbohydrates", "Fette": "Fats", "Eiweiß": "Protein",
   "Nach App-Updates suchen": "Look for app updates",
   "Installierte App-Version: {}": "Installed app version: {}",
+  "Tipp: Android-App für MyDietAssistant": "Tip: Android app for MyDietAssistant",
+  "Du nutzt MyDietAssistant in der Home-Assistant-App. Die eigene MyDietAssistant-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien) und ein Homescreen-Widget.": "You are using MyDietAssistant in the Home Assistant app. The dedicated MyDietAssistant app for Android adds a barcode scanner, Health Connect (weight, steps, calories) and a home screen widget.",
+  "MyDietAssistant-App laden": "Get the MyDietAssistant app",
+  "Nicht mehr zeigen": "Don’t show again",
   "Android-App": "Android app",
   "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Take over weight, steps and active calories from Health Connect on the phone. Weight only for days without a value of their own, steps and calories only with the optional feature “Activity”.",
   "Aus Health Connect übernehmen (30 Tage)": "Import from Health Connect (30 days)",
@@ -735,6 +739,10 @@ Object.assign(LANGS, {
     "Entfernen": "Retirer",
     "Nach App-Updates suchen": "Rechercher des mises à jour de l’application",
     "Installierte App-Version: {}": "Version de l’application installée : {}",
+    "Tipp: Android-App für MyDietAssistant": "Astuce : application Android pour MyDietAssistant",
+    "Du nutzt MyDietAssistant in der Home-Assistant-App. Die eigene MyDietAssistant-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien) und ein Homescreen-Widget.": "Vous utilisez MyDietAssistant dans l’application Home Assistant. L’application MyDietAssistant pour Android ajoute un lecteur de codes-barres, Health Connect (poids, pas, calories) et un widget d’écran d’accueil.",
+    "MyDietAssistant-App laden": "Obtenir l’application MyDietAssistant",
+    "Nicht mehr zeigen": "Ne plus afficher",
     "Android-App": "Application Android",
     "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Reprendre le poids, les pas et les calories actives depuis Health Connect sur le téléphone. Le poids seulement pour les jours sans valeur propre, les pas et calories seulement avec la fonction « Activité ».",
     "Aus Health Connect übernehmen (30 Tage)": "Importer depuis Health Connect (30 jours)",
@@ -1752,6 +1760,10 @@ Object.assign(LANGS, {
     "Entfernen": "Quitar",
     "Nach App-Updates suchen": "Buscar actualizaciones de la app",
     "Installierte App-Version: {}": "Versión de la app instalada: {}",
+    "Tipp: Android-App für MyDietAssistant": "Consejo: app de Android para MyDietAssistant",
+    "Du nutzt MyDietAssistant in der Home-Assistant-App. Die eigene MyDietAssistant-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien) und ein Homescreen-Widget.": "Estás usando MyDietAssistant en la app de Home Assistant. La app propia de MyDietAssistant para Android añade un lector de códigos de barras, Health Connect (peso, pasos, calorías) y un widget para la pantalla de inicio.",
+    "MyDietAssistant-App laden": "Obtener la app MyDietAssistant",
+    "Nicht mehr zeigen": "No volver a mostrar",
     "Android-App": "App de Android",
     "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Tomar el peso, los pasos y las calorías activas de Health Connect en el teléfono. El peso solo para días sin valor propio, pasos y calorías solo con la función «Actividad».",
     "Aus Health Connect übernehmen (30 Tage)": "Importar de Health Connect (30 días)",
@@ -2769,6 +2781,10 @@ Object.assign(LANGS, {
     "Entfernen": "Verwijderen",
     "Nach App-Updates suchen": "Zoeken naar app-updates",
     "Installierte App-Version: {}": "Geïnstalleerde app-versie: {}",
+    "Tipp: Android-App für MyDietAssistant": "Tip: Android-app voor MyDietAssistant",
+    "Du nutzt MyDietAssistant in der Home-Assistant-App. Die eigene MyDietAssistant-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien) und ein Homescreen-Widget.": "Je gebruikt MyDietAssistant in de Home Assistant-app. De eigen MyDietAssistant-app voor Android voegt een barcodescanner, Health Connect (gewicht, stappen, calorieën) en een widget voor het startscherm toe.",
+    "MyDietAssistant-App laden": "MyDietAssistant-app downloaden",
+    "Nicht mehr zeigen": "Niet meer tonen",
     "Android-App": "Android-app",
     "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Gewicht, stappen en actieve calorieën overnemen uit Health Connect op de telefoon. Gewicht alleen voor dagen zonder eigen waarde, stappen en calorieën alleen met de extra functie ‘Activiteit’.",
     "Aus Health Connect übernehmen (30 Tage)": "Overnemen uit Health Connect (30 dagen)",
@@ -3798,6 +3814,10 @@ Object.assign(LANGS, {
     "Entfernen": "Rimuovi",
     "Nach App-Updates suchen": "Cerca aggiornamenti dell’app",
     "Installierte App-Version: {}": "Versione dell’app installata: {}",
+    "Tipp: Android-App für MyDietAssistant": "Suggerimento: app Android per MyDietAssistant",
+    "Du nutzt MyDietAssistant in der Home-Assistant-App. Die eigene MyDietAssistant-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien) und ein Homescreen-Widget.": "Stai usando MyDietAssistant nell’app Home Assistant. L’app MyDietAssistant per Android aggiunge lo scanner di codici a barre, Health Connect (peso, passi, calorie) e un widget per la schermata iniziale.",
+    "MyDietAssistant-App laden": "Scarica l’app MyDietAssistant",
+    "Nicht mehr zeigen": "Non mostrare più",
     "Android-App": "App Android",
     "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Riprendi peso, passi e calorie attive da Health Connect sul telefono. Il peso solo per i giorni senza un valore proprio, passi e calorie solo con la funzione «Attività».",
     "Aus Health Connect übernehmen (30 Tage)": "Importa da Health Connect (30 giorni)",
@@ -4827,6 +4847,10 @@ Object.assign(LANGS, {
     "Entfernen": "Remover",
     "Nach App-Updates suchen": "Procurar atualizações do app",
     "Installierte App-Version: {}": "Versão do app instalada: {}",
+    "Tipp: Android-App für MyDietAssistant": "Dica: app Android do MyDietAssistant",
+    "Du nutzt MyDietAssistant in der Home-Assistant-App. Die eigene MyDietAssistant-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien) und ein Homescreen-Widget.": "Você está usando o MyDietAssistant no app Home Assistant. O app próprio do MyDietAssistant para Android adiciona leitor de código de barras, Health Connect (peso, passos, calorias) e um widget para a tela inicial.",
+    "MyDietAssistant-App laden": "Baixar o app MyDietAssistant",
+    "Nicht mehr zeigen": "Não mostrar novamente",
     "Android-App": "App Android",
     "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Trazer peso, passos e calorias ativas do Health Connect no celular. Peso só para dias sem valor próprio, passos e calorias só com a função «Atividade».",
     "Aus Health Connect übernehmen (30 Tage)": "Importar do Health Connect (30 dias)",
@@ -5856,6 +5880,10 @@ Object.assign(LANGS, {
     "Entfernen": "Usuń",
     "Nach App-Updates suchen": "Sprawdź aktualizacje aplikacji",
     "Installierte App-Version: {}": "Zainstalowana wersja aplikacji: {}",
+    "Tipp: Android-App für MyDietAssistant": "Wskazówka: aplikacja MyDietAssistant na Androida",
+    "Du nutzt MyDietAssistant in der Home-Assistant-App. Die eigene MyDietAssistant-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien) und ein Homescreen-Widget.": "Korzystasz z MyDietAssistant w aplikacji Home Assistant. Własna aplikacja MyDietAssistant na Androida dodaje skaner kodów kreskowych, Health Connect (waga, kroki, kalorie) i widżet na ekran główny.",
+    "MyDietAssistant-App laden": "Pobierz aplikację MyDietAssistant",
+    "Nicht mehr zeigen": "Nie pokazuj więcej",
     "Android-App": "Aplikacja na Androida",
     "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Przejmij wagę, kroki i aktywne kalorie z Health Connect na telefonie. Wagę tylko dla dni bez własnej wartości, kroki i kalorie tylko z funkcją „Aktywność”.",
     "Aus Health Connect übernehmen (30 Tage)": "Importuj z Health Connect (30 dni)",
@@ -7162,6 +7190,27 @@ function catChips(onchange) {
 const timeNow = () => new Date().toTimeString().slice(0, 5);
 const entryLabel = e => (e.grams > 0 ? `${e.name}, ${gText(e.grams)}` : e.name);
 
+// Opened in the official Home Assistant Companion app (Android) without our own MyDietAssistant Android app: point to it.
+// The Companion's WebView adds "Home Assistant/<version> (Android ...)" to the user agent; our app has window.MDAApp.
+const MDA_APK_URL = "https://github.com/Schumey/MyDietAssistant-Android/releases/latest";
+function inCompanionWithoutApp() {
+  return !window.MDAApp && /Home Assistant\/[^(]*\(Android/i.test(navigator.userAgent || "");
+}
+function companionHint(dismissible) {
+  if (!inCompanionWithoutApp()) return null;
+  if (dismissible) { try { if (localStorage.getItem("mda.companionHint") === "0") return null; } catch { /* storage unavailable */ } }
+  const box = h("div", { class: "card now-banner", role: "note" },
+    h("div", { class: "grow" },
+      h("strong", {}, "Tipp: Android-App für MyDietAssistant"),
+      h("div", { class: "muted" }, "Du nutzt MyDietAssistant in der Home-Assistant-App. Die eigene MyDietAssistant-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien) und ein Homescreen-Widget.")),
+    h("button", { onclick: () => window.open(MDA_APK_URL, "_blank", "noopener") }, "MyDietAssistant-App laden"),
+    dismissible ? h("button", { class: "flat", onclick: () => {
+      try { localStorage.setItem("mda.companionHint", "0"); } catch { /* storage unavailable */ }
+      box.remove();
+    } }, "Nicht mehr zeigen") : null);
+  return box;
+}
+
 async function renderDiary() {
   const isToday = state.day === iso(new Date());
   const [d, trackers, sched, act, , train] = await Promise.all([api("day/" + state.day), state.features.trackers ? api("trackers?day=" + state.day) : [],
@@ -7188,6 +7237,8 @@ async function renderDiary() {
     h("div", { class: "date" }, label, picker),
     h("button", { class: "step", onclick: () => shiftDay(1), "aria-label": "Folgetag", title: "Folgetag" }, "›"),
     isToday ? null : h("button", { class: "flat today", onclick: () => { state.day = iso(new Date()); renderDiary(); } }, "Heute")));
+  const tip = companionHint(true);
+  if (tip) root.append(tip);
   root.append(budgetCard(d));
   root.append(h("label", { class: "pick incomplete-pick" }, h("input", { type: "checkbox", checked: !!d.incomplete, onchange: async e => {
       await send("PUT", `day/${state.day}/incomplete`, { incomplete: e.target.checked });
@@ -10436,6 +10487,8 @@ async function renderSettings() {
       upd ? h("div", { class: "actions", style: "justify-content:flex-start;margin:4px 0 8px" }, upd) : null,
       ...hp));
   }
+  const tipCard = companionHint(false);
+  if (tipCard) root.append(tipCard);
   function healthPart() {
     const hMsg = h("div", { class: "muted", role: "status" });
     const hErr = h("div", { class: "err" });
