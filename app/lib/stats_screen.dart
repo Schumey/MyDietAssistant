@@ -6,6 +6,7 @@ import 'l10n.dart';
 import 'muscles.dart';
 import 'repo.dart';
 import 'repo_stats.dart';
+import 'review_card.dart';
 import 'stats.dart';
 
 /// Reiter „Statistik“: Trainingshäufigkeit, Sätze je Muskelgruppe, Übungen.
@@ -44,6 +45,7 @@ class _StatsTabState extends State<StatsTab> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        ReviewCard(app: app),
         Text(tr('stats_workouts_week'), style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
         BarChart(bars: [for (final w in weeks) ('${w.$1.day}.${w.$1.month}.', w.$2)]),

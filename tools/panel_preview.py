@@ -142,6 +142,13 @@ class Handler(BaseHTTPRequestHandler):
             if kind == "hafs/web/query":
                 now = datetime.now(timezone.utc)
                 out = s.web_query(OWNER, msg["q"], msg.get("params") or {}, now, now.tzinfo)
+            elif kind == "hafs/review":
+                now = datetime.now(timezone.utc)
+                out = s.review(OWNER, now, now.tzinfo, msg.get("language", "de"))
+                out.pop("instructions", None)
+                out["text"] = "Vorschau: Hier stünde die Zusammenfassung der KI." if msg.get("ai") else None
+            elif kind == "hafs/intake/hint":
+                out = {"hint": "low_kcal", "kcal": 640, "carbs": 70}
             elif kind == "hafs/catalog/info":
                 out = catalog.info()
             elif kind == "hafs/pref/get":

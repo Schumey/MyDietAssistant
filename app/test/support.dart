@@ -27,6 +27,7 @@ class FakeServer implements HaConnection {
   String? planError;
   final List<Map> planRequests = [];
   final List<Map> targetSets = [];
+  List<Map<String, Object?>> reviewStagnating = [];
   Set<String> rejectIds = {};
 
   void put(String table, Map<String, Object?> record) => (data[table] ??= {})[record['id'] as String] = record;
@@ -55,6 +56,8 @@ class FakeServer implements HaConnection {
       case 'hafs/pref/set':
         prefs[payload['key'] as String] = payload['value'] as String;
         return {'key': payload['key'], 'value': payload['value'], 'targets': {}};
+      case 'hafs/review':
+        return {'stagnating': reviewStagnating, 'neglected': [], 'text': payload['ai'] == true ? 'KI-Text' : null};
       case 'hafs/target/set':
         targetSets.add(payload);
         for (final t in (data['target'] ??= {}).values) {

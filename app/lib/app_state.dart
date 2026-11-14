@@ -226,6 +226,19 @@ class AppState extends ChangeNotifier {
     await syncNow();
   }
 
+  /// Rückblick vom Server: stagnierende Übungen und vernachlässigte Muskelgruppen (`stagnating`, `neglected`), mit
+  /// [ai] zusätzlich `text` der in Home Assistant eingerichteten KI. Braucht eine Verbindung.
+  Future<Map<String, dynamic>> review({bool ai = false}) async {
+    if (!hasCredentials) throw HaException('Not signed in');
+    final connection = await _connector(address!, _token!);
+    try {
+      final r = await connection.call('hafs/review', {'ai': ai, 'language': L10n.lang});
+      return Map<String, dynamic>.from(r as Map);
+    } finally {
+      await connection.close();
+    }
+  }
+
   /// Setzt das nächste Gewicht einer Übung von Hand (einmalige Vorgabe auf dem Server; die Progression rechnet nach
   /// dem nächsten Workout mit der Übung wieder selbst) und holt das neue Ziel. Braucht eine Verbindung.
   Future<void> setNextWeight(String exerciseId, double weight) async {

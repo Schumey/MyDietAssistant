@@ -11,7 +11,7 @@ const TABS = ["today", "training", "exercises", "plans", "settings"];
 const OLD_TABS = { history: "training", stats: "training" };
 const TAB_KEY = "hafs.tab";
 const WINDOWS = [4, 12, 26, 52];
-const TODAY_BLOCKS = ["next", "facts", "muscles", "recent"];
+const TODAY_BLOCKS = ["next", "facts", "muscles", "review", "recent"];
 const REST_DEFAULTS = [0, 45, 60, 90, 120, 150, 180, 240, 300];
 const MAX_CSV = 3_500_000;
 
@@ -181,6 +181,7 @@ class HafsPanel extends HTMLElement {
       case "import-dry": this._import(true); break;
       case "import-run": this._import(false); break;
       case "export": this._export(); break;
+      case "review-ai": this._reviewAi(); break;
     }
   }
 
@@ -244,6 +245,8 @@ class HafsPanel extends HTMLElement {
     const [d, hiddenPref] = await Promise.all([this._query("overview"), this._call({ type: "hafs/pref/get", key: "today_hidden" }).catch(() => ({ value: "" }))]);
     this._cache.today = d;
     const hidden = new Set(String(hiddenPref.value || "").split(",").filter(Boolean));
+    // The review is a rule based look at the history; older servers do not know it (block stays empty).
+    const review = hidden.has("review") ? null : await this._call({ type: "hafs/review" }).catch(() => null);
     const show = (block) => !hidden.has(block);
     const s = d.status;
     let hero;
@@ -275,9 +278,36 @@ class HafsPanel extends HTMLElement {
     const left = [show("next") ? hero : "", show("facts") ? facts : ""].join("");
     const right = [show("muscles") ? `<section class="card"><h2>${esc(t("sets_by_muscle"))}</h2>${this._muscleBars(d.weeks, 4)}
           <p class="hint">${esc(t("muscle_hint"))}</p></section>` : "",
+    show("review") && review ? this._reviewCard(review) : "",
     show("recent") ? `<section class="card"><h2>${esc(t("recent"))}</h2>${recent}</section>` : ""].join("");
     if (!left && !right) return `<p class="muted">${esc(t("today_empty"))}</p>`;
     return `<div class="grid ${left && right ? "two" : "one"}">${left ? `<div class="col">${left}</div>` : ""}${right ? `<div class="col">${right}</div>` : ""}</div>`;
+  }
+
+  _reviewCard(r) {
+    const t = this._t, f = this._f;
+    const lines = [
+      ...r.stagnating.map((x) => t("review_stag", x.name, x.sessions, x.weeks, f.kg(x.best))),
+      ...r.neglected.map((x) => t("review_muscle", this._muscle(x.muscle), f.num(x.recent), f.num(x.earlier))),
+    ];
+    const body = lines.length ? `<ul class="rows">${lines.map((l) => `<li><span class="wsub">${esc(l)}</span></li>`).join("")}</ul>` : `<p class="muted">${esc(t("review_none"))}</p>`;
+    const ai = lines.length ? `<p><button class="btn" data-act="review-ai"${this._reviewBusy ? " disabled" : ""}>${esc(t(this._reviewBusy ? "review_ai_busy" : "review_ai"))}</button></p>
+      <p class="hint">${esc(t("review_ai_hint"))}</p>${this._reviewText ? `<p class="reviewtext">${esc(this._reviewText)}</p>` : ""}` : "";
+    return `<section class="card"><h2>${esc(t("review_title"))}</h2>${body}${ai}</section>`;
+  }
+
+  async _reviewAi() {
+    this._reviewBusy = true;
+    this._show();
+    try {
+      const r = await this._call({ type: "hafs/review", ai: true, language: this._lang });
+      this._reviewText = r.text || "";
+    } catch (err) {
+      this._toast(this._t("load_failed", err?.message || err?.code));
+    } finally {
+      this._reviewBusy = false;
+      this._show();
+    }
   }
 
   _planRow(x) {
