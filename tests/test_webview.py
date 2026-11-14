@@ -180,3 +180,14 @@ def test_plan_edit_exercises_are_full_records_for_the_exercise_editor(conn):
     ex = next(e for e in run(conn, "plan_edit")["exercises"] if e["id"] == "bench")
     assert ex["muscles_secondary"] == "triceps" and ex["catalog_key"] == "" and "owner" not in ex and ex["muscles"] == ["chest"]
     assert sync.push(conn, OWNER, {"exercise": [{k: v for k, v in ex.items() if k != "muscles"}]})["rejected"] == []
+
+
+def test_overview_week_days_monday_to_sunday(conn):
+    add(conn, "w1", "2026-11-09", [(60, 8, "work")])                 # Monday
+    add(conn, "w2", "2026-11-09", [(60, 8, "work")])                 # second one the same day
+    add(conn, "w3", "2026-11-11", [(60, 8, "work")], end=False)      # running, does not count
+    add(conn, "w4", "2026-11-08", [(60, 8, "work")])                 # last Sunday
+    days = run(conn, "overview")["week_days"]
+    assert [d["date"] for d in days] == [f"2026-11-{n:02d}" for n in range(9, 16)]
+    assert [d["workouts"] for d in days] == [2, 0, 0, 0, 0, 0, 0]
+    assert [d["today"] for d in days] == [False, False, True, False, False, False, False]

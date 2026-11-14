@@ -226,6 +226,19 @@ class AppState extends ChangeNotifier {
     await syncNow();
   }
 
+  /// Setzt das nächste Gewicht einer Übung von Hand (einmalige Vorgabe auf dem Server; die Progression rechnet nach
+  /// dem nächsten Workout mit der Übung wieder selbst) und holt das neue Ziel. Braucht eine Verbindung.
+  Future<void> setNextWeight(String exerciseId, double weight) async {
+    if (!hasCredentials) throw HaException('Not signed in');
+    final connection = await _connector(address!, _token!);
+    try {
+      await connection.call('hafs/target/set', {'exercise_id': exerciseId, 'weight': weight});
+    } finally {
+      await connection.close();
+    }
+    await syncNow();
+  }
+
   /// Barbell for the plate calculator (device local, not synced).
   double get plateBar => double.tryParse(local?.state('plate_bar') ?? '') ?? defaultBar;
   List<double> get plateSet => parsePlates(local?.state('plate_set') ?? '') ?? defaultPlates;

@@ -58,6 +58,18 @@ def muscle_weeks(conn: sqlite3.Connection, owner: str, today: date, weeks: int =
     return {"weeks": [d.isoformat() for d in starts], "muscles": muscles, "workouts": workouts}
 
 
+def week_days(conn: sqlite3.Connection, owner: str, today: date) -> list[dict]:
+    """Monday to Sunday of the current week with the number of finished workouts per day."""
+    start = _week_start(today)
+    counts = {(start + timedelta(days=i)).isoformat(): 0 for i in range(7)}
+    for r in conn.execute("SELECT started_at FROM workout WHERE owner=? AND deleted=0 AND ended_at IS NOT NULL "
+                          "AND started_at >= ?", (owner, start.isoformat())):
+        d = _parse_day(r["started_at"])
+        if d and d.isoformat() in counts:
+            counts[d.isoformat()] += 1
+    return [{"date": k, "workouts": n, "today": k == today.isoformat()} for k, n in counts.items()]
+
+
 def overview(conn, owner, now, tz, params) -> dict:
     s = st.status(conn, owner, now, tz)
     s.pop("attrs", None)
@@ -78,6 +90,7 @@ def overview(conn, owner, now, tz, params) -> dict:
         "phase_manual": targets.get_pref(conn, owner, "phase"),
         "recent": st.recent_workouts(conn, owner, 3650, 5, now),
         "weeks": muscle_weeks(conn, owner, local.date(), 12),
+        "week_days": week_days(conn, owner, local.date()),
     }
 
 

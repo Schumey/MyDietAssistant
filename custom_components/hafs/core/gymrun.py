@@ -140,7 +140,7 @@ def _id(owner: str, *parts: str) -> str:
 
 
 def import_into(conn: sqlite3.Connection, owner: str, res: ParseResult,
-                mapping: dict[str, str] | None = None) -> dict:
+                mapping: dict[str, str] | None = None, source: str = "gymrun") -> dict:
     """Write a parsed export. `mapping` maps GymRun exercise names to existing
     exercise ids (e.g. from the catalog); unmapped names create new exercises.
     Returns counts of newly inserted records."""
@@ -164,7 +164,7 @@ def import_into(conn: sqlite3.Connection, owner: str, res: ParseResult,
             wid = _id(owner, "workout", w.started_at)
             c = conn.execute(
                 "INSERT OR IGNORE INTO workout(id, owner, updated_at, started_at, ended_at, routine_name, source)"
-                " VALUES (?,?,?,?,?,?, 'gymrun')", (wid, owner, now, w.started_at, w.ended_at, w.routine))
+                " VALUES (?,?,?,?,?,?,?)", (wid, owner, now, w.started_at, w.ended_at, w.routine, source))
             added["workouts"] += c.rowcount
             for s in w.sets:
                 c = conn.execute(

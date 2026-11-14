@@ -6,7 +6,7 @@ import os
 from contextlib import closing
 from typing import Any
 
-from . import aiplan, catalog, db, gymrun, status, sync, targets, webview, zones
+from . import aiplan, catalog, db, gymrun, importers, status, sync, targets, webview, zones
 
 
 class Store:
@@ -140,11 +140,13 @@ class Store:
             return sync.export_all(conn, owner)
 
     def import_gymrun(self, owner: str, text: str, dry_run: bool) -> dict:
-        res = gymrun.parse(text)
-        out = {"summary": gymrun.summary(res)}
+        """Import a workout CSV; the format (GymRun, Strong, Hevy) is detected from the header."""
+        fmt, res = importers.parse(text)
+        out = {"summary": gymrun.summary(res), "format": fmt}
         if not dry_run:
             with self._conn() as conn:
                 catalog.seed(conn, owner)
-                out["added"] = gymrun.import_into(conn, owner, res, catalog.exercise_ids(conn, owner))
+                mapping = importers.name_mapping(res.exercises, catalog.exercise_ids(conn, owner))
+                out["added"] = gymrun.import_into(conn, owner, res, mapping, source=fmt)
                 out["targets"] = targets.recompute(conn, owner)
         return out

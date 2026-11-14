@@ -369,7 +369,7 @@ class HafsPanel extends HTMLElement {
     const w = await this._query("workout", { id });
     const chips = [
       w.gym ? `${t("gym")}: ${w.gym}` : "", w.sets ? `${w.sets} ${t("sets")}` : "", w.volume_kg ? f.tonnes(w.volume_kg) : "",
-      w.duration_min ? t("minutes", w.duration_min) : "", w.phase ? t("phase_" + w.phase) : "", w.source === "gymrun" ? t("imported") : "",
+      w.duration_min ? t("minutes", w.duration_min) : "", w.phase ? t("phase_" + w.phase) : "", w.source ? t("imported") : "",
     ].filter(Boolean).map((c) => `<span class="chip">${esc(c)}</span>`).join("");
     const groups = w.exercises.map((g) => `<section class="card"><h3>${esc(g.name)}${g.equipment ? ` <small class="muted">${esc(g.equipment)}</small>` : ""}</h3>
       <table class="sets"><tbody>${g.sets.map((s, i) => this._setRow(s, i)).join("")}</tbody></table></section>`).join("");

@@ -75,6 +75,17 @@ class HafsCard extends HTMLElement {
     }).join("");
   }
 
+  // Monday to Sunday of this week; a filled dot marks a day with a finished workout, the ring marks today.
+  _weekStrip(days) {
+    if (!Array.isArray(days) || !days.length) return "";
+    const lang = this._f?.locale || this._hass?.locale?.language || this._hass?.language || "en";
+    const name = (iso) => {
+      try { return new Intl.DateTimeFormat(lang, { weekday: "short" }).format(new Date(`${iso}T12:00:00`)); } catch { return iso.slice(8); }
+    };
+    return `<div class="week">${days.map((x) => `<div class="day${x.workouts ? " on" : ""}${x.today ? " today" : ""}">
+      <span class="dot">${x.workouts > 1 ? x.workouts : ""}</span><span class="lbl">${esc(name(x.date))}</span></div>`).join("")}</div>`;
+  }
+
   _render() {
     const t = this._t;
     if (!t) return;
@@ -97,7 +108,7 @@ class HafsCard extends HTMLElement {
         hero = `<h2>${esc(t("rest_day"))}</h2><p class="muted">${esc(t("no_plan"))}</p>`;
       }
       const last = s.last_workout_at ? f.date(s.last_workout_at) : t("never");
-      body = `${hero}<dl><div><dt>${esc(t("workouts_week"))}</dt><dd>${f.int(s.workouts_week)}</dd></div>
+      body = `${hero}${this._weekStrip(d.week_days)}<dl><div><dt>${esc(t("workouts_week"))}</dt><dd>${f.int(s.workouts_week)}</dd></div>
         <div><dt>${esc(t("volume_week"))}</dt><dd>${esc(f.tonnes(s.volume_week_kg))}</dd></div>
         <div><dt>${esc(t("last_workout"))}</dt><dd class="small">${esc(last)}</dd></div></dl>`;
     }
@@ -114,6 +125,12 @@ class HafsCard extends HTMLElement {
       li .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       li .s, li .w { color: var(--secondary-text-color); white-space: nowrap; }
       li .w { min-width: 56px; text-align: right; }
+      .week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 14px 0 0; text-align: center; }
+      .day .dot { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin: 0 auto; border-radius: 50%;
+        box-sizing: border-box; border: 2px solid var(--divider-color); font-size: 12px; color: var(--text-primary-color, #fff); }
+      .day.on .dot { background: var(--primary-color); border-color: var(--primary-color); }
+      .day.today .dot { border-color: var(--primary-color); }
+      .day .lbl { display: block; margin-top: 2px; font-size: 11px; color: var(--secondary-text-color); }
       dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 16px 0 0; }
       dt { font-size: 12px; color: var(--secondary-text-color); }
       dd { margin: 2px 0 0; font-size: 20px; color: var(--primary-text-color); }

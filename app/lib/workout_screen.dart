@@ -7,6 +7,7 @@ import 'app_state.dart';
 import 'attachments.dart';
 import 'exercise_picker.dart';
 import 'gyms_screen.dart';
+import 'ha_client.dart';
 import 'history_screen.dart';
 import 'l10n.dart';
 import 'plates.dart';
@@ -516,6 +517,39 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     return Padding(padding: const EdgeInsets.only(top: 4), child: Text(text, style: theme.textTheme.bodySmall));
   }
 
+  /// Asks for the next weight of the exercise and sets it on the server (needs a connection).
+  Future<void> _editNextWeight(ExerciseInfo e) async {
+    final start = _defaults?.target?.weight ?? _weight;
+    final controller = TextEditingController(text: L10n.kg(start));
+    final value = await showDialog<double>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('${tr('next_weight')} · ${e.name}'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: const InputDecoration(suffixText: 'kg'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(tr('cancel'))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, double.tryParse(controller.text.trim().replaceAll(',', '.'))),
+            child: Text(tr('save')),
+          ),
+        ],
+      ),
+    );
+    if (value == null || value < 0 || value > 1000 || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await widget.app.setNextWeight(e.id, value);
+      if (mounted && _exercise?.id == e.id) _applyEquipment(e, _equipmentId);
+    } catch (err) {
+      messenger.showSnackBar(SnackBar(content: Text(tr('next_weight_failed', [err is HaException ? err.message : '$err']))));
+    }
+  }
+
   Widget _entryPanel(ThemeData theme) {
     final e = _exercise!;
     final d = _defaults!;
@@ -565,8 +599,14 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               ]),
             if (hint != null) ...[
               const SizedBox(height: 2),
-              Text('${tr('target')}: ${target!.weight == null ? '' : '${L10n.kg(target.weight!)} kg × '}${target.reps ?? ''}  –  $hint',
-                  style: theme.textTheme.bodySmall),
+              InkWell(
+                key: const Key('next-weight'),
+                onTap: timed ? null : () => _editNextWeight(e),
+                child: Text.rich(TextSpan(style: theme.textTheme.bodySmall, children: [
+                  TextSpan(text: '${tr('target')}: ${target!.weight == null ? '' : '${L10n.kg(target.weight!)} kg × '}${target.reps ?? ''}  –  $hint'),
+                  if (!timed) const WidgetSpan(alignment: PlaceholderAlignment.middle, child: Padding(padding: EdgeInsets.only(left: 6), child: Icon(Icons.edit_outlined, size: 14))),
+                ])),
+              ),
             ],
             if (d.lastTime.isNotEmpty) ...[
               const SizedBox(height: 2),
