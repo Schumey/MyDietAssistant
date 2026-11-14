@@ -2,6 +2,7 @@ import 'health_export.dart';
 import 'plates.dart';
 import 'updater.dart';
 import 'l10n.dart';
+import 'home_widget.dart';
 import 'photo.dart';
 import 'repo_gym.dart';
 import 'templates.dart';
@@ -24,8 +25,9 @@ typedef Connector = Future<HaConnection> Function(String address, String token);
 /// Die Datenbank ist immer offen, auch ohne Verbindung: Training erfassen geht offline,
 /// abgeglichen wird, wenn eine Verbindung da ist.
 class AppState extends ChangeNotifier {
-  AppState(this.credentials, {required this.openDb, Connector? connector, RestTimer? rest, WorkoutSink? workoutSink, LiveStore? liveStore, LiveNotifier? liveNotifier, PhotoSource? photoSource})
-      : photoSource = photoSource ?? ImagePickerSource(),
+  AppState(this.credentials, {required this.openDb, Connector? connector, RestTimer? rest, WorkoutSink? workoutSink, LiveStore? liveStore, LiveNotifier? liveNotifier, PhotoSource? photoSource, HomeWidget? homeWidget})
+      : homeWidget = homeWidget ?? defaultHomeWidget(),
+        photoSource = photoSource ?? ImagePickerSource(),
         _connector = connector ?? ((a, t) => HaClient.connect(a, t)),
         // ignore: prefer_initializing_formals
         _workoutSink = workoutSink,
@@ -37,6 +39,8 @@ class AppState extends ChangeNotifier {
   final LiveStore _liveStore;
   final LiveNotifier _liveNotifier;
   final PhotoSource photoSource;
+  final HomeWidget homeWidget;
+  WidgetContent? _widgetShown;
 
   /// The set entry of the running workout, shared with the permanent notification; null before the database is open.
   LiveController? live;
@@ -282,6 +286,24 @@ class AppState extends ChangeNotifier {
 
   /// Ein Schreibzugriff auf die Daten ist erfolgt: Oberfläche aktualisieren.
   void changed() => notifyListeners();
+
+  @override
+  void notifyListeners() {
+    super.notifyListeners();
+    _refreshWidget();
+  }
+
+  /// Keeps the home screen widget in step with the plan; only sends when the texts changed.
+  void _refreshWidget() {
+    try {
+      final content = buildWidgetContent(repo);
+      if (content == _widgetShown) return;
+      _widgetShown = content;
+      homeWidget.show(content).catchError((_) {});
+    } catch (_) {
+      // the widget is a convenience, never a reason to fail
+    }
+  }
 
   /// Meldet ab. Die lokalen Daten (auch noch nicht gesendete) bleiben auf dem Gerät.
   Future<void> logout() async {

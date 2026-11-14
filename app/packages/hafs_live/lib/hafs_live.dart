@@ -9,5 +9,8 @@ class HafsLive {
   /// `weightPlus`, `repsMinus`, `repsPlus`.
   static Future<void> show(Map<String, Object?> args) => _channel.invokeMethod<void>('show', args);
 
+  /// Texts of the home screen widget: `kicker`, `title`, `lines` (lines separated by a line break).
+  static Future<void> widget(Map<String, Object?> args) => _channel.invokeMethod<void>('widget', args);
+
   static Future<void> cancel() => _channel.invokeMethod<void>('cancel');
 }

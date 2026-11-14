@@ -32,6 +32,11 @@ class HafsLivePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                     LiveNotification.show(context, call.arguments as Map<String, Any?>)
                     result.success(null)
                 }
+                "widget" -> {
+                    @Suppress("UNCHECKED_CAST")
+                    HafsWidget.update(context, call.arguments as Map<String, Any?>)
+                    result.success(null)
+                }
                 "cancel" -> {
                     LiveNotification.cancel(context)
                     result.success(null)
