@@ -6,7 +6,7 @@ import os
 from contextlib import closing
 from typing import Any
 
-from . import aiplan, catalog, db, gymrun, importers, status, sync, targets, webview, zones
+from . import aiplan, catalog, db, gymrun, importers, review as review_mod, status, sync, targets, webview, zones
 
 
 class Store:
@@ -91,6 +91,15 @@ class Store:
             phase = targets.get_pref(conn, owner, "phase") or targets.get_pref(conn, owner, "phase_auto")
         return {"instructions": aiplan.build_instructions(days, minutes, goal, notes, phase, exercises, lang),
                 "known": {e["id"]: e["name"] for e in exercises}}
+
+    def review(self, owner: str, now, tz, lang: str = "de") -> dict:
+        """Stagnating exercises and neglected muscle groups, with the prompt for the optional AI summary."""
+        local = now.astimezone(tz) if tz else now
+        with self._conn() as conn:
+            phase = targets.get_pref(conn, owner, "phase") or targets.get_pref(conn, owner, "phase_auto")
+            data = review_mod.review(conn, owner, local.date(), webview.muscle_weeks(conn, owner, local.date(), 16), phase)
+        data["instructions"] = review_mod.build_instructions(data["stagnating"], data["neglected"], phase, lang)
+        return data
 
     def web_query(self, owner: str, q: str, params: dict | None = None, now=None, tz=None) -> dict:
         """One read-only view for the web panel (see `core/webview.py`)."""

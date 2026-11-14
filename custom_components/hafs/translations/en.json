@@ -38,6 +38,28 @@
           "description": "Limit"
         }
       }
+    },
+    "get_review": {
+      "name": "Get review",
+      "description": "Finds stagnating exercises and neglected muscle groups, optionally with a short summary from the AI set up in Home Assistant.",
+      "fields": {
+        "user_id": {
+          "name": "User",
+          "description": "User ID (default: the calling user)"
+        },
+        "ai": {
+          "name": "AI summary",
+          "description": "AI summary"
+        },
+        "language": {
+          "name": "Language",
+          "description": "Language"
+        },
+        "entity_id": {
+          "name": "AI task",
+          "description": "AI task entity (default: the one set up in Home Assistant)"
+        }
+      }
     }
   }
 }

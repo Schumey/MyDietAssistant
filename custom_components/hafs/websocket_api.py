@@ -25,7 +25,7 @@ from .core.store import Store
 @callback
 def async_register_websocket_commands(hass: HomeAssistant) -> None:
     for command in (ws_info, ws_sync_push, ws_sync_pull, ws_export, ws_import_gymrun, ws_catalog_info,
-                    ws_pref_get, ws_pref_set, ws_target_set, ws_targets_recompute, ws_gym_current, ws_plan_suggest, ws_web_query):
+                    ws_pref_get, ws_pref_set, ws_target_set, ws_targets_recompute, ws_gym_current, ws_intake_hint, ws_review, ws_plan_suggest, ws_web_query):
         websocket_api.async_register_command(hass, command)
 
 
@@ -145,6 +145,57 @@ async def ws_gym_current(hass, connection, msg, store: Store) -> dict:
     zone = hub.current_zone(connection.user.id) if hub is not None else None
     found = await hass.async_add_executor_job(store.gym_for_zone, connection.user.id, zone)
     return {"zone": zone, **(found or {"gym_id": None, "gym": None})}
+
+
+@websocket_api.websocket_command({vol.Required("type"): "hafs/intake/hint"})
+@websocket_api.async_response
+@_with_store
+async def ws_intake_hint(hass, connection, msg, store: Store) -> dict:
+    """Note before training from MyDietAssistant's `kcal_today` / `carbs_today` ("little eaten today"); only a hint."""
+    hub = hass.data.get(DOMAIN)
+    return hub.intake(connection.user.id) if hub is not None else {"hint": None, "kcal": None, "carbs": None}
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "hafs/review",
+        vol.Optional("ai", default=False): bool,
+        vol.Optional("language", default="de"): str,
+        vol.Optional("entity_id"): str,
+    }
+)
+@websocket_api.async_response
+@_with_store
+async def ws_review(hass, connection, msg, store: Store) -> dict:
+    """Stagnating exercises and neglected muscle groups; with `ai` also a short summary from the AI set up in Home Assistant."""
+    return await async_review(hass, store, connection.user.id, msg["ai"], msg["language"], msg.get("entity_id"))
+
+
+async def async_review(hass, store: Store, owner: str, ai: bool, language: str = "de", entity_id: str | None = None) -> dict:
+    """The review of [owner] (shared by the WebSocket command and the service `hafs.get_review`). The AI step sends only
+    exercise and muscle group names with numbers (see `core/review.py`) and is skipped when nothing stands out."""
+    from homeassistant.util import dt as dt_util
+
+    data = await hass.async_add_executor_job(store.review, owner, dt_util.now(), dt_util.get_default_time_zone(), language)
+    instructions = data.pop("instructions")
+    data["text"] = None
+    if ai and (data["stagnating"] or data["neglected"]):
+        if not hass.services.has_service("ai_task", "generate_data"):
+            raise ValueError("Home Assistant has no AI task set up (ai_task)")
+        payload = {
+            "task_name": "HAFS training review", "instructions": instructions,
+            "structure": {"summary": {"description": "The summary as plain text", "required": True, "selector": {"text": {"multiline": True}}}},
+        }
+        if entity_id:
+            payload["entity_id"] = entity_id
+        try:
+            result = await hass.services.async_call("ai_task", "generate_data", payload, blocking=True, return_response=True)
+        except Exception as err:  # noqa: BLE001 - surface any provider error to the caller as a message
+            raise ValueError(f"AI request failed: {err}") from err
+        answer = (result or {}).get("data", {})
+        text = answer.get("summary") if isinstance(answer, dict) else None
+        data["text"] = text if isinstance(text, str) else str((result or {}).get("text", "")) or None
+    return data
 
 
 @websocket_api.websocket_command(

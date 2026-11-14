@@ -84,3 +84,24 @@ suggest_program:
       selector:
         entity:
           domain: ai_task
+get_review:
+  fields:
+    user_id:
+      required: false
+      selector:
+        text:
+    ai:
+      required: false
+      default: false
+      selector:
+        boolean:
+    language:
+      required: false
+      default: de
+      selector:
+        text:
+    entity_id:
+      required: false
+      selector:
+        entity:
+          domain: ai_task

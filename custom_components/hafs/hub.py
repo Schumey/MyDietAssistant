@@ -114,6 +114,13 @@ class HafsHub:
         if fire:
             async_dispatcher_send(self.hass, SIGNAL, owner)
 
+    def intake(self, owner: str) -> dict:
+        """Hint from MDA's kcal_today / carbs_today for this user (see core.phase.intake_hint)."""
+        prefix = f"sensor.mydiet_{self.mda_name(owner)}"
+        kcal = self.hass.states.get(f"{prefix}_kcal_today")
+        carbs = self.hass.states.get(f"{prefix}_carbs_today")
+        return phase_mod.intake_hint(kcal.state if kcal else None, carbs.state if carbs else None, dt_util.now().hour)
+
     async def async_refresh_phase(self, owner: str) -> None:
         """Resolve manual choice -> MDA goal_mode -> MDA energy_balance and hand it to the store."""
         prefix = f"sensor.mydiet_{self.mda_name(owner)}"

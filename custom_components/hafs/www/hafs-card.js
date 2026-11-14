@@ -1,9 +1,10 @@
 // HAFS dashboard card: the next training day, this week's numbers and the last workout of the user who looks at the dashboard.
 // Plain web component without build step (no dependencies), colors come from the Home Assistant theme.
-// Usage:  type: custom:hafs-card   (optional: title: "Training", exercises: false)
+// Usage:  type: custom:hafs-card   (optional: title: "Training", exercises: false, exercise: "Bankdrücken", months: 6, intake: false)
+// With `exercise` (name or id) the card also shows the progress of that exercise (estimated 1RM, else heaviest weight).
 
 const version = new URL(import.meta.url).search;
-const { makeT, language, makeFormat, esc } = await import(`./hafs-common.js${version}`);
+const { makeT, language, makeFormat, esc, lineChart } = await import(`./hafs-common.js${version}`);
 
 const REFRESH_MS = 5 * 60 * 1000;
 
@@ -53,7 +54,24 @@ class HafsCard extends HTMLElement {
     if (!this._hass) return;
     this._loading = true;
     try {
-      this._data = await this._hass.connection.sendMessagePromise({ type: "hafs/web/query", q: "overview", params: {} });
+      const ask = (q, params = {}) => this._hass.connection.sendMessagePromise({ type: "hafs/web/query", q, params });
+      this._data = await ask("overview");
+      this._intake = null;
+      if (this._config.intake !== false) {  // a note from MyDietAssistant; silently absent without it
+        try { this._intake = await this._hass.connection.sendMessagePromise({ type: "hafs/intake/hint" }); } catch { /* older server */ }
+      }
+      this._progress = null;
+      if (this._config.exercise) {
+        try {
+          const want = String(this._config.exercise).trim().toLowerCase();
+          const list = (await ask("exercises", { all: true })).exercises;
+          const hit = list.find((x) => x.id === this._config.exercise) || list.find((x) => x.name.toLowerCase() === want)
+            || list.find((x) => x.name.toLowerCase().includes(want));
+          this._progress = hit ? await ask("exercise", { id: hit.id }) : { missing: true };
+        } catch (err) {
+          this._progress = { failed: err?.message || String(err) };
+        }
+      }
       this._error = "";
       this._seen = marker;
     } catch (err) {
@@ -86,6 +104,23 @@ class HafsCard extends HTMLElement {
       <span class="dot">${x.workouts > 1 ? x.workouts : ""}</span><span class="lbl">${esc(name(x.date))}</span></div>`).join("")}</div>`;
   }
 
+  // Progress of the configured exercise over the last `months` months (default 6).
+  _progressBlock() {
+    const t = this._t, f = this._f, p = this._progress;
+    if (!this._config.exercise || !p) return "";
+    if (p.missing) return `<p class="muted">${esc(t("card_exercise_missing", this._config.exercise))}</p>`;
+    if (p.failed) return `<p class="muted">${esc(t("load_failed", p.failed))}</p>`;
+    const sessions = p.sessions || [];
+    const metric = sessions.some((x) => x.e1rm > 0) ? "e1rm" : "weight";
+    const pick = metric === "e1rm" ? (x) => x.e1rm : (x) => x.best_weight;
+    const cut = Date.now() - (Number(this._config.months) || 6) * 30.5 * 86400000;
+    const points = sessions.filter((x) => pick(x) > 0 && new Date(x.date).getTime() >= cut).map((x) => ({
+      t: new Date(x.date).getTime(), y: pick(x), label: `${f.date(x.date)}: ${f.kg(Math.round(pick(x) * 10) / 10)} kg` }));
+    const chart = lineChart(points, { fmtX: (ms) => f.shortMonth(new Date(ms).toISOString()), fmtY: (v) => f.kg(Math.round(v * 10) / 10), ariaLabel: p.exercise?.name || "" })
+      || `<p class="muted">${esc(t("no_data"))}</p>`;
+    return `<div class="prog"><p class="kicker">${esc(p.exercise?.name || "")} · ${esc(t(metric === "e1rm" ? "metric_e1rm" : "metric_weight"))}</p>${chart}</div>`;
+  }
+
   _render() {
     const t = this._t;
     if (!t) return;
@@ -102,7 +137,7 @@ class HafsCard extends HTMLElement {
         hero = `<p class="kicker">${esc(t("running_since", f.time(d.active_since) || ""))}</p><h2>${esc(s.next ? s.next.routine : t("free_workout"))}</h2>`;
       } else if (s.next) {
         const rows = c.exercises === false ? "" : `<ul>${this._rows(d.next_exercises || []) || (s.next.exercises || []).map((n) => `<li><span class="n">${esc(n)}</span></li>`).join("")}</ul>`;
-        hero = `${s.state === "done" ? `<p class="done">✓ ${esc(t("done_line", s.last?.routine || t("free_workout")))}</p>` : ""}<p class="kicker">${esc(t("next_up"))}</p><h2>${esc(s.next.routine)}</h2>
+        hero = `${s.state === "done" ? `<p class="done">✓ ${esc(t("done_line", s.last?.routine || t("free_workout")))}</p>` : ""}<p class="kicker">${esc(t("next_up"))}</p><h2>${esc(s.next.routine)}</h2>${this._intake?.hint ? `<p class="hint">${esc(t("intake_" + this._intake.hint, Math.round(this._intake.kcal ?? 0), Math.round(this._intake.carbs ?? 0)))}</p>` : ""}
           <p class="muted">${esc(t("next_program", s.next.program))}</p>${rows}`;
       } else {
         hero = `<h2>${esc(t("rest_day"))}</h2><p class="muted">${esc(t("no_plan"))}</p>`;
@@ -110,7 +145,7 @@ class HafsCard extends HTMLElement {
       const last = s.last_workout_at ? f.date(s.last_workout_at) : t("never");
       body = `${hero}${this._weekStrip(d.week_days)}<dl><div><dt>${esc(t("workouts_week"))}</dt><dd>${f.int(s.workouts_week)}</dd></div>
         <div><dt>${esc(t("volume_week"))}</dt><dd>${esc(f.tonnes(s.volume_week_kg))}</dd></div>
-        <div><dt>${esc(t("last_workout"))}</dt><dd class="small">${esc(last)}</dd></div></dl>`;
+        <div><dt>${esc(t("last_workout"))}</dt><dd class="small">${esc(last)}</dd></div></dl>${this._progressBlock()}`;
     }
     this.shadowRoot.innerHTML = `<style>
       :host { display: block; }
@@ -131,6 +166,13 @@ class HafsCard extends HTMLElement {
       .day.on .dot { background: var(--primary-color); border-color: var(--primary-color); }
       .day.today .dot { border-color: var(--primary-color); }
       .day .lbl { display: block; margin-top: 2px; font-size: 11px; color: var(--secondary-text-color); }
+      .hint { margin: 4px 0 8px; font-size: 13px; color: var(--warning-color, #ff9800); }
+      .prog { margin-top: 16px; }
+      .chart { width: 100%; height: auto; display: block; }
+      .chart .gl { stroke: var(--divider-color); stroke-width: 1; }
+      .chart .tick { fill: var(--secondary-text-color); font-size: 11px; }
+      .chart .ln { fill: none; stroke: var(--primary-color); stroke-width: 2; }
+      .chart .pt { fill: var(--primary-color); }
       dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 16px 0 0; }
       dt { font-size: 12px; color: var(--secondary-text-color); }
       dd { margin: 2px 0 0; font-size: 20px; color: var(--primary-text-color); }
@@ -142,5 +184,5 @@ class HafsCard extends HTMLElement {
 if (!customElements.get("hafs-card")) customElements.define("hafs-card", HafsCard);
 window.customCards = window.customCards || [];
 if (!window.customCards.some((x) => x.type === "hafs-card")) {
-  window.customCards.push({ type: "hafs-card", name: "HAFS", description: "Next training day and this week's numbers from HAFS", preview: false });
+  window.customCards.push({ type: "hafs-card", name: "HAFS", description: "Next training day, this week and the progress of one exercise from HAFS", preview: false });
 }

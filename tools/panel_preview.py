@@ -62,7 +62,8 @@ const hass = { language: lang, states: {}, connection: { sendMessagePromise: asy
 if (!customElements.get("ha-card")) customElements.define("ha-card", class extends HTMLElement {});
 await import("/hafs_static/hafs-card.js?v=preview");
 const el = document.getElementById("c");
-el.setConfig({});
+const ex = new URLSearchParams(location.search).get("exercise");
+el.setConfig(ex ? { exercise: ex } : {});
 el.hass = hass;
 </script></body></html>"""
 

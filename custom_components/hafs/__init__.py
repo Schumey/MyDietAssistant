@@ -19,7 +19,7 @@ from .const import DB_SUBPATH, DOMAIN, PANEL_STATIC_URL, PANEL_URL_PATH
 from .core.store import Store
 from .hub import HafsHub
 from .views import async_register_views
-from .websocket_api import async_register_websocket_commands, async_suggest_plan
+from .websocket_api import async_register_websocket_commands, async_review, async_suggest_plan
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -83,6 +83,15 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             raise HomeAssistantError(str(err)) from err
         return {"user_id": owner, **result}
 
+    async def get_review(call: ServiceCall) -> dict:
+        """Stagnating exercises and neglected muscle groups, optionally with an AI summary (for a monthly notification)."""
+        hub, owner = _owner(call)
+        try:
+            return {"user_id": owner, **await async_review(
+                hass, hub.store, owner, call.data["ai"], call.data["language"], call.data.get("entity_id"))}
+        except ValueError as err:
+            raise HomeAssistantError(str(err)) from err
+
     async def suggest_program(call: ServiceCall) -> dict:
         """A training plan draft from the AI set up in Home Assistant. Nothing is saved."""
         hub, owner = _owner(call)
@@ -112,6 +121,16 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             vol.Optional("minutes", default=60): vol.All(int, vol.Range(min=20, max=180)),
             vol.Optional("goal", default=""): vol.All(cv.string, vol.Length(max=200)),
             vol.Optional("notes", default=""): vol.All(cv.string, vol.Length(max=500)),
+            vol.Optional("language", default="de"): cv.string,
+            vol.Optional("entity_id"): cv.entity_id,
+        }),
+        supports_response=SupportsResponse.ONLY,
+    )
+    hass.services.async_register(
+        DOMAIN, "get_review", get_review,
+        schema=vol.Schema({
+            vol.Optional("user_id"): cv.string,
+            vol.Optional("ai", default=False): cv.boolean,
             vol.Optional("language", default="de"): cv.string,
             vol.Optional("entity_id"): cv.entity_id,
         }),
