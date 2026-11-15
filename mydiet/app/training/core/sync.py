@@ -121,3 +121,61 @@ def export_all(conn: sqlite3.Connection, owner: str) -> dict:
     tables = {t: [dict(r) for r in conn.execute(f"SELECT * FROM {t} WHERE owner = ?", (owner,))]
               for t in EXPORT_TABLES}
     return {"schema_version": version, "tables": tables}
+
+
+def check_export(data: Any) -> dict:
+    """Validate an export (`export_all` format) and return its tables; raises ValueError."""
+    if not isinstance(data, dict) or not isinstance(data.get("tables"), dict) or not isinstance(data.get("schema_version"), int):
+        raise ValueError("not a HAFS export (schema_version and tables expected)")
+    from .db import SCHEMA_VERSION
+    if data["schema_version"] > SCHEMA_VERSION:
+        raise ValueError(f"export has schema {data['schema_version']}, this version knows {SCHEMA_VERSION}: update first")
+    tables = data["tables"]
+    for t, rows in tables.items():
+        if t not in EXPORT_TABLES or not isinstance(rows, list) or not all(isinstance(r, dict) for r in rows):
+            raise ValueError(f"unexpected table {t} in the export")
+    return tables
+
+
+def export_summary(data: Any) -> dict:
+    """Counts shown before a restore: workouts, sets, exercises of one's own, programs, first and last workout."""
+    tables = check_export(data)
+    live = lambda t: [r for r in tables.get(t, []) if not r.get("deleted")]   # noqa: E731
+    starts = sorted(str(w.get("started_at") or "") for w in live("workout") if w.get("started_at"))
+    return {"workouts": len(live("workout")), "sets": len(live("workout_set")), "programs": len(live("program")),
+            "gyms": len(live("gym")), "first": starts[0][:10] if starts else None, "last": starts[-1][:10] if starts else None}
+
+
+def restore(conn: sqlite3.Connection, owner: str, data: Any) -> dict:
+    """Replace ALL training data of [owner] with an export (own backup, the integration's database or another
+    installation). Rows keep their ids; the owner is always [owner]. Columns the export lacks get their defaults, columns
+    this schema does not know are dropped. A row whose id belongs to another user is skipped (ids are global).
+    Returns {"restored": {table: n}, "skipped": n}."""
+    tables = check_export(data)
+    restored: dict[str, int] = {}
+    skipped = 0
+    with conn:
+        for t in EXPORT_TABLES:
+            conn.execute(f"DELETE FROM {t} WHERE owner = ?", (owner,))
+        for t in EXPORT_TABLES:
+            cols = {c["name"] for c in _columns(conn, t)}
+            n = 0
+            for r in tables.get(t, []):
+                row = {k: v for k, v in r.items() if k in cols}
+                row["owner"] = owner
+                if t == "equipment" and _photo_problem(row.get("photo")):
+                    row["photo"] = ""
+                names = list(row)
+                conflict = "ON CONFLICT(owner, key) DO UPDATE SET value=excluded.value" if t == "pref" else "ON CONFLICT(id) DO NOTHING"
+                try:
+                    cur = conn.execute(f"INSERT INTO {t}({', '.join(names)}) VALUES ({', '.join('?' * len(names))}) {conflict}",
+                                       [row[k] for k in names])
+                except sqlite3.IntegrityError:
+                    skipped += 1
+                    continue
+                if cur.rowcount:
+                    n += 1
+                else:
+                    skipped += 1
+            restored[t] = n
+    return {"restored": restored, "skipped": skipped}

@@ -148,6 +148,20 @@ class Store:
             catalog.seed(conn, owner)
             return sync.export_all(conn, owner)
 
+    def restore(self, owner: str, data: dict) -> dict:
+        """Replace all training data of [owner] with an export; targets are computed again afterwards."""
+        with self._conn() as conn:
+            out = sync.restore(conn, owner, data)
+            catalog.seed(conn, owner)
+            out["targets"] = targets.recompute(conn, owner)
+            return out
+
+    def has_data(self, owner: str) -> dict:
+        """Workouts and programs of [owner] (to warn before a restore replaces them)."""
+        with self._conn() as conn:
+            return {"workouts": conn.execute("SELECT COUNT(*) FROM workout WHERE owner=? AND deleted=0", (owner,)).fetchone()[0],
+                    "programs": conn.execute("SELECT COUNT(*) FROM program WHERE owner=? AND deleted=0", (owner,)).fetchone()[0]}
+
     def import_gymrun(self, owner: str, text: str, dry_run: bool) -> dict:
         """Import a workout CSV; the format (GymRun, Strong, Hevy) is detected from the header."""
         fmt, res = importers.parse(text)

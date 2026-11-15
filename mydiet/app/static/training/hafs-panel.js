@@ -200,6 +200,9 @@ class HafsPanel extends HTMLElement {
       case "import-run": this._import(false); break;
       case "export": this._export(); break;
       case "review-ai": this._reviewAi(); break;
+      case "legacy-check": this._legacyCheck(); break;
+      case "legacy-run": this._legacyRun(); break;
+      case "restore-run": this._restoreRun(); break;
     }
   }
 
@@ -228,6 +231,7 @@ class HafsPanel extends HTMLElement {
       if (count) count.textContent = this._exerciseCount(this._cache.exercises?.exercises || []);
       return;
     }
+    if (el.id === "restore") { this._restorePicked(el.files?.[0]); return; }
     if (el.id === "csv") {
       const file = el.files?.[0];
       this._csv = null;
@@ -613,7 +617,70 @@ class HafsPanel extends HTMLElement {
         <input id="csv" type="file" accept=".csv,text/csv" aria-label="${esc(t("import_pick"))}">
         <p class="actions"><button class="btn" data-act="import-dry" disabled>${esc(t("import_dry"))}</button>
         <button class="btn primary" data-act="import-run" disabled>${esc(t("import_run"))}</button></p><div id="import-out"></div></section>
-      <section class="card"><h2>${esc(t("export_title"))}</h2><p><button class="btn" data-act="export">${esc(t("export_json"))}</button></p></section></div></div>`;
+      <section class="card"><h2>${esc(t("export_title"))}</h2><p><button class="btn" data-act="export">${esc(t("export_json"))}</button></p></section>
+      <section class="card"><h2>${esc(t("move_title"))}</h2><p class="hint" style="margin-top:0">${esc(t("move_hint"))}</p>
+        <p class="actions"><button class="btn" data-act="legacy-check">${esc(t("legacy_check"))}</button></p><div id="legacy-out"></div>
+        <label class="fld" style="margin-top:12px"><span>${esc(t("restore_pick"))}</span><input id="restore" type="file" accept=".json,application/json"></label>
+        <div id="restore-out"></div></section></div></div>`;
+  }
+
+  // ---- Übernehmen: HAFS integration and HAFS exports ----------------------------------------
+
+  async _legacyCheck() {
+    const t = this._t, f = this._f;
+    const out = this.shadowRoot.getElementById("legacy-out");
+    out.innerHTML = `<p class="muted">${esc(t("loading"))}</p>`;
+    try {
+      const r = await this._call({ type: "hafs/legacy/preview" });
+      if (!r.found || !r.users.length) { out.innerHTML = `<p class="muted">${esc(t("legacy_none"))}</p>`; return; }
+      this._legacyUsers = r.users.map((u) => u.user_id);
+      const rows = r.users.map((u) => `<li><span class="wmain"><span class="wname">${esc(u.name)}</span>
+        <span class="wsub">${esc(t("legacy_row", u.workouts, u.sets, u.first ? f.date(u.first) : "–", u.last ? f.date(u.last) : "–"))}</span>
+        ${u.in_app.workouts ? `<span class="wsub err">${esc(t("legacy_in_app", u.in_app.workouts))}</span>` : ""}</span></li>`).join("");
+      out.innerHTML = `<p class="hint">${esc(t("legacy_users", r.path))}</p><ul class="rows">${rows}</ul>
+        ${r.admin ? "" : `<p class="hint">${esc(t("legacy_only_you"))}</p>`}
+        <p class="actions"><button class="btn primary" data-act="legacy-run">${esc(t("legacy_run"))}</button></p>`;
+    } catch (err) { out.innerHTML = `<p class="err">${esc(err?.message || err?.code || err)}</p>`; }
+  }
+
+  async _legacyRun() {
+    const t = this._t;
+    const n = (this._legacyUsers || []).length;
+    if (!n || !confirm(t("legacy_confirm", n))) return;
+    const out = this.shadowRoot.getElementById("legacy-out");
+    try {
+      const r = await this._call({ type: "hafs/legacy/import" });
+      out.innerHTML = `<p class="ok">${esc(t("legacy_done", Object.keys(r.users).length))}</p>`;
+      this._cache = {}; this._history = { list: [], more: false };
+    } catch (err) { out.innerHTML = `<p class="err">${esc(err?.message || err?.code || err)}</p>`; }
+  }
+
+  async _restorePicked(file) {
+    const t = this._t, f = this._f;
+    const out = this.shadowRoot.getElementById("restore-out");
+    this._restoreData = null;
+    out.innerHTML = "";
+    if (!file) return;
+    try {
+      const data = JSON.parse(await file.text());
+      const r = await this._call({ type: "hafs/restore", data, dry_run: true });
+      const s = r.file;
+      this._restoreData = data;
+      out.innerHTML = `<p class="hint">${esc(t("restore_file", s.workouts, s.sets, s.programs, s.first ? f.date(s.first) : "–", s.last ? f.date(s.last) : "–", r.current.workouts))}</p>
+        <p class="actions"><button class="btn primary" data-act="restore-run">${esc(t("restore_run"))}</button></p>`;
+    } catch (err) { out.innerHTML = `<p class="err">${esc(err?.message || err?.code || err)}</p>`; }
+  }
+
+  async _restoreRun() {
+    const t = this._t;
+    if (!this._restoreData || !confirm(t("restore_confirm"))) return;
+    const out = this.shadowRoot.getElementById("restore-out");
+    try {
+      await this._call({ type: "hafs/restore", data: this._restoreData, dry_run: false });
+      this._restoreData = null;
+      out.innerHTML = `<p class="ok">${esc(t("restore_done"))}</p>`;
+      this._cache = {}; this._history = { list: [], more: false };
+    } catch (err) { out.innerHTML = `<p class="err">${esc(err?.message || err?.code || err)}</p>`; }
   }
 
   async _import(dry) {

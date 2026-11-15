@@ -606,7 +606,18 @@ def sensor_extras(owner: str) -> list:
 
 # --- export ----------------------------------------------------------------
 
+DUMP_HOOKS = []      # later modules (training) add owner -> {key: data} to the backup/export
+RESTORE_HOOKS = []   # ... and (owner, backup dict) to restore their part in import_json
+
+
 def dump(owner: str) -> dict:
+    out = _dump(owner)
+    for hook in DUMP_HOOKS:
+        out.update(hook(owner))
+    return out
+
+
+def _dump(owner: str) -> dict:
     with db.conn() as c:
         q = lambda sql, *a: [dict(r) for r in c.execute(sql, a)]
         return {
@@ -842,6 +853,8 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
         set_pref(owner, "activity", d["activity"])
     if isinstance(d.get("scale"), dict):
         set_pref(owner, "scale", d["scale"])
+    for hook in RESTORE_HOOKS:
+        hook(owner, d)
     return {"ok": True}
 
 

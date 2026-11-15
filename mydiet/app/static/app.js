@@ -645,6 +645,7 @@ const EN = {
   "Bereich": "Area",
   "Krafttraining protokollieren (HAFS): Pläne, Übungen, Verlauf und Gewichtsvorschläge in einem eigenen Bereich. Oben wechselt der Umschalter zwischen Ernährung und Training.": "Log strength training (HAFS): plans, exercises, history and weight suggestions in an area of its own. The switch at the top changes between Nutrition and Training.",
   "Training konnte nicht geladen werden: {}": "Training could not be loaded: {}",
+  "Workouts": "Workouts",
 };
 
 // Languages: German is the source text; every other language is a dictionary German -> language (EN, FR, ES ...).
@@ -655,6 +656,7 @@ const LANG_LOCALES = { de: "de-DE", en: "en-US", fr: "fr-FR", es: "es-ES", nl: "
 // entry in LANG_LOCALES, in LANGS (extras.py) and in the language selection of the settings.
 Object.assign(LANGS, {
   fr: {
+    "Workouts": "Séances",
     "Training": "Entraînement",
     "Übungen": "Exercices",
     "Pläne": "Programmes",
@@ -1682,6 +1684,7 @@ Object.assign(LANGS, {
     "{} von {} g": "{} sur {} g",
   },
   es: {
+    "Workouts": "Entrenamientos",
     "Training": "Entrenamiento",
     "Übungen": "Ejercicios",
     "Pläne": "Planes",
@@ -2709,6 +2712,7 @@ Object.assign(LANGS, {
     "{} von {} g": "{} de {} g",
   },
   nl: {
+    "Workouts": "Trainingen",
     "Training": "Training",
     "Übungen": "Oefeningen",
     "Pläne": "Schema’s",
@@ -3748,6 +3752,7 @@ Object.assign(LANGS, {
     "{} von {} g": "{} van {} g",
   },
   it: {
+    "Workouts": "Allenamenti",
     "Training": "Allenamento",
     "Übungen": "Esercizi",
     "Pläne": "Schede",
@@ -4787,6 +4792,7 @@ Object.assign(LANGS, {
     "{} von {} g": "{} di {} g",
   },
   pt: {
+    "Workouts": "Treinos",
     "Training": "Treino",
     "Übungen": "Exercícios",
     "Pläne": "Planos",
@@ -5826,6 +5832,7 @@ Object.assign(LANGS, {
     "{} von {} g": "{} de {} g",
   },
   pl: {
+    "Workouts": "Treningi",
     "Training": "Trening",
     "Übungen": "Ćwiczenia",
     "Pläne": "Plany",
@@ -10965,6 +10972,10 @@ async function restoreDialog(data) {
     h("div", { class: "muted" }, "Alle jetzigen Daten deines Kontos werden durch die Sicherung ersetzt."),
     h("table", { class: "summary cmp" }, h("thead", {}, h("tr", {}, h("th"), h("th", {}, "Jetzt"), h("th", {}, "Sicherung"))),
       h("tbody", {}, row("Einträge", "entries"), row("Tage", "days"), row("Lebensmittel", "foods"), row("Mahlzeiten", "saved_meals"), row("Gewichtswerte", "weights"),
+        // training (feature "training"): a backup without it leaves the training data as it is
+        p.current.workouts != null || p.backup.workouts != null
+          ? h("tr", {}, h("th", {}, "Workouts"), h("td", {}, String(p.current.workouts ?? 0)), h("td", {}, p.backup.workouts != null ? String(p.backup.workouts) : "–"))
+          : null,
         h("tr", {}, h("th", {}, "Zeitraum"), h("td", {}, range(p.current)), h("td", {}, range(p.backup))))),
     msg,
     h("div", { class: "actions" },

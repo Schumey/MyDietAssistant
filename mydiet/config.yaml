@@ -36,3 +36,5 @@ map:
     read_only: false
   - type: share
     read_only: true
+  - type: homeassistant_config
+    read_only: true

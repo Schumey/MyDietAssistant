@@ -40,9 +40,13 @@ def put_note(day: str, n: NoteIn, x_remote_user_id: str | None = Header(None)):
 
 def summarize(d: dict) -> dict:
     days = sorted({e["day"] for e in d.get("entries", [])})
-    return {"entries": len(d.get("entries", [])), "foods": len(d.get("foods", [])),
-            "saved_meals": len(d.get("saved_meals", [])), "weights": len(d.get("weights", [])),
-            "days": len(days), "first": days[0] if days else None, "last": days[-1] if days else None}
+    out = {"entries": len(d.get("entries", [])), "foods": len(d.get("foods", [])),
+           "saved_meals": len(d.get("saved_meals", [])), "weights": len(d.get("weights", [])),
+           "days": len(days), "first": days[0] if days else None, "last": days[-1] if days else None}
+    tr = d.get("training")
+    if isinstance(tr, dict) and isinstance(tr.get("tables"), dict):   # training part (feature "training")
+        out["workouts"] = len([w for w in tr["tables"].get("workout", []) if isinstance(w, dict) and not w.get("deleted")])
+    return out
 
 
 @app.post("/api/import/json/preview")

@@ -250,6 +250,42 @@ def c_import_gymrun(owner: str, msg: dict) -> dict:
     return store.import_gymrun(owner, _req(msg, "csv", str), _opt(msg, "dry_run", bool, True))
 
 
+def c_restore(owner: str, msg: dict) -> dict:
+    """Replace one's own training data with an export (the panel's or the integration's JSON). dry_run (default): only
+    the counts of the file and of what is there now."""
+    data = _req(msg, "data", dict)
+    out = {"file": sync.export_summary(data), "current": store.has_data(owner)}
+    if not _opt(msg, "dry_run", bool, True):
+        out.update(store.restore(owner, data))
+    return out
+
+
+def _user_names() -> dict[str, str]:
+    with mda_db.conn() as c:
+        return {r["id"]: r["name"] for r in c.execute("SELECT id, name FROM users")}
+
+
+def c_legacy_preview(owner: str, msg: dict) -> dict:
+    """Users in the HAFS integration's database. Admins see everyone, others only themselves."""
+    from extras8 import is_admin
+    from training import legacy
+    out = legacy.preview(store, _user_names())
+    admin = is_admin(owner)
+    if not admin:
+        out["users"] = [u for u in out["users"] if u["user_id"] == owner]
+    return {**out, "admin": admin}
+
+
+def c_legacy_import(owner: str, msg: dict) -> dict:
+    """Take over the integration's data: admins all users (or `users`), others only their own."""
+    from extras8 import is_admin
+    from training import legacy
+    users = _opt(msg, "users", list, None) if "users" in msg else None
+    if not is_admin(owner):
+        users = [owner]
+    return legacy.take_over(store, users)
+
+
 COMMANDS: dict[str, Callable[[str, dict], dict]] = {
     "hafs/info": c_info,
     "hafs/sync/push": c_sync_push,
@@ -267,9 +303,12 @@ COMMANDS: dict[str, Callable[[str, dict], dict]] = {
     "hafs/export": c_export,
     "hafs/import/gymrun": c_import_gymrun,
     "hafs/zones": c_zones,
+    "hafs/restore": c_restore,
+    "hafs/legacy/preview": c_legacy_preview,
+    "hafs/legacy/import": c_legacy_import,
 }
 # commands after which the entities should follow at once (AFTER_CHANGE); a push has its own hook
-CHANGING = {"hafs/pref/set", "hafs/target/set", "hafs/targets/recompute", "hafs/import/gymrun"}
+CHANGING = {"hafs/pref/set", "hafs/target/set", "hafs/targets/recompute", "hafs/import/gymrun", "hafs/restore", "hafs/legacy/import"}
 
 
 def _read_version() -> str:
@@ -302,10 +341,29 @@ def call(owner: str, msg: Any) -> dict:
         result = handler(owner, msg)
     except ValueError as err:   # the core raises ValueError for bad records or CSV
         raise _bad(str(err)) from err
-    if msg["type"] in CHANGING and not (msg["type"] == "hafs/import/gymrun" and msg.get("dry_run", True)):
+    if msg["type"] in CHANGING and not (msg["type"] in ("hafs/import/gymrun", "hafs/restore") and msg.get("dry_run", True)):
         for hook in AFTER_CHANGE:
             hook(owner)
     return result
+
+
+def _dump(owner: str) -> dict:
+    """Training in the app's JSON export and automatic backups (when the feature is on or there is training data)."""
+    if not feature_on(owner, "training") and not any(store.has_data(owner).values()):
+        return {}
+    return {"training": store.export_all(owner)}
+
+
+def _restore(owner: str, d: dict) -> None:
+    """Restoring a backup with a training part replaces the training data too; older backups leave it alone."""
+    if isinstance(d.get("training"), dict):
+        store.restore(owner, d["training"])
+
+
+import extras as _extras  # noqa: E402
+
+_extras.DUMP_HOOKS.append(_dump)
+_extras.RESTORE_HOOKS.append(_restore)
 
 
 @app.post("/api/training/call")
