@@ -24,6 +24,11 @@ class _Widget implements HomeWidget {
 
   @override
   Future<void> show(WidgetContent content) async => shown.add(content);
+
+  final nutrition = <WidgetContent>[];
+
+  @override
+  Future<void> showNutrition(WidgetContent content) async => nutrition.add(content);
 }
 
 void main() {

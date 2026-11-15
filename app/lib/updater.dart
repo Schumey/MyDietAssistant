@@ -1,8 +1,9 @@
 /// Self-update from the Home Assistant that the app is connected to.
 ///
-/// The integration serves the newest `hafs-<version>.apk` from `/config/hafs/app` (`GET /api/hafs/app` for the
-/// offer, `GET /api/hafs/app/<name>` for the file), protected by the same long-lived token the app already
-/// uses. No GitHub access is needed, so the repository can stay private.
+/// The HA app serves the newest `hafs-<version>.apk` from `/share/hafs/app` (`GET <ingress>api/training/app` for the
+/// offer, `…/api/training/app/<name>` for the file, with the ingress session). While moving over, the former
+/// integration still answers at `GET /api/hafs/app` (from `/config/hafs/app`, with the long-lived token).
+/// No GitHub access is needed, so the repository can stay private.
 library;
 
 import 'dart:async';
@@ -16,12 +17,18 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppOffer {
-  const AppOffer({required this.version, required this.name, required this.size, required this.sha256});
+  const AppOffer({required this.version, required this.name, required this.size, required this.sha256, this.fileUrl, this.cookie});
 
   final String version;
   final String name;
   final int size;
   final String sha256;
+
+  /// Where the file comes from when it is not the integration's `/api/hafs/app/<name>` (the HA app over ingress).
+  final Uri? fileUrl;
+  final String? cookie;
+
+  AppOffer at(Uri url, String cookie) => AppOffer(version: version, name: name, size: size, sha256: sha256, fileUrl: url, cookie: cookie);
 
   /// Reads the answer of `GET /api/hafs/app`; null if it is not usable.
   static AppOffer? parse(Object? json) {
@@ -55,12 +62,18 @@ Uri httpBase(String address) {
   return Uri(scheme: secure ? 'https' : 'http', host: uri.host, port: uri.hasPort ? uri.port : null, path: base);
 }
 
+/// What the updater needs from an ingress session: the URL below the HA app and the cookie.
+typedef IngressLink = Future<({Uri Function(String rel) url, String cookie})> Function();
+
 class Updater {
-  Updater({required this.address, required this.token, this.currentVersionOverride});
+  Updater({required this.address, required this.token, this.currentVersionOverride, this.ingress});
 
   final String address;
   final String token;
   final String? currentVersionOverride;
+
+  /// The HA app over ingress; null or failing: the former integration.
+  final IngressLink? ingress;
 
   static const _checkedKey = 'update_checked_at';
 
@@ -74,16 +87,40 @@ class Updater {
     return base.replace(path: '${base.path}$path');
   }
 
-  Future<HttpClientResponse> _get(HttpClient client, Uri url) async {
+  Future<HttpClientResponse> _get(HttpClient client, Uri url, {String? cookie}) async {
     final request = await client.getUrl(url).timeout(const Duration(seconds: 15));
-    request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
+    if (cookie != null) {
+      request.headers.set(HttpHeaders.cookieHeader, cookie);
+    } else {
+      request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
+    }
     return request.close().timeout(const Duration(seconds: 30));
+  }
+
+  /// The offer of the HA app (ingress); null when it has none or cannot be reached.
+  Future<AppOffer?> _checkIngress(HttpClient client) async {
+    final link = ingress;
+    if (link == null) return null;
+    try {
+      final l = await link();
+      final response = await _get(client, l.url('api/training/app'), cookie: l.cookie);
+      if (response.statusCode != 200) {
+        await response.drain<void>();
+        return null;
+      }
+      final offer = AppOffer.parse(jsonDecode(await utf8.decoder.bind(response).join()));
+      return offer?.at(l.url('api/training/app/${offer.name}'), l.cookie);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Asks Home Assistant for the newest package; null when the installed version is the newest (or nothing is offered).
   Future<AppOffer?> check() async {
     final client = HttpClient();
     try {
+      final viaApp = await _checkIngress(client);
+      if (viaApp != null) return compareVersions(viaApp.version, await currentVersion()) > 0 ? viaApp : null;
       final response = await _get(client, _url('/api/hafs/app'));
       if (response.statusCode == 404) return null; // older server or no package uploaded
       if (response.statusCode == 401) throw const HttpException('Not signed in (token rejected)');
@@ -118,7 +155,9 @@ class Updater {
     final file = File('${dir.path}${Platform.pathSeparator}${offer.name}');
     final client = HttpClient();
     try {
-      final response = await _get(client, _url('/api/hafs/app/${offer.name}'));
+      final response = offer.fileUrl != null
+          ? await _get(client, offer.fileUrl!, cookie: offer.cookie)
+          : await _get(client, _url('/api/hafs/app/${offer.name}'));
       if (response.statusCode != 200) throw HttpException('HTTP ${response.statusCode}');
       final total = response.contentLength > 0 ? response.contentLength : offer.size;
       final sink = file.openWrite();

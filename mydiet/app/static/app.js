@@ -6947,6 +6947,25 @@ const I18N = (() => {
   return api;
 })();
 
+// ---------------------------------------------------------------- HAFS app (Flutter)
+// The HAFS app shows this page in a WebView that can only pass messages (channel HAFSBridge), not answer calls like the
+// former Kotlin app's window.MDAApp. So the page builds MDAApp itself: the version comes from the user agent
+// ("HAFSApp/<version>"), widget actions arrive through window.mdaAction, everything else goes out as {m, a} and comes
+// back through mdaScanResult / mdaHealthResult as before. See app/lib/nutrition_bridge.dart.
+if (!window.MDAApp && window.HAFSBridge && typeof window.HAFSBridge.postMessage === "function") {
+  const post = (m, ...a) => { try { window.HAFSBridge.postMessage(JSON.stringify({ m, a })); } catch { /* app gone */ } };
+  const ver = (/HAFSApp\/([\d.]+)/.exec(navigator.userAgent || "") || [])[1] || "";
+  window.MDAApp = {
+    version: () => ver,
+    checkUpdate: () => post("checkUpdate"),
+    scanBarcode: () => post("scanBarcode"),
+    summary: json => post("summary", json),
+    healthRead: (days, ask) => post("healthRead", days, !!ask),
+    pendingAction: () => "",
+  };
+  window.print = () => post("print", document.title || "");
+}
+
 // ---------------------------------------------------------------- app
 // All URLs are relative so the app works behind HA ingress.
 const $ = (s, r = document) => r.querySelector(s);

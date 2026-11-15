@@ -54,4 +54,6 @@ kotlin {
 
 dependencies {
     implementation("androidx.core:core-ktx:1.15.0")
+    // barcode scanner of Play services (no camera permission), as in the former Kotlin app
+    implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
 }

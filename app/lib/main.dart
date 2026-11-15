@@ -56,6 +56,7 @@ class _HafsAppState extends State<HafsApp> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed && widget.app.loaded) {
       widget.app.syncNow();
       widget.app.rest.restore();
+      widget.app.takeWidgetAction(); // a widget button brought the app to the front
     }
   }
 

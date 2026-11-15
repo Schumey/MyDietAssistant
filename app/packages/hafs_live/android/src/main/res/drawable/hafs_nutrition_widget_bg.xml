@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- the nutrition half of the logo (design/logo/logo-c.svg) -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#2E7D5B" />
+    <corners android:radius="16dp" />
+</shape>

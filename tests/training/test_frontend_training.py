@@ -38,6 +38,26 @@ def test_panel_can_run_without_its_own_bar():
     assert '"hafs-tab"' in panel
 
 
+def test_flutter_app_bridge_builds_mdaapp_from_messages(tmp_path):
+    """In the HAFS app's WebView (channel HAFSBridge) app.js builds window.MDAApp: version from the user agent, the rest as messages."""
+    import json
+    import subprocess
+    start = APP_JS.index("// ---------------------------------------------------------------- HAFS app (Flutter)")
+    block = APP_JS[start:APP_JS.index("// ---------------------------------------------------------------- app\n", start)]
+    script = tmp_path / "bridge.js"
+    script.write_text(
+        "const sent = []; globalThis.window = { HAFSBridge: { postMessage: m => sent.push(JSON.parse(m)) } };\n"
+        "Object.defineProperty(globalThis, 'navigator', { value: { userAgent: 'Mozilla/5.0 (Linux; Android 15) HAFSApp/0.6.0' } });\n"
+        "globalThis.document = { title: 'MyDietAssistant' };\n" + block +
+        "\nwindow.MDAApp.summary('{}'); window.MDAApp.healthRead(7, 1); window.MDAApp.scanBarcode(); window.print();\n"
+        "process.stdout.write(JSON.stringify({ v: window.MDAApp.version(), p: window.MDAApp.pendingAction(), sent }));",
+        encoding="utf-8")
+    out = json.loads(subprocess.run(["node", str(script)], check=True, capture_output=True, encoding="utf-8").stdout)
+    assert out["v"] == "0.6.0" and out["p"] == ""
+    assert out["sent"] == [{"m": "summary", "a": ["{}"]}, {"m": "healthRead", "a": [7, True]}, {"m": "scanBarcode", "a": []},
+                           {"m": "print", "a": ["MyDietAssistant"]}]
+
+
 def test_win_skin_covers_the_area_switch():
     css = (STATIC / "style.css").read_text(encoding="utf-8")
     assert 'html[data-skin="win"] .area button' in css

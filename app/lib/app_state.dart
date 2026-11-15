@@ -7,10 +7,13 @@ import 'photo.dart';
 import 'repo_gym.dart';
 import 'templates.dart';
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
+import 'package:hafs_live/hafs_live.dart';
 
 import 'credentials.dart';
+import 'ingress.dart';
 import 'db.dart';
 import 'ha_client.dart';
 import 'repo.dart';
@@ -25,10 +28,13 @@ typedef Connector = Future<HaConnection> Function(String address, String token);
 /// Die Datenbank ist immer offen, auch ohne Verbindung: Training erfassen geht offline,
 /// abgeglichen wird, wenn eine Verbindung da ist.
 class AppState extends ChangeNotifier {
-  AppState(this.credentials, {required this.openDb, Connector? connector, RestTimer? rest, WorkoutSink? workoutSink, LiveStore? liveStore, LiveNotifier? liveNotifier, PhotoSource? photoSource, HomeWidget? homeWidget})
+  AppState(this.credentials, {required this.openDb, Connector? connector, RestTimer? rest, WorkoutSink? workoutSink, LiveStore? liveStore, LiveNotifier? liveNotifier, PhotoSource? photoSource, HomeWidget? homeWidget, IngressOpener? ingress, Future<String> Function()? takeAction})
       : homeWidget = homeWidget ?? defaultHomeWidget(),
         photoSource = photoSource ?? ImagePickerSource(),
-        _connector = connector ?? ((a, t) => HaClient.connect(a, t)),
+        ingress = ingress ?? IngressOpener(),
+        _takeAction = takeAction ?? (() async => Platform.isAndroid ? await HafsLive.takeAction() : ''),
+        // ignore: prefer_initializing_formals
+        _connector = connector,
         // ignore: prefer_initializing_formals
         _workoutSink = workoutSink,
         _liveStore = liveStore ?? MemoryLiveStore(),
@@ -47,7 +53,55 @@ class AppState extends ChangeNotifier {
 
   final CredentialStore credentials;
   final Future<LocalDb> Function() openDb;
-  final Connector _connector;
+  final Connector? _connector;
+
+  /// Ingress sessions for the HA app (training calls, nutrition WebView, self-update).
+  final IngressOpener ingress;
+
+  /// Training: the HA app over ingress, or the former integration while moving over (see ingress.dart).
+  Future<HaConnection> _connect(String address, String token) =>
+      _connector != null ? _connector(address, token) : connectTraining(address, token, opener: ingress);
+
+  /// A session for the HA app (nutrition WebView, updates); [fresh] asks for a new one.
+  Future<IngressAccess> ingressAccess({bool fresh = false}) {
+    if (!hasCredentials) throw HaException(tr('err_token'));
+    return ingress.open(address!, _token!, fresh: fresh);
+  }
+
+  /// Action a widget button of "Nutrition today" asked for (`scan`, `add`); the nutrition page runs and clears it.
+  String pendingNutritionAction = '';
+
+  /// Reads the action the app was opened with from a home screen widget (Android) and switches to nutrition for it.
+  Future<void> takeWidgetAction() async {
+    final String action;
+    try {
+      action = await _takeAction();
+    } catch (_) {
+      return;
+    }
+    if (action.isEmpty) return;
+    pendingNutritionAction = action;
+    setArea('nutrition');
+  }
+
+  final Future<String> Function() _takeAction;
+
+  /// Area shown last: `training` or `nutrition` (device local).
+  String get area => local?.state('area') == 'nutrition' ? 'nutrition' : 'training';
+
+  void setArea(String value) {
+    local?.setState('area', value);
+    notifyListeners();
+  }
+
+  /// Totals of today handed over by the nutrition page (`MDAApp.summary`), shown by the widget "Nutrition today".
+  Future<void> nutritionSummary(String day, double kcal, double goal) async {
+    try {
+      await homeWidget.showNutrition(buildNutritionWidget(day, kcal, goal));
+    } catch (_) {
+      // the widget is a convenience
+    }
+  }
 
   /// Pausen-Timer zwischen den Sätzen.
   final RestTimer rest;
@@ -74,7 +128,12 @@ class AppState extends ChangeNotifier {
   HealthExport? health;
 
   /// Self-update from this Home Assistant (Android only), null when not signed in or unsupported.
-  Updater? get updater => hasCredentials && Updater.supported ? Updater(address: address!, token: _token!) : null;
+  Updater? get updater => hasCredentials && Updater.supported
+      ? Updater(address: address!, token: _token!, ingress: () async {
+          final a = await ingressAccess();
+          return (url: a.url, cookie: a.cookie);
+        })
+      : null;
 
   DateTime? get lastSync {
     final s = local?.state('last_sync');
@@ -97,6 +156,7 @@ class AppState extends ChangeNotifier {
     }
     loaded = true;
     notifyListeners();
+    unawaited(takeWidgetAction()); // started from a widget button of "Nutrition today"
     unawaited(rest.restore());
     unawaited(health!.exportPending()); // workouts finished while the export could not run
     if (hasCredentials) unawaited(syncNow());
@@ -105,7 +165,7 @@ class AppState extends ChangeNotifier {
   /// Meldet an, speichert die Daten nur bei Erfolg und holt die Daten zum ersten Mal.
   Future<void> login(String addr, String token) async {
     final trimmed = addr.trim();
-    final connection = await _connector(trimmed, token.trim());
+    final connection = await _connect(trimmed, token.trim());
     try {
       // Another user than the one whose data is on the device: start clean instead of mixing the two
       // (and instead of sending the previous user's unsent changes to the new account).
@@ -144,7 +204,7 @@ class AppState extends ChangeNotifier {
     if (!hasCredentials || local == null) return null;
     HaConnection? connection;
     try {
-      connection = await _connector(address!, _token!).timeout(const Duration(seconds: 4));
+      connection = await _connect(address!, _token!).timeout(const Duration(seconds: 4));
       final r = await connection.call('hafs/gym/current').timeout(const Duration(seconds: 4)) as Map;
       final id = r['gym_id'] as String?;
       if (id != null && repo!.gyms().any((g) => g.id == id)) {
@@ -165,7 +225,7 @@ class AppState extends ChangeNotifier {
   /// against the user's own exercises. Throws [HaException] with a readable message on failure.
   Future<List<PlanDay>> suggestPlan({required int days, required int minutes, String goal = '', String notes = ''}) async {
     if (!hasCredentials) throw HaException('not signed in');
-    final connection = await _connector(address!, _token!);
+    final connection = await _connect(address!, _token!);
     try {
       final r = await connection.call('hafs/plan/suggest', {'days': days, 'minutes': minutes, 'goal': goal, 'notes': notes, 'language': L10n.lang}) as Map;
       return [
@@ -187,7 +247,7 @@ class AppState extends ChangeNotifier {
     notifyListeners();
     HaConnection? connection;
     try {
-      connection = await _connector(address!, _token!);
+      connection = await _connect(address!, _token!);
       final userId = await _serverUser(connection);
       if (userId != null && local!.userId != null && local!.userId != userId) {
         // the token now belongs to another user than the data on the device (should not happen: login() cleans up)
@@ -221,7 +281,7 @@ class AppState extends ChangeNotifier {
   /// Setzt die Ernährungsphase auf dem Server; die Zielwerte werden dort neu berechnet und beim Abgleich geholt.
   Future<void> setPhase(String value) async {
     if (!hasCredentials) return;
-    final connection = await _connector(address!, _token!);
+    final connection = await _connect(address!, _token!);
     try {
       await connection.call('hafs/pref/set', {'key': 'phase', 'value': value});
       phase = value;
@@ -237,7 +297,7 @@ class AppState extends ChangeNotifier {
   /// [ai] zusätzlich `text` der in Home Assistant eingerichteten KI. Braucht eine Verbindung.
   Future<Map<String, dynamic>> review({bool ai = false}) async {
     if (!hasCredentials) throw HaException('Not signed in');
-    final connection = await _connector(address!, _token!);
+    final connection = await _connect(address!, _token!);
     try {
       final r = await connection.call('hafs/review', {'ai': ai, 'language': L10n.lang});
       return Map<String, dynamic>.from(r as Map);
@@ -250,7 +310,7 @@ class AppState extends ChangeNotifier {
   /// dem nächsten Workout mit der Übung wieder selbst) und holt das neue Ziel. Braucht eine Verbindung.
   Future<void> setNextWeight(String exerciseId, double weight) async {
     if (!hasCredentials) throw HaException('Not signed in');
-    final connection = await _connector(address!, _token!);
+    final connection = await _connect(address!, _token!);
     try {
       await connection.call('hafs/target/set', {'exercise_id': exerciseId, 'weight': weight});
     } finally {
@@ -272,7 +332,7 @@ class AppState extends ChangeNotifier {
   /// Ändert eine Progressions-Einstellung auf dem Server (rechnet dort alle Zielwerte neu) und holt sie.
   Future<void> setSetting(String key, String value) async {
     if (!hasCredentials) return;
-    final connection = await _connector(address!, _token!);
+    final connection = await _connect(address!, _token!);
     try {
       await connection.call('hafs/pref/set', {'key': key, 'value': value});
       settings[key] = value;
@@ -308,6 +368,7 @@ class AppState extends ChangeNotifier {
   /// Meldet ab. Die lokalen Daten (auch noch nicht gesendete) bleiben auf dem Gerät.
   Future<void> logout() async {
     if (pending > 0) await syncNow(); // best effort: whatever is not sent now is lost if another user signs in next
+    if (hasCredentials) ingress.forget(address!, _token!);
     await credentials.clear();
     address = null;
     _token = null;

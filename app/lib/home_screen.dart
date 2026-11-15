@@ -5,6 +5,7 @@ import 'app_state.dart';
 import 'gyms_screen.dart';
 import 'history_screen.dart';
 import 'l10n.dart';
+import 'nutrition_view.dart';
 import 'repo.dart';
 import 'repo_gym.dart';
 import 'repo_program.dart';
@@ -24,6 +25,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _tab = 0;
+  bool _nutritionOpened = false;
 
   @override
   void initState() {
@@ -43,18 +45,24 @@ class _HomeScreenState extends State<HomeScreen> {
     return ListenableBuilder(
       listenable: app,
       builder: (context, _) {
+        final nutrition = app.area == 'nutrition';
+        if (nutrition) _nutritionOpened = true;
         return Scaffold(
           appBar: AppBar(
-            title: Text(tr('app_name')),
-            actions: [_SyncButton(app: app)],
+            title: AreaSwitch(app: app),
+            actions: [if (!nutrition) _SyncButton(app: app)],
           ),
-          body: switch (_tab) {
-            0 => TrainingTab(app: app),
-            1 => HistoryTab(app: app),
-            2 => StatsTab(app: app),
-            _ => SettingsTab(app: app),
-          },
-          bottomNavigationBar: NavigationBar(
+          // the nutrition page stays alive once opened (its WebView keeps the diary and the session)
+          body: IndexedStack(index: nutrition ? 1 : 0, children: [
+            switch (_tab) {
+              0 => TrainingTab(app: app),
+              1 => HistoryTab(app: app),
+              2 => StatsTab(app: app),
+              _ => SettingsTab(app: app),
+            },
+            if (_nutritionOpened) NutritionView(app: app) else const SizedBox.shrink(),
+          ]),
+          bottomNavigationBar: nutrition ? null : NavigationBar(
             selectedIndex: _tab,
             onDestinationSelected: (i) => setState(() => _tab = i),
             destinations: [
@@ -66,6 +74,37 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       },
+    );
+  }
+}
+
+/// The switch Nutrition | Training in the app bar, with the two halves of the logo (apple, dumbbell).
+class AreaSwitch extends StatelessWidget {
+  const AreaSwitch({super.key, required this.app});
+
+  final AppState app;
+
+  static const nutritionColor = Color(0xFF2E7D5B);
+  static const trainingColor = Color(0xFF37474F);
+
+  @override
+  Widget build(BuildContext context) {
+    final area = app.area;
+    final narrow = MediaQuery.sizeOf(context).width < 360;
+    return SegmentedButton<String>(
+      showSelectedIcon: false,
+      style: ButtonStyle(
+        visualDensity: VisualDensity.compact,
+        backgroundColor: WidgetStateProperty.resolveWith((s) =>
+            s.contains(WidgetState.selected) ? (area == 'nutrition' ? nutritionColor : trainingColor) : null),
+        foregroundColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? Colors.white : null),
+      ),
+      segments: [
+        ButtonSegment(value: 'nutrition', icon: const Icon(Icons.restaurant), label: narrow ? null : Text(tr('area_nutrition')), tooltip: tr('area_nutrition')),
+        ButtonSegment(value: 'training', icon: const Icon(Icons.fitness_center), label: narrow ? null : Text(tr('area_training')), tooltip: tr('area_training')),
+      ],
+      selected: {area},
+      onSelectionChanged: (s) => app.setArea(s.first),
     );
   }
 }
