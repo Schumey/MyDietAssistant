@@ -336,3 +336,19 @@ def test_pyramid_reason_says_so_in_both_languages():
     t = go([sess(1, (300, 10), (325, 10), (350, 8))], lo=6, hi=10, steps=None)
     assert "Pyramide" in p.describe(t, "de") and "pyramid" in p.describe(t, "en")
     assert "Pyramide" not in p.describe(go([sess(1, (60, 10), (60, 9))], lo=8, hi=12, steps=None), "de")
+
+
+def test_expand_steps_limited_barbell_stock():
+    # Olympic plates at the rack: per side 25 20 15 10 10 5 5 2.5, bar 20 kg
+    spec = {"base": 20, "plates": [25, 20, 15, 10, 10, 5, 5, 2.5], "sides": 2, "limited": True}
+    steps = p.expand_steps(spec)
+    assert steps[0] == 20 and steps[-1] == 20 + 2 * 92.5            # everything on the bar
+    assert 120 in steps                                             # 25 + 20 + 5 per side
+    assert 25.0 in steps and 22.5 not in steps                      # 2.5 per side is the smallest step: 5 kg
+    assert p.expand_steps({"base": 20, "plates": [25, 5], "limited": True}) == [20, 30, 70, 80]  # one 25 per side only
+    assert all(b > a for a, b in zip(steps, steps[1:]))
+    assert p.expand_steps({**spec, "max": 100})[-1] == 100
+    assert p.expand_steps({"base": 20, "plates": [], "limited": True}) is None
+    assert p.expand_steps({"base": 20, "plates": [0], "limited": True}) is None
+    # without the flag the list stays the unlimited machine form
+    assert p.expand_steps({"base": 20, "plates": [25, 5], "max": 40}) == [20, 30, 40]

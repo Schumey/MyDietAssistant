@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hafs/steps.dart';
 
 void main() {
+  limitedBarbellTests();
   test('expandSteps: range, list, JSON text, invalid', () {
     expect(expandSteps('{"min":5,"max":20,"step":5}'), [5, 10, 15, 20]);
     expect(expandSteps('[30, 20, 20, 25]'), [20, 25, 30]);
@@ -127,6 +128,48 @@ void main() {
       expect(decodeStepsForm('nonsense').plates, '');
       expect(decodeStepsForm('[5,7.5]').input, '5 7,5');
       expect(usesPlateFields('machine_plate') && !usesPlateFields('machine_stack'), isTrue);
+    });
+  });
+}
+
+void limitedBarbellTests() {
+  group('barbell with a limited plate stock', () {
+    const json = '{"base":20.0,"plates":[25.0,20.0,15.0,10.0,10.0,5.0,5.0,2.5],"sides":2,"limited":true}';
+
+    test('loadable weights are the bar plus twice every sub-selection', () {
+      final steps = expandSteps(json)!;
+      expect(steps.first, 20);
+      expect(steps.last, 20 + 2 * 92.5);
+      expect(steps, contains(120)); // 25 + 20 + 5 per side
+      expect(steps, contains(25));
+      expect(steps, isNot(contains(22.5)));
+      expect(expandSteps('{"base":20,"plates":[25,5],"limited":true}'), [20, 30, 70, 80]);
+      expect(expandSteps('{"base":20,"plates":[],"limited":true}'), isNull);
+    });
+
+    test('barbellStock reads bar and stock, null for other forms', () {
+      final s = barbellStock(json)!;
+      expect(s.bar, 20);
+      expect(s.plates.length, 8);
+      expect(barbellStock('{"base":20,"plates":[25],"max":60}'), isNull);
+      expect(barbellStock('[20, 25]'), isNull);
+      expect(barbellStock(null), isNull);
+    });
+
+    test('form: encode with counts, decode collapses them again', () {
+      final enc = encodeStepsForm('barbell', StepsForm(base: '20', plates: '25 20 15 10x2 5x2 2,5'))!;
+      expect(barbellStock(enc)!.plates, [25, 20, 15, 10, 10, 5, 5, 2.5]);
+      final f = decodeStepsForm(enc);
+      expect(f.base, '20');
+      expect(f.plates, '25 20 15 10x2 5x2 2,5');
+      expect(encodeStepsForm('barbell', f), enc);
+    });
+
+    test('form: empty stock keeps the plain steps input, invalid stock is rejected', () {
+      expect(encodeStepsForm('barbell', StepsForm(input: '20-60/2,5')), '{"min":20.0,"max":60.0,"step":2.5}');
+      expect(encodeStepsForm('barbell', StepsForm(plates: '25 x')), isNull);
+      expect(encodeStepsForm('barbell', StepsForm(base: '-5', plates: '25')), isNull);
+      expect(encodeStepsForm('machine_plate', StepsForm(base: '10', plates: '5')), isNotNull);
     });
   });
 }

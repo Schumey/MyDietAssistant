@@ -509,8 +509,10 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
   /// Plate calculator for barbells: plates per side for the current weight.
   Widget _platesHint(ThemeData theme) {
-    final bar = widget.app.plateBar;
-    final r = platesFor(_weight, bar: bar, plates: widget.app.plateSet);
+    // the barbell's own bar and plate stock (e.g. the Olympic plates at the rack), else the device-wide set
+    final stock = barbellStock(repo.equipmentById(_equipmentId!)?.steps);
+    final bar = stock?.bar ?? widget.app.plateBar;
+    final r = platesFor(_weight, bar: bar, plates: stock?.plates ?? widget.app.plateSet);
     final text = r == null
         ? tr('plates_below_bar', [L10n.kg(bar)])
         : '${tr('plates_per_side')}: ${platesLine(r, L10n.kg)}${r.remainder > 0 ? '  (${tr('plates_rest', [L10n.kg(r.remainder)])})' : ''}';

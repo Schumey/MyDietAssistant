@@ -539,7 +539,8 @@ class HafsPanel extends HTMLElement {
     const t = this._t, f = this._f;
     if (Array.isArray(s)) return s.map((n) => f.kg(n)).join(", ");
     if (!s || typeof s !== "object") return "";
-    const grid = Array.isArray(s.plates) ? t("plate_summary", f.kg(s.base || 0))
+    const grid = Array.isArray(s.plates) && s.limited ? t("stock_summary", f.kg(s.base || 0), s.plates.length * 2)
+      : Array.isArray(s.plates) ? t("plate_summary", f.kg(s.base || 0))
       : Array.isArray(s.values) ? s.values.map((n) => f.kg(n)).join(", ") : s.step ? `${f.kg(s.min)}–${f.kg(s.max)} / ${f.kg(s.step)}` : "";
     return s.extra ? `${grid} ${t("extra_summary", f.kg(s.extra))}` : grid;
   }

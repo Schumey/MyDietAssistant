@@ -310,7 +310,11 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
       outOfOrder: _outOfOrder,
       settings: _settings.text.trim(),
       photo: _photoChanged ? _photo : null,
-      baseWeight: usesPlateFields(_type) ? (double.tryParse(_base.text.trim().replaceAll(',', '.')) ?? 0) : null,
+      baseWeight: _type == 'machine_plate'
+          ? (double.tryParse(_base.text.trim().replaceAll(',', '.')) ?? 0)
+          : usesStockFields(_type) && _base.text.trim().isNotEmpty
+              ? double.tryParse(_base.text.trim().replaceAll(',', '.'))
+              : null,
     );
     repo.setExercisesOf(id, _exercises);
     widget.app.changed();
@@ -361,6 +365,37 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
         ),
       ];
 
+  /// Barbell: the bar and the plates there are per side (`5x2` = two of them), so the plate calculator and the weight
+  /// steps only use what can really be loaded.
+  List<Widget> _stockFields() => [
+        TextField(
+          key: const Key('stock-bar'),
+          controller: _base,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(
+            labelText: tr('equipment_bar'),
+            helperText: tr('equipment_bar_help'),
+            helperMaxLines: 2,
+            border: const OutlineInputBorder(),
+          ),
+          onChanged: (_) => setState(() => _error = null),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          key: const Key('stock-plates'),
+          controller: _plates,
+          decoration: InputDecoration(
+            labelText: tr('equipment_stock'),
+            helperText: tr('equipment_stock_help'),
+            helperMaxLines: 3,
+            errorText: _error,
+            border: const OutlineInputBorder(),
+          ),
+          onChanged: (_) => setState(() => _error = null),
+        ),
+        const SizedBox(height: 16),
+      ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -394,7 +429,8 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
             onChanged: (v) => setState(() => _type = v ?? 'other'),
           ),
           const SizedBox(height: 16),
-          if (usesPlateFields(_type)) ..._plateFields() else ...[
+          if (_type == 'machine_plate') ..._plateFields() else ...[
+            if (usesStockFields(_type)) ..._stockFields(),
             TextField(
               controller: _steps,
               keyboardType: TextInputType.text,
@@ -402,7 +438,7 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
                 labelText: tr('equipment_steps'),
                 helperText: tr('equipment_steps_help'),
                 helperMaxLines: 2,
-                errorText: _error,
+                errorText: usesStockFields(_type) ? null : _error,
                 border: const OutlineInputBorder(),
               ),
               onChanged: (_) => setState(() => _error = null),

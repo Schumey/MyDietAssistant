@@ -195,7 +195,7 @@ class TrainingTab extends StatelessWidget {
             child: OutlinedButton.icon(
               onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => GymsScreen(app: app))).then((_) => app.changed()),
               icon: const Icon(Icons.store),
-              label: Text(tr('gyms_title')),
+              label: FittedBox(fit: BoxFit.scaleDown, child: Text(tr('gyms_title'), maxLines: 1)),
             ),
           ),
         ]),

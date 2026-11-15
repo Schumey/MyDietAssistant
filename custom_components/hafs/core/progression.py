@@ -79,9 +79,35 @@ class Target:
 MAX_STEPS = 2000
 
 
+def _expand_limited(spec: dict) -> list[float] | None:
+    """Barbell with a limited plate stock: `base` is the bar, `plates` the plates there are **per side** (one entry per
+    plate, so a size that exists twice is listed twice). Loadable weights are the bar plus twice every sum of a
+    sub-selection of the plates; `max` caps the load."""
+    try:
+        base = float(spec.get("base") or 0)
+        units = [int(round(float(x) * 1000)) for x in spec["plates"]]
+        hi = float(spec["max"]) if spec.get("max") else None
+    except (TypeError, ValueError, KeyError):
+        return None
+    if base < 0 or not units or any(u <= 0 for u in units) or len(units) > 60:
+        return None
+    sums = {0}
+    for u in units:
+        sums |= {s + u for s in sums}
+        if len(sums) > MAX_STEPS:
+            return None
+    out = sorted({round(base + 2 * s / 1000, 4) for s in sums})
+    if hi is not None:
+        out = [w for w in out if w <= hi + 1e-9]
+    return out or None
+
+
 def _expand_plates(spec: dict) -> list[float] | None:
     """Plate-loaded machine: sled/lever weight `base` plus plates. With the plates on both sides (`sides` 2, the default)
-    the smallest change is two of the smallest plate; `max` (default: 40 such steps above `base`) limits the load."""
+    the smallest change is two of the smallest plate; `max` (default: 40 such steps above `base`) limits the load.
+    With `limited` the plates are a stock per side instead (see `_expand_limited`)."""
+    if spec.get("limited"):
+        return _expand_limited(spec)
     try:
         base = float(spec.get("base") or 0)
         plates = [float(x) for x in spec["plates"] if float(x) > 0]

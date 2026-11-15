@@ -45,7 +45,7 @@ class _SettingsTabState extends State<SettingsTab> {
 
   Future<void> _editPlates() async {
     final bar = TextEditingController(text: L10n.kg(widget.app.plateBar));
-    final set = TextEditingController(text: widget.app.plateSet.map(L10n.kg).join(' '));
+    final set = TextEditingController(text: formatPlates(widget.app.plateSet, L10n.kg));
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -157,7 +157,7 @@ class _SettingsTabState extends State<SettingsTab> {
         ListTile(
           contentPadding: EdgeInsets.zero,
           title: Text('${tr('plates_bar')}: ${L10n.kg(app.plateBar)}'),
-          subtitle: Text('${tr('plates_set')}: ${app.plateSet.map(L10n.kg).join(' ')}'),
+          subtitle: Text('${tr('plates_set')}: ${formatPlates(app.plateSet, L10n.kg)}'),
           trailing: const Icon(Icons.edit),
           onTap: _editPlates,
         ),

@@ -59,6 +59,22 @@ const num = (text) => {
   const t = String(text ?? "").trim().replace(",", ".");
   return t === "" ? null : Number(t);
 };
+// Plate stock per side: "25 20 10x2" -> [25, 20, 10, 10] (null when invalid or empty); and back, equal plates collapsed.
+export const parseStock = (text) => {
+  const out = [];
+  for (const tok of String(text ?? "").trim().replaceAll(",", ".").split(/[\s;]+/).filter(Boolean)) {
+    const m = /^(.+?)[x×](\d+)$/i.exec(tok);
+    const v = Number(m ? m[1] : tok), n = m ? Number(m[2]) : 1;
+    if (!Number.isFinite(v) || v <= 0 || v > 100 || n < 1 || n > 20) return null;
+    for (let i = 0; i < n; i++) out.push(v);
+  }
+  return out.length && out.length <= 60 ? out : null;
+};
+export const formatStock = (plates, fmt = (n) => String(n)) => {
+  const counts = new Map();
+  for (const p of plates) counts.set(p, (counts.get(p) || 0) + 1);
+  return [...counts.keys()].sort((a, b) => b - a).map((p) => (counts.get(p) > 1 ? `${fmt(p)}x${counts.get(p)}` : fmt(p))).join(" ");
+};
 const emptyMachine = () => ({ steps: "", base: "", plates: "", max: "", both: true, extra: "" });
 
 // The fields of an equipment record as the editor shows them (the stored `steps` JSON is the single source).
@@ -69,7 +85,7 @@ export const decodeSteps = (json, fmt = (n) => String(n)) => {
   if (spec && !Array.isArray(spec) && typeof spec === "object") {
     if (Array.isArray(spec.plates)) {
       out.base = spec.base ? fmt(spec.base) : "";
-      out.plates = spec.plates.map(fmt).join(" ");
+      out.plates = spec.limited ? formatStock(spec.plates, fmt) : spec.plates.map(fmt).join(" ");
       out.max = spec.max ? fmt(spec.max) : "";
       out.both = spec.sides !== 1;
     }
@@ -80,6 +96,12 @@ export const decodeSteps = (json, fmt = (n) => String(n)) => {
 
 // Input of one equipment row -> {steps} (the `steps` JSON text, "" = unknown) or {error}. `base` is the plate machine's sled weight.
 export const buildSteps = (q) => {
+  // Barbell with a plate stock: bar plus the plates there are per side; left empty, the plain steps below apply.
+  if (q.type === "barbell" && (String(q.plates ?? "").trim() || String(q.base ?? "").trim())) {
+    const base = num(q.base) ?? 0, plates = parseStock(q.plates);
+    if (!Number.isFinite(base) || base < 0 || !plates) return { error: "err_plates" };
+    return { steps: JSON.stringify({ base, plates, sides: 2, limited: true }), base };
+  }
   if (q.type === "machine_plate") {
     const base = num(q.base) ?? 0;
     const plates = String(q.plates ?? "").trim().replaceAll(",", ".").split(/[\s;]+/).filter(Boolean).map(Number);

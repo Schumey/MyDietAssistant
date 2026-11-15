@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'plates.dart';
+
 /// Gewichtsstufen eines Geräts (wie `expand_steps` in `core/progression.py`).
 ///
 /// Gespeichert als JSON: Liste von Zahlen oder `{"min":5,"max":100,"step":5}`.
@@ -42,6 +44,7 @@ List<double>? expandSteps(String? json) {
 /// Plate-loaded machine: `base` (sled/lever) plus plates; with plates on both sides (`sides` 2, default) the smallest
 /// change is two of the smallest plate. `max` limits the load (default: 40 steps above `base`).
 List<double>? _expandPlates(Map spec) {
+  if (spec['limited'] == true) return _expandLimited(spec);
   final plates = [for (final p in (spec['plates'] is List ? spec['plates'] as List : const []) ) if (p is num && p > 0) p.toDouble()];
   if (plates.isEmpty) return null;
   final base = (spec['base'] as num?)?.toDouble() ?? 0;
@@ -50,6 +53,38 @@ List<double>? _expandPlates(Map spec) {
   if (base < 0 || hi < base || (hi - base) / unit > 2000) return null;
   final n = ((hi - base) / unit).round();
   return [for (var i = 0; i <= n; i++) _round(base + i * unit)];
+}
+
+/// Barbell with a limited plate stock (`limited`): `base` is the bar, `plates` the plates there are per side (one entry
+/// per plate). Loadable weights: the bar plus twice every sum of a sub-selection of the plates; `max` caps the load.
+List<double>? _expandLimited(Map spec) {
+  final stock = barbellStock(jsonEncode(spec));
+  if (stock == null) return null;
+  final sums = <int>{0};
+  for (final p in stock.plates) {
+    final u = (p * 1000).round();
+    sums.addAll([for (final s in sums.toList()) s + u]);
+    if (sums.length > 2000) return null;
+  }
+  final hi = (spec['max'] as num?)?.toDouble();
+  final out = {for (final s in sums) _round(stock.bar + 2 * s / 1000)}.where((w) => hi == null || w <= hi + 1e-9).toList()..sort();
+  return out.isEmpty ? null : out;
+}
+
+/// Bar and plate stock (per side) of a barbell with a limited stock; null for every other steps JSON.
+({double bar, List<double> plates})? barbellStock(String? json) {
+  if (json == null || json.trim().isEmpty) return null;
+  Object? spec;
+  try {
+    spec = jsonDecode(json);
+  } catch (_) {
+    return null;
+  }
+  if (spec is! Map || spec['limited'] != true || spec['plates'] is! List) return null;
+  final plates = [for (final p in spec['plates'] as List) if (p is num && p > 0) p.toDouble()];
+  final bar = (spec['base'] as num?)?.toDouble() ?? 0;
+  if (plates.isEmpty || plates.length != (spec['plates'] as List).length || plates.length > 60 || bar < 0) return null;
+  return (bar: bar, plates: plates);
 }
 
 double _round(double v) => (v * 10000).round() / 10000;
@@ -143,7 +178,11 @@ class StepsForm {
 }
 
 /// Is [type] entered with the plate fields?
-bool usesPlateFields(String type) => type == 'machine_plate';
+bool usesPlateFields(String type) => type == 'machine_plate' || type == 'barbell';
+
+/// Barbell: the plate fields hold the bar and the plates per side (`5x2` = two 5 kg plates per side); both sides always
+/// carry the same plates and there is no maximum. Left empty, the plain steps input still applies.
+bool usesStockFields(String type) => type == 'barbell';
 
 /// Is [type] entered with an add-on weight?
 bool usesExtraField(String type) => type == 'machine_stack';
@@ -168,9 +207,12 @@ StepsForm decodeStepsForm(String? json) {
   if (spec is! Map) return StepsForm();
   if (spec.containsKey('plates')) {
     final plates = spec['plates'];
+    final stock = barbellStock(json);
     return StepsForm(
       base: spec['base'] is num ? _num(spec['base'] as num) : '',
-      plates: plates is List ? [for (final p in plates) if (p is num) _num(p)].join(' ') : '',
+      plates: stock != null
+          ? formatPlates(stock.plates, (v) => _num(v))
+          : plates is List ? [for (final p in plates) if (p is num) _num(p)].join(' ') : '',
       sides: spec['sides'] == 1 ? 1 : 2,
       max: spec['max'] is num ? _num(spec['max'] as num) : '',
     );
@@ -185,7 +227,13 @@ StepsForm decodeStepsForm(String? json) {
 
 /// The JSON for the database from the form of [type]; `''` = no steps known; `null` = invalid input.
 String? encodeStepsForm(String type, StepsForm f) {
-  if (usesPlateFields(type)) {
+  if (usesStockFields(type) && (f.plates.trim().isNotEmpty || f.base.trim().isNotEmpty)) {
+    final plates = parsePlates(f.plates);
+    final bar = f.base.trim().isEmpty ? 0.0 : _number(f.base);
+    if (plates == null || bar == null || bar < 0) return null;
+    return jsonEncode({'base': bar, 'plates': plates, 'sides': 2, 'limited': true});
+  }
+  if (type == 'machine_plate') {
     final plates = [for (final p in f.plates.trim().replaceAll(',', '.').split(RegExp(r'[\s;]+'))) if (p.isNotEmpty) double.tryParse(p)];
     final hasAny = f.base.trim().isNotEmpty || plates.isNotEmpty || f.max.trim().isNotEmpty;
     if (!hasAny) return '';

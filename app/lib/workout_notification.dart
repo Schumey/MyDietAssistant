@@ -61,6 +61,7 @@ class AndroidLiveNotifier implements LiveNotifier {
       'restFormat': tr('live_rest_format'),
       'restAddAction': restAddAction,
       'channelName': tr('live_channel'),
+      'alertChannelName': tr('rest_channel_done'),
     });
   }
 

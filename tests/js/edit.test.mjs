@@ -387,3 +387,21 @@ test("routine rows: a piece shared by two rows is written once; invalid steps ar
   const bad = e.rowGearRecords(routine.rows, d, NOW, id);
   assert.equal(bad.error, "err_steps");
 });
+
+test("barbell with a plate stock: counts, round trip, plain steps still work", () => {
+  const q = { type: "barbell", base: "20", plates: "25 20 15 10x2 5x2 2,5", steps: "", max: "", both: true, extra: "" };
+  const built = e.buildSteps(q);
+  assert.equal(built.base, 20);
+  assert.deepEqual(JSON.parse(built.steps), { base: 20, plates: [25, 20, 15, 10, 10, 5, 5, 2.5], sides: 2, limited: true });
+  const back = e.decodeSteps(built.steps, (n) => String(n).replace(".", ","));
+  assert.equal(back.plates, "25 20 15 10x2 5x2 2,5");
+  assert.equal(back.base, "20");
+  assert.equal(e.buildSteps({ ...q, ...back }).steps, built.steps);
+  // empty stock: the plain steps input applies, as before
+  assert.equal(e.buildSteps({ ...q, base: "", plates: "", steps: "20-60/2,5" }).steps, '{"min":20,"max":60,"step":2.5}');
+  // invalid stock
+  assert.equal(e.buildSteps({ ...q, plates: "25 x" }).error, "err_plates");
+  assert.equal(e.buildSteps({ ...q, base: "-5" }).error, "err_plates");
+  assert.equal(e.parseStock("5x0"), null);
+  assert.equal(e.formatStock([5, 5, 10]), "10 5x2");
+});

@@ -5,7 +5,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
-import 'package:timezone/timezone.dart' as tz;
 
 import 'l10n.dart';
 import 'rest_timer.dart';
@@ -42,8 +41,8 @@ const _doneId = 7002;
 const _actionAdd = restAddAction;
 const _actionStop = 'rest_stop';
 
-/// Benachrichtigungen des Pausen-Timers auf Android: ein Countdown, der nicht wegzuwischen ist
-/// (mit den Knöpfen „+30 s“ und „Stop“), und eine Meldung „Pause vorbei“ zur genauen Zeit.
+/// Pausen-Timer auf Android: Countdown und „Pause vorbei“ steckt in der Workout-Benachrichtigung (`hafs_live`, sie
+/// meldet sich zur genauen Zeit selbst); hier wird sie nur zur Aktualisierung angestoßen.
 class AndroidRestNotifier implements RestNotifier {
   AndroidRestNotifier({FlutterLocalNotificationsPlugin? plugin}) : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
@@ -73,34 +72,13 @@ class AndroidRestNotifier implements RestNotifier {
     await _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
   }
 
-  /// The countdown is part of the workout notification (`hafs_live`); here only the „rest over“ alert is scheduled for the
-  /// exact time, and the workout notification is asked to show the countdown.
+  /// The countdown and the „rest over“ alert are part of the workout notification (`hafs_live`); it is asked to refresh.
   @override
   Future<void> show(DateTime endsAt, String exerciseName) async {
     await init(onResponse: _onResponse, onBackground: restNotificationBackground);
-    final remaining = endsAt.difference(DateTime.now());
+    // no separate notification any more: the workout notification itself alerts when the rest is over
     await _plugin.cancel(id: _runningId);
     await _plugin.cancel(id: _doneId);
-    if (remaining <= Duration.zero) return;
-    await _plugin.zonedSchedule(
-      id: _doneId,
-      title: tr('rest_over'),
-      body: exerciseName.isEmpty ? tr('rest_next_set') : '$exerciseName – ${tr('rest_next_set')}',
-      scheduledDate: tz.TZDateTime.from(endsAt, tz.UTC),
-      notificationDetails: NotificationDetails(
-        android: AndroidNotificationDetails(
-          'rest_done',
-          tr('rest_channel_done'),
-          importance: Importance.high,
-          priority: Priority.high,
-          category: AndroidNotificationCategory.alarm,
-          enableVibration: true,
-          autoCancel: true,
-          timeoutAfter: 60000,
-        ),
-      ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-    );
     await refreshLiveNotification();
   }
 

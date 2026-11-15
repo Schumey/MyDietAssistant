@@ -20,6 +20,8 @@ import org.json.JSONObject
 object LiveNotification {
     const val NOTIFICATION_ID = 7003
     const val CHANNEL = "workout_live"
+    /** Same notification, but alerting (sound, vibration, heads-up): used once when the rest is over. */
+    const val ALERT_CHANNEL = "workout_live_alert"
     private const val RECEIVER = "com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver"
     private const val ACTION_TAPPED = "com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver.ACTION_TAPPED"
     private const val PREFS = "hafs_live"
@@ -50,7 +52,7 @@ object LiveNotification {
             context, 1, Intent(context, RestEndReceiver::class.java), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-    fun show(context: Context, a: Map<String, Any?>) {
+    fun show(context: Context, a: Map<String, Any?>, alert: Boolean = false) {
         // Remember what is shown: when the rest is over the same notification is posted again without the countdown.
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(LAST, JSONObject(a).toString()).apply()
 
@@ -58,6 +60,14 @@ object LiveNotification {
         if (manager.getNotificationChannel(CHANNEL) == null) {
             val ch = NotificationChannel(CHANNEL, str(a, "channelName").ifEmpty { "Workout" }, NotificationManager.IMPORTANCE_LOW)
             ch.setShowBadge(false)
+            manager.createNotificationChannel(ch)
+        }
+        if (manager.getNotificationChannel(ALERT_CHANNEL) == null) {
+            val ch = NotificationChannel(
+                ALERT_CHANNEL, str(a, "alertChannelName").ifEmpty { "Rest over" }, NotificationManager.IMPORTANCE_HIGH
+            )
+            ch.setShowBadge(false)
+            ch.enableVibration(true)
             manager.createNotificationChannel(ch)
         }
 
@@ -113,7 +123,7 @@ object LiveNotification {
         small.setTextViewText(R.id.hafs_c_done, doneText)
         small.setOnClickPendingIntent(R.id.hafs_c_done, button(context, doneAction))
 
-        val builder = NotificationCompat.Builder(context, CHANNEL)
+        val builder = NotificationCompat.Builder(context, if (alert) ALERT_CHANNEL else CHANNEL)
             .setSmallIcon(context.applicationInfo.icon)
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
             .setCustomContentView(small)
@@ -121,12 +131,12 @@ object LiveNotification {
             .setContentTitle(title)
             .setContentText(line)
             .setOngoing(true)
-            .setOnlyAlertOnce(true)
-            .setSilent(true)
+            .setOnlyAlertOnce(!alert)
+            .setSilent(!alert)
             .setShowWhen(false)
             .setCategory(NotificationCompat.CATEGORY_STATUS)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setPriority(if (alert) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_LOW)
         open(context)?.let { builder.setContentIntent(it) }
         manager.notify(NOTIFICATION_ID, builder.build())
     }
@@ -137,13 +147,16 @@ object LiveNotification {
         context.getSystemService(NotificationManager::class.java).cancel(NOTIFICATION_ID)
     }
 
-    /** The rest is over: show the same notification again, without the countdown (only if it is still there). */
+    /**
+     * The rest is over: show the same notification again, without the countdown and this time alerting, so there is
+     * one notification instead of a second "rest over" one (only if it is still there).
+     */
     fun restOver(context: Context) {
         val text = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(LAST, null) ?: return
         val map = HashMap<String, Any?>()
         val json = JSONObject(text)
         for (key in json.keys()) map[key] = json.get(key)
         map["restEndMs"] = 0L
-        show(context, map)
+        show(context, map, alert = true)
     }
 }

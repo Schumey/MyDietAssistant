@@ -319,6 +319,10 @@ export function installEditor(Panel, { edit, esc }) {
       return field("steps", t("stack_steps"), t("stack_steps_hint"), true) + field("extra", t("stack_extra"), "2,5", true, "decimal")
         + `<small class="wide muted">${esc(t("stack_extra_hint"))}</small>`;
     }
+    if (q.type === "barbell") {
+      return field("base", t("bar_weight"), "20", false, "decimal") + field("plates", t("stock_plates"), t("stock_hint"), true)
+        + field("steps", t("equipment_steps"), t("equipment_steps_hint"), true);
+    }
     return field("steps", t("equipment_steps"), t("equipment_steps_hint"), true);
   };
 
