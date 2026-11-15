@@ -164,6 +164,7 @@ def test_zone_finds_the_gym(ha, anna):
     assert call(anna, "hafs/zones") == {"zones": [{"entity_id": "zone.studio", "name": "Studio"}]}
     ha.states[1]["state"] = "not_home"
     assert call(anna, "hafs/gym/current")["zone"] is None
+    assert ha.module.people() == {anna.uid: "anna"}           # no friendly_name: the object id
 
 
 def test_ai_review_and_plan(ha, anna, monkeypatch):

@@ -43,7 +43,7 @@ def _no_ai(*_args, **_kw):
 
 # Home Assistant access, replaced by training/ha.py: zone(owner) -> zone entity id or None, zones() -> [{entity_id, name}],
 # ai(task_name, instructions, structure, entity_id) -> answer data (raises ValueError)
-HA: dict[str, Callable] = {"zone": lambda owner: None, "zones": lambda: [], "ai": _no_ai}
+HA: dict[str, Callable] = {"zone": lambda owner: None, "zones": lambda: [], "ai": _no_ai, "people": lambda: {}}
 PREF_KEYS = ("phase", *targets.SETTING_KEYS, *targets.OTHER_KEYS)
 WEB_QUERIES = sorted(webview.QUERIES)
 
@@ -261,8 +261,11 @@ def c_restore(owner: str, msg: dict) -> dict:
 
 
 def _user_names() -> dict[str, str]:
+    """Names for user ids: Home Assistant's persons (attribute user_id), then the users who opened the app."""
+    names = dict(HA["people"]())
     with mda_db.conn() as c:
-        return {r["id"]: r["name"] for r in c.execute("SELECT id, name FROM users")}
+        names.update({r["id"]: r["name"] for r in c.execute("SELECT id, name FROM users") if r["name"]})
+    return names
 
 
 def c_legacy_preview(owner: str, msg: dict) -> dict:

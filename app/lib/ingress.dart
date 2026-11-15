@@ -56,6 +56,14 @@ class IngressOpener {
   final Duration maxAge;
   final Map<String, IngressAccess> _cache = {};
   String? _slug; // the slug that worked last
+  final Set<String> _skip = {}; // apps without training (an older MyDietAssistant 1.x under that slug)
+
+  /// The app under [slug] has no training endpoint: look further next time.
+  void skip(String slug) {
+    _skip.add(slug);
+    if (_slug == slug) _slug = null;
+    _cache.removeWhere((_, a) => a.slug == slug);
+  }
 
   Future<IngressAccess> open(String address, String token, {bool fresh = false}) async {
     final key = '$address\n$token';
@@ -64,7 +72,7 @@ class IngressOpener {
     final ws = await _ws(address, token);
     try {
       HaException? last;
-      for (final slug in [?_slug, ...slugs.where((s) => s != _slug)]) {
+      for (final slug in [?_slug, ...slugs.where((s) => s != _slug)].where((s) => !_skip.contains(s))) {
         final Map info;
         try {
           info = await ws.call('supervisor/ingress/info', {'slug': slug}) as Map;
@@ -171,25 +179,28 @@ class IngressConnection implements HaConnection {
 /// Connects to training: the HA app over ingress, or (while moving over) the former integration over the WebSocket.
 Future<HaConnection> connectTraining(String address, String token, {required IngressOpener opener, WsConnector? ws, HttpClient? client}) async {
   final legacy = ws ?? ((a, t) => HaClient.connect(a, t));
-  final IngressAccess access;
-  try {
-    access = await opener.open(address, token);
-  } on HaException catch (e) {
-    if (e is HaAuthException || (e.code != 'app_missing' && e.code != 'ha_old')) rethrow;
-    return _legacyOr(legacy, address, token, e);
-  }
-  final connection = IngressConnection(opener, address, token, access, client: client);
-  try {
-    await connection.call('hafs/info');
-  } on HaException catch (e) {
-    if (e.code != 'not_enabled') {
-      await connection.close();
-      rethrow;
+  while (true) {
+    final IngressAccess access;
+    try {
+      access = await opener.open(address, token);
+    } on HaException catch (e) {
+      if (e is HaAuthException || (e.code != 'app_missing' && e.code != 'ha_old')) rethrow;
+      return _legacyOr(legacy, address, token, e);
     }
-    await connection.close();
-    return _legacyOr(legacy, address, token, e); // training still off in the HA app: the integration may still have it
+    final connection = IngressConnection(opener, address, token, access, client: client);
+    try {
+      await connection.call('hafs/info');
+      return connection;
+    } on HaException catch (e) {
+      await connection.close();
+      if (e.code == 'http_404') {
+        opener.skip(access.slug); // MyDietAssistant 1.x under this slug: try the next one
+        continue;
+      }
+      if (e.code != 'not_enabled') rethrow;
+      return _legacyOr(legacy, address, token, e); // training still off in the HA app: the integration may still have it
+    }
   }
-  return connection;
 }
 
 Future<HaConnection> _legacyOr(WsConnector legacy, String address, String token, HaException reason) async {

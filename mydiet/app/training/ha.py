@@ -215,6 +215,17 @@ def zone_list() -> list[dict]:
         return []
 
 
+def people() -> dict[str, str]:
+    """HA user id -> name of the person entity linked to it (for users who never opened the app)."""
+    if not enabled():
+        return {}
+    try:
+        return {s["attributes"]["user_id"]: s["attributes"].get("friendly_name") or s["entity_id"].split(".", 1)[1]
+                for s in _get("states") if s["entity_id"].startswith("person.") and s.get("attributes", {}).get("user_id")}
+    except (httpx.HTTPError, ValueError, KeyError):
+        return {}
+
+
 # ---- AI --------------------------------------------------------------------------------------
 
 def ai_generate(task_name: str, instructions: str, structure: dict, entity_id: str | None = None) -> dict:
@@ -272,7 +283,7 @@ def setup() -> None:
     import extras2
     api.AFTER_PUSH.append(after_push)
     api.AFTER_CHANGE.append(after_change)
-    api.HA.update(zone=current_zone, zones=zone_list, ai=ai_generate)
+    api.HA.update(zone=current_zone, zones=zone_list, ai=ai_generate, people=people)
     extras2.EXTRA_JOBS.append(job)
 
 

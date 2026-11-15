@@ -42,6 +42,20 @@ class FakeWs implements HaConnection {
   }
 }
 
+/// Two apps: the 1.x one answers 404 (its ingress path has no training endpoint), the 2.0 one is the app server.
+class _TwoApps extends FakeWs {
+  _TwoApps() : super(slugs: {'eeb2daa3_mydiet', 'local_mydiet'});
+
+  @override
+  Future<dynamic> call(String type, [Map<String, dynamic> payload = const {}]) async {
+    final r = await super.call(type, payload);
+    if (type == 'supervisor/ingress/info' && payload['slug'] == 'eeb2daa3_mydiet') {
+      return {...(r as Map), 'ingress_url': '/api/hassio_ingress/old/'};
+    }
+    return r;
+  }
+}
+
 /// The HA app behind ingress: `POST /api/hassio_ingress/tok/api/training/call`, valid sessions in [valid].
 Future<(HttpServer, List<Map>)> appServer({Set<String> valid = const {'sess1'}, bool trainingOff = false}) async {
   final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
@@ -131,6 +145,19 @@ void main() {
     expect(await c.call('hafs/info'), containsPair('user_id', 'u1'));
     expect(seen.single['cookie'], 'sess2');
     expect(ws.sessions, 2);
+    await c.close();
+  });
+
+  test('an older MyDietAssistant under the first slug is skipped for the next one', () async {
+    final (server, seen) = await appServer(valid: {'sess1', 'sess2'});
+    addTearDown(() => server.close(force: true));
+    // both slugs installed: eeb2daa3_mydiet is 1.x (no training endpoint, 404), local_mydiet is HAFS 2.0
+    final ws = _TwoApps();
+    final opener = IngressOpener(ws: (a, t) async => ws);
+    final c = await connectTraining('http://127.0.0.1:${server.port}', 't', opener: opener, ws: (a, t) async => FakeWs());
+    expect(c, isA<IngressConnection>());
+    expect((c as IngressConnection).access.slug, 'local_mydiet');
+    expect(seen.single['type'], 'hafs/info');
     await c.close();
   });
 
