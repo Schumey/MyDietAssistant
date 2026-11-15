@@ -43,7 +43,7 @@ Mit MQTT Discovery bekommen die Sensoren eine eindeutige ID: Sie lassen sich in 
 **Voraussetzung:** die MQTT-Integration (zum Beispiel mit dem Mosquitto-Add-on). Das Add-on sendet über den HA-Dienst `mqtt.publish` und braucht keine eigenen Zugangsdaten.
 
 1. Installiere und richte MQTT ein (Mosquitto-Add-on und MQTT-Integration).
-2. Öffne die Konfiguration von MyDietAssistant, schalte `mqtt_discovery` ein und speichere.
+2. Öffne die Konfiguration von HAFS, schalte `mqtt_discovery` ein und speichere.
 3. Starte das Add-on neu.
 4. Prüfe unter *Einstellungen → Geräte & Dienste → MQTT*, ob das Gerät „MyDietAssistant <Name>“ erscheint.
 

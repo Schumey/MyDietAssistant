@@ -1,11 +1,15 @@
-# MyDietAssistant
+<p align="center"><img src="mydiet/logo.png" alt="HAFS" width="250"></p>
+
+# HAFS – HomeAssistant Fitness Suite
 
 **English** · [Deutsch](README.md)
 
 [![Tests](https://github.com/Schumey/MyDietAssistant/actions/workflows/test.yml/badge.svg)](https://github.com/Schumey/MyDietAssistant/actions/workflows/test.yml)
 [![App lint](https://github.com/Schumey/MyDietAssistant/actions/workflows/lint.yml/badge.svg)](https://github.com/Schumey/MyDietAssistant/actions/workflows/lint.yml)
 
-**Your food diary in Home Assistant.** Track calories, macros and weight like in MyFitnessPal, without a cloud account: everything lives in an SQLite file on your Home Assistant device and is part of the normal HA backup. Home Assistant adds sensors, triggers and automations. For Android there is a dedicated app with a barcode scanner and a widget.
+**Nutrition and strength training in Home Assistant.** Track calories, macros and weight like in MyFitnessPal, record workouts like in GymRun or Strong, without a cloud account: everything lives in SQLite files on your Home Assistant device and is part of the normal HA backup. Home Assistant adds sensors, triggers and automations. The HAFS phone app records training offline and shows nutrition full screen.
+
+Up to version 1.x HAFS was called **MyDietAssistant**; training was an integration of its own. Both are now one app with the switch **Nutrition | Training**.
 
 [![Open your Home Assistant instance and add this app repository.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FSchumey%2FMyDietAssistant)
 
@@ -53,14 +57,23 @@
   <img src="docs/screenshots/en/weight.png" alt="Weight history" width="49%">
 </p>
 
+## Training
+
+The optional feature **Training** adds a second area: training plans and days, gyms with equipment and weight steps, history per exercise with estimated 1RM, sets per muscle group and weight suggestions that follow your nutrition phase (cut, maintain, bulk). Import from GymRun, Strong and Hevy; entities, events and Assist for Home Assistant. Guides: [Training](docs/en/training.md), [Training in Home Assistant](docs/en/training-ha.md).
+
+<p align="center">
+  <img src="docs/screenshots/en/training.png" alt="Training: next training day, figures, sets per muscle group" width="49%">
+  <img src="docs/screenshots/en/training-plans.png" alt="Training plans and gyms" width="49%">
+</p>
+
 The pictures show the default Home Assistant theme with sample data. The interface follows your HA theme; for retro themes like “HA 95/98” there is a matching Windows look.
 
 ## Installation
 
-MyDietAssistant is an **app** (called “add-on” until HA 2026.1) and needs Home Assistant OS or Supervised. You won't find it in the **Marketplace** (since HA 2026.11, the successor of HACS): the Marketplace installs integrations, cards and themes, but no apps.
+HAFS is an **app** (called “add-on” until HA 2026.1) and needs Home Assistant OS or Supervised. You won't find it in the **Marketplace** (since HA 2026.11, the successor of HACS): the Marketplace installs integrations, cards and themes, but no apps.
 
 1. Add the repository: with the button above or by hand under **Settings → Apps → Install app → ⋮ → Repositories** → `https://github.com/Schumey/MyDietAssistant`.
-2. Install and start **MyDietAssistant** and turn on **Show in sidebar**.
+2. Install and start **HAFS** and turn on **Show in sidebar**.
 3. Open it, set your goal, get going. [First steps](docs/en/first-steps.md) walks you through the setup.
 
 Updates show up under **Settings → Updates**. In detail: [Installation](docs/en/installation.md).
@@ -69,16 +82,19 @@ Updates show up under **Settings → Updates**. In detail: [Installation](docs/e
 
 <p align="center"><img src="docs/screenshots/en/diary-mobile.png" alt="Diary on a phone" width="260"></p>
 
-The web interface also runs in the Companion app. The dedicated Android app adds:
+The web interface also runs in the Companion app. The HAFS app adds:
 
-- **Full screen** without the HA sidebar, login through the normal HA login page
+- **Training** natively and offline: record workouts, rest timer, notification with set entry, sync with Home Assistant
+- Switch **Nutrition | Training**; nutrition full screen without the HA sidebar
+
+- Sign-in with a long-lived access token, also without administrator rights (Home Assistant 2026.11 or newer)
 - **System barcode scanner** (fast, no HTTPS and no camera permission needed)
-- **Home screen widget**: today's calories, what is left of your goal, buttons **Scan** and **Add**
+- **Home screen widgets**: next training day and "Nutrition today" with buttons to scan and add
 
 - **Health Connect:** take over weight, steps and active calories from the phone
 - **Updates** right inside the app
 
-**[Download the APK](https://github.com/Schumey/MyDietAssistant-Android/releases/latest)** (Android 8 or newer) · [source and versions](https://github.com/Schumey/MyDietAssistant-Android) · [guide](docs/en/android.md)
+**[Download the APK](https://github.com/Schumey/MyDietAssistant/releases)** (files `hafs-<version>.apk`, Android 8 or newer) · [guide](docs/en/android.md)
 
 The app is not in the Play Store, so Android asks during installation whether to allow apps from this source. Afterwards the app finds new versions itself.
 

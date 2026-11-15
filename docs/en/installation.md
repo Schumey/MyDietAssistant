@@ -2,7 +2,7 @@
 
 [← Overview](README.md)
 
-> **Terms:** since Home Assistant 2026.2, add-ons are called **apps**. MyDietAssistant is such an app. The **Marketplace** (since 2026.11, the successor of HACS) is something else: it installs integrations, dashboard cards, themes and templates, but no apps. That is why you won't find MyDietAssistant in the Marketplace; it is in the app store.
+> **Terms:** since Home Assistant 2026.2, add-ons are called **apps**. HAFS is such an app. The **Marketplace** (since 2026.11, the successor of HACS) is something else: it installs integrations, dashboard cards, themes and templates, but no apps. That is why you won't find HAFS in the Marketplace; it is in the app store.
 
 ## Requirements
 
@@ -13,10 +13,10 @@
 
 1. The easiest way is the “add repository” button in the [README](../../README.en.md). It opens your Home Assistant instance and adds the repository.
 2. By hand: in Home Assistant open **Settings → Apps → Install app**, tap **⋮ → Repositories** at the top right and add `https://github.com/Schumey/MyDietAssistant`.
-3. Reload the page. **MyDietAssistant** appears at the bottom. Open it and tap **Install**.
+3. Reload the page. **HAFS** appears at the bottom. Open it and tap **Install**.
 4. When the installation has finished, tap **Start**.
 5. Turn on **Show in sidebar** (and, if you like, **Start on boot** and **Watchdog**).
-6. The sidebar now has an entry **MyDietAssistant**. Open it: you see today’s diary.
+6. The sidebar now has an entry **HAFS**. Open it: you see today’s diary.
 
 The first time, Home Assistant builds the image itself. This can take a few minutes.
 
@@ -24,7 +24,7 @@ The first time, Home Assistant builds the image itself. This can take a few minu
 
 ## App options
 
-You find the options under **Settings → Apps → MyDietAssistant → Configuration**. The app restarts after you save.
+You find the options under **Settings → Apps → HAFS → Configuration**. The app restarts after you save.
 
 | Option | Meaning | Default |
 |---|---|---|
@@ -42,7 +42,7 @@ The option labels are available in all languages of the interface.
 ## Update
 
 1. New versions show up under **Settings → Updates**. If nothing is there yet: **Settings → Apps → Install app → ⋮ → Check for updates**.
-2. Open **MyDietAssistant** and tap **Update**. With **Auto update** on the app page this happens without you.
+2. Open **HAFS** and tap **Update**. With **Auto update** on the app page this happens without you.
 3. The changes of each version are in the [CHANGELOG](../../mydiet/CHANGELOG.en.md). Afterwards reload the page once (in the Companion app: reopen the app) in case the browser cached an old version.
 
 On start the app runs all missing database migrations. Before that it saves a copy `mydiet.db.v<old version>.bak` next to the database in `/data`. Changes to the options or to `config.yaml` (for example new options) only take effect after a rebuild; the update does that for you.

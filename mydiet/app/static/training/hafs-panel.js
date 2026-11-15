@@ -818,6 +818,38 @@ table.sets { width: 100%; border-collapse: collapse; } .sets td { padding: 6px 4
 .notice { text-align: center; padding: 32px 16px; } .notice .btn { margin-top: 12px; }
 .ok { color: var(--ok); font-weight: 600; } .err { color: var(--warn); }
 .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 8px; max-width: 90vw; z-index: 5; }
+/* the training half of the logo (design tokens) marks the hero card */
+.hero.board { border-left-color: var(--hafs-color-training, var(--accent)); }
+
+/* Windows 95/98 and XP look of the app's page (attribute skin="win" from app.js; the --w-* colors come from style.css) */
+:host([skin=win]) { font-family: inherit; font-size: 12px; --radius: 0; --pill: 0; }
+:host([skin=win]) .page { gap: 10px; }
+:host([skin=win]) .card, :host([skin=win]) .note { background: var(--w-face); color: var(--w-text); border: 0; border-radius: 0; box-shadow: var(--w-etched); }
+:host([skin=win]) .card h2, :host([skin=win]) .card h3 { font-size: 13px; font-weight: 700; }
+:host([skin=win]) h2.big { font-size: 20px; letter-spacing: 0; }
+:host([skin=win]) .hero.board { border-left: 0; box-shadow: var(--w-etched), inset 4px 0 var(--hafs-color-training, var(--primary-color)); }
+:host([skin=win]) .kicker, :host([skin=win]) .pnum.w { color: var(--w-text); }
+:host([skin=win]) .facts > div { background: var(--w-field); border-radius: 0; box-shadow: var(--w-sunken); }
+:host([skin=win]) .btn, :host([skin=win]) .seg button, :host([skin=win]) .ib {
+  background: var(--w-face); color: var(--w-text); border: 0; border-radius: 0; box-shadow: var(--w-raised); font-weight: 400; padding: 4px 14px; }
+:host([skin=win]) .btn:active, :host([skin=win]) .seg button:active, :host([skin=win]) .seg button[aria-pressed=true] {
+  box-shadow: var(--w-sunken); background: var(--w-field); }
+:host([skin=win]) .btn.primary { font-weight: 700; outline: 1px solid var(--w-text); outline-offset: -1px; }
+:host([skin=win]) .btn.ghost, :host([skin=win]) .btn.linkish, :host([skin=win]) .btn.danger { box-shadow: none; background: none; }
+:host([skin=win]) .search, :host([skin=win]) select, :host([skin=win]) input[type=file], :host([skin=win]) .field input,
+:host([skin=win]) .field select, :host([skin=win]) .field textarea, :host([skin=win]) .efields input.num, :host([skin=win]) .efields select,
+:host([skin=win]) .eqgrid input[type=text], :host([skin=win]) .eqgrid select, :host([skin=win]) .erow input[type=text] {
+  background: var(--w-field); color: var(--w-text); border: 0; border-radius: 0; box-shadow: var(--w-sunken); }
+:host([skin=win]) .track { border-radius: 0; background: var(--w-field); box-shadow: var(--w-sunken); }
+:host([skin=win]) .track .fill { border-radius: 0; background: var(--w-title); }
+:host([skin=win]) .sw.fill, :host([skin=win]) .ss { background: var(--primary-color); } :host([skin=win]) .chart .bar.now { fill: var(--primary-color); }
+:host([skin=win]) .chart .ln, :host([skin=win]) .chart .pt { stroke: var(--primary-color); }
+:host([skin=win]) .chip, :host([skin=win]) .tag, :host([skin=win]) .badge { border-radius: 0; background: var(--w-field); box-shadow: var(--w-sunken); }
+:host([skin=win]) .wrow { border-radius: 0; } :host([skin=win]) .wrow:hover { background: var(--w-title); color: #fff; }
+:host([skin=win]) .wrow:hover .wsub, :host([skin=win]) .wrow:hover .wmeta, :host([skin=win]) .wrow:hover small { color: #fff; }
+:host([skin=win]) .picker { border-radius: 0; border: 0; box-shadow: var(--w-sunken); background: var(--w-field); }
+:host([skin=win]) .toast { border-radius: 0; background: #ffffe1; color: #000; box-shadow: 1px 1px 0 #000; }
+
 @media (max-width: 760px) {
   .grid.two { grid-template-columns: minmax(0, 1fr); } .page { padding: 12px; gap: 12px; }
   h2.big { font-size: 24px; } .wmeta { display: none; } .mrow { grid-template-columns: minmax(84px, 38%) 1fr auto; }

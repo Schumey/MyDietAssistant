@@ -1,14 +1,14 @@
-name: MyDietAssistant
-version: "1.40.1"
+name: HAFS
+version: "2.0.0"
 slug: mydiet
 url: https://github.com/Schumey/MyDietAssistant
-description: Lokales Ernährungstagebuch (Kalorien & Makros) mit HA-Sensoren
+description: HomeAssistant Fitness Suite – Ernährungstagebuch und Krafttraining, lokal, mit HA-Sensoren
 arch: [amd64, aarch64]
 init: false
 ingress: true
 panel_admin: false
-panel_icon: mdi:food-apple
-panel_title: MyDietAssistant
+panel_icon: mdi:home-heart
+panel_title: HAFS
 homeassistant_api: true
 options:
   default_kcal_goal: 2000

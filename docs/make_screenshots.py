@@ -54,7 +54,7 @@ T = {
 def seed(base, lang):
     t = T[lang]
     h = lambda m, p, **kw: getattr(httpx, m)(base + p, timeout=30, **kw)
-    h("put", "/api/settings", json=dict(lang=lang, features={"recipes": True, "notes": True}))
+    h("put", "/api/settings", json=dict(lang=lang, features={"recipes": True, "notes": True, "training": True}))
     h("put", "/api/goal", json=dict(kcal=2100, protein=150, carbs=230, fat=70, target_weight=76))
     ids = {}
     for name, kcal, p, c, f, cat in t["foods"]:
@@ -92,6 +92,16 @@ def seed(base, lang):
     return mid
 
 
+def seed_training(path):
+    """Training data of 36 synthetic workouts for the local user (the same as tools/panel_preview.py)."""
+    sys.path.insert(0, os.path.join(ROOT, "tools"))
+    import panel_preview
+    panel_preview.OWNER = "default"
+    store = panel_preview.Store(path)
+    store.init()
+    panel_preview.seed(store)
+
+
 def free_port():
     with socket.socket() as s:
         s.bind(("127.0.0.1", 0))
@@ -104,7 +114,9 @@ def main():
         browser = p.chromium.launch()
         for lang in ("de", "en"):
             port = free_port()
-            env = {**os.environ, "MYDIET_DB": os.path.join(tempfile.mkdtemp(prefix="mda-shot-"), "s.db")}
+            folder = tempfile.mkdtemp(prefix="mda-shot-")
+            seed_training(os.path.join(folder, "hafs.db"))
+            env = {**os.environ, "MYDIET_DB": os.path.join(folder, "s.db"), "HAFS_DB": os.path.join(folder, "hafs.db")}
             proc = subprocess.Popen([sys.executable, "-m", "uvicorn", "main:app", "--port", str(port), "--log-level", "warning"],
                                     cwd=os.path.join(ROOT, "mydiet", "app"), env=env)
             base = f"http://127.0.0.1:{port}"
@@ -137,6 +149,16 @@ def main():
                 pg.click(f"#dlg >> text={T[lang]['importbtn']}")
                 time.sleep(1.2)
                 pg.screenshot(path=os.path.join(out, "recipe-import.png"))
+                pg.keyboard.press("Escape")
+                # training: the area switch, "Today" and the plans (panel in its own shadow DOM)
+                pg.click('#area button[data-area="training"]')
+                for tab, name in (("t-today", "training"), ("t-plans", "training-plans")):
+                    pg.click(f'#tabs button[data-tab="{tab}"]')
+                    pg.wait_for_function("() => { const p = document.querySelector('hafs-panel');"
+                                         " return p && p.shadowRoot && p.shadowRoot.querySelector('.page .card'); }")
+                    time.sleep(1.5)
+                    pg.screenshot(path=os.path.join(out, f"{name}.png"), full_page=True)
+                pg.click('#area button[data-area="nutrition"]')
                 ctx.close()
                 m = browser.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=3, color_scheme="light", locale=lang, is_mobile=True, has_touch=True)
                 mp = m.new_page()

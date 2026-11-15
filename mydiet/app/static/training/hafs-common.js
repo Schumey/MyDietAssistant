@@ -1,6 +1,6 @@
 // Shared helpers of the HAFS panel: texts, number/date formats and the two chart types.
 // No build step, no dependencies. Kept free of Home Assistant specifics so that other surfaces
-// (a dashboard card, the MyDietAssistant shell) can reuse it later.
+// (the stand-alone preview, the app's page) can use it.
 
 export const STRINGS = {
   de: {
@@ -12,7 +12,7 @@ export const STRINGS = {
     sets_short: "{0}×{1}", reps_range: "{0}–{1}", superset: "Supersatz {0}",
     workouts_week: "Workouts diese Woche", volume_week: "Volumen diese Woche", last_workout: "Letztes Workout", never: "noch keins",
     phase: "Phase", phase_bulk: "Masse", phase_maintain: "Halten", phase_cut: "Diät", phase_none: "unbekannt",
-    phase_auto: "Aus MyDietAssistant", phase_manual_label: "Von Hand",
+    phase_auto: "Aus dem Ernährungsziel", phase_manual_label: "Von Hand",
     sets_by_muscle: "Sätze je Muskelgruppe", this_week: "Diese Woche", average: "Ø {0} Wochen", no_sets: "In diesem Zeitraum noch keine Sätze.",
     muscle_hint: "Hauptmuskeln zählen voll, Nebenmuskeln halb, Aufwärmsätze nicht.",
     recent: "Zuletzt", workouts_per_week: "Workouts pro Woche", weeks_n: "{0} Wochen", weeks_n_short: "{0} Wo.",
@@ -29,7 +29,7 @@ export const STRINGS = {
     e1rm_hint: "Epley, nur Sätze mit 1 bis 12 Wiederholungen.", no_data: "Zu wenig Daten für ein Diagramm.",
     program: "Trainingsplan", routines: "Trainingstage", loose_routines: "Trainingstage ohne Plan", weekdays: "Wochentage", rotation: "Rotation",
     gyms: "Studios", equipment: "Geräte", out_of_order: "außer Betrieb", steps: "Stufen", no_gyms: "Noch kein Studio angelegt.",
-    settings_phase: "Ernährungsphase", settings_phase_hint: "Bestimmt, wie früh das Gewicht steigt oder sinkt. „Automatisch“ nimmt die Phase aus MyDietAssistant.",
+    settings_phase: "Ernährungsphase", settings_phase_hint: "Bestimmt, wie früh das Gewicht steigt oder sinkt. „Automatisch“ nimmt die Phase aus Deinem Ziel unter Ernährung (abnehmen, halten, zunehmen).",
     phase_auto_opt: "Automatisch", hit_fraction: "Gewicht steigern, wenn …", hit_all: "alle Sätze die Obergrenze erreichen", hit_75: "drei Viertel der Sätze sie erreichen", hit_50: "die Hälfte der Sätze sie erreicht",
     cut_drop_set: "Diät: erst einen Satz streichen, dann Gewicht senken", saved: "Gespeichert",
     import_title: "Import", import_hint: "CSV-Export aus GymRun, Strong oder Hevy (das Format wird erkannt). Erst ein Probelauf, dann der Import; Vorhandenes wird übersprungen.",
@@ -162,7 +162,7 @@ export const STRINGS = {
     sets_short: "{0}×{1}", reps_range: "{0}–{1}", superset: "Superset {0}",
     workouts_week: "Workouts this week", volume_week: "Volume this week", last_workout: "Last workout", never: "none yet",
     phase: "Phase", phase_bulk: "Bulk", phase_maintain: "Maintain", phase_cut: "Cut", phase_none: "unknown",
-    phase_auto: "From MyDietAssistant", phase_manual_label: "Set by hand",
+    phase_auto: "From the nutrition goal", phase_manual_label: "Set by hand",
     sets_by_muscle: "Sets per muscle group", this_week: "This week", average: "Avg {0} weeks", no_sets: "No sets in this period yet.",
     muscle_hint: "Primary muscles count fully, secondary muscles half, warm-up sets not at all.",
     recent: "Recent", workouts_per_week: "Workouts per week", weeks_n: "{0} weeks", weeks_n_short: "{0} wk",
@@ -179,7 +179,7 @@ export const STRINGS = {
     e1rm_hint: "Epley, only sets of 1 to 12 reps.", no_data: "Not enough data for a chart.",
     program: "Training plan", routines: "Training days", loose_routines: "Training days without a plan", weekdays: "Weekdays", rotation: "Rotation",
     gyms: "Gyms", equipment: "Equipment", out_of_order: "out of order", steps: "Steps", no_gyms: "No gym yet.",
-    settings_phase: "Nutrition phase", settings_phase_hint: "Decides how early the weight goes up or down. “Automatic” takes the phase from MyDietAssistant.",
+    settings_phase: "Nutrition phase", settings_phase_hint: "Decides how early the weight goes up or down. “Automatic” takes the phase from your goal under Nutrition (lose, maintain, gain).",
     phase_auto_opt: "Automatic", hit_fraction: "Raise the weight when …", hit_all: "all sets reach the upper limit", hit_75: "three quarters of the sets reach it", hit_50: "half of the sets reach it",
     cut_drop_set: "Cut: drop a set first, then lower the weight", saved: "Saved",
     import_title: "Import", import_hint: "CSV export from GymRun, Strong or Hevy (the format is detected). Dry run first, then import; existing data is skipped.",

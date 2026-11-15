@@ -12,6 +12,7 @@ import 'repo_program.dart';
 import 'routines_screen.dart';
 import 'settings_screen.dart';
 import 'stats_screen.dart';
+import 'theme_tokens.dart';
 import 'workout_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -84,8 +85,8 @@ class AreaSwitch extends StatelessWidget {
 
   final AppState app;
 
-  static const nutritionColor = Color(0xFF2E7D5B);
-  static const trainingColor = Color(0xFF37474F);
+  static const nutritionColor = HafsTokens.colorNutrition;
+  static const trainingColor = HafsTokens.colorTraining;
 
   @override
   Widget build(BuildContext context) {

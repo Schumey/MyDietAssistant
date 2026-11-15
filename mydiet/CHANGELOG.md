@@ -2,6 +2,26 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 2.0.0
+
+MyDietAssistant heißt jetzt **HAFS** (HomeAssistant Fitness Suite) und bringt das Krafttraining mit, das bisher die Integration `hafs` war. Slug, Daten und Entitäten der Ernährung bleiben gleich. Umstieg: [Training](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/training.md#umstieg-von-der-hafs-integration).
+
+### Neu
+- **Bereich Training** (Zusatzfunktion „Training“): Trainingspläne und -tage, Studios mit Geräten und Gewichtsstufen, Workouts mit Sätzen, Verlauf je Übung mit geschätztem 1RM und Rekorden, Sätze je Muskelgruppe, Rückblick, Gewichtsvorschläge nach Ernährungsphase, Import aus GymRun, Strong und Hevy. Die Daten liegen in `/data/hafs.db`.
+- **Umschalter Ernährung | Training** oben in der Leiste; jeder Bereich hat eigene Reiter. Der letzte Bereich wird gemerkt, ein laufendes Workout öffnet Training.
+- **Ernährungsphase aus dem Ziel:** abnehmen = Diät, halten, zunehmen = Aufbau; von Hand änderbar.
+- **Entitäten und Events für Training** (`sensor.hafs_<name>_*`, `binary_sensor.hafs_<name>_workout_active`, `hafs_workout_started`, `hafs_workout_finished`, `hafs_record`), als Zustände oder mit `mqtt_discovery` als MQTT-Entitäten. Studio-Erkennung über die Zone der Person, Rückblick und Planvorschlag über die KI von Home Assistant.
+- **Schnittstelle `/api/ext/training/*`** für Automationen und Assist („Was trainiere ich heute?“), Anleitung mit `rest_command` und `intent_script`.
+- **Aus der HAFS-Integration übernehmen:** liest deren Datenbank (nur lesend) und übernimmt alle Benutzer; alternativ einen HAFS-Export einspielen.
+- **Sicherung mit Training:** Export, Import und die automatische Sicherung enthalten Training; Sicherungen aus 1.x lassen es unverändert.
+- **HAFS-App** fürs Handy (Flutter): Training offline, Ernährung im Vollbild, Barcode-Scanner des Systems, Health Connect, Widgets „Nächster Trainingstag“ und „Ernährung heute“. Anmeldung mit Token, auch ohne Admin-Rechte (Home Assistant 2026.11). Updates aus `/share/hafs/app`.
+- **Logo** mit den zwei Hälften Ernährung und Training, als App-Symbol, Favicon und in der App.
+
+### Geändert
+- Name in Home Assistant: **HAFS** (Seitenleiste, App-Seite), Symbol `mdi:home-heart`.
+- An Trainingstagen mit Workout schlägt die Ernährung den Shake vor, auch ohne Eintrag oder Trigger.
+- Die HA-App liest den Konfigurationsordner (nur lesend, für die Übernahme) und `/share` (für App-Pakete); das greift nach dem Neubau.
+
 ## 1.40.1
 
 ### Neu

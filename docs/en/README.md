@@ -1,4 +1,4 @@
-# MyDietAssistant – Documentation
+# HAFS – Documentation
 
 **English** · [Deutsch](../de/README.md)
 
@@ -9,7 +9,7 @@ This guide is split into separate pages. Each page covers one topic and walks yo
 | Page | Contents |
 |---|---|
 | [Installation](installation.md) | Install, start and update the app, app options |
-| [Android app](android.md) | App for your phone: full screen, system scanner, widget |
+| [HAFS app (Android)](android.md) | App for your phone: training offline, nutrition full screen, scanner, widgets |
 | [First steps](first-steps.md) | Set a goal, log your first meal, record your weight |
 | [Settings](settings.md) | Language, units, appearance, optional features, keyboard |
 
@@ -23,6 +23,13 @@ This guide is split into separate pages. Each page covers one topic and walks yo
 | [Recipes](recipes.md) | Create recipes, import from web pages and Mealie |
 | [Weight and body measurements](weight.md) | Weight, trend, measurements, photos, scale as a sensor |
 | [Goals and statistics](goals-and-stats.md) | Daily goals, weekday goals, profiles, statistics and calorie balance |
+
+## Training
+
+| Page | Contents |
+|---|---|
+| [Training](training.md) | Switch the training area on, tabs, import, moving over from the HAFS integration |
+| [Training in Home Assistant](training-ha.md) | Entities, events, gym by zone, interface, Assist |
 
 ## Optional features
 

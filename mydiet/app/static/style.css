@@ -1,3 +1,4 @@
+@import url("tokens.css");
 /* Defaults mirror HA's built-in light/dark look; theme.js overrides them with the live HA theme. */
 :root {
   --primary-color: #03a9f4;
@@ -76,8 +77,8 @@ nav button:focus-visible { outline-color: currentColor; outline-offset: -4px; }
   background: none; box-shadow: none; color: inherit; opacity: .8; font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; white-space: nowrap;
 }
 .area button:hover { opacity: 1; }
-.area button[aria-pressed="true"] { opacity: 1; color: #fff; background: #2e7d5b; }
-.area button[data-area="training"][aria-pressed="true"] { background: #37474f; }
+.area button[aria-pressed="true"] { opacity: 1; color: #fff; background: var(--hafs-color-nutrition); }
+.area button[data-area="training"][aria-pressed="true"] { background: var(--hafs-color-training); }
 .area button:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; }
 .area .ico { display: inline-flex; }
 @media (max-width: 600px) {
@@ -412,9 +413,9 @@ html[data-skin="win"] .area button {
 html[data-skin="win"] .area button[aria-pressed="true"], html[data-skin="win"] .area button[data-area="training"][aria-pressed="true"] {
   background: var(--w-field); color: var(--w-text); box-shadow: var(--w-sunken); font-weight: 700;
 }
-html[data-skin="win"] .area button[data-area="nutrition"] .ico { color: #2e7d5b; }
-html[data-skin="win"] .area button[data-area="training"] .ico { color: #37474f; }
-html[data-skin="win"][data-tone="dark"] .area button[data-area="training"] .ico { color: #b0bec5; }
+html[data-skin="win"] .area button[data-area="nutrition"] .ico { color: var(--hafs-color-nutrition); }
+html[data-skin="win"] .area button[data-area="training"] .ico { color: var(--hafs-color-training); }
+html[data-skin="win"][data-tone="dark"] .area button[data-area="training"] .ico { color: var(--hafs-color-training-light); }
 /* training panel (shadow DOM): only its custom properties reach inside; square, grey surfaces until it gets its own skin */
 html[data-skin="win"] hafs-panel {
   --ha-card-border-radius: 0; --ha-button-border-radius: 0; --ha-card-box-shadow: none;

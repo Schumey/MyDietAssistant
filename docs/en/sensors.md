@@ -43,7 +43,7 @@ With MQTT discovery the sensors get a unique ID: you can rename them in Home Ass
 **Prerequisite:** the MQTT integration (for example with the Mosquitto add-on). The add-on publishes through the HA service `mqtt.publish` and needs no credentials of its own.
 
 1. Install and set up MQTT (Mosquitto add-on and MQTT integration).
-2. Open the MyDietAssistant configuration, turn on `mqtt_discovery` and save.
+2. Open the HAFS configuration, turn on `mqtt_discovery` and save.
 3. Restart the add-on.
 4. Check under *Settings → Devices & services → MQTT* that the device “MyDietAssistant <Name>” appears.
 

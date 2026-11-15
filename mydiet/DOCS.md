@@ -1,7 +1,7 @@
-# MyDietAssistant
+# HAFS – HomeAssistant Fitness Suite
 
-Ernährungstagebuch pro HA-Benutzer (Ingress). Daten liegen in `/data/mydiet.db` und sind im HA-Backup enthalten.
-*Food diary per Home Assistant user (ingress). Data lives in `/data/mydiet.db` and is part of the HA backup.*
+Ernährungstagebuch und Krafttraining pro HA-Benutzer (Ingress). Daten liegen in `/data/mydiet.db` und `/data/hafs.db` und sind im HA-Backup enthalten.
+*Food diary and strength training per Home Assistant user (ingress). Data lives in `/data/mydiet.db` and `/data/hafs.db` and is part of the HA backup.*
 
 Die ausführliche Anleitung mit Schritt-für-Schritt-Beschreibungen steht in einzelnen Seiten auf GitHub, auf Deutsch und Englisch. Die Links funktionieren auch in diesem Tab.
 *The full step-by-step guide is split into separate pages on GitHub, in German and English.*
@@ -10,7 +10,7 @@ Die ausführliche Anleitung mit Schritt-für-Schritt-Beschreibungen steht in ein
 
 ## Schnellstart / Quick start
 
-1. App starten und **In Seitenleiste anzeigen** einschalten, dann **MyDietAssistant** öffnen. / Start the app, turn on **Show in sidebar**, then open **MyDietAssistant**.
+1. App starten und **In Seitenleiste anzeigen** einschalten, dann **HAFS** öffnen. / Start the app, turn on **Show in sidebar**, then open **HAFS**.
 2. Einstellungen → Tagesziele festlegen. / Set your goals under Settings → Daily goals.
 3. Im Tagebuch **+ Nahrungsmittel hinzufügen**. / In the diary tap **+ Add food**.
 
@@ -39,7 +39,10 @@ Erklärungen / Details: [Installation](https://github.com/Schumey/MyDietAssistan
 | Erste Schritte / First steps | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/first-steps.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/first-steps.md) |
 | Tagebuch / Diary | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/diary.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/diary.md) |
 | Lebensmittel / Foods | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/foods.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/foods.md) |
-| Android-App / Android app | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/android.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/android.md) | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/barcode.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/barcode.md) |
+| HAFS-App / HAFS app | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/android.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/android.md) |
+| Barcode-Scanner / Barcode scanner | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/barcode.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/barcode.md) |
+| Training | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/training.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/training.md) |
+| Training in Home Assistant | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/training-ha.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/training-ha.md) |
 | Rezepte / Recipes | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/recipes.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/recipes.md) |
 | Gewicht / Weight | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/weight.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/weight.md) |
 | Ziele und Statistik / Goals and statistics | [Seite](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/goals-and-stats.md) | [page](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/goals-and-stats.md) |

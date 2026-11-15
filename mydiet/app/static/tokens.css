@@ -1,0 +1,27 @@
+/* Generated from design/tokens.json by tools/build_tokens.py - do not edit. */
+:root {
+  --hafs-color-nutrition: #2E7D5B;
+  --hafs-color-training: #37474F;
+  --hafs-color-training-light: #B0BEC5;
+  --hafs-color-accent: #03A9F4;
+  --hafs-color-on-area: #FFFFFF;
+  --hafs-color-apple: #E74C3C;
+  --hafs-color-leaf: #9CCC65;
+  --hafs-space-xs: 4px;
+  --hafs-space-s: 8px;
+  --hafs-space-m: 12px;
+  --hafs-space-l: 16px;
+  --hafs-space-xl: 24px;
+  --hafs-radius-s: 6px;
+  --hafs-radius-m: 12px;
+  --hafs-radius-pill: 18px;
+  --hafs-radius-logo: 104px;
+  --hafs-font-small: 13px;
+  --hafs-font-body: 14px;
+  --hafs-font-tab: 15px;
+  --hafs-font-title: 20px;
+  --hafs-font-big: 28px;
+  --hafs-layout-bar-height: 56px;
+  --hafs-layout-page-width: 860px;
+  --hafs-layout-page-width-wide: 960px;
+}

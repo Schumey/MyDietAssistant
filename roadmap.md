@@ -14,11 +14,16 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 ## Plattformen
 
-Die Android-App liegt seit 1.30.0 in [MyDietAssistant-Android](https://github.com/Schumey/MyDietAssistant-Android); die Punkte hier betreffen dieses Repo, oft mit Gegenstück in der Oberfläche.
+Seit 2.0 ist die App fürs Handy die HAFS-App (Flutter, `app/`); die frühere Kotlin-App [MyDietAssistant-Android](https://github.com/Schumey/MyDietAssistant-Android) wird abgelöst.
 
-- **Android-App: offene Prüfungen** (S): am echten HA und Handy prüfen: echter Barcode-Scan mit dem System-Scanner, Health Connect mit echten Daten (Waage, Uhr), Sitzungserneuerung nach 40 Minuten, Datei-Upload, Download, Verhalten ohne Admin-Rechte und ohne Play-Dienste.
-- **Android-App: Widget im Hintergrund aktualisieren** (M): das Widget aktualisiert sich nur, wenn die App das Tagebuch zeigt; ein Abruf im Hintergrund (WorkManager) bräuchte eine eigene Sitzung bei HA. Ebenso Health Connect im Hintergrund übernehmen.
-- **Android-App: eigener Signierschlüssel** (S): die APK ist mit dem Debug-Schlüssel eines Rechners signiert; ein Release-Keystore (als GitHub-Secret) und ein Workflow im App-Repo, der die APK bei `v*`-Tags baut, würden Updates (auch die Update-Prüfung in der App) unabhängig vom Rechner machen. Ein Schlüsselwechsel zwingt einmal zum Neuinstallieren.
+- **HAFS-App: offene Prüfungen** (S): am echten HA und Handy prüfen: Ingress-Sitzung mit Token (auch ohne Admin-Rechte), Cookie und Sitzungserneuerung in der WebView, Barcode-Scan mit dem System-Scanner, Health Connect mit echten Daten, Datei-Upload, beide Widgets, Update aus `/share/hafs/app`, Verhalten ohne Play-Dienste.
+- **Kotlin-App: Hinweis „Neue App verfügbar“** (S): letzte Version im Repo `MyDietAssistant-Android`, die auf die HAFS-App verweist.
+- **Widget „Ernährung heute“ im Hintergrund aktualisieren** (M): es aktualisiert sich nur, wenn die App das Tagebuch zeigt; ein Abruf im Hintergrund (WorkManager) mit eigener Ingress-Sitzung. Ebenso Health Connect im Hintergrund übernehmen.
+- **App-Releases über GitHub** (S): Workflow, der bei `app-v*`-Tags die APK baut und signiert (Schlüssel als Secret), sobald das Repo öffentlich ist.
+- **Ernährung nativ in der App** (L): Tagesübersicht, Eintragen, Gewicht ohne WebView, offline mit `client_id` gegen Doppelbuchungen.
+- **Training: Einheit lb** (M): Gewichte im Trainingsbereich (Web und App) folgen noch nicht der Einstellung `imperial` der Ernährung.
+- **Training: weitere Sprachen** (M): Panel und App kennen nur Deutsch und Englisch; Französisch, Spanisch und die übrigen fallen auf Englisch zurück.
+- **Wear OS** (L): Sätze von der Uhr aus abhaken.
 
 ## Lebensmittel und Eingabe
 
@@ -32,4 +37,3 @@ Die Android-App liegt seit 1.30.0 in [MyDietAssistant-Android](https://github.co
 - **Wörterbücher prüfen lassen** (S): Muttersprachler für Französisch, Spanisch, Niederländisch, Italienisch, Portugiesisch und Polnisch, bisher maschinell erstellt und nur formal geprüft (gleiche Schlüssel, gleiche Platzhalter).
 - **Offline-Start der App** (M): die App selbst ohne Verbindung öffnen können (Service Worker, mit Ingress schwierig); Eintragen ohne Verbindung geht seit 1.19, solange die App offen ist.
 - **Barrierefreiheit mit Screenreader prüfen** (S): Namen, Rollen und Tastaturbedienung sind seit 1.19 getestet; offen sind ein Durchgang mit echten Screenreadern und Kontrastmessungen (besonders Windows-95-Look).
-- **Zugang ohne Ingress für die HAFS-App** (L): Die Trainings-App HAFS soll später die Ernährung einbetten. Dafür braucht MDA einen internen Port ohne Ingress, der den Header `X-Remote-User-Id` nur aus dem Add-on-Netz akzeptiert (Option), damit die Integration `hafs` Anfragen mit dem Benutzer durchreichen kann. Noch nicht umsetzen.

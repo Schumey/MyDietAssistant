@@ -7152,6 +7152,8 @@ function applySkin() {
   const win = xp || state.skin === "win" || (state.skin !== "default" && SKIN_RE.test(name));
   document.documentElement.dataset.skin = win ? "win" : "default";
   if (xp) document.documentElement.dataset.variant = "xp"; else delete document.documentElement.dataset.variant;
+  const panel = document.querySelector("hafs-panel");   // training (shadow DOM): the look goes in as an attribute
+  if (panel) panel.setAttribute("skin", win ? "win" : "default");
   applyTone();
 }
 // Light or dark HA theme, from the resolved card colour: the Windows look needs it for fields, ink and bevels.
@@ -7245,6 +7247,7 @@ async function renderTraining(tab) {
     catch (e) { root.replaceChildren(h("div", { class: "card err" }, `Training konnte nicht geladen werden: ${e.message || e}`)); return; }
     trainPanel = document.createElement("hafs-panel");
     trainPanel.setAttribute("embedded", "");
+    trainPanel.setAttribute("skin", document.documentElement.dataset.skin || "default");
     trainPanel.tab = tab.slice(2);
     trainPanel.addEventListener("hafs-tab", e => { if (state.tab !== "t-" + e.detail) show("t-" + e.detail, false); });
     trainPanel.narrow = innerWidth < 760;

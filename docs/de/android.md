@@ -1,80 +1,70 @@
-# Android-App
+# HAFS-App (Android)
 
 [← Übersicht](README.md)
 
-Die Android-App ist eine schlanke Hülle um dieselbe Oberfläche, die Du aus Home Assistant kennst. Sie öffnet MyDietAssistant im Vollbild ohne HA-Seitenleiste, scannt Barcodes mit dem Scanner des Systems und bringt ein Widget für den Startbildschirm mit. Deine Daten bleiben in der App in Home Assistant; die Android-App speichert nur die Adresse und den Kalorienstand für das Widget.
+Die HAFS-App ist die App fürs Handy für beide Bereiche. **Training** läuft nativ und offline: Workouts aufzeichnen, Pausen-Timer, Benachrichtigung mit Satz-Eingabe, Pläne, Verlauf. **Ernährung** zeigt das Tagebuch aus Home Assistant im Vollbild, mit dem Scanner des Systems. Dazu kommen zwei Widgets für den Startbildschirm. Deine Daten liegen in Home Assistant; die App gleicht das Training ab und hält es für unterwegs auf dem Handy.
 
-Du brauchst sie nicht: In der Companion-App oder im Browser funktioniert alles genauso. Die App ist bequemer, wenn Du oft scannst oder den Stand ohne Öffnen sehen willst.
+Sie ersetzt die frühere Android-App „MyDietAssistant“ und die bisherige HAFS-App 0.5. Im Browser und in der Companion-App funktioniert Ernährung weiterhin ohne die App.
 
 ## Voraussetzungen
 
 - Android 8 oder neuer.
-- MyDietAssistant ist in Home Assistant installiert (siehe [Installation](installation.md)).
-- Für den Vollbild-Modus ein HA-Konto mit Administratorrechten. Ohne diese Rechte öffnet die App MyDietAssistant innerhalb der HA-Oberfläche (mit Seitenleiste); der Scanner läuft dann über die Kamera im Browser.
-- Für den System-Scanner die Google-Play-Dienste (auf fast allen Handys vorhanden). Ohne sie nimmt die App den Scanner der Oberfläche.
+- HAFS ist in Home Assistant installiert und gestartet (siehe [Installation](installation.md)).
+- Home Assistant 2026.11 oder neuer. Damit holt die App die Anmeldung für HAFS auch für Benutzer ohne Administratorrechte, solange HAFS in Home Assistant nicht nur für Administratoren freigegeben ist.
+- Für Training die Zusatzfunktion **Training** (siehe [Training](training.md)).
+- Für den System-Scanner die Google-Play-Dienste (auf fast allen Handys vorhanden). Ohne sie nimmt die Ernährung den Scanner der Oberfläche.
 
 ## App installieren
 
-Die App gibt es nicht im Play Store, sondern als APK-Datei auf GitHub, im eigenen Repository [MyDietAssistant-Android](https://github.com/Schumey/MyDietAssistant-Android).
+Die App gibt es nicht im Play Store, sondern als APK-Datei `hafs-<Version>.apk` auf der [Releases-Seite](https://github.com/Schumey/MyDietAssistant/releases) (Versionen `app-v…`).
 
-1. Öffne auf dem Handy die [neueste Version](https://github.com/Schumey/MyDietAssistant-Android/releases/latest) und lade die Datei `MyDietAssistant-android-<Version>.apk` herunter.
-2. Tippe auf die heruntergeladene Datei. Android fragt beim ersten Mal, ob der Browser Apps installieren darf: erlaube es unter **Einstellungen → Unbekannte Apps installieren**.
+1. Lade auf dem Handy die neueste Datei `hafs-<Version>.apk` herunter.
+2. Tippe auf die Datei. Android fragt beim ersten Mal, ob der Browser Apps installieren darf: erlaube es unter **Einstellungen → Unbekannte Apps installieren**.
 3. Tippe auf **Installieren**. Play Protect warnt eventuell vor einer unbekannten App; wähle **Trotzdem installieren**.
 
-## Updates
-
-Ab Version 0.4.0 sucht die App selbst nach neuen Versionen: beim Start höchstens einmal am Tag. Gibt es eine, fragt sie mit **Installieren**, **Später** oder **Überspringen**.
-
-1. Tippe auf **Installieren**. Beim ersten Mal öffnet Android die Einstellung **Unbekannte Apps installieren** für MyDietAssistant; erlaube es, gehe zurück und tippe noch einmal auf **Installieren**.
-2. Die App lädt die neue Version (Hinweis in der Benachrichtigungsleiste) und öffnet danach die Installation. Tippe auf **Aktualisieren**.
-
-Von Hand suchen: *Einstellungen → Android-App → Nach App-Updates suchen*. Dort steht auch die installierte Version. Deine Einstellungen bleiben bei jedem Update erhalten.
-
-> Von 0.2.0 oder 0.3.0 kommend installierst Du 0.4.0 einmal von Hand über die alte Version (Schritte oben). Ab dann meldet sich die App selbst.
+Hattest Du schon die HAFS-App 0.5, aktualisierst Du einfach: Daten und Anmeldung bleiben. Die frühere App „MyDietAssistant“ kannst Du danach deinstallieren; beide Apps stören sich nicht.
 
 ## Einrichten
 
-1. Öffne **MyDietAssistant**. Beim ersten Start fragt die App nach der **Adresse von Home Assistant**, zum Beispiel `http://homeassistant.local:8123` oder Deine Adresse von unterwegs (Nabu Casa, Tailscale, eigene Domain).
-2. Die **App-Kennung** ist `eeb2daa3_mydiet`. Ändere sie nur, wenn Du MyDietAssistant aus einem anderen Repository installiert hast (die Kennung steht in HA in der Adresszeile der App-Seite).
-3. Tippe auf **Verbinden** und melde Dich wie gewohnt bei Home Assistant an. Die App sieht Dein Passwort nicht, die Anmeldung läuft über die HA-Anmeldeseite.
-4. Danach erscheint das Tagebuch im Vollbild.
+1. Lege in Home Assistant einen langlebigen Zugriffstoken an: *Profil → Sicherheit → Langlebige Zugriffstoken → Token erstellen*. Kopiere ihn.
+2. Öffne **HAFS**. Auf **Mit Home Assistant verbinden** trägst Du die **Adresse** ein (zum Beispiel `http://homeassistant.local:8123` oder Deine Adresse von unterwegs) und den **Langlebigen Zugriffstoken**.
+3. Tippe auf **Verbinden**. Die App holt Deine Trainingsdaten.
 
-Adresse ändern: Wenn Home Assistant nicht erreichbar ist, zeigt die App **Server ändern**. Alternativ die App-Daten in den Android-Einstellungen löschen.
+Die App findet HAFS in Home Assistant selbst (Kennung `eeb2daa3_mydiet` oder `local_mydiet`). Meldet sie, HAFS sei nicht gefunden, prüfe, ob die App in Home Assistant läuft und Home Assistant aktuell ist.
+
+## Ernährung und Training
+
+Oben in der Leiste wechselt der Umschalter **Ernährung | Training** zwischen den Bereichen; die App merkt sich den letzten.
+
+- **Training** hat unten die Reiter **Training**, **Verlauf**, **Statistik** und **Einstellungen**. Der Knopf mit der Wolke gleicht ab; ohne Verbindung zeichnest Du weiter auf, abgeglichen wird später.
+- **Ernährung** ist die Oberfläche aus Home Assistant im Vollbild, wie in der [Übersicht](README.md) beschrieben. Die Zurück-Taste blättert dort zurück. Datei-Uploads (Sicherung, Fotos, Tabellen) öffnen die Dateiauswahl von Android.
 
 ## Barcode scannen
 
-Tippe im Hinzufügen-Dialog wie gewohnt auf **Scannen**. In der App öffnet sich der Scanner von Google (Hinweis „Scanned by Google“). Er braucht keine Kamera-Berechtigung für die App und erkennt EAN-13, EAN-8, UPC-A und UPC-E. Mit dem **X** brichst Du ab. Was danach passiert, steht unter [Barcode-Scanner](barcode.md).
+Tippe in der Ernährung im Hinzufügen-Dialog wie gewohnt auf **Scannen**. Es öffnet sich der Scanner von Google (Hinweis „Scanned by Google“). Er braucht keine Kamera-Berechtigung und erkennt EAN-13, EAN-8, UPC-A und UPC-E. Was danach passiert, steht unter [Barcode-Scanner](barcode.md).
 
-## Widget
+## Widgets
 
 1. Halte auf dem Startbildschirm eine freie Stelle gedrückt und tippe auf **Widgets**.
-2. Suche **MyDietAssistant** und ziehe das Widget auf den Startbildschirm (4 × 1).
-3. Das Widget zeigt die Kalorien von heute gegen Dein Ziel, wie viel noch übrig ist und wann der Stand zuletzt aktualisiert wurde.
-4. **Scannen** öffnet die App direkt mit dem Barcode-Scanner, **Eintragen** mit dem Dialog zum Eintragen für die erste Mahlzeit. Ein Tipp auf die Zahlen öffnet die App.
+2. Suche **HAFS** und ziehe eines der beiden Widgets auf den Startbildschirm:
+   - **HAFS**: der nächste Trainingstag mit Übungen und Gewichten.
+   - **HAFS Ernährung**: „Ernährung heute“ mit den übrigen Kalorien und „x von y kcal“. Der linke Knopf öffnet den Barcode-Scanner, **+** den Dialog zum Eintragen; ein Tipp auf die Zahlen öffnet die Ernährung.
 
-Das Widget hat keine eigene Verbindung zu Home Assistant. Es übernimmt die Zahlen jedes Mal, wenn die App das heutige Tagebuch zeigt. Nach Mitternacht steht dort **Öffne die App für den Stand von heute**, bis Du die App einmal geöffnet hast. Einträge, die Du an einem anderen Gerät machst, sieht das Widget erst nach dem nächsten Öffnen.
+Das Ernährungs-Widget übernimmt die Zahlen, wenn die App das heutige Tagebuch zeigt. Nach Mitternacht steht dort **Zum Aktualisieren die Ernährung öffnen**, bis Du sie einmal geöffnet hast.
 
-## Health Connect (Gewicht, Schritte, Kalorien)
+## Health Connect
 
-Ab App-Version 0.3.0 übernimmt MyDietAssistant Werte aus Health Connect, dem Gesundheitsspeicher von Android. Dort landen zum Beispiel Daten von Waagen, Uhren und Fitness-Apps (Samsung Health, Fitbit, Withings, Google Fit …).
+- **Workouts nach Health Connect schreiben:** in Training unter *Einstellungen → Health Connect* **Workouts in Health Connect eintragen** einschalten. Fertige Workouts landen dort als Krafttraining mit Kalorien.
+- **Gewicht, Schritte, Kalorien übernehmen:** in Ernährung *Einstellungen → Android-App → Aus Health Connect übernehmen (30 Tage)*. Android fragt einmal nach der Erlaubnis zum Lesen. Regeln wie bisher: Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“ (siehe [Aktivität](activity.md)).
 
-1. Öffne *Einstellungen → Android-App*. Die Karte gibt es nur in der App.
-2. Tippe auf **Aus Health Connect übernehmen (30 Tage)**.
-3. Beim ersten Mal fragt Android, worauf MyDietAssistant zugreifen darf. Wähle **Alle zulassen** und **Zulassen**. Die App liest nur Gewicht, Schritte und aktive Kalorien und schreibt nichts in Health Connect.
-4. Danach steht unter dem Knopf, wie viele Werte übernommen wurden.
-5. Schalte **Beim Öffnen automatisch übernehmen (letzte 7 Tage)** ein, damit das bei jedem Öffnen der App von selbst passiert.
+## Updates
 
-Regeln:
-- **Gewicht** wird nur für Tage übernommen, an denen MyDietAssistant noch keinen Wert hat. Ein eingetippter Wert oder einer von der Waage in Home Assistant hat Vorrang. Bei mehreren Messungen an einem Tag zählt die letzte.
-- **Schritte und aktive Kalorien** braucht die Zusatzfunktion „Aktivität“ (*Einstellungen → Zusatzfunktionen*), siehe [Aktivität](activity.md). Tage, die Du von Hand eingetragen hast, bleiben unverändert.
-- Health Connect gibt neuen Apps nur die Daten der letzten 30 Tage vor der Freigabe heraus.
+Die App sucht beim Start höchstens einmal am Tag nach einer neuen Version, in Ernährung auch von Hand unter *Einstellungen → Android-App → Nach App-Updates suchen*. Die Pakete liegen in Home Assistant im Ordner `/share/hafs/app` (Dateien `hafs-<Version>.apk`); lege eine neue Version dort ab, und alle Handys bieten sie an.
 
-Den Zugriff entziehst Du in den Android-Einstellungen unter *Health Connect → App-Berechtigungen → MyDietAssistant*.
-
-## Bericht drucken
-
-*Einstellungen → Export für Berater und Trainer → Bericht öffnen (Drucken / PDF)* öffnet den Bericht in der App. **Drucken / als PDF speichern** öffnet den Druckdialog von Android; dort wählst Du einen Drucker oder **Als PDF speichern**. Mit der Zurück-Taste kommst Du wieder in die App.
+1. Tippe auf **Herunterladen und installieren**. Beim ersten Mal öffnet Android **Unbekannte Apps installieren** für HAFS; erlaube es und tippe noch einmal.
+2. Bestätige die Installation. Daten und Anmeldung bleiben erhalten.
 
 ## Bekannte Grenzen
 
-- Die APK ist nicht im Play Store und mit einem Entwicklerschlüssel signiert. Installiere Updates deshalb nur über die App selbst oder von der [Releases-Seite](https://github.com/Schumey/MyDietAssistant-Android/releases) des App-Repositorys.
+- Ernährung läuft in der App nur unter Android. In der Windows-Version öffnet **Im Browser öffnen** die Seite in Home Assistant.
+- Die APK ist mit einem eigenen Schlüssel signiert und nicht im Play Store. Installiere Updates nur über die App oder von der Releases-Seite.

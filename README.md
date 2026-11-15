@@ -1,11 +1,15 @@
-# MyDietAssistant
+<p align="center"><img src="mydiet/logo.png" alt="HAFS" width="250"></p>
+
+# HAFS – HomeAssistant Fitness Suite
 
 [English](README.en.md) · **Deutsch**
 
 [![Tests](https://github.com/Schumey/MyDietAssistant/actions/workflows/test.yml/badge.svg)](https://github.com/Schumey/MyDietAssistant/actions/workflows/test.yml)
 [![App lint](https://github.com/Schumey/MyDietAssistant/actions/workflows/lint.yml/badge.svg)](https://github.com/Schumey/MyDietAssistant/actions/workflows/lint.yml)
 
-**Dein Ernährungstagebuch in Home Assistant.** Kalorien, Makros und Gewicht erfassen wie bei MyFitnessPal, nur ohne Cloud-Konto: Alles liegt in einer SQLite-Datei auf Deinem Home-Assistant-Gerät und ist im normalen HA-Backup enthalten. Home Assistant liefert Sensoren, Trigger und Automationen dazu. Für Android gibt es eine eigene App mit Barcode-Scanner und Widget.
+**Ernährung und Krafttraining in Home Assistant.** Kalorien, Makros und Gewicht erfassen wie bei MyFitnessPal, Workouts aufzeichnen wie bei GymRun oder Strong, nur ohne Cloud-Konto: Alles liegt in SQLite-Dateien auf Deinem Home-Assistant-Gerät und ist im normalen HA-Backup enthalten. Home Assistant liefert Sensoren, Trigger und Automationen dazu. Die HAFS-App fürs Handy zeichnet Training offline auf und zeigt die Ernährung im Vollbild.
+
+HAFS hieß bis Version 1.x **MyDietAssistant**; Training war eine eigene Integration. Beides ist jetzt eine App mit dem Umschalter **Ernährung | Training**.
 
 [![Öffne Deine Home-Assistant-Instanz und füge dieses App-Repository hinzu.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FSchumey%2FMyDietAssistant)
 
@@ -16,9 +20,9 @@
 | | |
 |---|---|
 | **Was** | Home-Assistant-App (früher „Add-on“) mit Weboberfläche im HA-Seitenmenü |
-| **Wo laufen die Daten** | nur lokal: `/data/mydiet.db`, dazu tägliche JSON-Sicherungen |
+| **Wo laufen die Daten** | nur lokal: `/data/mydiet.db` und `/data/hafs.db`, dazu tägliche JSON-Sicherungen |
 | **Wer** | jedes HA-Konto hat sein eigenes Tagebuch; Haushalte können Einträge und Lebensmittel teilen |
-| **Wie** | Browser, Companion-App oder die [Android-App](#android-app) |
+| **Wie** | Browser, Companion-App oder die [HAFS-App](#android-app) |
 | **Sprachen** | Deutsch, Englisch, Französisch, Spanisch, Niederländisch, Italienisch, Portugiesisch, Polnisch; metrisch und imperial |
 | **Internet** | nur für die optionalen Online-Datenbanken (Open Food Facts, USDA) und den Rezept-Import |
 
@@ -53,14 +57,23 @@
   <img src="docs/screenshots/de/weight.png" alt="Gewichtsverlauf" width="49%">
 </p>
 
+## Training
+
+Mit der Zusatzfunktion **Training** kommt ein zweiter Bereich dazu: Trainingspläne und -tage, Studios mit Geräten und Gewichtsstufen, Verlauf je Übung mit geschätztem 1RM, Sätze je Muskelgruppe und Gewichtsvorschläge, die Deine Ernährungsphase (Diät, Halten, Aufbau) berücksichtigen. Import aus GymRun, Strong und Hevy; Entitäten, Events und Assist für Home Assistant. Anleitung: [Training](docs/de/training.md), [Training in Home Assistant](docs/de/training-ha.md).
+
+<p align="center">
+  <img src="docs/screenshots/de/training.png" alt="Training: nächster Trainingstag, Kennzahlen, Sätze je Muskelgruppe" width="49%">
+  <img src="docs/screenshots/de/training-plans.png" alt="Trainingspläne und Studios" width="49%">
+</p>
+
 Die Bilder zeigen das Standard-Theme von Home Assistant mit Beispieldaten. Die Oberfläche übernimmt Dein HA-Theme; zu Retro-Themes wie „HA 95/98“ gibt es einen passenden Windows-Look.
 
 ## Installation
 
-MyDietAssistant ist eine **App** (bis HA 2026.1 „Add-on“) und braucht Home Assistant OS oder Supervised. Im **Marketplace** (seit HA 2026.11, Nachfolger von HACS) findest Du sie nicht: Der Marketplace installiert Integrationen, Karten und Themes, aber keine Apps.
+HAFS ist eine **App** (bis HA 2026.1 „Add-on“) und braucht Home Assistant OS oder Supervised. Im **Marketplace** (seit HA 2026.11, Nachfolger von HACS) findest Du sie nicht: Der Marketplace installiert Integrationen, Karten und Themes, aber keine Apps.
 
 1. Repository hinzufügen: mit dem Knopf oben oder von Hand unter **Einstellungen → Apps → App installieren → ⋮ → Repositories** → `https://github.com/Schumey/MyDietAssistant`.
-2. **MyDietAssistant** installieren, starten und **In Seitenleiste anzeigen** einschalten.
+2. **HAFS** installieren, starten und **In Seitenleiste anzeigen** einschalten.
 3. Öffnen, Ziel festlegen, loslegen. Die [Ersten Schritte](docs/de/first-steps.md) führen durch die Einrichtung.
 
 Updates erscheinen unter **Einstellungen → Updates**. Ausführlich: [Installation](docs/de/installation.md).
@@ -69,16 +82,19 @@ Updates erscheinen unter **Einstellungen → Updates**. Ausführlich: [Installat
 
 <p align="center"><img src="docs/screenshots/de/diary-mobile.png" alt="Tagebuch auf dem Handy" width="260"></p>
 
-Die Weboberfläche läuft auch in der Companion-App. Die eigene Android-App bietet zusätzlich:
+Die Weboberfläche läuft auch in der Companion-App. Die HAFS-App bietet zusätzlich:
 
-- **Vollbild** ohne HA-Seitenleiste, Anmeldung über die normale HA-Anmeldeseite
+- **Training** nativ und offline: Workout aufzeichnen, Pausen-Timer, Benachrichtigung mit Satz-Eingabe, Abgleich mit Home Assistant
+- Umschalter **Ernährung | Training**; Ernährung im Vollbild ohne HA-Seitenleiste
+
+- Anmeldung mit einem langlebigen Zugriffstoken, auch ohne Administratorrechte (Home Assistant 2026.11 oder neuer)
 - **Barcode-Scanner des Systems** (schnell, ohne HTTPS und ohne Kamera-Berechtigung)
-- **Widget** für den Startbildschirm: Kalorien von heute, Rest bis zum Ziel, Knöpfe **Scannen** und **Eintragen**
+- **Widgets** für den Startbildschirm: nächster Trainingstag und „Ernährung heute“ mit Knöpfen zum Scannen und Eintragen
 
 - **Health Connect:** Gewicht, Schritte und aktive Kalorien vom Handy übernehmen
 - **Updates** direkt in der App
 
-**[APK herunterladen](https://github.com/Schumey/MyDietAssistant-Android/releases/latest)** (Android 8 oder neuer) · [Quellcode und Versionen](https://github.com/Schumey/MyDietAssistant-Android) · [Anleitung](docs/de/android.md)
+**[APK herunterladen](https://github.com/Schumey/MyDietAssistant/releases)** (Dateien `hafs-<Version>.apk`, Android 8 oder neuer) · [Anleitung](docs/de/android.md)
 
 Die App gibt es nicht im Play Store. Android fragt deshalb bei der Installation, ob Du Apps aus dieser Quelle zulassen willst. Neue Versionen findet die App danach selbst.
 

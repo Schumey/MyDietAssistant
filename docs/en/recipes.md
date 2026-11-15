@@ -49,7 +49,7 @@ For recipes you keep in [Mealie](https://mealie.io).
 ### Set up
 
 1. In Mealie open your profile → **API tokens** and create a token.
-2. In MyDietAssistant open *Settings → Mealie* (the card appears with the optional feature “Recipes”).
+2. In HAFS open *Settings → Mealie* (the card appears with the optional feature “Recipes”).
 3. Enter the server **Address**, for example `http://mealie:9000`. The home network is allowed; `localhost` and link-local addresses are not.
 4. Paste the **API token** and tap **Save**. The token is never shown again; an empty field leaves it unchanged. To remove it, clear the address.
 

@@ -2,6 +2,26 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 2.0.0
+
+MyDietAssistant is now called **HAFS** (HomeAssistant Fitness Suite) and brings the strength training that used to be the integration `hafs`. Slug, data and nutrition entities stay the same. Moving over: [Training](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/training.md#moving-over-from-the-hafs-integration).
+
+### New
+- **Training area** (optional feature "Training"): training plans and days, gyms with equipment and weight steps, workouts with sets, history per exercise with estimated 1RM and records, sets per muscle group, review, weight suggestions by nutrition phase, import from GymRun, Strong and Hevy. The data lives in `/data/hafs.db`.
+- **Switch Nutrition | Training** at the top of the bar; each area has its own tabs. The last area is remembered, a running workout opens training.
+- **Nutrition phase from the goal:** lose = cut, maintain, gain = bulk; can be changed by hand.
+- **Entities and events for training** (`sensor.hafs_<name>_*`, `binary_sensor.hafs_<name>_workout_active`, `hafs_workout_started`, `hafs_workout_finished`, `hafs_record`), as states or with `mqtt_discovery` as MQTT entities. Gym detection through the person's zone, review and plan suggestion through Home Assistant's AI.
+- **Interface `/api/ext/training/*`** for automations and Assist ("What do I train today?"), guide with `rest_command` and `intent_script`.
+- **Take over from the HAFS integration:** reads its database (read-only) and takes over every user; alternatively load a HAFS export.
+- **Backup with training:** export, import and the automatic backup include training; backups from 1.x leave it unchanged.
+- **HAFS app** for the phone (Flutter): training offline, nutrition full screen, system barcode scanner, Health Connect, widgets "Next training day" and "Nutrition today". Sign-in with a token, also without admin rights (Home Assistant 2026.11). Updates from `/share/hafs/app`.
+- **Logo** with the two halves nutrition and training, as app icon, favicon and in the app.
+
+### Changed
+- Name in Home Assistant: **HAFS** (sidebar, app page), icon `mdi:home-heart`.
+- On training days with a workout, nutrition suggests the shake even without an entry or trigger.
+- The HA app reads the configuration folder (read-only, for the take-over) and `/share` (for app packages); this takes effect after a rebuild.
+
 ## 1.40.1
 
 ### New
