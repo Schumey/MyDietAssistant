@@ -17,7 +17,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "custom_components" / "hafs"))
+sys.path.insert(0, str(ROOT / "mydiet" / "app" / "training"))
 
 from core import catalog, targets  # noqa: E402
 from core.store import Store  # noqa: E402

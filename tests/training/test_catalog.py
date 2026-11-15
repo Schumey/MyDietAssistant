@@ -84,7 +84,7 @@ def test_store_pull_seeds_catalog(tmp_path):
     assert store.pull(OWNER, out["cursors"], 1000)["records"]["exercise"] == []
 
 
-REAL = Path(__file__).resolve().parent.parent / "GymRun_10Nov26.csv"
+REAL = Path(__file__).resolve().parents[2] / "GymRun_10Nov26.csv"
 
 
 @pytest.mark.skipif(not REAL.exists(), reason="real export not present")

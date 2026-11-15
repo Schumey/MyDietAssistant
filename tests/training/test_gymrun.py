@@ -57,7 +57,7 @@ def test_migrate_sets_version_and_is_repeatable():
     assert db.migrate(conn) == db.SCHEMA_VERSION
 
 
-REAL = Path(__file__).resolve().parent.parent / "GymRun_10Nov26.csv"
+REAL = Path(__file__).resolve().parents[2] / "GymRun_10Nov26.csv"
 
 
 @pytest.mark.skipif(not REAL.exists(), reason="real export not present")

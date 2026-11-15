@@ -6,5 +6,6 @@ RUN apk add --no-cache python3 py3-pip \
     && /venv/bin/pip install --no-cache-dir fastapi "uvicorn[standard]" httpx
 
 COPY app /app
+COPY config.yaml /app/config.yaml
 WORKDIR /app
 CMD ["/venv/bin/uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8099"]

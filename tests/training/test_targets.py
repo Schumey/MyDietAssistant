@@ -151,7 +151,7 @@ def test_store_gymrun_import_computes_targets(tmp_path):
     assert t["weight"] == 102.5 and t["reason_code"] == "up"
 
 
-REAL = Path(__file__).resolve().parent.parent / "GymRun_10Nov26.csv"
+REAL = Path(__file__).resolve().parents[2] / "GymRun_10Nov26.csv"
 
 
 @pytest.mark.skipif(not REAL.exists(), reason="real export not present")

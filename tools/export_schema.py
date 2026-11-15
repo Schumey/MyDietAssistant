@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "custom_components" / "hafs"))
+sys.path.insert(0, str(ROOT / "mydiet" / "app" / "training"))
 
 from core import db, sync  # noqa: E402
 
