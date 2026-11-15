@@ -24,7 +24,7 @@ Alle Funktionen hier betreffen nur Dein Benutzerkonto, auch Export und Import.
 2. Das Add-on legt täglich eine JSON-Sicherung je Benutzer in `/backup/mydiet/` ab.
 3. Unter *Einstellungen → Automatische Sicherung* siehst Du die letzten Sicherungen. **Jetzt sichern** legt sofort eine an.
 
-Die JSON-Sicherung enthält Einträge, Lebensmittel, Mahlzeiten, Gewicht, Trigger (Aktionen und Mahlzeiten-Regeln), Zusatzfunktions-Einstellungen, Erinnerung, Optik, die Mealie-Adresse und mehr. Nicht enthalten sind der Trigger-Verlauf, Fortschrittsfotos und der Mealie-Token.
+Die JSON-Sicherung enthält Einträge, Lebensmittel, Mahlzeiten, Gewicht, Trigger (Aktionen und Mahlzeiten-Regeln), alle Einstellungen (Zusatzfunktionen, Stufenplan, Mikronährstoff-Ziele, Wochenbericht, Erinnerung, Optik und mehr) und die Mealie-Adresse. Nicht enthalten sind der Trigger-Verlauf, Fortschrittsfotos, der Mealie-Token und der Anzeigename.
 
 ## Daten löschen
 

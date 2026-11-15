@@ -22,6 +22,11 @@ MyDietAssistant is now called **HAFS** (HomeAssistant Fitness Suite) and brings 
 - On training days with a workout, nutrition suggests the shake even without an entry or trigger.
 - The HA app reads the configuration folder (read-only, for the take-over) and `/share` (for app packages); this takes effect after a rebuild.
 
+## 1.41.0
+
+### New
+- **All options in the backup:** The JSON backup (export and automatic backup) now contains all settings, for example the step plan, micronutrient goals, the weekly report, the shopping list and the training day settings. New options are included automatically from now on. Not backed up are the Mealie token, the display name and internal state (what was already notified, scale session). Older backups can still be restored.
+
 ## 1.40.1
 
 ### New

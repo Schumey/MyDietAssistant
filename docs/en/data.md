@@ -24,7 +24,7 @@ All functions here only affect your own user account, including export and impor
 2. The add-on writes a daily JSON backup per user to `/backup/mydiet/`.
 3. Under *Settings → Automatic backup* you see the latest backups. **Back up now** creates one immediately.
 
-The JSON backup contains entries, foods, meals, weight, triggers (actions and meal rules), settings of optional features, reminder, look, the Mealie address and more. It does not contain the trigger history, progress photos or the Mealie token.
+The JSON backup contains entries, foods, meals, weight, triggers (actions and meal rules), all settings (optional features, step plan, micronutrient goals, weekly report, reminder, look and more) and the Mealie address. It does not contain the trigger history, progress photos, the Mealie token or the display name.
 
 ## Delete data
 
