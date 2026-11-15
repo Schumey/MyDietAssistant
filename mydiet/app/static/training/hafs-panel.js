@@ -1,6 +1,7 @@
-// HAFS panel: training log of the hafs integration, shown in the Home Assistant sidebar.
-// Plain web component without build step. Reads through `hafs/web/query`, writes settings through the
-// normal `hafs/pref/*` commands. Colors come from the Home Assistant theme, so it follows light and dark.
+// HAFS panel: the training area. Plain web component without build step. Reads through `hafs/web/query`,
+// writes settings through the normal `hafs/pref/*` commands. Colors come from the Home Assistant theme.
+// With the attribute `embedded` (the app's ingress page, see app.js `trainingPanel`) it has no bar of its own:
+// the page draws the tabs, sets `panel.tab` and listens for `hafs-tab` when the panel moves to another tab itself.
 
 const version = new URL(import.meta.url).search;
 const { makeT, language, makeFormat, esc, lineChart, barChart } = await import(`./hafs-common.js${version}`);
@@ -68,6 +69,26 @@ class HafsPanel extends HTMLElement {
     }
   }
 
+  static get TABS() { return TABS; }
+
+  get tab() { return this._tab; }
+
+  // Open a tab from outside (embedded mode); drops open details and editors like a click on the tab does.
+  set tab(tab) {
+    if (!TABS.includes(tab)) return;
+    this._setTab(tab, false);
+  }
+
+  _setTab(tab, notify = true) {
+    this._tab = tab;
+    try { localStorage.setItem(TAB_KEY, tab); } catch { /* ignore */ }
+    this._detail = null;
+    this._exId = null;
+    this._edit = null;
+    if (this._main) this._show();
+    if (notify) this.dispatchEvent(new CustomEvent("hafs-tab", { detail: tab }));
+  }
+
   set narrow(narrow) {
     this._narrow = narrow;
     if (this._menu) this._menu.narrow = narrow;
@@ -78,15 +99,18 @@ class HafsPanel extends HTMLElement {
 
   _build() {
     const t = this._t;
+    const embedded = this.hasAttribute("embedded");
     this.shadowRoot.innerHTML = `<style>${CSS}</style>
-      <header class="bar"><span id="menu"></span><h1>${esc(t("title"))}</h1>
-        <nav class="tabs" role="tablist">${TABS.map((k) => `<button role="tab" data-tab="${k}">${esc(t("tab_" + k))}</button>`).join("")}</nav></header>
+      ${embedded ? "" : `<header class="bar"><span id="menu"></span><h1>${esc(t("title"))}</h1>
+        <nav class="tabs" role="tablist">${TABS.map((k) => `<button role="tab" data-tab="${k}">${esc(t("tab_" + k))}</button>`).join("")}</nav></header>`}
       <main id="main" tabindex="-1"></main>
       <div class="toast" id="toast" role="status" hidden></div>`;
-    this._menu = document.createElement("ha-menu-button");
-    this._menu.hass = this._hass;
-    this._menu.narrow = this._narrow;
-    this.shadowRoot.getElementById("menu").append(this._menu);
+    if (!embedded) {
+      this._menu = document.createElement("ha-menu-button");
+      this._menu.hass = this._hass;
+      this._menu.narrow = this._narrow;
+      this.shadowRoot.getElementById("menu").append(this._menu);
+    }
     this._main = this.shadowRoot.getElementById("main");
     this.shadowRoot.addEventListener("click", (e) => this._onClick(e));
     this.shadowRoot.addEventListener("input", (e) => this._onInput(e));
@@ -154,22 +178,16 @@ class HafsPanel extends HTMLElement {
 
   _onClick(e) {
     const tab = e.target.closest("[data-tab]");
-    if (tab) {
-      this._tab = tab.dataset.tab;
-      try { localStorage.setItem(TAB_KEY, this._tab); } catch { /* ignore */ }
-      this._detail = null;
-      this._exId = null;
-      this._edit = null;
-      this._show();
-      return;
-    }
+    if (tab) { this._setTab(tab.dataset.tab); return; }
     const el = e.target.closest("[data-act]");
     if (!el) return;
     if (el.dataset.act.startsWith("e-")) { this._editClick(el); return; }
     const v = el.dataset.v;
     switch (el.dataset.act) {
       case "reload": this._cache = {}; this._history = { list: [], more: false }; this._show(); break;
-      case "open-workout": this._tab = "training"; this._trainMode = "workouts"; this._detail = v; this._show(); break;
+      case "open-workout":
+        if (this._tab !== "training") { this._tab = "training"; this.dispatchEvent(new CustomEvent("hafs-tab", { detail: "training" })); }
+        this._trainMode = "workouts"; this._detail = v; this._show(); break;
       case "close-detail": this._detail = null; this._show(); break;
       case "more-history": this._moreHistory(); break;
       case "train-mode": this._trainMode = v; this._detail = null; this._show(); break;
@@ -642,6 +660,10 @@ const CSS = EDITOR_CSS + `
   font-family: var(--ha-font-family-body, var(--primary-font-family, var(--paper-font-body1_-_font-family, Roboto, Noto, system-ui, sans-serif)));
   font-size: 14px; line-height: 1.4; font-variant-numeric: tabular-nums;
 }
+/* embedded in the app's page: the page scrolls, the panel only lays out its content */
+:host([embedded]) { display: block; height: auto; overflow: visible; background: none; }
+:host([embedded]) main { overflow: visible; }
+:host([embedded]) .page { padding-left: 0; padding-right: 0; }
 * { box-sizing: border-box; }
 h1, h2, h3, h4, p, ul, dl, dd { margin: 0; padding: 0; }
 /* one app bar with the tabs inside, like MyDietAssistant */

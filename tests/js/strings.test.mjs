@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { STRINGS } from "../../custom_components/hafs/www/hafs-common.js";
+import { STRINGS } from "../../mydiet/app/static/training/hafs-common.js";
 
 test("German and English texts have the same keys and the same placeholders", () => {
   const de = Object.keys(STRINGS.de), en = Object.keys(STRINGS.en);

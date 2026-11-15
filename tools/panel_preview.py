@@ -2,7 +2,7 @@
 
     python tools/panel_preview.py [port]      then open http://localhost:8765/
 
-Serves custom_components/hafs/www and answers the panel's WebSocket-style calls over HTTP from a temporary
+Serves the panel on its own (mydiet/app/static/training, the stand-alone mode with its own bar) and answers the panel's WebSocket-style calls over HTTP from a temporary
 database (never a real one). The page fakes the `hass` object the panel gets from Home Assistant.
 Theme: add ?dark=1 to the address.
 """
@@ -23,7 +23,7 @@ from core import catalog, targets  # noqa: E402
 from core.store import Store  # noqa: E402
 
 OWNER = "preview"
-WWW = ROOT / "custom_components" / "hafs" / "www"
+WWW = ROOT / "mydiet" / "app" / "static" / "training"
 
 PAGE = """<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>HAFS preview</title><style>
@@ -45,26 +45,6 @@ const hass = { language: lang, connection: { sendMessagePromise: async (msg) => 
 await import("/hafs_static/hafs-panel.js?v=preview");
 const el = document.querySelector("hafs-panel");
 el.narrow = innerWidth < 760; el.hass = hass;
-</script></body></html>"""
-
-
-CARD_PAGE = PAGE.split("</style>")[0] + """.row{padding:16px;max-width:460px}
-ha-card{display:block;background:var(--card-background-color);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-</style></head><body><div class="row"><hafs-card id="c"></hafs-card></div><script type="module">
-if (location.search.includes("dark")) document.body.classList.add("dark");
-const lang = new URLSearchParams(location.search).get("lang") || "de";
-const hass = { language: lang, states: {}, connection: { sendMessagePromise: async (msg) => {
-  const r = await fetch("/ws", { method: "POST", body: JSON.stringify(msg) });
-  const j = await r.json();
-  if (!r.ok) throw j;
-  return j;
-} } };
-if (!customElements.get("ha-card")) customElements.define("ha-card", class extends HTMLElement {});
-await import("/hafs_static/hafs-card.js?v=preview");
-const el = document.getElementById("c");
-const ex = new URLSearchParams(location.search).get("exercise");
-el.setConfig(ex ? { exercise: ex } : {});
-el.hass = hass;
 </script></body></html>"""
 
 
@@ -127,8 +107,6 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         if self.path.split("?")[0] == "/":
             return self._send(200, PAGE.encode(), "text/html; charset=utf-8")
-        if self.path.split("?")[0] == "/card":
-            return self._send(200, CARD_PAGE.encode(), "text/html; charset=utf-8")
         if self.path.startswith("/hafs_static/"):
             f = (WWW / self.path.split("?")[0].removeprefix("/hafs_static/")).resolve()
             if f.is_file() and WWW in f.parents:

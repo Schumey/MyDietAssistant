@@ -639,6 +639,12 @@ const EN = {
   "Summe": "Total",
   "Ziel inkl. {} kcal Aktivität": "Goal incl. {} kcal activity",
   "{} von {} g": "{} of {} g",
+  "Training": "Training",
+  "Übungen": "Exercises",
+  "Pläne": "Plans",
+  "Bereich": "Area",
+  "Krafttraining protokollieren (HAFS): Pläne, Übungen, Verlauf und Gewichtsvorschläge in einem eigenen Bereich. Oben wechselt der Umschalter zwischen Ernährung und Training.": "Log strength training (HAFS): plans, exercises, history and weight suggestions in an area of its own. The switch at the top changes between Nutrition and Training.",
+  "Training konnte nicht geladen werden: {}": "Training could not be loaded: {}",
 };
 
 // Languages: German is the source text; every other language is a dictionary German -> language (EN, FR, ES ...).
@@ -649,6 +655,12 @@ const LANG_LOCALES = { de: "de-DE", en: "en-US", fr: "fr-FR", es: "es-ES", nl: "
 // entry in LANG_LOCALES, in LANGS (extras.py) and in the language selection of the settings.
 Object.assign(LANGS, {
   fr: {
+    "Training": "Entraînement",
+    "Übungen": "Exercices",
+    "Pläne": "Programmes",
+    "Bereich": "Espace",
+    "Krafttraining protokollieren (HAFS): Pläne, Übungen, Verlauf und Gewichtsvorschläge in einem eigenen Bereich. Oben wechselt der Umschalter zwischen Ernährung und Training.": "Suivre la musculation (HAFS) : programmes, exercices, historique et suggestions de charge dans un espace à part. Le sélecteur en haut passe d’Alimentation à Entraînement.",
+    "Training konnte nicht geladen werden: {}": "Impossible de charger l’entraînement : {}",
     "1,5 Jahre": "1,5 an",
     "Alles": "Tout",
     "Alles ({} Tage)": "Tout ({} jours)",
@@ -1670,6 +1682,12 @@ Object.assign(LANGS, {
     "{} von {} g": "{} sur {} g",
   },
   es: {
+    "Training": "Entrenamiento",
+    "Übungen": "Ejercicios",
+    "Pläne": "Planes",
+    "Bereich": "Área",
+    "Krafttraining protokollieren (HAFS): Pläne, Übungen, Verlauf und Gewichtsvorschläge in einem eigenen Bereich. Oben wechselt der Umschalter zwischen Ernährung und Training.": "Registrar el entrenamiento de fuerza (HAFS): planes, ejercicios, historial y sugerencias de peso en un área propia. El selector de arriba cambia entre Alimentación y Entrenamiento.",
+    "Training konnte nicht geladen werden: {}": "No se pudo cargar el entrenamiento: {}",
     "1,5 Jahre": "1,5 años",
     "Alles": "Todo",
     "Alles ({} Tage)": "Todo ({} días)",
@@ -2691,6 +2709,12 @@ Object.assign(LANGS, {
     "{} von {} g": "{} de {} g",
   },
   nl: {
+    "Training": "Training",
+    "Übungen": "Oefeningen",
+    "Pläne": "Schema’s",
+    "Bereich": "Onderdeel",
+    "Krafttraining protokollieren (HAFS): Pläne, Übungen, Verlauf und Gewichtsvorschläge in einem eigenen Bereich. Oben wechselt der Umschalter zwischen Ernährung und Training.": "Krachttraining bijhouden (HAFS): schema’s, oefeningen, geschiedenis en gewichtsvoorstellen in een eigen onderdeel. De schakelaar bovenaan wisselt tussen Voeding en Training.",
+    "Training konnte nicht geladen werden: {}": "Training kon niet worden geladen: {}",
     "1,5 Jahre": "1,5 jaar",
     "Alles": "Alles",
     "Alles ({} Tage)": "Alles ({} dagen)",
@@ -3724,6 +3748,12 @@ Object.assign(LANGS, {
     "{} von {} g": "{} van {} g",
   },
   it: {
+    "Training": "Allenamento",
+    "Übungen": "Esercizi",
+    "Pläne": "Schede",
+    "Bereich": "Sezione",
+    "Krafttraining protokollieren (HAFS): Pläne, Übungen, Verlauf und Gewichtsvorschläge in einem eigenen Bereich. Oben wechselt der Umschalter zwischen Ernährung und Training.": "Registrare l’allenamento di forza (HAFS): schede, esercizi, storico e carichi suggeriti in una sezione a parte. Il selettore in alto passa da Alimentazione ad Allenamento.",
+    "Training konnte nicht geladen werden: {}": "Impossibile caricare l’allenamento: {}",
     "1,5 Jahre": "1,5 anni",
     "Alles": "Tutto",
     "Alles ({} Tage)": "Tutto ({} giorni)",
@@ -4757,6 +4787,12 @@ Object.assign(LANGS, {
     "{} von {} g": "{} di {} g",
   },
   pt: {
+    "Training": "Treino",
+    "Übungen": "Exercícios",
+    "Pläne": "Planos",
+    "Bereich": "Área",
+    "Krafttraining protokollieren (HAFS): Pläne, Übungen, Verlauf und Gewichtsvorschläge in einem eigenen Bereich. Oben wechselt der Umschalter zwischen Ernährung und Training.": "Registrar treino de força (HAFS): planos, exercícios, histórico e sugestões de carga em uma área própria. O seletor no topo alterna entre Alimentação e Treino.",
+    "Training konnte nicht geladen werden: {}": "Não foi possível carregar o treino: {}",
     "1,5 Jahre": "1,5 ano",
     "Alles": "Tudo",
     "Alles ({} Tage)": "Tudo ({} dias)",
@@ -5790,6 +5826,12 @@ Object.assign(LANGS, {
     "{} von {} g": "{} de {} g",
   },
   pl: {
+    "Training": "Trening",
+    "Übungen": "Ćwiczenia",
+    "Pläne": "Plany",
+    "Bereich": "Obszar",
+    "Krafttraining protokollieren (HAFS): Pläne, Übungen, Verlauf und Gewichtsvorschläge in einem eigenen Bereich. Oben wechselt der Umschalter zwischen Ernährung und Training.": "Zapisywanie treningu siłowego (HAFS): plany, ćwiczenia, historia i sugestie ciężaru w osobnym obszarze. Przełącznik u góry zmienia między Odżywianiem a Treningiem.",
+    "Training konnte nicht geladen werden: {}": "Nie udało się wczytać treningu: {}",
     "1,5 Jahre": "1,5 roku",
     "Alles": "Wszystko",
     "Alles ({} Tage)": "Wszystko ({} dni)",
@@ -7106,18 +7148,96 @@ $("#tabs").addEventListener("click", e => {
   if (t) show(t.dataset.tab, e.detail !== 0);   // detail 0: chosen with the keyboard, the focus stays on the tab bar
 });
 function show(tab, focus = true) {
+  if (isTrainTab(tab) && !state.features.training) tab = "diary";
+  const training = isTrainTab(tab);
   state.tab = tab;
+  if (training) { state.trainTab = tab; storeSet("mda.trainTab", tab); } else state.foodTab = tab;
+  if (state.area !== (training ? "training" : "nutrition")) { state.area = training ? "training" : "nutrition"; storeSet("mda.area", state.area); applyTabs(); }
   for (const b of document.querySelectorAll("#tabs button")) {
     b.classList.toggle("active", b.dataset.tab === tab);
     b.setAttribute("aria-selected", b.dataset.tab === tab ? "true" : "false");
     b.tabIndex = b.dataset.tab === tab ? 0 : -1;
   }
-  for (const s of document.querySelectorAll("main > section")) s.hidden = s.id !== tab;
+  for (const s of document.querySelectorAll("main > section")) s.hidden = s.id !== (training ? "training" : tab);
   const on = document.querySelector(`#tabs [data-tab="${tab}"]`);
   if (on && on.scrollIntoView) on.scrollIntoView({ block: "nearest", inline: "center" });
   window.scrollTo(0, 0);
+  if (training) return renderTraining(tab);
   return Promise.resolve(({ diary: renderDiary, foods: renderFoods, meals: renderMeals, weight: renderWeight, stats: renderStats, settings: renderSettings, recipes: renderRecipes })[tab]())
     .then(r => { if (focus && state.tab === tab) focusPage(tab); return r; });
+}
+
+// ---------------------------------------------------------------- areas: Ernährung | Training
+// With the feature "training" the app bar gets a switch between the two areas; each has its own tabs. Training is the
+// HAFS panel (static/training/hafs-panel.js, a web component in its own shadow DOM) without its bar: its tabs live in #tabs
+// as "t-<tab>", it talks to POST api/training/call through a small stand-in for Home Assistant's `hass` object.
+const TRAIN_TABS = ["t-today", "t-training", "t-exercises", "t-plans", "t-settings"];
+const TRAIN_LABELS = { "t-today": "Heute", "t-training": "Training", "t-exercises": "Übungen", "t-plans": "Pläne", "t-settings": "Einstellungen" };
+const isTrainTab = tab => TRAIN_TABS.includes(tab);
+function storeGet(key) { try { return localStorage.getItem(key) || ""; } catch { return ""; } }
+function storeSet(key, value) { try { localStorage.setItem(key, value); } catch { /* storage unavailable */ } }
+// the two halves of the logo (design/logo/logo-c.svg): apple for nutrition, dumbbell for training
+const AREA_ICONS = {
+  nutrition: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 7.2c-1.5-1-5.2-.6-5.2 3.6 0 3.7 2.4 7 4 7 .6 0 .8-.5 1.2-.5s.6.5 1.2.5c1.6 0 4-3.3 4-7 0-4.2-3.7-4.6-5.2-3.6z" fill="currentColor"/><path d="M12 7.3q.2-1.9 1-3.1" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M13.1 5.2q1.9-2.1 3.9-1-1.6 2.2-3.9 1z" fill="currentColor"/></svg>',
+  training: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><g fill="currentColor"><rect x="2" y="9" width="2.4" height="6" rx="1"/><rect x="4.8" y="6.5" width="3" height="11" rx="1"/><rect x="7.6" y="11" width="8.8" height="2" rx=".8"/><rect x="16.2" y="6.5" width="3" height="11" rx="1"/><rect x="19.6" y="9" width="2.4" height="6" rx="1"/></g></svg>',
+};
+const AREA_LABELS = { nutrition: "Ernährung", training: "Training" };
+state.area = "nutrition";
+state.foodTab = "diary";
+state.trainTab = isTrainTab(storeGet("mda.trainTab")) ? storeGet("mda.trainTab") : "t-today";
+
+const areaSwitch = h("div", { id: "area", class: "area", role: "group", "aria-label": "Bereich", hidden: true },
+  ...["nutrition", "training"].map(a => {
+    const b = h("button", { type: "button", "data-area": a, "aria-pressed": "false", title: AREA_LABELS[a],
+      onclick: () => { if (state.area !== a) show(a === "training" ? state.trainTab : state.foodTab); } });
+    const ico = h("span", { class: "ico" });
+    ico.innerHTML = AREA_ICONS[a];
+    b.append(ico, h("span", { class: "lbl" }, AREA_LABELS[a]));
+    return b;
+  }));
+$(".appbar").insertBefore(areaSwitch, $("#tabs"));
+$("#tabs").append(...TRAIN_TABS.map(t => {
+  const b = h("button", { "data-tab": t, "data-area": "training", role: "tab", "aria-selected": "false", tabindex: "-1" }, TRAIN_LABELS[t]);
+  b.hidden = true;
+  return b;
+}));
+$("main").append((() => { const s = h("section", { id: "training", role: "tabpanel" }); s.hidden = true; return s; })());
+
+// The panel answers through the same JSON messages it sent over Home Assistant's WebSocket.
+async function trainingCall(msg) {
+  const r = await fetch("api/training/call", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(msg) });
+  let body;
+  try { body = await r.json(); } catch { body = { code: "http_" + r.status, message: String(r.status) }; }
+  if (!r.ok) throw body;
+  return body;
+}
+let trainPanel = null, trainLocale = "";
+async function renderTraining(tab) {
+  const root = $("#training");
+  if (!trainPanel || trainLocale !== I18N.locale) {   // a new language needs a new panel (its texts are set once)
+    try { await import("./training/hafs-panel.js"); }
+    catch (e) { root.replaceChildren(h("div", { class: "card err" }, `Training konnte nicht geladen werden: ${e.message || e}`)); return; }
+    trainPanel = document.createElement("hafs-panel");
+    trainPanel.setAttribute("embedded", "");
+    trainPanel.tab = tab.slice(2);
+    trainPanel.addEventListener("hafs-tab", e => { if (state.tab !== "t-" + e.detail) show("t-" + e.detail, false); });
+    trainPanel.narrow = innerWidth < 760;
+    trainLocale = I18N.locale;
+    root.replaceChildren(trainPanel);
+    trainPanel.hass = { language: I18N.locale, states: {}, connection: { sendMessagePromise: trainingCall } };
+    return;
+  }
+  if (trainPanel.tab !== tab.slice(2)) trainPanel.tab = tab.slice(2);
+}
+addEventListener("resize", () => { if (trainPanel) trainPanel.narrow = innerWidth < 760; });
+
+// A workout in progress opens training (once, at start, unless the user already moved on).
+async function openRunningWorkout(startTab) {
+  if (!state.features.training || state.area === "training") return;
+  try {
+    const d = await trainingCall({ type: "hafs/web/query", q: "overview" });
+    if (d.status && d.status.active && state.tab === startTab && !dlg.open) show("t-today");
+  } catch { /* training not reachable: stay */ }
 }
 
 // ---------------------------------------------------------------- accessibility
@@ -9321,9 +9441,19 @@ async function renderRecipes() {
 
 // Show the Rezepte tab only when the feature is on.
 function applyTabs() {
-  const t = document.querySelector('#tabs [data-tab="recipes"]');
-  if (t) t.hidden = !state.features.recipes;
-  if (!state.features.recipes && state.tab === "recipes") show("settings");
+  const trainingOn = !!state.features.training;
+  if (!trainingOn && state.area === "training") { state.area = "nutrition"; storeSet("mda.area", "nutrition"); }
+  const area = state.area;
+  for (const b of document.querySelectorAll("#tabs button")) {
+    b.hidden = b.dataset.area === "training" ? area !== "training"
+      : area === "training" || (b.dataset.tab === "recipes" && !state.features.recipes);
+  }
+  areaSwitch.hidden = !trainingOn;
+  $(".appbar").classList.toggle("has-area", trainingOn);
+  for (const b of areaSwitch.querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.area === area));
+  $(".appbar h1").textContent = AREA_LABELS[area];
+  if (!trainingOn && isTrainTab(state.tab)) show("diary");
+  else if (!state.features.recipes && state.tab === "recipes") show("settings");
 }
 
 // ---------------------------------------------------------------- weight
@@ -10247,6 +10377,7 @@ async function renderSettings() {
       feat("suggest", "Mahlzeiten-Vorschläge", "Button im Tagebuch: schlägt gespeicherte Mahlzeiten und Kombinationen aus Deinem Verlauf vor, die zu den offenen Kalorien und Makros passen (Mengen werden angepasst, feste Packungen bleiben)."),
       feat("shopping", "Einkaufsliste", "Zutaten von Rezepten und gespeicherten Mahlzeiten zusammenzählen, kopieren oder an eine Todo-Liste in Home Assistant schicken (z. B. die Einkaufsliste)."),
       feat("pantry", "Vorrat", "Bestand von Lebensmitteln festhalten: Tagebucheinträge verringern ihn, unter einer Schwelle kommt eine Benachrichtigung und/oder ein Eintrag auf einer Todo-Liste (z. B. Bring!)."),
+      feat("training", "Training", "Krafttraining protokollieren (HAFS): Pläne, Übungen, Verlauf und Gewichtsvorschläge in einem eigenen Bereich. Oben wechselt der Umschalter zwischen Ernährung und Training."),
       feat("ramp", "Stufenplan (Reverse-Diät)", "Das Tagesziel steigt oder sinkt in festen Schritten, z. B. +100 kcal pro Woche nach einer Diät."),
       feat("household", "Haushalt", "Einträge, Lebensmittel und Mahlzeiten mit anderen Benutzern teilen, jeder mit eigener Portion (z. B. ein Gericht für die Familie). Beide Seiten müssen die Funktion einschalten."),
       feat("notes", "Notizen", "Freitext zu Mahlzeiten und Tagen (Hunger, Training, Stimmung). Vorhandene Notizen bleiben beim Ausschalten erhalten."),
@@ -10890,9 +11021,13 @@ api("me").then(m => { $("#who").textContent = m.name; state.admin = !!m.admin; }
     state.frequent = st.frequent || "foods";
   } catch { /* keep auto */ }
   applySkin();
+  // the area used last (Ernährung | Training) opens again; a tab clicked while the settings were loading wins
+  if (state.features.training && state.tab === "diary" && storeGet("mda.area") === "training") state.tab = state.trainTab;
   applyTabs();
   // a tab clicked while the settings were loading stays open and is drawn again with the features now known
+  const startTab = state.tab;
   await show(state.tab);
+  openRunningWorkout(startTab);
   // widget buttons of the Android app: "scan" opens the scanner, "add" the add dialog of the current meal
   window.mdaAction = async action => {
     if (state.tab !== "diary" || state.day !== iso(new Date())) { state.day = iso(new Date()); await show("diary"); }

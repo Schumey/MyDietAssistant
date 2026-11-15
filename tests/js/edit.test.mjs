@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import * as e from "../../custom_components/hafs/www/hafs-edit.js";
+import * as e from "../../mydiet/app/static/training/hafs-edit.js";
 
 const NOW = "2026-11-11T10:00:00+00:00";
 let n = 0;

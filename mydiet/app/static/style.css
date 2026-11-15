@@ -68,6 +68,23 @@ nav button {
 nav button:hover { opacity: 1; }
 nav button.active { opacity: 1; border-bottom-color: currentColor; }
 nav button:focus-visible { outline-color: currentColor; outline-offset: -4px; }
+/* switch Ernährung | Training (feature "training"): the two halves of the logo; it takes the place of the title */
+.appbar.has-area h1 { display: none; }
+.area { display: inline-flex; flex: none; gap: 2px; padding: 3px; border-radius: var(--ha-border-radius-pill, 18px); background: rgba(0, 0, 0, .18); }
+.area button {
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px 5px 9px; border: 0; border-radius: var(--ha-border-radius-pill, 16px);
+  background: none; box-shadow: none; color: inherit; opacity: .8; font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; white-space: nowrap;
+}
+.area button:hover { opacity: 1; }
+.area button[aria-pressed="true"] { opacity: 1; color: #fff; background: #2e7d5b; }
+.area button[data-area="training"][aria-pressed="true"] { background: #37474f; }
+.area button:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; }
+.area .ico { display: inline-flex; }
+@media (max-width: 600px) {
+  .area .lbl { display: none; }
+  .area button { padding: 6px 10px; }
+  .appbar.has-area { gap: 4px 10px; padding-top: 6px; }
+}
 
 main { max-width: 860px; margin: 0 auto; padding: 16px; }
 
@@ -382,6 +399,27 @@ html[data-skin="win"] nav button {
 html[data-skin="win"] nav button.active {
   top: 0; z-index: 2; margin: -2px -2px 0 -2px; padding: 5px 14px 6px; font-weight: 700;
   border-bottom: 0;
+}
+/* the area switch sits in its own row between title bar and tabs: two buttons, the chosen one pressed in */
+html[data-skin="win"] .appbar.has-area h1 { display: block !important; }
+html[data-skin="win"] .area { grid-column: 1 / -1; grid-row: 2; justify-self: start; margin: 6px 4px 0; padding: 0; gap: 2px; border-radius: 0; background: none; }
+html[data-skin="win"] .appbar.has-area nav { grid-row: 3; }
+html[data-skin="win"] .appbar.has-area::after { grid-row: 4; }
+html[data-skin="win"] .area button {
+  padding: 3px 10px 3px 6px; border-radius: 0; font-size: 12px; font-weight: 400; opacity: 1; color: var(--w-text);
+  background: var(--w-face); box-shadow: var(--w-raised);
+}
+html[data-skin="win"] .area button[aria-pressed="true"], html[data-skin="win"] .area button[data-area="training"][aria-pressed="true"] {
+  background: var(--w-field); color: var(--w-text); box-shadow: var(--w-sunken); font-weight: 700;
+}
+html[data-skin="win"] .area button[data-area="nutrition"] .ico { color: #2e7d5b; }
+html[data-skin="win"] .area button[data-area="training"] .ico { color: #37474f; }
+html[data-skin="win"][data-tone="dark"] .area button[data-area="training"] .ico { color: #b0bec5; }
+/* training panel (shadow DOM): only its custom properties reach inside; square, grey surfaces until it gets its own skin */
+html[data-skin="win"] hafs-panel {
+  --ha-card-border-radius: 0; --ha-button-border-radius: 0; --ha-card-box-shadow: none;
+  --ha-card-background: var(--w-face); --card-background-color: var(--w-face); --primary-background-color: var(--w-face);
+  --input-fill-color: var(--w-field); --ha-card-border-color: var(--w-b1); --divider-color: var(--w-b1); --primary-text-color: var(--w-text);
 }
 html[data-skin="win"] main {
   max-width: none; margin: 0; padding: 12px 6px; background: var(--w-face); box-shadow: none;
