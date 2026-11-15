@@ -606,11 +606,30 @@ def sensor_extras(owner: str) -> list:
 
 # --- export ----------------------------------------------------------------
 
+# prefs that never go into a backup: secrets (mealie token, url has its own field), the display name set by the admin,
+# and internal state of background jobs (what was already sent, scale session)
+PREF_SKIP = {"mealie", "display", "scale_state", "reminder_sent", "nudge_sent", "weekly_sent"}
+
+
+def dump_prefs(c, owner: str) -> dict:
+    """All remaining options (step plan, micro goals, weekly report, shopping list, ...) as one generic block,
+    so new options end up in the backup without touching the export."""
+    out = {}
+    for r in c.execute("SELECT key,value FROM prefs WHERE owner=? ORDER BY key", (owner,)):
+        if r["key"] not in PREF_SKIP:
+            try:
+                out[r["key"]] = json.loads(r["value"])
+            except ValueError:
+                pass
+    return out
+
+
 def dump(owner: str) -> dict:
     with db.conn() as c:
         q = lambda sql, *a: [dict(r) for r in c.execute(sql, a)]
         return {
             "app": "MyDietAssistant", "version": 1,
+            "prefs": dump_prefs(c, owner),
             "foods": [{**f, "portions": q("SELECT name,grams FROM food_portions WHERE food_id=? ORDER BY id", f["id"])}
                       for f in q("SELECT id,name,brand,kcal,protein,carbs,fat,fiber,sugar,salt,sat_fat,serving_g,category,favorite,barcode,shared FROM foods WHERE owner=?", owner)],
             "meals": q("SELECT id,name,position,archived,from_time,to_time FROM meals WHERE owner=? ORDER BY position", owner),
@@ -807,6 +826,11 @@ def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
                 c.execute("INSERT INTO meal_triggers(owner,meal_id,kind,entity,match,enabled,negate,part) VALUES(?,?,?,?,?,?,?,?)",
                           (owner, mmap[t["meal_id"]], t["kind"], t["entity"], t.get("match", ""), t.get("enabled", 1),
                            t.get("negate", 0), t.get("part", "any")))
+    # generic options block (since v1.41); the explicit fields below are applied afterwards and keep their checks
+    if isinstance(d.get("prefs"), dict):
+        for k, v in d["prefs"].items():
+            if isinstance(k, str) and k not in PREF_SKIP and len(k) <= 64:
+                set_pref(owner, k, v)
     set_pref(owner, "hidden_categories", d.get("hidden_categories", []))
     if d.get("pantry_config"):
         set_pref(owner, "pantry", d["pantry_config"])

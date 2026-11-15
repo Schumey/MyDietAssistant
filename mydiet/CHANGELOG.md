@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 1.41.0
+
+### Neu
+- **Alle Optionen in der Sicherung:** Die JSON-Sicherung (Export und automatische Sicherung) enthält jetzt alle Einstellungen, zum Beispiel den Stufenplan, Mikronährstoff-Ziele, den Wochenbericht, die Einkaufsliste und die Trainingstag-Einstellungen. Neue Optionen kommen künftig automatisch mit. Nicht gesichert werden der Mealie-Token, der Anzeigename und interner Zustand (was schon gemeldet wurde, Waagen-Sitzung). Ältere Sicherungen lassen sich weiter einspielen.
+
 ## 1.40.1
 
 ### Neu

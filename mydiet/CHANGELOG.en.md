@@ -2,6 +2,11 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 1.41.0
+
+### New
+- **All options in the backup:** The JSON backup (export and automatic backup) now contains all settings, for example the step plan, micronutrient goals, the weekly report, the shopping list and the training day settings. New options are included automatically from now on. Not backed up are the Mealie token, the display name and internal state (what was already notified, scale session). Older backups can still be restored.
+
 ## 1.40.1
 
 ### New
