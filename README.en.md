@@ -59,7 +59,7 @@ Up to version 1.x HAFS was called **MyDietAssistant**; training was an integrati
 
 ## Training
 
-The optional feature **Training** adds a second area: training plans and days, gyms with equipment and weight steps, history per exercise with estimated 1RM, sets per muscle group and weight suggestions that follow your nutrition phase (cut, maintain, bulk). Import from GymRun, Strong and Hevy; entities, events and Assist for Home Assistant. Guides: [Training](docs/en/training.md), [Training in Home Assistant](docs/en/training-ha.md).
+Under *Settings → Areas*, **Training** adds a second area: training plans and days, gyms with equipment and weight steps, history per exercise with estimated 1RM, sets per muscle group and weight suggestions that follow your nutrition phase (cut, maintain, bulk). Import from GymRun, Strong and Hevy; entities, events and Assist for Home Assistant. Guides: [Training](docs/en/training.md), [Training in Home Assistant](docs/en/training-ha.md).
 
 <p align="center">
   <img src="docs/screenshots/en/training.png" alt="Training: next training day, figures, sets per muscle group" width="49%">

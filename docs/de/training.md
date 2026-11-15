@@ -4,19 +4,19 @@
 
 HAFS hat zwei Bereiche: **Ernährung** (das Tagebuch, wie Du es kennst) und **Training** (Krafttraining: Pläne, Übungen, Verlauf und Gewichtsvorschläge). Beide laufen in derselben App in Home Assistant und teilen sich Benutzer, Sprache und Darstellung. Workouts zeichnest Du mit der [HAFS-App](android.md) auf dem Handy auf; die Weboberfläche zeigt sie, und hier pflegst Du Pläne, Studios und Geräte.
 
-**Voraussetzung:** die Zusatzfunktion **Training** (*Einstellungen → Zusatzfunktionen*).
+**Voraussetzung:** unter *Einstellungen → Bereiche* ist **Ernährung und Training** oder **Nur Training** gewählt.
 
 ## Training einschalten
 
-1. Öffne HAFS in Home Assistant und gehe auf *Einstellungen → Zusatzfunktionen*.
-2. Setze den Haken bei **Training**.
-3. Oben in der Leiste erscheint der Umschalter **Ernährung | Training**. Er ersetzt die Überschrift.
+1. Öffne HAFS in Home Assistant und gehe auf *Einstellungen*. Die erste Karte heißt **Bereiche**.
+2. Wähle **Ernährung und Training**. Wer nur trainieren will, wählt **Nur Training**; dann fehlen die Reiter der Ernährung.
+3. Mit beiden Bereichen erscheint in der Reiterleiste links von **Einstellungen** der Umschalter **Ernährung | Training**.
 
-Ist die Zusatzfunktion aus, sieht HAFS aus wie vorher, und die HAFS-App bekommt für Dich keine Trainingsdaten.
+Dieselbe Auswahl steht auch unter *Training → Einstellungen → Bereiche*. Mit **Nur Ernährung** sieht HAFS aus wie vorher, und die HAFS-App bekommt für Dich keine Trainingsdaten.
 
 ## Zwischen Ernährung und Training wechseln
 
-- Tippe oben auf **Training** (Hantel) oder **Ernährung** (Apfel). Die Seite lädt dabei nicht neu.
+- Tippe in der Reiterleiste auf **Training** (Hantel) oder **Ernährung** (Apfel). Die Seite lädt dabei nicht neu.
 - Jeder Bereich hat eigene Reiter. Training: **Heute**, **Training**, **Übungen**, **Pläne**, **Einstellungen**.
 - HAFS merkt sich auf diesem Gerät den zuletzt benutzten Bereich und Reiter.
 - Läuft gerade ein Workout, öffnet sich beim Start Training.
@@ -29,7 +29,7 @@ Ist die Zusatzfunktion aus, sieht HAFS aus wie vorher, und die HAFS-App bekommt 
 | **Training** | Alle Workouts nach Monat, mit Sätzen und Gewichten; daneben Sätze je Muskelgruppe über mehrere Wochen |
 | **Übungen** | Alle Übungen mit Suche und Filtern; je Übung Verlauf (geschätztes 1RM, Gewicht, Volumen), Rekorde, Vorschlag, Geräte |
 | **Pläne** | Trainingspläne und Trainingstage anlegen und bearbeiten, Studios mit ihren Geräten und Gewichtsstufen |
-| **Einstellungen** | Was **Heute** zeigt, Pause zwischen Sätzen, Ernährungsphase, Regeln für die Steigerung, Import, Export, Übernehmen |
+| **Einstellungen** | Bereiche, was **Heute** zeigt, Pause zwischen Sätzen, Ernährungsphase, Regeln für die Steigerung, Import, Export, Übernehmen |
 
 ## Ernährungsphase
 

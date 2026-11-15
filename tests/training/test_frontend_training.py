@@ -25,8 +25,10 @@ def test_app_js_loads_the_panel_relative_to_itself():
 def test_training_feature_has_a_switch_and_tabs_match_the_panel():
     from extras import FEATURES
     assert "training" in FEATURES
-    assert 'feat("training"' in APP_JS
-    tabs = re.search(r'const TRAIN_TABS = \[([^\]]*)\]', APP_JS).group(1)
+    assert "function areasCard()" in APP_JS and "root.append(areasCard())" in APP_JS   # Bereiche, first card of the settings
+    panel_src = (STATIC / "training" / "hafs-panel.js").read_text(encoding="utf-8")
+    assert '"hafs/areas"' in panel_src and '"hafs-areas"' in panel_src and '"hafs-areas"' in APP_JS
+    tabs =re.search(r'const TRAIN_TABS = \[([^\]]*)\]', APP_JS).group(1)
     panel = (STATIC / "training" / "hafs-panel.js").read_text(encoding="utf-8")
     panel_tabs = re.search(r'const TABS = \[([^\]]*)\]', panel).group(1)
     assert re.findall(r'"t-(\w+)"', tabs) == re.findall(r'"(\w+)"', panel_tabs)

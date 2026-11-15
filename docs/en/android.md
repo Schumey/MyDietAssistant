@@ -11,7 +11,7 @@ It replaces the former Android app "MyDietAssistant" and the HAFS app 0.5. In th
 - Android 8 or newer.
 - HAFS is installed and started in Home Assistant (see [Installation](installation.md)).
 - Home Assistant 2026.11 or newer. With it the app gets the sign-in for HAFS also for users without administrator rights, as long as HAFS is not limited to administrators in Home Assistant.
-- For training the optional feature **Training** (see [Training](training.md)).
+- For training *Settings → Areas* set to **Nutrition and training** or **Training only** (see [Training](training.md)).
 - For the system scanner the Google Play services (on almost every phone). Without them nutrition uses the interface's scanner.
 
 ## Install the app

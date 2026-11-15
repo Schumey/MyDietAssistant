@@ -72,6 +72,24 @@ def feature_on(owner: str, name: str) -> bool:
     return features(owner).get(name, False)
 
 
+# Areas of the app: nutrition, training or both. Training is the feature "training"; "training only" additionally
+# hides nutrition (pref nutrition_off, only meaningful while training is on).
+AREAS = ("nutrition", "training", "both")
+
+
+def areas(owner: str) -> str:
+    if not feature_on(owner, "training"):
+        return "nutrition"
+    return "training" if get_pref(owner, "nutrition_off", False) else "both"
+
+
+def set_areas(owner: str, value: str) -> None:
+    if value not in AREAS:
+        raise HTTPException(400, "areas must be nutrition, training or both")
+    set_pref(owner, "features", {**features(owner), "training": value != "nutrition"})
+    set_pref(owner, "nutrition_off", value == "training")
+
+
 GOAL_MODES = ("lose", "maintain", "gain")
 
 
@@ -94,6 +112,7 @@ class SettingsIn(BaseModel):
     skin: str | None = None         # 'auto' | 'default' | 'win'
     frequent: str | None = None     # add dialog, "frequently used" on the foods tab: 'foods' | 'meals' | 'both'
     features: dict[str, bool] | None = None
+    areas: str | None = None        # 'nutrition' | 'training' | 'both'
 
 
 @app.get("/api/settings")
@@ -102,7 +121,7 @@ def read_settings(x_remote_user_id: str | None = Header(None)):
     return {"diary_mode": get_pref(owner, "diary_mode", "meals"), "skin": get_pref(owner, "skin", "auto"),
             "features": features(owner), "lang": get_pref(owner, "lang", "auto"), "units": get_pref(owner, "units", "metric"), "mass": get_pref(owner, "mass", "g"),
             "goal_mode": get_pref(owner, "goal_mode", "lose"), "frequent": get_pref(owner, "frequent", "foods"),
-            "goal_rate": get_pref(owner, "goal_rate", 0.5)}
+            "goal_rate": get_pref(owner, "goal_rate", 0.5), "areas": areas(owner)}
 
 
 @app.put("/api/settings")
@@ -140,6 +159,8 @@ def write_settings(s: SettingsIn, x_remote_user_id: str | None = Header(None), x
         set_pref(owner, "frequent", s.frequent)
     if s.features is not None:
         set_pref(owner, "features", {**features(owner), **{k: v for k, v in s.features.items() if k in FEATURES}})
+    if s.areas is not None:
+        set_areas(owner, s.areas)
     if s.goal_mode is not None or s.goal_rate is not None:
         publish(owner, x_remote_user_display_name or owner)   # goal_mode/goal_rate sensors follow the setting at once
     return {"ok": True}

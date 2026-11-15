@@ -7,8 +7,8 @@ Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a 
 MyDietAssistant heißt jetzt **HAFS** (HomeAssistant Fitness Suite) und bringt das Krafttraining mit, das bisher die Integration `hafs` war. Slug, Daten und Entitäten der Ernährung bleiben gleich. Umstieg: [Training](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/training.md#umstieg-von-der-hafs-integration).
 
 ### Neu
-- **Bereich Training** (Zusatzfunktion „Training“): Trainingspläne und -tage, Studios mit Geräten und Gewichtsstufen, Workouts mit Sätzen, Verlauf je Übung mit geschätztem 1RM und Rekorden, Sätze je Muskelgruppe, Rückblick, Gewichtsvorschläge nach Ernährungsphase, Import aus GymRun, Strong und Hevy. Die Daten liegen in `/data/hafs.db`.
-- **Umschalter Ernährung | Training** oben in der Leiste; jeder Bereich hat eigene Reiter. Der letzte Bereich wird gemerkt, ein laufendes Workout öffnet Training.
+- **Bereich Training** (*Einstellungen → Bereiche*: Ernährung und Training, nur Ernährung oder nur Training): Trainingspläne und -tage, Studios mit Geräten und Gewichtsstufen, Workouts mit Sätzen, Verlauf je Übung mit geschätztem 1RM und Rekorden, Sätze je Muskelgruppe, Rückblick, Gewichtsvorschläge nach Ernährungsphase, Import aus GymRun, Strong und Hevy. Die Daten liegen in `/data/hafs.db`.
+- **Umschalter Ernährung | Training** in der Reiterleiste links von „Einstellungen“; jeder Bereich hat eigene Reiter. Der letzte Bereich wird gemerkt, ein laufendes Workout öffnet Training.
 - **Ernährungsphase aus dem Ziel:** abnehmen = Diät, halten, zunehmen = Aufbau; von Hand änderbar.
 - **Entitäten und Events für Training** (`sensor.hafs_<name>_*`, `binary_sensor.hafs_<name>_workout_active`, `hafs_workout_started`, `hafs_workout_finished`, `hafs_record`), als Zustände oder mit `mqtt_discovery` als MQTT-Entitäten. Studio-Erkennung über die Zone der Person, Rückblick und Planvorschlag über die KI von Home Assistant.
 - **Schnittstelle `/api/ext/training/*`** für Automationen und Assist („Was trainiere ich heute?“), Anleitung mit `rest_command` und `intent_script`.

@@ -15,6 +15,7 @@ const WINDOWS = [4, 12, 26, 52];
 const TODAY_BLOCKS = ["next", "facts", "muscles", "review", "recent"];
 const REST_DEFAULTS = [0, 45, 60, 90, 120, 150, 180, 240, 300];
 const MAX_CSV = 3_500_000;
+const FOLD_KEY = "hafs.settingsOpen";
 
 class HafsPanel extends HTMLElement {
   constructor() {
@@ -115,6 +116,8 @@ class HafsPanel extends HTMLElement {
     this.shadowRoot.addEventListener("click", (e) => this._onClick(e));
     this.shadowRoot.addEventListener("input", (e) => this._onInput(e));
     this.shadowRoot.addEventListener("change", (e) => this._onChange(e));
+    // "toggle" does not bubble: catch it on the way down
+    this.shadowRoot.addEventListener("toggle", (e) => { if (e.target.dataset?.fold) this._foldToggle(e.target); }, true);
   }
 
   _call(msg) {
@@ -232,6 +235,7 @@ class HafsPanel extends HTMLElement {
       return;
     }
     if (el.id === "restore") { this._restorePicked(el.files?.[0]); return; }
+    if (el.hasAttribute("data-areas")) { this._setAreas(el); return; }
     if (el.id === "csv") {
       const file = el.files?.[0];
       this._csv = null;
@@ -297,13 +301,15 @@ class HafsPanel extends HTMLElement {
     const recent = d.recent.length
       ? `<ul class="rows">${d.recent.map((w) => this._workoutRow({ ...w, routine: w.routine, exercises: (w.exercises || []).map((e) => e.name) })).join("")}</ul>`
       : `<p class="muted">${esc(t("empty_history"))}</p>`;
-    const left = [show("next") ? hero : "", show("facts") ? facts : ""].join("");
-    const right = [show("muscles") ? `<section class="card"><h2>${esc(t("sets_by_muscle"))}</h2>${this._muscleBars(d.weeks, 4)}
-          <p class="hint">${esc(t("muscle_hint"))}</p></section>` : "",
-    show("review") && review ? this._reviewCard(review) : "",
-    show("recent") ? `<section class="card"><h2>${esc(t("recent"))}</h2>${recent}</section>` : ""].join("");
-    if (!left && !right) return `<p class="muted">${esc(t("today_empty"))}</p>`;
-    return `<div class="grid ${left && right ? "two" : "one"}">${left ? `<div class="col">${left}</div>` : ""}${right ? `<div class="col">${right}</div>` : ""}</div>`;
+    // key figures as one strip on top; below, the plan and the muscles on the left, review and recent workouts on the right
+    const top = show("facts") ? facts : "";
+    const left = [show("next") ? hero : "", show("muscles") ? `<section class="card"><h2>${esc(t("sets_by_muscle"))}</h2>${this._muscleBars(d.weeks, 4)}
+          <p class="hint">${esc(t("muscle_hint"))}</p></section>` : ""].join("");
+    const right = [show("review") && review ? this._reviewCard(review) : "",
+      show("recent") ? `<section class="card"><h2>${esc(t("recent"))}</h2>${recent}</section>` : ""].join("");
+    if (!top && !left && !right) return `<p class="muted">${esc(t("today_empty"))}</p>`;
+    const cols = [left, right].filter(Boolean);
+    return `${top}${cols.length ? `<div class="grid ${cols.length === 2 ? "two" : "one wide"}">${cols.map((c) => `<div class="col">${c}</div>`).join("")}</div>` : ""}`;
   }
 
   _reviewCard(r) {
@@ -312,7 +318,11 @@ class HafsPanel extends HTMLElement {
       ...r.stagnating.map((x) => t("review_stag", x.name, x.sessions, x.weeks, f.kg(x.best))),
       ...r.neglected.map((x) => t("review_muscle", this._muscle(x.muscle), f.num(x.recent), f.num(x.earlier))),
     ];
-    const body = lines.length ? `<ul class="rows">${lines.map((l) => `<li><span class="wsub">${esc(l)}</span></li>`).join("")}</ul>` : `<p class="muted">${esc(t("review_none"))}</p>`;
+    // the first few lines; the rest folds open (a long stagnation list would push everything else down)
+    const li = (l) => `<li>${esc(l)}</li>`;
+    const body = !lines.length ? `<p class="muted">${esc(t("review_none"))}</p>`
+      : `<ul class="review">${lines.slice(0, 4).map(li).join("")}</ul>${lines.length > 4
+        ? `<details class="more"><summary>${esc(t("review_more", lines.length - 4))}</summary><ul class="review">${lines.slice(4).map(li).join("")}</ul></details>` : ""}`;
     const ai = lines.length ? `<p><button class="btn" data-act="review-ai"${this._reviewBusy ? " disabled" : ""}>${esc(t(this._reviewBusy ? "review_ai_busy" : "review_ai"))}</button></p>
       <p class="hint">${esc(t("review_ai_hint"))}</p>${this._reviewText ? `<p class="reviewtext">${esc(this._reviewText)}</p>` : ""}` : "";
     return `<section class="card"><h2>${esc(t("review_title"))}</h2>${body}${ai}</section>`;
@@ -597,31 +607,60 @@ class HafsPanel extends HTMLElement {
   async _view_settings() {
     const t = this._t;
     const get = async (key) => { try { return (await this._call({ type: "hafs/pref/get", key })).value || ""; } catch { return ""; } };
-    const [phase, hit, drop, hiddenText, restText] = await Promise.all([get("phase"), get("hit_fraction"), get("cut_drop_set_first"), get("today_hidden"), get("rest_default")]);
+    const [phase, hit, drop, hiddenText, restText, areas] = await Promise.all([get("phase"), get("hit_fraction"), get("cut_drop_set_first"), get("today_hidden"), get("rest_default"),
+      this._call({ type: "hafs/areas" }).then((r) => r.areas).catch(() => "")]);
     const hidden = new Set(hiddenText.split(",").filter(Boolean));
     const rest = restText === "" ? "90" : restText;
     const restList = [...new Set([...REST_DEFAULTS, Number(rest)])].sort((a, b) => a - b);
     const opt = (v, label, cur) => `<option value="${v}"${String(cur) === v ? " selected" : ""}>${esc(label)}</option>`;
     const hitCur = hit === "" ? "1" : String(Number(hit));
     const blocks = TODAY_BLOCKS.map((b) => `<label class="check"><input type="checkbox" data-block="${b}"${hidden.has(b) ? "" : " checked"}> ${esc(t("block_" + b))}</label>`).join("");
-    return `<div class="grid two"><div class="col">
-      <section class="card"><h2>${esc(t("today_title"))}</h2><p class="hint" style="margin-top:0">${esc(t("today_hint"))}</p>${blocks}</section>
-      <section class="card"><h2>${esc(t("rest_title"))}</h2><p class="hint" style="margin-top:0">${esc(t("rest_hint"))}</p>
-        <select data-pref="rest_default" aria-label="${esc(t("rest_title"))}">${restList.map((n) => opt(String(n), n === 0 ? t("rest_off") : t("rest_default_opt", n), rest)).join("")}</select></section>
-      <section class="card"><h2>${esc(t("settings_phase"))}</h2><p class="hint">${esc(t("settings_phase_hint"))}</p>
-        <select data-pref="phase" aria-label="${esc(t("settings_phase"))}">${opt("", t("phase_auto_opt"), phase)}${["bulk", "maintain", "cut"].map((p) => opt(p, t("phase_" + p), phase)).join("")}</select></section>
-      <section class="card"><h2>${esc(t("hit_fraction"))}</h2>
-        <select data-pref="hit_fraction" aria-label="${esc(t("hit_fraction"))}">${opt("1", t("hit_all"), hitCur)}${opt("0.75", t("hit_75"), hitCur)}${opt("0.5", t("hit_50"), hitCur)}</select>
-        <label class="check"><input type="checkbox" data-pref="cut_drop_set_first"${drop === "1" ? " checked" : ""}> ${esc(t("cut_drop_set"))}</label></section></div>
-      <div class="col"><section class="card"><h2>${esc(t("import_title"))}</h2><p class="hint">${esc(t("import_hint"))}</p>
+    // one column of cards that fold open, like the nutrition settings (which card is open is remembered)
+    const card = (key, title, body) => `<details class="card fold" data-fold="${key}"${this._foldOpen(key) ? " open" : ""}><summary>${esc(title)}</summary>${body}</details>`;
+    return `<div class="settings">
+      ${areas ? card("areas", t("areas_title"), `<p class="hint top">${esc(t("areas_hint"))}</p>
+        <select data-areas aria-label="${esc(t("areas_title"))}">${["both", "nutrition", "training"].map((a) => opt(a, t("areas_" + a), areas)).join("")}</select>`) : ""}
+      ${card("today", t("today_title"), `<p class="hint top">${esc(t("today_hint"))}</p>${blocks}`)}
+      ${card("rest", t("rest_title"), `<p class="hint top">${esc(t("rest_hint"))}</p>
+        <select data-pref="rest_default" aria-label="${esc(t("rest_title"))}">${restList.map((n) => opt(String(n), n === 0 ? t("rest_off") : t("rest_default_opt", n), rest)).join("")}</select>`)}
+      ${card("phase", t("settings_phase"), `<p class="hint top">${esc(t("settings_phase_hint"))}</p>
+        <select data-pref="phase" aria-label="${esc(t("settings_phase"))}">${opt("", t("phase_auto_opt"), phase)}${["bulk", "maintain", "cut"].map((p) => opt(p, t("phase_" + p), phase)).join("")}</select>`)}
+      ${card("hit", t("hit_fraction"), `<select data-pref="hit_fraction" aria-label="${esc(t("hit_fraction"))}">${opt("1", t("hit_all"), hitCur)}${opt("0.75", t("hit_75"), hitCur)}${opt("0.5", t("hit_50"), hitCur)}</select>
+        <label class="check"><input type="checkbox" data-pref="cut_drop_set_first"${drop === "1" ? " checked" : ""}> ${esc(t("cut_drop_set"))}</label>`)}
+      ${card("import", t("import_title"), `<p class="hint top">${esc(t("import_hint"))}</p>
         <input id="csv" type="file" accept=".csv,text/csv" aria-label="${esc(t("import_pick"))}">
         <p class="actions"><button class="btn" data-act="import-dry" disabled>${esc(t("import_dry"))}</button>
-        <button class="btn primary" data-act="import-run" disabled>${esc(t("import_run"))}</button></p><div id="import-out"></div></section>
-      <section class="card"><h2>${esc(t("export_title"))}</h2><p><button class="btn" data-act="export">${esc(t("export_json"))}</button></p></section>
-      <section class="card"><h2>${esc(t("move_title"))}</h2><p class="hint" style="margin-top:0">${esc(t("move_hint"))}</p>
+        <button class="btn primary" data-act="import-run" disabled>${esc(t("import_run"))}</button></p><div id="import-out"></div>`)}
+      ${card("export", t("export_title"), `<p><button class="btn" data-act="export">${esc(t("export_json"))}</button></p>`)}
+      ${card("move", t("move_title"), `<p class="hint top">${esc(t("move_hint"))}</p>
         <p class="actions"><button class="btn" data-act="legacy-check">${esc(t("legacy_check"))}</button></p><div id="legacy-out"></div>
         <label class="fld" style="margin-top:12px"><span>${esc(t("restore_pick"))}</span><input id="restore" type="file" accept=".json,application/json"></label>
-        <div id="restore-out"></div></section></div></div>`;
+        <div id="restore-out"></div>`)}</div>`;
+  }
+
+  // Settings cards: the first is open until the user folds it; afterwards each card keeps its state.
+  _foldOpen(key) {
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(FOLD_KEY) || "{}"); } catch { /* storage blocked */ }
+    return key in saved ? !!saved[key] : key === "areas";
+  }
+
+  _foldToggle(el) {
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(FOLD_KEY) || "{}"); } catch { /* storage blocked */ }
+    saved[el.dataset.fold] = el.open;
+    try { localStorage.setItem(FOLD_KEY, JSON.stringify(saved)); } catch { /* storage blocked */ }
+  }
+
+  async _setAreas(el) {
+    try {
+      const r = await this._call({ type: "hafs/areas", value: el.value });
+      this._toast(this._t("saved"));
+      this.dispatchEvent(new CustomEvent("hafs-areas", { detail: r.areas }));
+    } catch (err) {
+      this._toast(this._t("load_failed", err?.message || err?.code));
+      this._show();
+    }
   }
 
   // ---- Übernehmen: HAFS integration and HAFS exports ----------------------------------------
@@ -774,7 +813,8 @@ h2.sect { font-size: 18px; font-weight: 600; margin-top: 8px; }
 .facts > div { background: var(--field); border-radius: var(--radius); padding: 10px 14px; }
 .col > .filters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .filters select { margin: 0; }
 .fld { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--muted); }
-.facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.facts { grid-template-columns: repeat(4, minmax(0, 1fr)); } .facts.compact { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid.one.wide { grid-template-columns: minmax(0, 1fr); }
 .facts.compact { gap: 8px; } .facts.compact > div { border: 0; background: none; padding: 4px 0; }
 .facts dt { color: var(--muted); font-size: 12px; } .facts dd { font-size: 22px; font-weight: 500; line-height: 1.2; } .facts dd.small { font-size: 16px; font-weight: 500; }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
@@ -820,10 +860,20 @@ table.sets { width: 100%; border-collapse: collapse; } .sets td { padding: 6px 4
 .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 8px; max-width: 90vw; z-index: 5; }
 /* the training half of the logo (design tokens) marks the hero card */
 .hero.board { border-left-color: var(--hafs-color-training, var(--accent)); }
+/* review on "Today": plain wrapping lines, the rest folds open */
+.review { margin: 0 0 0 18px; color: var(--ink); } .review li { padding: 3px 0; overflow-wrap: anywhere; }
+details.more > summary { cursor: pointer; color: var(--muted); font-size: 13px; padding: 4px 0; }
+/* settings: one column of folding cards like the nutrition settings */
+.settings { display: flex; flex-direction: column; gap: 16px; }
+details.fold > summary { cursor: pointer; font-size: 16px; font-weight: 500; }
+details.fold[open] > summary { margin-bottom: 12px; }
+.hint.top { margin: 0 0 8px; }
+.settings select { display: block; }
 
 /* Windows 95/98 and XP look of the app's page (attribute skin="win" from app.js; the --w-* colors come from style.css) */
 :host([skin=win]) { font-family: inherit; font-size: 12px; --radius: 0; --pill: 0; }
-:host([skin=win]) .page { gap: 10px; }
+:host([skin=win]) .page, :host([skin=win]) .settings { gap: 10px; }
+:host([skin=win]) details.fold > summary { font-size: 13px; font-weight: 700; }
 :host([skin=win]) .card, :host([skin=win]) .note { background: var(--w-face); color: var(--w-text); border: 0; border-radius: 0; box-shadow: var(--w-etched); }
 :host([skin=win]) .card h2, :host([skin=win]) .card h3 { font-size: 13px; font-weight: 700; }
 :host([skin=win]) h2.big { font-size: 20px; letter-spacing: 0; }
@@ -852,6 +902,7 @@ table.sets { width: 100%; border-collapse: collapse; } .sets td { padding: 6px 4
 
 @media (max-width: 760px) {
   .grid.two { grid-template-columns: minmax(0, 1fr); } .page { padding: 12px; gap: 12px; }
+  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   h2.big { font-size: 24px; } .wmeta { display: none; } .mrow { grid-template-columns: minmax(84px, 38%) 1fr auto; }
 }
 `;

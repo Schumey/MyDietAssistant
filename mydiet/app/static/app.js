@@ -643,7 +643,11 @@ const EN = {
   "Übungen": "Exercises",
   "Pläne": "Plans",
   "Bereich": "Area",
-  "Krafttraining protokollieren (HAFS): Pläne, Übungen, Verlauf und Gewichtsvorschläge in einem eigenen Bereich. Oben wechselt der Umschalter zwischen Ernährung und Training.": "Log strength training (HAFS): plans, exercises, history and weight suggestions in an area of its own. The switch at the top changes between Nutrition and Training.",
+  "Bereiche": "Areas",
+  "Ernährung und Training": "Nutrition and training",
+  "Nur Ernährung": "Nutrition only",
+  "Nur Training": "Training only",
+  "Was HAFS zeigt. Mit „Ernährung und Training“ wechselt der Umschalter in der Reiterleiste zwischen beiden.": "What HAFS shows. With “Nutrition and training” the switch in the tab bar changes between the two.",
   "Training konnte nicht geladen werden: {}": "Training could not be loaded: {}",
   "Workouts": "Workouts",
 };
@@ -661,7 +665,11 @@ Object.assign(LANGS, {
     "Übungen": "Exercices",
     "Pläne": "Programmes",
     "Bereich": "Espace",
-    "Krafttraining protokollieren (HAFS): Pläne, Übungen, Verlauf und Gewichtsvorschläge in einem eigenen Bereich. Oben wechselt der Umschalter zwischen Ernährung und Training.": "Suivre la musculation (HAFS) : programmes, exercices, historique et suggestions de charge dans un espace à part. Le sélecteur en haut passe d’Alimentation à Entraînement.",
+    "Bereiche": "Domaines",
+    "Ernährung und Training": "Nutrition et entraînement",
+    "Nur Ernährung": "Nutrition uniquement",
+    "Nur Training": "Entraînement uniquement",
+    "Was HAFS zeigt. Mit „Ernährung und Training“ wechselt der Umschalter in der Reiterleiste zwischen beiden.": "Ce que HAFS affiche. Avec “Nutrition et entraînement”, le sélecteur de la barre d’onglets passe de l’un à l’autre.",
     "Training konnte nicht geladen werden: {}": "Impossible de charger l’entraînement : {}",
     "1,5 Jahre": "1,5 an",
     "Alles": "Tout",
@@ -1689,7 +1697,11 @@ Object.assign(LANGS, {
     "Übungen": "Ejercicios",
     "Pläne": "Planes",
     "Bereich": "Área",
-    "Krafttraining protokollieren (HAFS): Pläne, Übungen, Verlauf und Gewichtsvorschläge in einem eigenen Bereich. Oben wechselt der Umschalter zwischen Ernährung und Training.": "Registrar el entrenamiento de fuerza (HAFS): planes, ejercicios, historial y sugerencias de peso en un área propia. El selector de arriba cambia entre Alimentación y Entrenamiento.",
+    "Bereiche": "Áreas",
+    "Ernährung und Training": "Nutrición y entrenamiento",
+    "Nur Ernährung": "Solo nutrición",
+    "Nur Training": "Solo entrenamiento",
+    "Was HAFS zeigt. Mit „Ernährung und Training“ wechselt der Umschalter in der Reiterleiste zwischen beiden.": "Lo que muestra HAFS. Con “Nutrición y entrenamiento”, el selector de la barra de pestañas cambia entre ambos.",
     "Training konnte nicht geladen werden: {}": "No se pudo cargar el entrenamiento: {}",
     "1,5 Jahre": "1,5 años",
     "Alles": "Todo",
@@ -2717,7 +2729,11 @@ Object.assign(LANGS, {
     "Übungen": "Oefeningen",
     "Pläne": "Schema’s",
     "Bereich": "Onderdeel",
-    "Krafttraining protokollieren (HAFS): Pläne, Übungen, Verlauf und Gewichtsvorschläge in einem eigenen Bereich. Oben wechselt der Umschalter zwischen Ernährung und Training.": "Krachttraining bijhouden (HAFS): schema’s, oefeningen, geschiedenis en gewichtsvoorstellen in een eigen onderdeel. De schakelaar bovenaan wisselt tussen Voeding en Training.",
+    "Bereiche": "Onderdelen",
+    "Ernährung und Training": "Voeding en training",
+    "Nur Ernährung": "Alleen voeding",
+    "Nur Training": "Alleen training",
+    "Was HAFS zeigt. Mit „Ernährung und Training“ wechselt der Umschalter in der Reiterleiste zwischen beiden.": "Wat HAFS toont. Met “Voeding en training” wisselt de schakelaar in de tabbalk tussen beide.",
     "Training konnte nicht geladen werden: {}": "Training kon niet worden geladen: {}",
     "1,5 Jahre": "1,5 jaar",
     "Alles": "Alles",
@@ -3757,7 +3773,11 @@ Object.assign(LANGS, {
     "Übungen": "Esercizi",
     "Pläne": "Schede",
     "Bereich": "Sezione",
-    "Krafttraining protokollieren (HAFS): Pläne, Übungen, Verlauf und Gewichtsvorschläge in einem eigenen Bereich. Oben wechselt der Umschalter zwischen Ernährung und Training.": "Registrare l’allenamento di forza (HAFS): schede, esercizi, storico e carichi suggeriti in una sezione a parte. Il selettore in alto passa da Alimentazione ad Allenamento.",
+    "Bereiche": "Aree",
+    "Ernährung und Training": "Alimentazione e allenamento",
+    "Nur Ernährung": "Solo alimentazione",
+    "Nur Training": "Solo allenamento",
+    "Was HAFS zeigt. Mit „Ernährung und Training“ wechselt der Umschalter in der Reiterleiste zwischen beiden.": "Cosa mostra HAFS. Con “Alimentazione e allenamento” il selettore nella barra delle schede passa dall’una all’altra.",
     "Training konnte nicht geladen werden: {}": "Impossibile caricare l’allenamento: {}",
     "1,5 Jahre": "1,5 anni",
     "Alles": "Tutto",
@@ -4797,7 +4817,11 @@ Object.assign(LANGS, {
     "Übungen": "Exercícios",
     "Pläne": "Planos",
     "Bereich": "Área",
-    "Krafttraining protokollieren (HAFS): Pläne, Übungen, Verlauf und Gewichtsvorschläge in einem eigenen Bereich. Oben wechselt der Umschalter zwischen Ernährung und Training.": "Registrar treino de força (HAFS): planos, exercícios, histórico e sugestões de carga em uma área própria. O seletor no topo alterna entre Alimentação e Treino.",
+    "Bereiche": "Áreas",
+    "Ernährung und Training": "Nutrição e treino",
+    "Nur Ernährung": "Só nutrição",
+    "Nur Training": "Só treino",
+    "Was HAFS zeigt. Mit „Ernährung und Training“ wechselt der Umschalter in der Reiterleiste zwischen beiden.": "O que o HAFS mostra. Com “Nutrição e treino”, o seletor na barra de abas alterna entre os dois.",
     "Training konnte nicht geladen werden: {}": "Não foi possível carregar o treino: {}",
     "1,5 Jahre": "1,5 ano",
     "Alles": "Tudo",
@@ -5837,7 +5861,11 @@ Object.assign(LANGS, {
     "Übungen": "Ćwiczenia",
     "Pläne": "Plany",
     "Bereich": "Obszar",
-    "Krafttraining protokollieren (HAFS): Pläne, Übungen, Verlauf und Gewichtsvorschläge in einem eigenen Bereich. Oben wechselt der Umschalter zwischen Ernährung und Training.": "Zapisywanie treningu siłowego (HAFS): plany, ćwiczenia, historia i sugestie ciężaru w osobnym obszarze. Przełącznik u góry zmienia między Odżywianiem a Treningiem.",
+    "Bereiche": "Obszary",
+    "Ernährung und Training": "Odżywianie i trening",
+    "Nur Ernährung": "Tylko odżywianie",
+    "Nur Training": "Tylko trening",
+    "Was HAFS zeigt. Mit „Ernährung und Training“ wechselt der Umschalter in der Reiterleiste zwischen beiden.": "Co pokazuje HAFS. Przy “Odżywianie i trening” przełącznik na pasku kart zmienia jedno na drugie.",
     "Training konnte nicht geladen werden: {}": "Nie udało się wczytać treningu: {}",
     "1,5 Jahre": "1,5 roku",
     "Alles": "Wszystko",
@@ -7172,16 +7200,17 @@ new MutationObserver(applySkin).observe(document.documentElement, { attributes: 
 
 // ---------------------------------------------------------------- tabs
 $("#tabs").addEventListener("click", e => {
-  const t = e.target.closest("button");
+  const t = e.target.closest("button[data-tab]");
   if (t) show(t.dataset.tab, e.detail !== 0);   // detail 0: chosen with the keyboard, the focus stays on the tab bar
 });
 function show(tab, focus = true) {
   if (isTrainTab(tab) && !state.features.training) tab = "diary";
+  else if (!isTrainTab(tab) && !nutritionOn()) tab = state.trainTab;
   const training = isTrainTab(tab);
   state.tab = tab;
   if (training) { state.trainTab = tab; storeSet("mda.trainTab", tab); } else state.foodTab = tab;
   if (state.area !== (training ? "training" : "nutrition")) { state.area = training ? "training" : "nutrition"; storeSet("mda.area", state.area); applyTabs(); }
-  for (const b of document.querySelectorAll("#tabs button")) {
+  for (const b of document.querySelectorAll("#tabs button[data-tab]")) {
     b.classList.toggle("active", b.dataset.tab === tab);
     b.setAttribute("aria-selected", b.dataset.tab === tab ? "true" : "false");
     b.tabIndex = b.dataset.tab === tab ? 0 : -1;
@@ -7196,7 +7225,8 @@ function show(tab, focus = true) {
 }
 
 // ---------------------------------------------------------------- areas: Ernährung | Training
-// With the feature "training" the app bar gets a switch between the two areas; each has its own tabs. Training is the
+// Settings → Bereiche: nutrition, training or both (state.areas; training = feature "training"). With both, the tab bar
+// gets a switch between the two areas, left of the settings tab; each area has its own tabs. Training is the
 // HAFS panel (static/training/hafs-panel.js, a web component in its own shadow DOM) without its bar: its tabs live in #tabs
 // as "t-<tab>", it talks to POST api/training/call through a small stand-in for Home Assistant's `hass` object.
 const TRAIN_TABS = ["t-today", "t-training", "t-exercises", "t-plans", "t-settings"];
@@ -7210,6 +7240,8 @@ const AREA_ICONS = {
   training: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><g fill="currentColor"><rect x="2" y="9" width="2.4" height="6" rx="1"/><rect x="4.8" y="6.5" width="3" height="11" rx="1"/><rect x="7.6" y="11" width="8.8" height="2" rx=".8"/><rect x="16.2" y="6.5" width="3" height="11" rx="1"/><rect x="19.6" y="9" width="2.4" height="6" rx="1"/></g></svg>',
 };
 const AREA_LABELS = { nutrition: "Ernährung", training: "Training" };
+const nutritionOn = () => !(state.features.training && state.areas === "training");
+state.areas = "nutrition";
 state.area = "nutrition";
 state.foodTab = "diary";
 state.trainTab = isTrainTab(storeGet("mda.trainTab")) ? storeGet("mda.trainTab") : "t-today";
@@ -7223,7 +7255,6 @@ const areaSwitch = h("div", { id: "area", class: "area", role: "group", "aria-la
     b.append(ico, h("span", { class: "lbl" }, AREA_LABELS[a]));
     return b;
   }));
-$(".appbar").insertBefore(areaSwitch, $("#tabs"));
 $("#tabs").append(...TRAIN_TABS.map(t => {
   const b = h("button", { "data-tab": t, "data-area": "training", role: "tab", "aria-selected": "false", tabindex: "-1" }, TRAIN_LABELS[t]);
   b.hidden = true;
@@ -7250,6 +7281,7 @@ async function renderTraining(tab) {
     trainPanel.setAttribute("skin", document.documentElement.dataset.skin || "default");
     trainPanel.tab = tab.slice(2);
     trainPanel.addEventListener("hafs-tab", e => { if (state.tab !== "t-" + e.detail) show("t-" + e.detail, false); });
+    trainPanel.addEventListener("hafs-areas", e => setAreas(e.detail));
     trainPanel.narrow = innerWidth < 760;
     trainLocale = I18N.locale;
     root.replaceChildren(trainPanel);
@@ -7264,6 +7296,31 @@ async function renderTraining(tab) {
   if (trainPanel.tab !== tab.slice(2)) trainPanel.tab = tab.slice(2);
 }
 addEventListener("resize", () => { if (trainPanel) trainPanel.narrow = innerWidth < 760; });
+
+// Settings → Bereiche (first card of the nutrition settings; the training settings have the same choice in the panel).
+function areasCard() {
+  const sel = h("select", { "aria-label": "Bereiche" }, ["both", "nutrition", "training"].map(v => h("option", { value: v }, AREA_CHOICES[v])));
+  sel.value = state.features.training ? state.areas : "nutrition";
+  const saved = h("span", { class: "muted" });
+  sel.addEventListener("change", async () => {
+    await send("PUT", "settings", { areas: sel.value });
+    setAreas(sel.value);
+    saved.textContent = "Gespeichert ✓";
+  });
+  return h("div", { class: "card" }, h("h2", {}, "Bereiche"),
+    h("div", { class: "muted", style: "margin-bottom:8px" }, "Was HAFS zeigt. Mit „Ernährung und Training“ wechselt der Umschalter in der Reiterleiste zwischen beiden."),
+    h("div", { class: "pick" }, sel, saved));
+}
+const AREA_CHOICES = { both: "Ernährung und Training", nutrition: "Nur Ernährung", training: "Nur Training" };
+// after a change of the areas (here or in the training settings): tabs, switch and the page shown follow
+function setAreas(value) {
+  // the settings stay open, now those of the area that is left
+  const leave = value === "training" ? !isTrainTab(state.tab) : value === "nutrition" && isTrainTab(state.tab);
+  state.features.training = value !== "nutrition";
+  state.areas = value;
+  if (leave) show(value === "training" ? "t-settings" : "settings", false);
+  else applyTabs();
+}
 
 // A workout in progress opens training (once, at start, unless the user already moved on).
 async function openRunningWorkout(startTab) {
@@ -7298,7 +7355,7 @@ new MutationObserver(() => { if (!a11yTimer) a11yTimer = requestAnimationFrame(a
 // Arrow keys move between the tabs (tablist pattern).
 $("#tabs").addEventListener("keydown", e => {
   if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
-  const tabs = [...document.querySelectorAll("#tabs button:not([hidden])")];
+  const tabs = [...document.querySelectorAll("#tabs button[data-tab]:not([hidden])")];
   const i = tabs.indexOf(document.activeElement);
   if (i < 0) return;
   const next = e.key === "Home" ? tabs[0] : e.key === "End" ? tabs[tabs.length - 1] : tabs[(i + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length];
@@ -9475,18 +9532,21 @@ async function renderRecipes() {
 
 // Show the Rezepte tab only when the feature is on.
 function applyTabs() {
-  const trainingOn = !!state.features.training;
+  const trainingOn = !!state.features.training, both = trainingOn && nutritionOn();
   if (!trainingOn && state.area === "training") { state.area = "nutrition"; storeSet("mda.area", "nutrition"); }
   const area = state.area;
-  for (const b of document.querySelectorAll("#tabs button")) {
+  for (const b of document.querySelectorAll("#tabs button[data-tab]")) {
     b.hidden = b.dataset.area === "training" ? area !== "training"
       : area === "training" || (b.dataset.tab === "recipes" && !state.features.recipes);
   }
-  areaSwitch.hidden = !trainingOn;
-  $(".appbar").classList.toggle("has-area", trainingOn);
+  // the switch sits in the tab bar, right before the settings tab of the area shown
+  areaSwitch.hidden = !both;
+  $("#tabs").insertBefore(areaSwitch, $(`#tabs [data-tab="${area === "training" ? "t-settings" : "settings"}"]`));
+  $(".appbar").classList.toggle("has-area", both);
   for (const b of areaSwitch.querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.area === area));
   $(".appbar h1").textContent = AREA_LABELS[area];
   if (!trainingOn && isTrainTab(state.tab)) show("diary");
+  else if (!nutritionOn() && !isTrainTab(state.tab)) show(state.trainTab);
   else if (!state.features.recipes && state.tab === "recipes") show("settings");
 }
 
@@ -10343,6 +10403,7 @@ async function renderSettings() {
   const info = h("div", { class: "muted" });
   const autoBox = h("input", { type: "checkbox", checked: calcAuto.get(), onchange: () => { calcAuto.set(autoBox.checked); refreshers.forEach(r => r()); } });
   setTimeout(() => wireCalc(gf, refreshers, info)(false), 0);
+  root.append(areasCard());
   const aim = h("select", {}, GOAL_MODES.map(([v, l]) => h("option", { value: v }, l)));
   aim.value = state.goalMode;
   const rate = h("input", { type: "number", step: "0.05", min: "0", max: "5", value: Math.round(wConv(state.goalRate) * 100) / 100 });
@@ -10411,7 +10472,6 @@ async function renderSettings() {
       feat("suggest", "Mahlzeiten-Vorschläge", "Button im Tagebuch: schlägt gespeicherte Mahlzeiten und Kombinationen aus Deinem Verlauf vor, die zu den offenen Kalorien und Makros passen (Mengen werden angepasst, feste Packungen bleiben)."),
       feat("shopping", "Einkaufsliste", "Zutaten von Rezepten und gespeicherten Mahlzeiten zusammenzählen, kopieren oder an eine Todo-Liste in Home Assistant schicken (z. B. die Einkaufsliste)."),
       feat("pantry", "Vorrat", "Bestand von Lebensmitteln festhalten: Tagebucheinträge verringern ihn, unter einer Schwelle kommt eine Benachrichtigung und/oder ein Eintrag auf einer Todo-Liste (z. B. Bring!)."),
-      feat("training", "Training", "Krafttraining protokollieren (HAFS): Pläne, Übungen, Verlauf und Gewichtsvorschläge in einem eigenen Bereich. Oben wechselt der Umschalter zwischen Ernährung und Training."),
       feat("ramp", "Stufenplan (Reverse-Diät)", "Das Tagesziel steigt oder sinkt in festen Schritten, z. B. +100 kcal pro Woche nach einer Diät."),
       feat("household", "Haushalt", "Einträge, Lebensmittel und Mahlzeiten mit anderen Benutzern teilen, jeder mit eigener Portion (z. B. ein Gericht für die Familie). Beide Seiten müssen die Funktion einschalten."),
       feat("notes", "Notizen", "Freitext zu Mahlzeiten und Tagen (Hunger, Training, Stimmung). Vorhandene Notizen bleiben beim Ausschalten erhalten."),
@@ -11027,7 +11087,7 @@ async function restoreDialog(data) {
     const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
     if (!(Math.abs(dx) > 70 && Math.abs(dy) < 50 && Math.abs(dx) > Math.abs(dy) * 2 && Date.now() - t0 < 600)) return;
     if (state.tab === "diary" && onDate) return void shiftDay(dx < 0 ? 1 : -1);
-    const tabs = [...document.querySelectorAll("#tabs button")].filter(b => !b.hidden);
+    const tabs = [...document.querySelectorAll("#tabs button[data-tab]")].filter(b => !b.hidden);
     const i = tabs.findIndex(b => b.dataset.tab === state.tab), next = tabs[i + (dx < 0 ? 1 : -1)];
     if (next) show(next.dataset.tab);
   }, { passive: true });
@@ -11052,6 +11112,7 @@ api("me").then(m => { $("#who").textContent = m.name; state.admin = !!m.admin; }
     const st = await api("settings");
     state.skin = st.skin;
     state.features = st.features || {};
+    state.areas = st.areas || (state.features.training ? "both" : "nutrition");
     state.langPref = st.lang || "auto";
     I18N.setLang(st.lang, st.units, st.mass);
     state.goalMode = st.goal_mode || "lose";
@@ -11060,7 +11121,7 @@ api("me").then(m => { $("#who").textContent = m.name; state.admin = !!m.admin; }
   } catch { /* keep auto */ }
   applySkin();
   // the area used last (Ernährung | Training) opens again; a tab clicked while the settings were loading wins
-  if (state.features.training && state.tab === "diary" && storeGet("mda.area") === "training") state.tab = state.trainTab;
+  if (state.features.training && state.tab === "diary" && (storeGet("mda.area") === "training" || !nutritionOn())) state.tab = state.trainTab;
   applyTabs();
   // a tab clicked while the settings were loading stays open and is drawn again with the features now known
   const startTab = state.tab;

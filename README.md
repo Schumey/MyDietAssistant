@@ -59,7 +59,7 @@ HAFS hieß bis Version 1.x **MyDietAssistant**; Training war eine eigene Integra
 
 ## Training
 
-Mit der Zusatzfunktion **Training** kommt ein zweiter Bereich dazu: Trainingspläne und -tage, Studios mit Geräten und Gewichtsstufen, Verlauf je Übung mit geschätztem 1RM, Sätze je Muskelgruppe und Gewichtsvorschläge, die Deine Ernährungsphase (Diät, Halten, Aufbau) berücksichtigen. Import aus GymRun, Strong und Hevy; Entitäten, Events und Assist für Home Assistant. Anleitung: [Training](docs/de/training.md), [Training in Home Assistant](docs/de/training-ha.md).
+Unter *Einstellungen → Bereiche* kommt **Training** als zweiter Bereich dazu: Trainingspläne und -tage, Studios mit Geräten und Gewichtsstufen, Verlauf je Übung mit geschätztem 1RM, Sätze je Muskelgruppe und Gewichtsvorschläge, die Deine Ernährungsphase (Diät, Halten, Aufbau) berücksichtigen. Import aus GymRun, Strong und Hevy; Entitäten, Events und Assist für Home Assistant. Anleitung: [Training](docs/de/training.md), [Training in Home Assistant](docs/de/training-ha.md).
 
 <p align="center">
   <img src="docs/screenshots/de/training.png" alt="Training: nächster Trainingstag, Kennzahlen, Sätze je Muskelgruppe" width="49%">

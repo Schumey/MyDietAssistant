@@ -4,7 +4,7 @@
 
 Training creates entities in Home Assistant, fires events, answers Assist and provides data for automations. Everything runs through the app itself; you no longer need an integration.
 
-**Requirement:** the optional feature **Training** (see [Training](training.md)) and the app option `publish_sensors` (default: on).
+**Requirement:** training under *Settings → Areas* (see [Training](training.md)) and the app option `publish_sensors` (default: on).
 
 ## Entities
 

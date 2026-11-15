@@ -4,15 +4,15 @@
 
 HAFS has two areas: **Nutrition** (the diary as you know it) and **Training** (strength training: plans, exercises, history and weight suggestions). Both run in the same app in Home Assistant and share users, language and look. You record workouts with the [HAFS app](android.md) on your phone; the web interface shows them, and here you keep plans, gyms and equipment.
 
-**Requirement:** the optional feature **Training** (*Settings → Optional features*).
+**Requirement:** *Settings → Areas* is set to **Nutrition and training** or **Training only**.
 
 ## Switch training on
 
-1. Open HAFS in Home Assistant and go to *Settings → Optional features*.
-2. Tick **Training**.
-3. The switch **Nutrition | Training** appears at the top of the bar. It takes the place of the title.
+1. Open HAFS in Home Assistant and go to *Settings*. The first card is **Areas**.
+2. Choose **Nutrition and training**. If you only want to train, choose **Training only**; the nutrition tabs are then gone.
+3. With both areas the switch **Nutrition | Training** appears in the tab bar, left of **Settings**.
 
-With the feature off HAFS looks as before, and the HAFS app gets no training data for you.
+The same choice is under *Training → Settings → Areas*. With **Nutrition only** HAFS looks as before, and the HAFS app gets no training data for you.
 
 ## Change between nutrition and training
 

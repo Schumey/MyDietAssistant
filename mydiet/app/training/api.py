@@ -289,7 +289,19 @@ def c_legacy_import(owner: str, msg: dict) -> dict:
     return legacy.take_over(store, users)
 
 
+def c_areas(owner: str, msg: dict) -> dict:
+    """Areas of the app (nutrition | training | both), read or set from the training settings."""
+    from extras import AREAS, areas, set_areas
+    if "value" in msg:
+        value = _opt(msg, "value", str, "")
+        if value not in AREAS:
+            raise _bad("value must be nutrition, training or both")
+        set_areas(owner, value)
+    return {"areas": areas(owner)}
+
+
 COMMANDS: dict[str, Callable[[str, dict], dict]] = {
+    "hafs/areas": c_areas,
     "hafs/info": c_info,
     "hafs/sync/push": c_sync_push,
     "hafs/sync/pull": c_sync_pull,
@@ -339,7 +351,7 @@ def call(owner: str, msg: Any) -> dict:
     if handler is None:
         raise CallError(404, "unknown_command", msg["type"])
     if not feature_on(owner, "training"):
-        raise CallError(403, "not_enabled", "Training ist aus: in den Einstellungen unter Zusatzfunktionen einschalten")
+        raise CallError(403, "not_enabled", "Training ist aus: in den Einstellungen unter Bereiche einschalten")
     try:
         result = handler(owner, msg)
     except ValueError as err:   # the core raises ValueError for bad records or CSV

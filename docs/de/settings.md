@@ -6,6 +6,7 @@ Der Reiter **Einstellungen** besteht aus Karten. Karten für Zusatzfunktionen er
 
 | Karte | Inhalt | Seite |
 |---|---|---|
+| Bereiche | Ernährung, Training oder beides | [Training](training.md) |
 | Tagesziele | Ziel, Kalorien und Makros, Zielgewicht | [Ziele und Statistik](goals-and-stats.md) |
 | Sprache und Einheiten | Sprache, Einheiten, Lebensmittelmengen | unten |
 | Hinzufügen-Dialog | „Häufig verwendet“: Lebensmittel, Mahlzeiten oder beides | unten |
@@ -55,7 +56,6 @@ Alles, was nicht jeder braucht, ist standardmäßig aus.
 | Rezepte | Rezepte, Import aus Web und Mealie | [Rezepte](recipes.md) |
 | Weitere Datenquellen | Open Food Facts und USDA | [Lebensmittel](foods.md#online-suche-weitere-datenquellen) |
 | Stufenplan (Reverse-Diät) | Ziel steigt oder sinkt in festen Schritten | [Ziele](goals-and-stats.md#stufenplan-reverse-diät) |
-| Training | Krafttraining in einem eigenen Bereich, Umschalter Ernährung / Training | [Training](training.md) |
 | Aktivität | Schritte und Kalorien erhöhen das Ziel | [Aktivität](activity.md) |
 | Waage (Sensor) | Gewicht aus einem HA-Sensor | [Gewicht](weight.md#waage-als-sensor) |
 | Mahlzeiten-Zeitplan | Zeitfenster pro Mahlzeit | [Zeitplan](schedule.md) |

@@ -73,7 +73,7 @@ def test_app_starts_with_all_tabs_and_no_script_errors(page):
     settings(page.base, lang="de", features={"recipes": True})
     page.goto(page.base + "/")
     page.wait_for_selector("#diary .daynav")
-    assert [b.text_content() for b in page.query_selector_all("#tabs button:not([hidden])")] == \
+    assert [b.text_content() for b in page.query_selector_all("#tabs button[data-tab]:not([hidden])")] == \
         ["Tagebuch", "Lebensmittel", "Mahlzeiten", "Rezepte", "Gewicht", "Statistik", "Einstellungen"]
     assert page.errors == []
 
@@ -216,7 +216,7 @@ def test_italian_interface_is_complete_on_the_main_pages(page):
     settings(page.base, lang="it", features={})
     page.goto(page.base + "/")
     page.wait_for_selector("#diary .daynav")
-    tabs = [b.text_content() for b in page.query_selector_all("#tabs button:not([hidden])")]
+    tabs = [b.text_content() for b in page.query_selector_all("#tabs button[data-tab]:not([hidden])")]
     assert [t for t in tabs if t != "Ricette"] == ["Diario", "Alimenti", "Pasti", "Peso", "Statistiche", "Impostazioni"]
     assert "Obiettivo giornaliero" in page.inner_text("#diary") or "Il tuo obiettivo giornaliero" in page.inner_text("#diary")
     assert page.errors == []
@@ -457,7 +457,7 @@ def test_portuguese_and_polish_interfaces_translate_the_main_pages(page, lang, t
     settings(page.base, lang=lang, features={})
     page.goto(page.base + "/")
     page.wait_for_selector("#diary .daynav")
-    shown = [b.text_content() for b in page.query_selector_all("#tabs button:not([hidden])")]
+    shown = [b.text_content() for b in page.query_selector_all("#tabs button[data-tab]:not([hidden])")]
     assert [t for t in shown if t not in ("Receitas", "Przepisy")] == tabs
     page.click('#tabs button[data-tab="settings"]')
     page.wait_for_selector("#settings .card")

@@ -46,6 +46,25 @@ def test_feature_off_is_refused(user):
     assert r.status_code == 403 and r.json()["code"] == "not_enabled"
 
 
+def test_areas_setting(user):
+    c = user("Bereiche")
+    assert c.get("/api/settings").json()["areas"] == "nutrition"
+    assert c.put("/api/settings", json={"areas": "both"}).status_code == 200
+    s = c.get("/api/settings").json()
+    assert s["areas"] == "both" and s["features"]["training"] is True
+    # from the training settings: training only, then back to nutrition only (which switches training off)
+    assert ok(c, "hafs/areas", value="training") == {"areas": "training"}
+    assert ok(c, "hafs/areas") == {"areas": "training"}
+    assert call(c, "hafs/areas", value="all").status_code == 400
+    assert ok(c, "hafs/areas", value="nutrition") == {"areas": "nutrition"}
+    assert c.get("/api/settings").json()["features"]["training"] is False
+    assert call(c, "hafs/info").status_code == 403
+    assert c.put("/api/settings", json={"areas": "x"}).status_code == 400
+    # switching training on by itself (take-over, old clients) shows both areas
+    c.put("/api/settings", json={"features": {"training": True}})
+    assert c.get("/api/settings").json()["areas"] == "both"
+
+
 def test_unknown_command_and_bad_body(athlete):
     r = call(athlete, "hafs/nope")
     assert r.status_code == 404 and r.json() == {"code": "unknown_command", "message": "hafs/nope"}
