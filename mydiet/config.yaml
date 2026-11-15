@@ -34,3 +34,5 @@ map:
     read_only: false
   - type: backup
     read_only: false
+  - type: share
+    read_only: true

@@ -6,11 +6,12 @@ Errors come back as {"code": ..., "message": ...} like Home Assistant's WebSocke
 403 not_enabled (feature `training` off), 404 unknown_command. The data lives in its own file (`hafs.db` next to
 `mydiet.db`, or `HAFS_DB`), because the Flutter app's schema is generated from exactly these migrations.
 
-Not wired to Home Assistant yet (stage 4): AI review/plan, zone of the person entity, entities and events.
-Events of a push are handed to AFTER_PUSH hooks (owner, events), so that part can attach later.
+Home Assistant is reached through `training/ha.py`, which fills HA (zone, zones, AI) and the hooks AFTER_PUSH (owner,
+events: fires the events, sends the entities) and AFTER_CHANGE (owner: settings, targets or import changed).
 """
 from __future__ import annotations
 
+import json
 import os
 from datetime import date, datetime
 from typing import Any, Callable
@@ -22,7 +23,7 @@ import db as mda_db
 from main import app, day_totals, user_from
 from extras import feature_on, get_pref as mda_pref
 
-from training.core import catalog, phase as phase_mod, sync, targets, webview
+from training.core import aiplan, catalog, phase as phase_mod, sync, targets, webview
 from training.core.store import Store
 
 API_VERSION = 1   # bumped when the call API changes incompatibly (same number the integration used)
@@ -32,6 +33,17 @@ store = Store(DB_PATH)
 store.init()
 
 AFTER_PUSH: list[Callable[[str, list[dict]], None]] = []   # (owner, events) after a push that changed something
+AFTER_CHANGE: list[Callable[[str], None]] = []              # (owner) after settings, targets or an import changed
+NO_AI = "Home Assistant has no AI task set up (ai_task)"
+
+
+def _no_ai(*_args, **_kw):
+    raise ValueError(NO_AI)
+
+
+# Home Assistant access, replaced by training/ha.py: zone(owner) -> zone entity id or None, zones() -> [{entity_id, name}],
+# ai(task_name, instructions, structure, entity_id) -> answer data (raises ValueError)
+HA: dict[str, Callable] = {"zone": lambda owner: None, "zones": lambda: [], "ai": _no_ai}
 PREF_KEYS = ("phase", *targets.SETTING_KEYS, *targets.OTHER_KEYS)
 WEB_QUERIES = sorted(webview.QUERIES)
 
@@ -161,8 +173,14 @@ def c_targets_recompute(owner: str, msg: dict) -> dict:
 
 
 def c_gym_current(owner: str, msg: dict) -> dict:
-    zone = None   # stage 4: zone of the user's person entity over the HA API
+    """The gym the user is at, from the zone of their person entity and the `zone` field of their gyms."""
+    zone = HA["zone"](owner)
     return {"zone": zone, **(store.gym_for_zone(owner, zone) or {"gym_id": None, "gym": None})}
+
+
+def c_zones(owner: str, msg: dict) -> dict:
+    """Zones of Home Assistant for the gym editor (the panel read them from `hass.states`)."""
+    return {"zones": HA["zones"]()}
 
 
 def c_intake_hint(owner: str, msg: dict) -> dict:
@@ -175,27 +193,45 @@ def c_intake_hint(owner: str, msg: dict) -> dict:
     return phase_mod.intake_hint(t["kcal"], t["carbs"], _now().hour)
 
 
-def c_review(owner: str, msg: dict) -> dict:
-    ai = _opt(msg, "ai", bool, False)
-    language = _opt(msg, "language", str, "de")
-    _opt(msg, "entity_id", str, "")
+def review(owner: str, ai: bool, language: str = "de", entity_id: str | None = None) -> dict:
+    """Stagnating exercises and neglected muscle groups; with [ai] also a short summary from HA's AI task. The AI step sends
+    only exercise and muscle group names with numbers (see core/review.py) and is skipped when nothing stands out."""
     now = _now()
     data = store.review(owner, now, now.tzinfo, language)
-    data.pop("instructions")
+    instructions = data.pop("instructions")
     data["text"] = None
     if ai and (data["stagnating"] or data["neglected"]):
-        raise _bad("Home Assistant has no AI task set up (ai_task)")   # stage 4: ai_task.generate_data over the HA API
+        answer = HA["ai"]("HAFS training review", instructions,
+                          {"summary": {"description": "The summary as plain text", "required": True, "selector": {"text": {"multiline": True}}}},
+                          entity_id)
+        text = answer.get("summary") if isinstance(answer, dict) else answer
+        data["text"] = text if isinstance(text, str) and text else (json.dumps(answer) if answer else None)
     return data
+
+
+def suggest_plan(owner: str, days: int, minutes: int, goal: str, notes: str, language: str, entity_id: str | None = None) -> dict:
+    """A plan draft from HA's AI task built from the user's own exercises. Returns validated days; nothing is saved."""
+    req = store.plan_request(owner, days, minutes, goal, notes, language)
+    if not req["known"]:
+        raise ValueError("no exercises to build a plan from")
+    answer = HA["ai"]("HAFS training plan", req["instructions"],
+                      {"plan": {"description": "The plan as JSON text", "required": True, "selector": {"text": {"multiline": True}}}},
+                      entity_id)
+    text = answer.get("plan") if isinstance(answer, dict) else answer
+    if not isinstance(text, str):
+        text = json.dumps(answer) if answer else ""
+    return {"days": aiplan.parse_draft(text, req["known"])}
+
+
+def c_review(owner: str, msg: dict) -> dict:
+    return review(owner, _opt(msg, "ai", bool, False), _opt(msg, "language", str, "de"), _opt(msg, "entity_id", str, "") or None)
 
 
 def c_plan_suggest(owner: str, msg: dict) -> dict:
     days = _int_range(msg, "days", 1, 6)
     minutes = _int_range(msg, "minutes", 20, 180, 60)
     goal, notes = _text(msg, "goal", 200), _text(msg, "notes", 500)
-    req = store.plan_request(owner, days, minutes, goal, notes, _opt(msg, "language", str, "de"))
-    if not req["known"]:
-        raise _bad("no exercises to build a plan from")
-    raise _bad("Home Assistant has no AI task set up (ai_task)")   # stage 4
+    return suggest_plan(owner, days, minutes, goal, notes, _opt(msg, "language", str, "de"), _opt(msg, "entity_id", str, "") or None)
 
 
 def c_web_query(owner: str, msg: dict) -> dict:
@@ -230,7 +266,10 @@ COMMANDS: dict[str, Callable[[str, dict], dict]] = {
     "hafs/web/query": c_web_query,
     "hafs/export": c_export,
     "hafs/import/gymrun": c_import_gymrun,
+    "hafs/zones": c_zones,
 }
+# commands after which the entities should follow at once (AFTER_CHANGE); a push has its own hook
+CHANGING = {"hafs/pref/set", "hafs/target/set", "hafs/targets/recompute", "hafs/import/gymrun"}
 
 
 def _read_version() -> str:
@@ -260,9 +299,13 @@ def call(owner: str, msg: Any) -> dict:
     if not feature_on(owner, "training"):
         raise CallError(403, "not_enabled", "Training ist aus: in den Einstellungen unter Zusatzfunktionen einschalten")
     try:
-        return handler(owner, msg)
+        result = handler(owner, msg)
     except ValueError as err:   # the core raises ValueError for bad records or CSV
         raise _bad(str(err)) from err
+    if msg["type"] in CHANGING and not (msg["type"] == "hafs/import/gymrun" and msg.get("dry_run", True)):
+        for hook in AFTER_CHANGE:
+            hook(owner)
+    return result
 
 
 @app.post("/api/training/call")

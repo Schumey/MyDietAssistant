@@ -26,7 +26,6 @@ blueprint:
         entity:
           filter:
             - domain: sensor
-              integration: hafs
     training_state:
       name: Sensor "Trainingsstatus"
       description: sensor.hafs_NAME_training_state (none, active, done)
@@ -34,7 +33,6 @@ blueprint:
         entity:
           filter:
             - domain: sensor
-              integration: hafs
     notify_action:
       name: Benachrichtigung senden
       description: >

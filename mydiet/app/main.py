@@ -766,6 +766,8 @@ from extras18 import *  # noqa: E402,F401,F403  (step plan / reverse diet)
 from extras19 import *  # noqa: E402,F401,F403  (health data from the Android app)
 from extras20 import *  # noqa: E402,F401,F403  (pantry)
 import training.api  # noqa: E402,F401  (training: POST /api/training/call, own database hafs.db)
+import training.ha  # noqa: E402,F401  (training: entities, events, zone, AI, background job)
+import training.ext  # noqa: E402,F401  (training: /api/ext/training/*, app packages)
 
 
 @app.get("/")

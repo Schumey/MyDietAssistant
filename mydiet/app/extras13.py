@@ -475,8 +475,33 @@ def shake_meal_due(owner: str, day: str, t: dict) -> bool:
         return False
 
 
+def trained_on(owner: str, day: str) -> bool:
+    """A workout of the training area started that day (running or finished)."""
+    try:
+        from training import api as training_api
+    except ImportError:
+        return False
+    from datetime import datetime, timedelta, timezone
+    d = date.fromisoformat(day)
+    lo, hi = (d - timedelta(days=1)).isoformat(), (d + timedelta(days=2)).isoformat()
+    with training_api.store._conn() as conn:
+        rows = conn.execute("SELECT started_at FROM workout WHERE owner=? AND deleted=0 AND started_at >= ? AND started_at < ?",
+                            (owner, lo, hi)).fetchall()
+    for (text,) in rows:   # stored in UTC (a time without offset is UTC), the day is local
+        try:
+            t = datetime.fromisoformat(text.replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        if (t if t.tzinfo else t.replace(tzinfo=timezone.utc)).astimezone().date() == d:
+            return True
+    return False
+
+
 def is_training_day(c, owner: str, day: str, t: dict) -> bool:
-    """The shake is in the diary, a trigger entered it, or (with the activity feature) enough kcal were burned."""
+    """The shake is in the diary, a trigger entered it, (with the training feature) a workout runs or was done that day,
+    or (with the activity feature) enough kcal were burned."""
+    if feature_on(owner, "training") and trained_on(owner, day):
+        return True
     cand = next((cd for cd in saved_candidates(c, owner) if cd["saved_meal_id"] == t["saved_meal_id"]), None)
     if cand and shake_eaten(c, owner, day, cand):
         return True

@@ -7224,7 +7224,12 @@ async function renderTraining(tab) {
     trainPanel.narrow = innerWidth < 760;
     trainLocale = I18N.locale;
     root.replaceChildren(trainPanel);
-    trainPanel.hass = { language: I18N.locale, states: {}, connection: { sendMessagePromise: trainingCall } };
+    const hass = { language: I18N.locale, states: {}, connection: { sendMessagePromise: trainingCall } };
+    trainPanel.hass = hass;
+    // the gym editor offers Home Assistant's zones from hass.states (filled in when they arrive)
+    trainingCall({ type: "hafs/zones" }).then(r => {
+      for (const z of r.zones || []) hass.states[z.entity_id] = { entity_id: z.entity_id, state: "", attributes: { friendly_name: z.name } };
+    }).catch(() => { /* no Home Assistant: no zones */ });
     return;
   }
   if (trainPanel.tab !== tab.slice(2)) trainPanel.tab = tab.slice(2);
