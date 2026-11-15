@@ -1,0 +1,107 @@
+get_plan:
+  fields:
+    user_id:
+      required: false
+      selector:
+        text:
+get_workouts:
+  fields:
+    user_id:
+      required: false
+      selector:
+        text:
+    days:
+      required: false
+      default: 30
+      selector:
+        number:
+          min: 1
+          max: 3650
+    limit:
+      required: false
+      default: 50
+      selector:
+        number:
+          min: 1
+          max: 500
+export:
+  fields:
+    user_id:
+      required: false
+      selector:
+        text:
+import:
+  fields:
+    user_id:
+      required: false
+      selector:
+        text:
+    csv:
+      required: true
+      selector:
+        text:
+          multiline: true
+    dry_run:
+      required: false
+      default: true
+      selector:
+        boolean:
+suggest_program:
+  fields:
+    user_id:
+      required: false
+      selector:
+        text:
+    days:
+      required: true
+      selector:
+        number:
+          min: 1
+          max: 6
+    minutes:
+      required: false
+      default: 60
+      selector:
+        number:
+          min: 20
+          max: 180
+    goal:
+      required: false
+      selector:
+        text:
+    notes:
+      required: false
+      selector:
+        text:
+          multiline: true
+    language:
+      required: false
+      default: de
+      selector:
+        text:
+    entity_id:
+      required: false
+      selector:
+        entity:
+          domain: ai_task
+get_review:
+  fields:
+    user_id:
+      required: false
+      selector:
+        text:
+    ai:
+      required: false
+      default: false
+      selector:
+        boolean:
+    language:
+      required: false
+      default: de
+      selector:
+        text:
+    entity_id:
+      required: false
+      selector:
+        entity:
+          domain: ai_task

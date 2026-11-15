@@ -1,0 +1,11 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <receiver android:name="de.schumey.hafs_live.RestEndReceiver" android:exported="false" />
+        <receiver android:name="de.schumey.hafs_live.HafsWidget" android:exported="false" android:label="HAFS">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/hafs_widget_info" />
+        </receiver>
+    </application>
+</manifest>

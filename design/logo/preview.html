@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logo-Entwürfe</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #f4f6f5; color: #1c2321; margin: 0; padding: 24px 16px; }
+  h1 { font-size: 20px; margin: 0 0 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; max-width: 960px; }
+  figure { margin: 0; background: #fff; border-radius: 12px; padding: 16px; text-align: center; }
+  figure.dark { background: #1c2321; color: #eee; }
+  img.big { width: 180px; height: 180px; }
+  .small img { width: 48px; height: 48px; margin: 0 6px; }
+  .small img.tiny { width: 24px; height: 24px; }
+  figcaption { margin-top: 8px; font-size: 14px; }
+</style>
+</head>
+<body>
+<h1>Logo-Entwürfe (A, B, C) – groß, als App-Symbol und als Favicon</h1>
+<div class="grid">
+  <figure><img class="big" src="logo-a.svg" alt="Entwurf A"><figcaption>A: Haus mit Apfel und Hantel</figcaption></figure>
+  <figure><img class="big" src="logo-b.svg" alt="Entwurf B"><figcaption>B: Hantel-Apfel</figcaption></figure>
+  <figure><img class="big" src="logo-c.svg" alt="Entwurf C"><figcaption>C: Zwei Hälften</figcaption></figure>
+  <figure class="small"><img src="logo-a.svg" alt=""><img src="logo-b.svg" alt=""><img src="logo-c.svg" alt=""><br><img class="tiny" src="logo-a.svg" alt=""><img class="tiny" src="logo-b.svg" alt=""><img class="tiny" src="logo-c.svg" alt=""><figcaption>klein, hell</figcaption></figure>
+  <figure class="small dark"><img src="logo-a.svg" alt=""><img src="logo-b.svg" alt=""><img src="logo-c.svg" alt=""><br><img class="tiny" src="logo-a.svg" alt=""><img class="tiny" src="logo-b.svg" alt=""><img class="tiny" src="logo-c.svg" alt=""><figcaption>klein, dunkel</figcaption></figure>
+</div>
+</body>
+</html>

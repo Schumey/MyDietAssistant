@@ -3,5 +3,13 @@ __pycache__/
 .venv/
 data/
 *.db
+*.db.bak*
 *.bak
 .pytest_cache/
+
+# Personal training data (GymRun export and backup) - never commit
+GymRun_*.csv
+GymRun_*.zip
+
+# Local tooling
+.claude/

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Draft C: two halves (nutrition | training), matching the switch in the app bar -->
+  <defs>
+    <clipPath id="r"><rect width="512" height="512" rx="104"/></clipPath>
+  </defs>
+  <g clip-path="url(#r)">
+    <rect width="256" height="512" fill="#2e7d5b"/>
+    <rect x="256" width="256" height="512" fill="#37474f"/>
+  </g>
+  <path d="M256 92 L432 236 H400 V420 H112 V236 H80 Z" fill="none" stroke="#fff" stroke-width="26" stroke-linejoin="round"/>
+  <line x1="256" y1="120" x2="256" y2="407" stroke="#fff" stroke-width="6" stroke-dasharray="2 14" stroke-linecap="round" opacity=".6"/>
+  <!-- apple -->
+  <path d="M184 296 c-20 -13 -56 -6 -56 33 c0 35 25 64 42 64 c7 0 10 -5 14 -5 s7 5 14 5 c17 0 42 -29 42 -64 c0 -39 -36 -46 -56 -33z" fill="#e74c3c"/>
+  <path d="M184 298 q2 -17 9 -28" fill="none" stroke="#5d4037" stroke-width="7" stroke-linecap="round"/>
+  <path d="M195 277 q18 -20 37 -9 q-15 20 -37 9z" fill="#9ccc65"/>
+  <ellipse cx="157" cy="326" rx="6" ry="13" fill="#fff" opacity=".7"/>
+  <!-- dumbbell -->
+  <g fill="#fff">
+    <rect x="276" y="318" width="14" height="52" rx="5"/>
+    <rect x="292" y="304" width="17" height="80" rx="5"/>
+    <rect x="307" y="337" width="38" height="14" rx="4"/>
+    <rect x="343" y="304" width="17" height="80" rx="5"/>
+    <rect x="362" y="318" width="14" height="52" rx="5"/>
+  </g>
+</svg>

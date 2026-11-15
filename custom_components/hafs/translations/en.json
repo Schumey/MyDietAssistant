@@ -1,0 +1,65 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up HAFS",
+        "description": "HAFS stores your training in Home Assistant. The data lives in /config/hafs/hafs.db."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "HAFS is already set up."
+    }
+  },
+  "services": {
+    "get_plan": {
+      "name": "Get plan",
+      "description": "Returns the programs with routines and exercises, and the routine due next.",
+      "fields": {
+        "user_id": {
+          "name": "User",
+          "description": "User ID (default: the calling user)"
+        }
+      }
+    },
+    "get_workouts": {
+      "name": "Get workouts",
+      "description": "Returns the latest finished workouts with duration, volume and exercises.",
+      "fields": {
+        "user_id": {
+          "name": "User",
+          "description": "User ID (default: the calling user)"
+        },
+        "days": {
+          "name": "Days",
+          "description": "Days"
+        },
+        "limit": {
+          "name": "Limit",
+          "description": "Limit"
+        }
+      }
+    },
+    "get_review": {
+      "name": "Get review",
+      "description": "Finds stagnating exercises and neglected muscle groups, optionally with a short summary from the AI set up in Home Assistant.",
+      "fields": {
+        "user_id": {
+          "name": "User",
+          "description": "User ID (default: the calling user)"
+        },
+        "ai": {
+          "name": "AI summary",
+          "description": "AI summary"
+        },
+        "language": {
+          "name": "Language",
+          "description": "Language"
+        },
+        "entity_id": {
+          "name": "AI task",
+          "description": "AI task entity (default: the one set up in Home Assistant)"
+        }
+      }
+    }
+  }
+}

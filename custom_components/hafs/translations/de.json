@@ -1,0 +1,65 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "HAFS einrichten",
+        "description": "HAFS speichert dein Training in Home Assistant. Die Daten liegen in /config/hafs/hafs.db."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "HAFS ist bereits eingerichtet."
+    }
+  },
+  "services": {
+    "get_plan": {
+      "name": "Plan abrufen",
+      "description": "Gibt die Programme mit Routinen und Übungen zurück, dazu die als Nächstes fällige Routine.",
+      "fields": {
+        "user_id": {
+          "name": "User",
+          "description": "Benutzer-ID (Standard: der aufrufende Benutzer)"
+        }
+      }
+    },
+    "get_workouts": {
+      "name": "Workouts abrufen",
+      "description": "Gibt die letzten abgeschlossenen Workouts mit Dauer, Volumen und Übungen zurück.",
+      "fields": {
+        "user_id": {
+          "name": "User",
+          "description": "Benutzer-ID (Standard: der aufrufende Benutzer)"
+        },
+        "days": {
+          "name": "Tage",
+          "description": "Tage"
+        },
+        "limit": {
+          "name": "Höchstzahl",
+          "description": "Höchstzahl"
+        }
+      }
+    },
+    "get_review": {
+      "name": "Rückblick abrufen",
+      "description": "Findet stagnierende Übungen und vernachlässigte Muskelgruppen, auf Wunsch mit einer kurzen Zusammenfassung der in Home Assistant eingerichteten KI.",
+      "fields": {
+        "user_id": {
+          "name": "User",
+          "description": "Benutzer-ID (Standard: der aufrufende Benutzer)"
+        },
+        "ai": {
+          "name": "KI-Zusammenfassung",
+          "description": "KI-Zusammenfassung"
+        },
+        "language": {
+          "name": "Sprache",
+          "description": "Sprache"
+        },
+        "entity_id": {
+          "name": "AI task",
+          "description": "AI task entity (default: the one set up in Home Assistant)"
+        }
+      }
+    }
+  }
+}

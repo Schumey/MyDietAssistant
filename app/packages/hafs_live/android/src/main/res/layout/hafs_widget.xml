@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/hafs_widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@drawable/hafs_widget_bg">
+
+    <TextView
+        android:id="@+id/hafs_widget_kicker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="11sp"
+        android:textAllCaps="true"
+        android:textColor="#80CBC4"
+        android:maxLines="1" />
+
+    <TextView
+        android:id="@+id/hafs_widget_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+    <TextView
+        android:id="@+id/hafs_widget_lines"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="6dp"
+        android:textSize="13sp"
+        android:textColor="#E0E0E0"
+        android:maxLines="6"
+        android:ellipsize="end" />
+</LinearLayout>

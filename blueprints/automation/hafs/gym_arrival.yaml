@@ -1,0 +1,72 @@
+blueprint:
+  name: HAFS - Ankunft im Studio
+  description: >
+    Sendet eine Benachrichtigung mit dem heutigen Trainingstag, sobald die Person die Zone
+    (zum Beispiel das Studio) betritt. Den Trainingstag liefert der HAFS-Sensor "next_routine",
+    die Übungen stehen in seinem Attribut "exercises". Läuft schon ein Workout oder wurde heute
+    trainiert, kommt keine Meldung.
+  domain: automation
+  input:
+    person:
+      name: Person
+      selector:
+        entity:
+          filter:
+            - domain: person
+    zone:
+      name: Zone des Studios
+      selector:
+        entity:
+          filter:
+            - domain: zone
+    next_routine:
+      name: Sensor "Nächster Trainingstag"
+      description: sensor.hafs_NAME_next_routine
+      selector:
+        entity:
+          filter:
+            - domain: sensor
+              integration: hafs
+    training_state:
+      name: Sensor "Trainingsstatus"
+      description: sensor.hafs_NAME_training_state (none, active, done)
+      selector:
+        entity:
+          filter:
+            - domain: sensor
+              integration: hafs
+    notify_action:
+      name: Benachrichtigung senden
+      description: >
+        Aktion, die die Meldung verschickt. Im Text stehen {{ title }} und {{ message }} zur Verfügung,
+        zum Beispiel notify.mobile_app_pixel_7 mit data: title/message.
+      selector:
+        action: {}
+
+mode: single
+max_exceeded: silent
+
+variables:
+  next_routine: !input next_routine
+  training_state: !input training_state
+
+trigger:
+  - platform: zone
+    entity_id: !input person
+    zone: !input zone
+    event: enter
+
+condition:
+  - condition: template
+    value_template: "{{ states(training_state) == 'none' }}"
+  - condition: template
+    value_template: "{{ states(next_routine) not in ['unknown', 'unavailable', 'none', ''] }}"
+
+action:
+  - variables:
+      title: "{{ states(next_routine) }}"
+      message: >-
+        {% set ex = state_attr(next_routine, 'exercises') or [] %}
+        {{ ex | join(', ') if ex else 'Viel Erfolg beim Training!' }}
+  - choose: []
+    default: !input notify_action
