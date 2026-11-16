@@ -1,14 +1,16 @@
 # Builds the signed Android release APK and hands it to Home Assistant for the in-app update.
 # Result: app\build\release\hafs-<version>.apk (version from app\pubspec.yaml).
 #
-# With -Deploy the file is copied to the Home Assistant share (default \\homeassistant\config\hafs\app, the Samba share of /config);
-# the integration serves the newest hafs-<version>.apk there and the app offers it in Settings / at start.
+# With -Deploy the file is copied to the Home Assistant share (default \\homeassistant\share\hafs\app, the Samba share
+# of /share); the HA app serves the newest hafs-<version>.apk there (GET api/training/app) and the app offers it in
+# Settings / at start. The copy is checked with SHA-256 before it gets its final name; a broken copy is deleted, because
+# the server would otherwise offer it (the share breaks off on mobile networks: copy over Wi-Fi).
 # The APK must be signed with the release key from the private folder HAFS-local\android
 # (release.properties + release.keystore); without it the script stops, because a debug-signed APK could
 # not update an installed release app.
 #
 # Bump `version:` in app\pubspec.yaml before a release (the number after the + is the Android version code and must grow).
-param([switch]$Deploy, [string]$Share = '\\homeassistant\config\hafs\app')
+param([switch]$Deploy, [string]$Share = '\\homeassistant\share\hafs\app')
 $ErrorActionPreference = 'Stop'
 $root = Resolve-Path "$PSScriptRoot\.."
 $appDir = "$root\app"
@@ -39,7 +41,16 @@ if ($Deploy) {
     if (-not (Test-Path (Split-Path $Share))) { throw "Share $(Split-Path $Share) not reachable" }
     New-Item -ItemType Directory -Force $Share | Out-Null
     # copy under a temporary name first so the server never offers a half-written file
-    Copy-Item "$out\hafs-$version.apk" "$Share\hafs-$version.apk.part" -Force
-    Move-Item "$Share\hafs-$version.apk.part" "$Share\hafs-$version.apk" -Force
-    "Deployed to $Share\hafs-$version.apk"
+    $part = "$Share\hafs-$version.apk.part"
+    try {
+        Copy-Item "$out\hafs-$version.apk" $part -Force
+        $want = (Get-FileHash "$out\hafs-$version.apk" -Algorithm SHA256).Hash
+        $got = (Get-FileHash $part -Algorithm SHA256).Hash
+        if ($want -ne $got) { throw "checksum of the copy differs ($got instead of $want)" }
+        Move-Item $part "$Share\hafs-$version.apk" -Force
+    } catch {
+        Remove-Item $part -Force -ErrorAction SilentlyContinue
+        throw "Deploy failed, nothing new is offered: $_"
+    }
+    "Deployed to $Share\hafs-$version.apk (sha256 $($want.ToLower()))"
 }
