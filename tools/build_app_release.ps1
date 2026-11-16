@@ -33,6 +33,17 @@ try {
 }
 Copy-Item "$appDir\build\app\outputs\flutter-apk\app-release.apk" "$out\hafs-$version.apk"
 
+# The installed apps are signed with this certificate (key from the private repo Schumey/HAFS-local, CN=HAFS, O=Schumey,
+# C=DE). Android refuses an update signed with any other key, so a build with a stray keystore stops here.
+$releaseCert = 'fe5731d680f7918473e396912b517afd159be7d101ef82923ae87a1036a7103d'
+$sdk = if ($env:ANDROID_HOME) { $env:ANDROID_HOME } else { "$env:LOCALAPPDATA\Android\Sdk" }
+$buildTools = Get-ChildItem "$sdk\build-tools" -Directory | Sort-Object { [version]($_.Name -replace '[^0-9.].*$', '') } -Descending | Select-Object -First 1
+$certs = & "$($buildTools.FullName)\apksigner.bat" verify --print-certs "$out\hafs-$version.apk" 2>&1 | Out-String
+if ($certs -notmatch "certificate SHA-256 digest: $releaseCert") {
+    Remove-Item "$out\hafs-$version.apk"
+    throw "The APK is not signed with the release key ($releaseCert); check HAFS-local\android against Schumey/HAFS-local"
+}
+
 Get-ChildItem $out -File | ForEach-Object {
     '{0}  {1:N1} MB  sha256 {2}' -f $_.Name, ($_.Length / 1MB), (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
 }
