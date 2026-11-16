@@ -43,6 +43,8 @@ android {
 
     defaultConfig {
         minSdk = 24
+        // keep rules for the code scanner (ML Kit), applied to the app's release build
+        consumerProguardFiles("consumer-rules.pro")
     }
 }
 
