@@ -7248,7 +7248,7 @@ state.trainTab = isTrainTab(storeGet("mda.trainTab")) ? storeGet("mda.trainTab")
 
 const areaSwitch = h("div", { id: "area", class: "area", role: "group", "aria-label": "Bereich", hidden: true },
   ...["nutrition", "training"].map(a => {
-    const b = h("button", { type: "button", "data-area": a, "aria-pressed": "false", title: AREA_LABELS[a],
+    const b = h("button", { type: "button", "data-area": a, title: AREA_LABELS[a],
       onclick: () => { if (state.area !== a) show(a === "training" ? state.trainTab : state.foodTab); } });
     const ico = h("span", { class: "ico" });
     ico.innerHTML = AREA_ICONS[a];
@@ -9543,7 +9543,8 @@ function applyTabs() {
   areaSwitch.hidden = !both;
   $("#tabs").insertBefore(areaSwitch, $(`#tabs [data-tab="${area === "training" ? "t-settings" : "settings"}"]`));
   $(".appbar").classList.toggle("has-area", both);
-  for (const b of areaSwitch.querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.area === area));
+  // only the other area is offered
+  for (const b of areaSwitch.querySelectorAll("button")) b.hidden = b.dataset.area === area;
   $(".appbar h1").textContent = AREA_LABELS[area];
   if (!trainingOn && isTrainTab(state.tab)) show("diary");
   else if (!nutritionOn() && !isTrainTab(state.tab)) show(state.trainTab);
