@@ -83,4 +83,4 @@ The add-on reads the time zone from Home Assistant at start. If you changed it, 
 
 ## Further help
 
-Open an issue on [GitHub](https://github.com/Schumey/MyDietAssistant/issues) and attach the add-on log (without private data).
+Open an issue on [GitHub](https://github.com/Schumey/HAFS/issues) and attach the add-on log (without private data).

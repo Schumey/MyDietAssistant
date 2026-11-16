@@ -9,7 +9,7 @@ from main import CACHE_DAYS, OPTIONS, app, off_product, user_from
 
 QUERY_CACHE_DAYS = 14   # text searches go stale faster than a product's barcode entry
 
-UA = {"User-Agent": "MyDietAssistant/1.0 (Home Assistant add-on; github.com/Schumey/MyDietAssistant)"}
+UA = {"User-Agent": "HAFS/2.0 (Home Assistant app; github.com/Schumey/HAFS)"}
 NUTR = ("kcal", "protein", "carbs", "fat", "fiber", "sugar", "salt", "sat_fat")
 
 

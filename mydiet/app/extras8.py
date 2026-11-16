@@ -171,7 +171,7 @@ def share_entry(eid: int, s: ShareIn, x_remote_user_id: str | None = Header(None
 
 # --- version / update check ----------------------------------------------------
 
-REPO_CONFIG_URL = "https://raw.githubusercontent.com/Schumey/MyDietAssistant/main/mydiet/config.yaml"
+REPO_CONFIG_URL = "https://raw.githubusercontent.com/Schumey/HAFS/main/mydiet/config.yaml"
 
 
 def _version_of(text: str) -> str:

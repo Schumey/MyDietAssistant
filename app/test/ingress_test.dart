@@ -107,6 +107,11 @@ void main() {
     expect(ws.calls.where((c) => c.startsWith('supervisor/ingress/info')).last, 'supervisor/ingress/info local_mydiet');
   });
 
+  test('an install from the renamed repository is found by its own slug', () async {
+    final access = await IngressOpener(ws: (a, t) async => FakeWs(slugs: {'b9221a9a_mydiet'})).open('http://ha.local:8123', 't');
+    expect(access.slug, 'b9221a9a_mydiet');
+  });
+
   test('a missing app and an admin-only panel give readable errors', () async {
     await expectLater(IngressOpener(ws: (a, t) async => FakeWs(slugs: {})).open('ha', 't'),
         throwsA(isA<HaException>().having((e) => e.code, 'code', 'app_missing')));

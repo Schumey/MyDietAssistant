@@ -85,9 +85,11 @@ const EN = {
   "Bearbeiten": "Edit", "Entfernen": "Remove", "Kalorien": "Calories", "Kohlenhydrate": "Carbohydrates", "Fette": "Fats", "Eiweiß": "Protein",
   "Nach App-Updates suchen": "Look for app updates",
   "Installierte App-Version: {}": "Installed app version: {}",
-  "Tipp: Android-App für MyDietAssistant": "Tip: Android app for MyDietAssistant",
-  "Du nutzt MyDietAssistant in der Home-Assistant-App. Die eigene MyDietAssistant-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien) und ein Homescreen-Widget.": "You are using MyDietAssistant in the Home Assistant app. The dedicated MyDietAssistant app for Android adds a barcode scanner, Health Connect (weight, steps, calories) and a home screen widget.",
-  "MyDietAssistant-App laden": "Get the MyDietAssistant app",
+  "Tipp: HAFS-App für Android": "Tip: HAFS app for Android",
+  "Du nutzt HAFS in der Home-Assistant-App. Die eigene HAFS-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien), Homescreen-Widgets und Training auch ohne Netz.": "You are using HAFS in the Home Assistant app. The HAFS app for Android adds a barcode scanner, Health Connect (weight, steps, calories), home screen widgets and training without a connection.",
+  "HAFS-App laden": "Get the HAFS app",
+  "Neue App verfügbar: HAFS": "New app available: HAFS",
+  "Die HAFS-App ersetzt diese App: Ernährung wie gewohnt, dazu Training, auch ohne Admin-Rechte im Vollbild. Deine Daten liegen in Home Assistant und bleiben erhalten. Nach der Installation kannst Du diese App deinstallieren.": "The HAFS app replaces this app: nutrition as before, plus training, full screen even without admin rights. Your data stays in Home Assistant. After installing it you can uninstall this app.",
   "Nicht mehr zeigen": "Don’t show again",
   "Android-App": "Android app",
   "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Take over weight, steps and active calories from Health Connect on the phone. Weight only for days without a value of their own, steps and calories only with the optional feature “Activity”.",
@@ -778,9 +780,11 @@ Object.assign(LANGS, {
     "Entfernen": "Retirer",
     "Nach App-Updates suchen": "Rechercher des mises à jour de l’application",
     "Installierte App-Version: {}": "Version de l’application installée : {}",
-    "Tipp: Android-App für MyDietAssistant": "Astuce : application Android pour MyDietAssistant",
-    "Du nutzt MyDietAssistant in der Home-Assistant-App. Die eigene MyDietAssistant-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien) und ein Homescreen-Widget.": "Vous utilisez MyDietAssistant dans l’application Home Assistant. L’application MyDietAssistant pour Android ajoute un lecteur de codes-barres, Health Connect (poids, pas, calories) et un widget d’écran d’accueil.",
-    "MyDietAssistant-App laden": "Obtenir l’application MyDietAssistant",
+    "Tipp: HAFS-App für Android": "Astuce : application HAFS pour Android",
+    "Du nutzt HAFS in der Home-Assistant-App. Die eigene HAFS-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien), Homescreen-Widgets und Training auch ohne Netz.": "Tu utilises HAFS dans l’application Home Assistant. L’application HAFS pour Android ajoute un lecteur de codes-barres, Health Connect (poids, pas, calories), des widgets d’écran d’accueil et l’entraînement même sans connexion.",
+    "HAFS-App laden": "Obtenir l’application HAFS",
+    "Neue App verfügbar: HAFS": "Nouvelle application disponible : HAFS",
+    "Die HAFS-App ersetzt diese App: Ernährung wie gewohnt, dazu Training, auch ohne Admin-Rechte im Vollbild. Deine Daten liegen in Home Assistant und bleiben erhalten. Nach der Installation kannst Du diese App deinstallieren.": "L’application HAFS remplace celle-ci : nutrition comme avant, plus l’entraînement, en plein écran même sans droits d’administrateur. Tes données restent dans Home Assistant. Après l’installation, tu peux désinstaller cette application.",
     "Nicht mehr zeigen": "Ne plus afficher",
     "Android-App": "Application Android",
     "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Reprendre le poids, les pas et les calories actives depuis Health Connect sur le téléphone. Le poids seulement pour les jours sans valeur propre, les pas et calories seulement avec la fonction « Activité ».",
@@ -1827,9 +1831,11 @@ Object.assign(LANGS, {
     "Entfernen": "Quitar",
     "Nach App-Updates suchen": "Buscar actualizaciones de la app",
     "Installierte App-Version: {}": "Versión de la app instalada: {}",
-    "Tipp: Android-App für MyDietAssistant": "Consejo: app de Android para MyDietAssistant",
-    "Du nutzt MyDietAssistant in der Home-Assistant-App. Die eigene MyDietAssistant-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien) und ein Homescreen-Widget.": "Estás usando MyDietAssistant en la app de Home Assistant. La app propia de MyDietAssistant para Android añade un lector de códigos de barras, Health Connect (peso, pasos, calorías) y un widget para la pantalla de inicio.",
-    "MyDietAssistant-App laden": "Obtener la app MyDietAssistant",
+    "Tipp: HAFS-App für Android": "Consejo: app HAFS para Android",
+    "Du nutzt HAFS in der Home-Assistant-App. Die eigene HAFS-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien), Homescreen-Widgets und Training auch ohne Netz.": "Estás usando HAFS en la app de Home Assistant. La app HAFS para Android añade escáner de códigos de barras, Health Connect (peso, pasos, calorías), widgets de pantalla de inicio y entrenamiento incluso sin conexión.",
+    "HAFS-App laden": "Obtener la app HAFS",
+    "Neue App verfügbar: HAFS": "Nueva app disponible: HAFS",
+    "Die HAFS-App ersetzt diese App: Ernährung wie gewohnt, dazu Training, auch ohne Admin-Rechte im Vollbild. Deine Daten liegen in Home Assistant und bleiben erhalten. Nach der Installation kannst Du diese App deinstallieren.": "La app HAFS sustituye a esta: nutrición como siempre, además entrenamiento, a pantalla completa incluso sin permisos de administrador. Tus datos permanecen en Home Assistant. Tras instalarla puedes desinstalar esta app.",
     "Nicht mehr zeigen": "No volver a mostrar",
     "Android-App": "App de Android",
     "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Tomar el peso, los pasos y las calorías activas de Health Connect en el teléfono. El peso solo para días sin valor propio, pasos y calorías solo con la función «Actividad».",
@@ -2876,9 +2882,11 @@ Object.assign(LANGS, {
     "Entfernen": "Verwijderen",
     "Nach App-Updates suchen": "Zoeken naar app-updates",
     "Installierte App-Version: {}": "Geïnstalleerde app-versie: {}",
-    "Tipp: Android-App für MyDietAssistant": "Tip: Android-app voor MyDietAssistant",
-    "Du nutzt MyDietAssistant in der Home-Assistant-App. Die eigene MyDietAssistant-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien) und ein Homescreen-Widget.": "Je gebruikt MyDietAssistant in de Home Assistant-app. De eigen MyDietAssistant-app voor Android voegt een barcodescanner, Health Connect (gewicht, stappen, calorieën) en een widget voor het startscherm toe.",
-    "MyDietAssistant-App laden": "MyDietAssistant-app downloaden",
+    "Tipp: HAFS-App für Android": "Tip: HAFS-app voor Android",
+    "Du nutzt HAFS in der Home-Assistant-App. Die eigene HAFS-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien), Homescreen-Widgets und Training auch ohne Netz.": "Je gebruikt HAFS in de Home Assistant-app. De HAFS-app voor Android voegt een barcodescanner, Health Connect (gewicht, stappen, calorieën), widgets voor het startscherm en training zonder verbinding toe.",
+    "HAFS-App laden": "HAFS-app downloaden",
+    "Neue App verfügbar: HAFS": "Nieuwe app beschikbaar: HAFS",
+    "Die HAFS-App ersetzt diese App: Ernährung wie gewohnt, dazu Training, auch ohne Admin-Rechte im Vollbild. Deine Daten liegen in Home Assistant und bleiben erhalten. Nach der Installation kannst Du diese App deinstallieren.": "De HAFS-app vervangt deze app: voeding zoals vertrouwd, plus training, schermvullend ook zonder beheerdersrechten. Je gegevens blijven in Home Assistant. Na de installatie kun je deze app verwijderen.",
     "Nicht mehr zeigen": "Niet meer tonen",
     "Android-App": "Android-app",
     "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Gewicht, stappen en actieve calorieën overnemen uit Health Connect op de telefoon. Gewicht alleen voor dagen zonder eigen waarde, stappen en calorieën alleen met de extra functie ‘Activiteit’.",
@@ -3937,9 +3945,11 @@ Object.assign(LANGS, {
     "Entfernen": "Rimuovi",
     "Nach App-Updates suchen": "Cerca aggiornamenti dell’app",
     "Installierte App-Version: {}": "Versione dell’app installata: {}",
-    "Tipp: Android-App für MyDietAssistant": "Suggerimento: app Android per MyDietAssistant",
-    "Du nutzt MyDietAssistant in der Home-Assistant-App. Die eigene MyDietAssistant-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien) und ein Homescreen-Widget.": "Stai usando MyDietAssistant nell’app Home Assistant. L’app MyDietAssistant per Android aggiunge lo scanner di codici a barre, Health Connect (peso, passi, calorie) e un widget per la schermata iniziale.",
-    "MyDietAssistant-App laden": "Scarica l’app MyDietAssistant",
+    "Tipp: HAFS-App für Android": "Suggerimento: app HAFS per Android",
+    "Du nutzt HAFS in der Home-Assistant-App. Die eigene HAFS-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien), Homescreen-Widgets und Training auch ohne Netz.": "Stai usando HAFS nell’app Home Assistant. L’app HAFS per Android aggiunge scanner di codici a barre, Health Connect (peso, passi, calorie), widget per la schermata Home e allenamento anche senza connessione.",
+    "HAFS-App laden": "Scarica l’app HAFS",
+    "Neue App verfügbar: HAFS": "Nuova app disponibile: HAFS",
+    "Die HAFS-App ersetzt diese App: Ernährung wie gewohnt, dazu Training, auch ohne Admin-Rechte im Vollbild. Deine Daten liegen in Home Assistant und bleiben erhalten. Nach der Installation kannst Du diese App deinstallieren.": "L’app HAFS sostituisce questa: alimentazione come prima, in più l’allenamento, a schermo intero anche senza diritti di amministratore. I tuoi dati restano in Home Assistant. Dopo l’installazione puoi disinstallare questa app.",
     "Nicht mehr zeigen": "Non mostrare più",
     "Android-App": "App Android",
     "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Riprendi peso, passi e calorie attive da Health Connect sul telefono. Il peso solo per i giorni senza un valore proprio, passi e calorie solo con la funzione «Attività».",
@@ -4998,9 +5008,11 @@ Object.assign(LANGS, {
     "Entfernen": "Remover",
     "Nach App-Updates suchen": "Procurar atualizações do app",
     "Installierte App-Version: {}": "Versão do app instalada: {}",
-    "Tipp: Android-App für MyDietAssistant": "Dica: app Android do MyDietAssistant",
-    "Du nutzt MyDietAssistant in der Home-Assistant-App. Die eigene MyDietAssistant-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien) und ein Homescreen-Widget.": "Você está usando o MyDietAssistant no app Home Assistant. O app próprio do MyDietAssistant para Android adiciona leitor de código de barras, Health Connect (peso, passos, calorias) e um widget para a tela inicial.",
-    "MyDietAssistant-App laden": "Baixar o app MyDietAssistant",
+    "Tipp: HAFS-App für Android": "Dica: app HAFS para Android",
+    "Du nutzt HAFS in der Home-Assistant-App. Die eigene HAFS-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien), Homescreen-Widgets und Training auch ohne Netz.": "Você está usando o HAFS no app Home Assistant. O app HAFS para Android adiciona leitor de código de barras, Health Connect (peso, passos, calorias), widgets de tela inicial e treino mesmo sem conexão.",
+    "HAFS-App laden": "Baixar o app HAFS",
+    "Neue App verfügbar: HAFS": "Novo app disponível: HAFS",
+    "Die HAFS-App ersetzt diese App: Ernährung wie gewohnt, dazu Training, auch ohne Admin-Rechte im Vollbild. Deine Daten liegen in Home Assistant und bleiben erhalten. Nach der Installation kannst Du diese App deinstallieren.": "O app HAFS substitui este: nutrição como antes, mais treino, em tela cheia mesmo sem direitos de administrador. Seus dados ficam no Home Assistant. Depois de instalar, você pode desinstalar este app.",
     "Nicht mehr zeigen": "Não mostrar novamente",
     "Android-App": "App Android",
     "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Trazer peso, passos e calorias ativas do Health Connect no celular. Peso só para dias sem valor próprio, passos e calorias só com a função «Atividade».",
@@ -6059,9 +6071,11 @@ Object.assign(LANGS, {
     "Entfernen": "Usuń",
     "Nach App-Updates suchen": "Sprawdź aktualizacje aplikacji",
     "Installierte App-Version: {}": "Zainstalowana wersja aplikacji: {}",
-    "Tipp: Android-App für MyDietAssistant": "Wskazówka: aplikacja MyDietAssistant na Androida",
-    "Du nutzt MyDietAssistant in der Home-Assistant-App. Die eigene MyDietAssistant-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien) und ein Homescreen-Widget.": "Korzystasz z MyDietAssistant w aplikacji Home Assistant. Własna aplikacja MyDietAssistant na Androida dodaje skaner kodów kreskowych, Health Connect (waga, kroki, kalorie) i widżet na ekran główny.",
-    "MyDietAssistant-App laden": "Pobierz aplikację MyDietAssistant",
+    "Tipp: HAFS-App für Android": "Wskazówka: aplikacja HAFS na Androida",
+    "Du nutzt HAFS in der Home-Assistant-App. Die eigene HAFS-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien), Homescreen-Widgets und Training auch ohne Netz.": "Używasz HAFS w aplikacji Home Assistant. Aplikacja HAFS na Androida dodaje skaner kodów kreskowych, Health Connect (waga, kroki, kalorie), widżety ekranu głównego i trening także bez połączenia.",
+    "HAFS-App laden": "Pobierz aplikację HAFS",
+    "Neue App verfügbar: HAFS": "Nowa aplikacja dostępna: HAFS",
+    "Die HAFS-App ersetzt diese App: Ernährung wie gewohnt, dazu Training, auch ohne Admin-Rechte im Vollbild. Deine Daten liegen in Home Assistant und bleiben erhalten. Nach der Installation kannst Du diese App deinstallieren.": "Aplikacja HAFS zastępuje tę aplikację: odżywianie jak dotąd, do tego trening, na pełnym ekranie także bez uprawnień administratora. Twoje dane zostają w Home Assistant. Po instalacji możesz odinstalować tę aplikację.",
     "Nicht mehr zeigen": "Nie pokazuj więcej",
     "Android-App": "Aplikacja na Androida",
     "Gewicht, Schritte und aktive Kalorien vom Handy aus Health Connect übernehmen. Gewicht nur für Tage ohne eigenen Wert, Schritte und Kalorien nur mit der Zusatzfunktion „Aktivität“.": "Przejmij wagę, kroki i aktywne kalorie z Health Connect na telefonie. Wagę tylko dla dni bez własnej wartości, kroki i kalorie tylko z funkcją „Aktywność”.",
@@ -7520,22 +7534,31 @@ function catChips(onchange) {
 const timeNow = () => new Date().toTimeString().slice(0, 5);
 const entryLabel = e => (e.grams > 0 ? `${e.name}, ${gText(e.grams)}` : e.name);
 
-// Opened in the official Home Assistant Companion app (Android) without our own MyDietAssistant Android app: point to it.
-// The Companion's WebView adds "Home Assistant/<version> (Android ...)" to the user agent; our app has window.MDAApp.
-const MDA_APK_URL = "https://github.com/Schumey/MyDietAssistant-Android/releases/latest";
+// Android hints, both pointing to the HAFS app (Flutter): in the official Home Assistant Companion app without our own
+// app, and in the old MyDietAssistant app (Kotlin), which the HAFS app replaces. The Companion's WebView adds
+// "Home Assistant/<version> (Android ...)" to the user agent; the old app has its own window.MDAApp, the HAFS app builds
+// window.MDAApp here from its channel HAFSBridge.
+const HAFS_APK_URL = "https://github.com/Schumey/HAFS/releases";
 function inCompanionWithoutApp() {
   return !window.MDAApp && /Home Assistant\/[^(]*\(Android/i.test(navigator.userAgent || "");
 }
+function inOldAndroidApp() {
+  return !!window.MDAApp && !window.HAFSBridge;
+}
 function companionHint(dismissible) {
-  if (!inCompanionWithoutApp()) return null;
-  if (dismissible) { try { if (localStorage.getItem("mda.companionHint") === "0") return null; } catch { /* storage unavailable */ } }
+  const old = inOldAndroidApp();
+  if (!old && !inCompanionWithoutApp()) return null;
+  const key = old ? "mda.hafsAppHint" : "mda.companionHint";
+  if (dismissible) { try { if (localStorage.getItem(key) === "0") return null; } catch { /* storage unavailable */ } }
   const box = h("div", { class: "card now-banner", role: "note" },
     h("div", { class: "grow" },
-      h("strong", {}, "Tipp: Android-App für MyDietAssistant"),
-      h("div", { class: "muted" }, "Du nutzt MyDietAssistant in der Home-Assistant-App. Die eigene MyDietAssistant-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien) und ein Homescreen-Widget.")),
-    h("button", { onclick: () => window.open(MDA_APK_URL, "_blank", "noopener") }, "MyDietAssistant-App laden"),
+      h("strong", {}, old ? "Neue App verfügbar: HAFS" : "Tipp: HAFS-App für Android"),
+      h("div", { class: "muted" }, old
+        ? "Die HAFS-App ersetzt diese App: Ernährung wie gewohnt, dazu Training, auch ohne Admin-Rechte im Vollbild. Deine Daten liegen in Home Assistant und bleiben erhalten. Nach der Installation kannst Du diese App deinstallieren."
+        : "Du nutzt HAFS in der Home-Assistant-App. Die eigene HAFS-App für Android ergänzt Barcode-Scanner, Health Connect (Gewicht, Schritte, Kalorien), Homescreen-Widgets und Training auch ohne Netz.")),
+    h("button", { onclick: () => window.open(HAFS_APK_URL, "_blank", "noopener") }, "HAFS-App laden"),
     dismissible ? h("button", { class: "flat", onclick: () => {
-      try { localStorage.setItem("mda.companionHint", "0"); } catch { /* storage unavailable */ }
+      try { localStorage.setItem(key, "0"); } catch { /* storage unavailable */ }
       box.remove();
     } }, "Nicht mehr zeigen") : null);
   return box;

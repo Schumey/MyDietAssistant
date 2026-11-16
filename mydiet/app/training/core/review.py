@@ -25,8 +25,12 @@ def _day(text: str | None) -> date | None:
 
 
 def stagnation(conn: sqlite3.Connection, owner: str, today: date, window_weeks: int = WINDOW_WEEKS) -> list[dict]:
-    """Exercises with at least MIN_SESSIONS sessions in the last `window_weeks` weeks and no new best (estimated 1RM,
-    or heaviest weight without a 1RM) in that period compared with everything before. Most sessions first."""
+    """Exercises with at least MIN_SESSIONS sessions in the last `window_weeks` weeks and neither a heavier weight nor
+    more volume per session (weight × reps of the work sets; total reps for exercises done without weight) in that
+    period than in everything before. Most sessions first.
+
+    Returned per exercise: `best`/`recent_best` (heaviest weight before/in the window, kg; 0 without weight),
+    `volume`/`recent_volume` (best session volume before/in the window) and `unit` ("kg" or "reps" for the volume)."""
     start = today - timedelta(weeks=window_weeks)
     sessions: dict[tuple[str, str], dict] = {}
     names: dict[str, str] = {}
@@ -39,9 +43,11 @@ def stagnation(conn: sqlite3.Connection, owner: str, today: date, window_weeks: 
         if d is None or d > today:
             continue
         names[r["exercise_id"]] = r["name"]
-        e = sessions.setdefault((r["exercise_id"], r["workout_id"]), {"day": d, "e1rm": 0.0, "weight": 0.0})
-        e["e1rm"] = max(e["e1rm"], st._e1rm(r["weight"], r["reps"]))
-        e["weight"] = max(e["weight"], r["weight"] or 0.0)
+        e = sessions.setdefault((r["exercise_id"], r["workout_id"]), {"day": d, "weight": 0.0, "volume": 0.0, "reps": 0})
+        w, n = r["weight"] or 0.0, r["reps"] or 0
+        e["weight"] = max(e["weight"], w)
+        e["volume"] += w * n
+        e["reps"] += n
     per: dict[str, list[dict]] = {}
     for (eid, _), e in sessions.items():
         per.setdefault(eid, []).append(e)
@@ -51,13 +57,14 @@ def stagnation(conn: sqlite3.Connection, owner: str, today: date, window_weeks: 
         before = [e for e in items if e["day"] <= start]
         if len(recent) < MIN_SESSIONS or len(before) < MIN_BEFORE:
             continue
-        key = "e1rm" if any(e["e1rm"] > 0 for e in items) else "weight"
-        best_before = max(e[key] for e in before)
-        best_recent = max(e[key] for e in recent)
-        if best_before <= 0 or best_recent > best_before:
+        vkey, unit = ("volume", "kg") if any(e["weight"] > 0 for e in items) else ("reps", "reps")
+        best, recent_best = max(e["weight"] for e in before), max(e["weight"] for e in recent)
+        vol, recent_vol = max(e[vkey] for e in before), max(e[vkey] for e in recent)
+        if vol <= 0 or recent_best > best or recent_vol > vol:
             continue
         out.append({"exercise_id": eid, "name": names[eid], "sessions": len(recent), "weeks": window_weeks,
-                    "metric": key, "best": round(best_before, 1), "recent_best": round(best_recent, 1)})
+                    "best": round(best, 1), "recent_best": round(recent_best, 1),
+                    "volume": round(vol, 1), "recent_volume": round(recent_vol, 1), "unit": unit})
     out.sort(key=lambda x: (-x["sessions"], x["name"].lower()))
     return out
 
@@ -83,7 +90,10 @@ def build_instructions(stagnating: list[dict], neglected: list[dict], phase: str
     de = lang.lower().startswith("de")
     lines = []
     for x in stagnating[:12]:
-        lines.append(f"- {x['name']}: {x['sessions']} sessions in {x['weeks']} weeks, no new best ({x['best']} kg)")
+        unit = x.get("unit", "kg")
+        best = f"heaviest {x['best']} kg, " if x.get("best") else ""
+        lines.append(f"- {x['name']}: {x['sessions']} sessions in {x['weeks']} weeks, no increase "
+                     f"({best}best volume per session {x.get('volume', '?')} {unit})")
     for x in neglected[:8]:
         lines.append(f"- muscle group {x['muscle']}: {x['recent']} sets/week lately, {x['earlier']} before")
     head = ("Du bist ein Krafttrainings-Coach. Fasse in höchstens 6 kurzen Sätzen zusammen, was auffällt, und gib je Punkt einen "

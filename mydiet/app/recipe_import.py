@@ -11,7 +11,7 @@ from urllib.parse import urljoin, urlparse
 import httpx
 
 MAX_BYTES = 3_000_000
-UA = {"User-Agent": "Mozilla/5.0 (compatible; MyDietAssistant/1.1; +https://github.com/Schumey/MyDietAssistant)",
+UA = {"User-Agent": "Mozilla/5.0 (compatible; HAFS/2.0; +https://github.com/Schumey/HAFS)",
       "Accept": "text/html,application/xhtml+xml", "Accept-Language": "de,en;q=0.8"}
 
 

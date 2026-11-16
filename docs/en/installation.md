@@ -12,7 +12,7 @@
 ## Install the app
 
 1. The easiest way is the “add repository” button in the [README](../../README.en.md). It opens your Home Assistant instance and adds the repository.
-2. By hand: in Home Assistant open **Settings → Apps → Install app**, tap **⋮ → Repositories** at the top right and add `https://github.com/Schumey/MyDietAssistant`.
+2. By hand: in Home Assistant open **Settings → Apps → Install app**, tap **⋮ → Repositories** at the top right and add `https://github.com/Schumey/HAFS`.
 3. Reload the page. **HAFS** appears at the bottom. Open it and tap **Install**.
 4. When the installation has finished, tap **Start**.
 5. Turn on **Show in sidebar** (and, if you like, **Start on boot** and **Watchdog**).

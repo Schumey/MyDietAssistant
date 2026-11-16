@@ -4,7 +4,7 @@ All notable changes to the add-on. The format follows [Keep a Changelog](https:/
 
 ## 2.0.0
 
-MyDietAssistant is now called **HAFS** (HomeAssistant Fitness Suite) and brings the strength training that used to be the integration `hafs`. Slug, data and nutrition entities stay the same. Moving over: [Training](https://github.com/Schumey/MyDietAssistant/blob/main/docs/en/training.md#moving-over-from-the-hafs-integration).
+MyDietAssistant is now called **HAFS** (HomeAssistant Fitness Suite) and brings the strength training that used to be the integration `hafs`. Slug, data and nutrition entities stay the same. Moving over: [Training](https://github.com/Schumey/HAFS/blob/main/docs/en/training.md#moving-over-from-the-hafs-integration).
 
 ### New
 - **Training area** (*Settings → Areas*: nutrition and training, nutrition only or training only): training plans and days, gyms with equipment and weight steps, workouts with sets, history per exercise with estimated 1RM and records, sets per muscle group, review, weight suggestions by nutrition phase, import from GymRun, Strong and Hevy. The data lives in `/data/hafs.db`.
@@ -54,7 +54,7 @@ MyDietAssistant is now called **HAFS** (HomeAssistant Fitness Suite) and brings 
 ## 1.37.2
 
 ### Fixed
-- **"Load history" found nothing** ([#8](https://github.com/Schumey/MyDietAssistant/issues/8)): without an end time, Home Assistant returned only the first day of the period, i.e. the day 30 days ago, which the recorder has usually purged already ("History loaded: 0 days"). The whole period up to today is now requested. Days older than the recorder history (10 days by default) come from Home Assistant's long-term statistics, as long as the sensor has a `state_class` (like the companion app's Health Connect sensors).
+- **"Load history" found nothing** ([#8](https://github.com/Schumey/HAFS/issues/8)): without an end time, Home Assistant returned only the first day of the period, i.e. the day 30 days ago, which the recorder has usually purged already ("History loaded: 0 days"). The whole period up to today is now requested. Days older than the recorder history (10 days by default) come from Home Assistant's long-term statistics, as long as the sensor has a `state_class` (like the companion app's Health Connect sensors).
 
 ## 1.37.1
 
@@ -64,7 +64,7 @@ MyDietAssistant is now called **HAFS** (HomeAssistant Fitness Suite) and brings 
 ## 1.37.0
 
 ### New
-- **Basal metabolic rate sensor** ([#3](https://github.com/Schumey/MyDietAssistant/issues/3)): Settings → Activity can take an entity for the basal metabolic rate (e.g. from a body composition scale via Health Connect). The value is stored per day, so every day uses the basal rate valid at the time; "Load history" fetches it too. It is part of export/import and "Delete data".
+- **Basal metabolic rate sensor** ([#3](https://github.com/Schumey/HAFS/issues/3)): Settings → Activity can take an entity for the basal metabolic rate (e.g. from a body composition scale via Health Connect). The value is stored per day, so every day uses the basal rate valid at the time; "Load history" fetches it too. It is part of export/import and "Delete data".
 
 ### Changed
 - **Basal rate always subtracted in full:** the Health Connect total already starts at midnight with the whole basal rate, so it is now subtracted in full for the current day as well (previously in proportion to the time of day, which gave too much activity in the morning). The diary card shows "… kcal total − … kcal basal metabolic rate".
@@ -77,12 +77,12 @@ MyDietAssistant is now called **HAFS** (HomeAssistant Fitness Suite) and brings 
 ## 1.36.2
 
 ### Fixed
-- **Net calories with total calories burned** ([#3](https://github.com/Schumey/MyDietAssistant/issues/3)): when the calorie sensor reports total calories burned (incl. the basal metabolic rate, e.g. from Health Connect), the basal rate was subtracted too, so net values were far too low and the activity bonus too high. New field **Subtract basal metabolic rate** in Settings → Activity: only the part above the basal rate then counts as activity (for today in proportion to the time of day), in the statistics, the daily goal and the diary card.
+- **Net calories with total calories burned** ([#3](https://github.com/Schumey/HAFS/issues/3)): when the calorie sensor reports total calories burned (incl. the basal metabolic rate, e.g. from Health Connect), the basal rate was subtracted too, so net values were far too low and the activity bonus too high. New field **Subtract basal metabolic rate** in Settings → Activity: only the part above the basal rate then counts as activity (for today in proportion to the time of day), in the statistics, the daily goal and the diary card.
 
 ## 1.36.1
 
 ### Fixed
-- **Net view in the statistics** ([#3](https://github.com/Schumey/MyDietAssistant/issues/3)): days on which more was burned than eaten were missing (bar clamped to 0). Negative net values are now drawn as bars below the zero line.
+- **Net view in the statistics** ([#3](https://github.com/Schumey/HAFS/issues/3)): days on which more was burned than eaten were missing (bar clamped to 0). Negative net values are now drawn as bars below the zero line.
 
 ## 1.36.0
 
@@ -126,7 +126,7 @@ MyDietAssistant is now called **HAFS** (HomeAssistant Fitness Suite) and brings 
 ## 1.32.0
 
 ### New
-- **Net calories in the statistics** ([#3](https://github.com/Schumey/MyDietAssistant/issues/3)): with the optional feature “Activity”, a switch toggles between *Gross calories* and *Net calories* (intake minus burned calories, compared with the daily goal without the activity bonus, as in MyFitnessPal). New tile “Ø burned”; `/api/stats` returns `burned` and `goal_base_kcal` per day.
+- **Net calories in the statistics** ([#3](https://github.com/Schumey/HAFS/issues/3)): with the optional feature “Activity”, a switch toggles between *Gross calories* and *Net calories* (intake minus burned calories, compared with the daily goal without the activity bonus, as in MyFitnessPal). New tile “Ø burned”; `/api/stats` returns `burned` and `goal_base_kcal` per day.
 
 ## 1.31.0
 

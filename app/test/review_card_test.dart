@@ -42,11 +42,13 @@ void main() {
 
   testWidgets('stagnating exercises are listed; the AI summary comes only on request', (tester) async {
     server.reviewStagnating = [
-      {'name': 'Bankdrücken', 'sessions': 4, 'weeks': 6, 'best': 100.0}
+      {'name': 'Bankdrücken', 'sessions': 4, 'weeks': 6, 'best': 100.0, 'recent_best': 95.0, 'volume': 2400.0, 'recent_volume': 2280.0, 'unit': 'kg'},
+      {'name': 'Klimmzüge', 'sessions': 5, 'weeks': 6, 'best': 0.0, 'recent_best': 0.0, 'volume': 30.0, 'recent_volume': 24.0, 'unit': 'reps'},
     ];
     await pump(tester);
     expect(find.text('Rückblick'), findsOneWidget);
-    expect(find.textContaining('Bankdrücken: 4 Workouts in 6 Wochen ohne neue Bestleistung (bisher 100 kg)'), findsOneWidget);
+    expect(find.textContaining('Bankdrücken: 4 Workouts in 6 Wochen ohne Steigerung. Zuletzt bis 95 kg und 2280 kg Volumen pro Workout, vorher bis 100 kg und 2400 kg.'), findsOneWidget);
+    expect(find.textContaining('Klimmzüge: 5 Workouts in 6 Wochen ohne Steigerung. Zuletzt bis 24 Wiederholungen pro Workout, vorher bis 30.'), findsOneWidget);
     expect(find.text('KI-Text'), findsNothing);
     await tester.tap(find.byKey(const Key('review-ai')));
     await tester.pumpAndSettle();

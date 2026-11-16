@@ -18,8 +18,10 @@ import 'ha_client.dart';
 import 'l10n.dart';
 import 'updater.dart' show httpBase;
 
-/// Slugs the HA app may have: installed from the GitHub repository (hash of its address) or as a local app.
-const defaultSlugs = ['eeb2daa3_mydiet', 'local_mydiet'];
+/// Slugs the HA app may have: installed from the GitHub repository (first 8 hex digits of the SHA-1 of its lowercased
+/// address: `eeb2daa3` for github.com/schumey/mydietassistant, which installs from before the rename keep, `b9221a9a`
+/// for github.com/schumey/hafs) or as a local app.
+const defaultSlugs = ['eeb2daa3_mydiet', 'b9221a9a_mydiet', 'local_mydiet'];
 
 typedef WsConnector = Future<HaConnection> Function(String address, String token);
 

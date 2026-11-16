@@ -4,8 +4,8 @@
 
 **English** · [Deutsch](README.md)
 
-[![Tests](https://github.com/Schumey/MyDietAssistant/actions/workflows/test.yml/badge.svg)](https://github.com/Schumey/MyDietAssistant/actions/workflows/test.yml)
-[![App lint](https://github.com/Schumey/MyDietAssistant/actions/workflows/lint.yml/badge.svg)](https://github.com/Schumey/MyDietAssistant/actions/workflows/lint.yml)
+[![Tests](https://github.com/Schumey/HAFS/actions/workflows/test.yml/badge.svg)](https://github.com/Schumey/HAFS/actions/workflows/test.yml)
+[![App lint](https://github.com/Schumey/HAFS/actions/workflows/lint.yml/badge.svg)](https://github.com/Schumey/HAFS/actions/workflows/lint.yml)
 
 **Nutrition and strength training in Home Assistant.** Track calories, macros and weight like in MyFitnessPal, record workouts like in GymRun or Strong, without a cloud account: everything lives in SQLite files on your Home Assistant device and is part of the normal HA backup. Home Assistant adds sensors, triggers and automations. The HAFS phone app records training offline and shows nutrition full screen.
 
@@ -72,7 +72,7 @@ The pictures show the default Home Assistant theme with sample data. The interfa
 
 HAFS is an **app** (called “add-on” until HA 2026.1) and needs Home Assistant OS or Supervised. You won't find it in the **Marketplace** (since HA 2026.11, the successor of HACS): the Marketplace installs integrations, cards and themes, but no apps.
 
-1. Add the repository: with the button above or by hand under **Settings → Apps → Install app → ⋮ → Repositories** → `https://github.com/Schumey/MyDietAssistant`.
+1. Add the repository: with the button above or by hand under **Settings → Apps → Install app → ⋮ → Repositories** → `https://github.com/Schumey/HAFS`.
 2. Install and start **HAFS** and turn on **Show in sidebar**.
 3. Open it, set your goal, get going. [First steps](docs/en/first-steps.md) walks you through the setup.
 
@@ -94,7 +94,7 @@ The web interface also runs in the Companion app. The HAFS app adds:
 - **Health Connect:** take over weight, steps and active calories from the phone
 - **Updates** right inside the app
 
-**[Download the APK](https://github.com/Schumey/MyDietAssistant/releases)** (files `hafs-<version>.apk`, Android 8 or newer) · [guide](docs/en/android.md)
+**[Download the APK](https://github.com/Schumey/HAFS/releases)** (files `hafs-<version>.apk`, Android 8 or newer) · [guide](docs/en/android.md)
 
 The app is not in the Play Store, so Android asks during installation whether to allow apps from this source. Afterwards the app finds new versions itself.
 

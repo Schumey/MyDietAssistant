@@ -36,7 +36,27 @@ def test_stagnation_needs_sessions_and_no_new_best(conn):
         session(conn, f"x{i}", day, "row", 50 + i * 5, 8)              # keeps improving
     found = review.stagnation(conn, OWNER, TODAY)
     assert [x["name"] for x in found] == ["Bankdrücken"]
-    assert found[0]["sessions"] == 4 and found[0]["metric"] == "e1rm" and found[0]["best"] > found[0]["recent_best"]
+    x = found[0]
+    assert x["sessions"] == 4 and x["unit"] == "kg"
+    assert (x["best"], x["recent_best"], x["volume"], x["recent_volume"]) == (80.0, 75.0, 640.0, 600.0)
+
+
+def test_more_volume_at_the_same_weight_is_progress(conn):
+    for i, day in enumerate(["2026-08-03", "2026-08-10"]):
+        session(conn, f"b{i}", day, "bench", 80, 8, sets=3)
+    for i, day in enumerate(["2026-10-12", "2026-10-19", "2026-10-26", "2026-11-02"]):
+        session(conn, f"r{i}", day, "bench", 80, 8, sets=3 if i < 3 else 4)   # one more set at the end
+    assert review.stagnation(conn, OWNER, TODAY) == []
+
+
+def test_without_weight_the_volume_is_reps(conn):
+    sync.push(conn, OWNER, {"exercise": [{"id": "pull", "name": "Klimmzüge", "kind": "bodyweight", "updated_at": T}]})
+    for i, day in enumerate(["2026-08-03", "2026-08-10"]):
+        session(conn, f"b{i}", day, "pull", 0, 10, sets=3)
+    for i, day in enumerate(["2026-10-12", "2026-10-19", "2026-10-26", "2026-11-02"]):
+        session(conn, f"r{i}", day, "pull", 0, 8, sets=3)
+    x = review.stagnation(conn, OWNER, TODAY)[0]
+    assert (x["unit"], x["best"], x["volume"], x["recent_volume"]) == ("reps", 0.0, 30.0, 24.0)
 
 
 def test_few_sessions_or_no_history_are_not_stagnation(conn):

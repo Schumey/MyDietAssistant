@@ -83,4 +83,4 @@ Die Zeitzone liest das Add-on beim Start aus Home Assistant. Hast Du sie geände
 
 ## Weiterhilfe
 
-Öffne ein Issue auf [GitHub](https://github.com/Schumey/MyDietAssistant/issues) und hänge das Protokoll des Add-ons an (ohne private Daten).
+Öffne ein Issue auf [GitHub](https://github.com/Schumey/HAFS/issues) und hänge das Protokoll des Add-ons an (ohne private Daten).

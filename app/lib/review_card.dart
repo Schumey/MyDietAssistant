@@ -48,14 +48,26 @@ class _ReviewCardState extends State<ReviewCard> {
     }
   }
 
+  /// Heaviest weight and volume per workout, recent against before; reps only for exercises without weight. Servers
+  /// before the volume (no `unit`) only send the best.
+  static String _stagLine(Map x) {
+    num n(String k) => (x[k] as num?) ?? 0;
+    final head = [x['name'], x['sessions'], x['weeks']];
+    return switch (x['unit']) {
+      'reps' => tr('review_stag_reps', [...head, L10n.kg(n('recent_volume').round()), L10n.kg(n('volume').round())]),
+      'kg' => tr('review_stag_kg', [...head, L10n.kg(n('recent_best')), L10n.kg(n('recent_volume').round()), L10n.kg(n('best')),
+          L10n.kg(n('volume').round())]),
+      _ => tr('review_stag', [...head, L10n.kg(n('best'))]),
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final d = _data;
     if (d == null) return const SizedBox.shrink();
     final theme = Theme.of(context);
     final lines = <String>[
-      for (final x in (d['stagnating'] as List? ?? const []))
-        tr('review_stag', [x['name'], x['sessions'], x['weeks'], L10n.kg((x['best'] as num).toDouble())]),
+      for (final x in (d['stagnating'] as List? ?? const [])) _stagLine(x as Map),
       for (final x in (d['neglected'] as List? ?? const []))
         tr('review_muscle', [muscleLabel(x['muscle'] as String), L10n.kg((x['recent'] as num).toDouble()), L10n.kg((x['earlier'] as num).toDouble())]),
     ];

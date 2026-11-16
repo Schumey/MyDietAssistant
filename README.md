@@ -4,8 +4,8 @@
 
 [English](README.en.md) · **Deutsch**
 
-[![Tests](https://github.com/Schumey/MyDietAssistant/actions/workflows/test.yml/badge.svg)](https://github.com/Schumey/MyDietAssistant/actions/workflows/test.yml)
-[![App lint](https://github.com/Schumey/MyDietAssistant/actions/workflows/lint.yml/badge.svg)](https://github.com/Schumey/MyDietAssistant/actions/workflows/lint.yml)
+[![Tests](https://github.com/Schumey/HAFS/actions/workflows/test.yml/badge.svg)](https://github.com/Schumey/HAFS/actions/workflows/test.yml)
+[![App lint](https://github.com/Schumey/HAFS/actions/workflows/lint.yml/badge.svg)](https://github.com/Schumey/HAFS/actions/workflows/lint.yml)
 
 **Ernährung und Krafttraining in Home Assistant.** Kalorien, Makros und Gewicht erfassen wie bei MyFitnessPal, Workouts aufzeichnen wie bei GymRun oder Strong, nur ohne Cloud-Konto: Alles liegt in SQLite-Dateien auf Deinem Home-Assistant-Gerät und ist im normalen HA-Backup enthalten. Home Assistant liefert Sensoren, Trigger und Automationen dazu. Die HAFS-App fürs Handy zeichnet Training offline auf und zeigt die Ernährung im Vollbild.
 
@@ -72,7 +72,7 @@ Die Bilder zeigen das Standard-Theme von Home Assistant mit Beispieldaten. Die O
 
 HAFS ist eine **App** (bis HA 2026.1 „Add-on“) und braucht Home Assistant OS oder Supervised. Im **Marketplace** (seit HA 2026.11, Nachfolger von HACS) findest Du sie nicht: Der Marketplace installiert Integrationen, Karten und Themes, aber keine Apps.
 
-1. Repository hinzufügen: mit dem Knopf oben oder von Hand unter **Einstellungen → Apps → App installieren → ⋮ → Repositories** → `https://github.com/Schumey/MyDietAssistant`.
+1. Repository hinzufügen: mit dem Knopf oben oder von Hand unter **Einstellungen → Apps → App installieren → ⋮ → Repositories** → `https://github.com/Schumey/HAFS`.
 2. **HAFS** installieren, starten und **In Seitenleiste anzeigen** einschalten.
 3. Öffnen, Ziel festlegen, loslegen. Die [Ersten Schritte](docs/de/first-steps.md) führen durch die Einrichtung.
 
@@ -94,7 +94,7 @@ Die Weboberfläche läuft auch in der Companion-App. Die HAFS-App bietet zusätz
 - **Health Connect:** Gewicht, Schritte und aktive Kalorien vom Handy übernehmen
 - **Updates** direkt in der App
 
-**[APK herunterladen](https://github.com/Schumey/MyDietAssistant/releases)** (Dateien `hafs-<Version>.apk`, Android 8 oder neuer) · [Anleitung](docs/de/android.md)
+**[APK herunterladen](https://github.com/Schumey/HAFS/releases)** (Dateien `hafs-<Version>.apk`, Android 8 oder neuer) · [Anleitung](docs/de/android.md)
 
 Die App gibt es nicht im Play Store. Android fragt deshalb bei der Installation, ob Du Apps aus dieser Quelle zulassen willst. Neue Versionen findet die App danach selbst.
 

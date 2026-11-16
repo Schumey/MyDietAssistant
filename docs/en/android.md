@@ -16,7 +16,7 @@ It replaces the former Android app "MyDietAssistant" and the HAFS app 0.5. In th
 
 ## Install the app
 
-The app is not in the Play Store but an APK file `hafs-<version>.apk` on the [releases page](https://github.com/Schumey/MyDietAssistant/releases) (versions `app-v…`).
+The app is not in the Play Store but an APK file `hafs-<version>.apk` on the [releases page](https://github.com/Schumey/HAFS/releases) (versions `app-v…`).
 
 1. Download the newest file `hafs-<version>.apk` on your phone.
 2. Tap the file. The first time Android asks whether the browser may install apps: allow it under **Settings → Install unknown apps**.
@@ -30,7 +30,7 @@ If you had the HAFS app 0.5 already, simply update: data and sign-in stay. You c
 2. Open **HAFS**. On **Connect to Home Assistant** enter the **Address** (for example `http://homeassistant.local:8123` or your address from outside) and the **Long-lived access token**.
 3. Tap **Connect**. The app fetches your training data.
 
-The app finds HAFS in Home Assistant by itself (slug `eeb2daa3_mydiet` or `local_mydiet`). If it says HAFS was not found, check that the app is running in Home Assistant and that Home Assistant is up to date.
+The app finds HAFS in Home Assistant by itself (slug `eeb2daa3_mydiet`, `b9221a9a_mydiet` or `local_mydiet`). If it says HAFS was not found, check that the app is running in Home Assistant and that Home Assistant is up to date.
 
 ## Nutrition and training
 

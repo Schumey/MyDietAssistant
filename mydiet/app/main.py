@@ -566,7 +566,7 @@ def del_food(food_id: int, x_remote_user_id: str | None = Header(None)):
     return {"ok": True}
 
 
-OFF_UA = {"User-Agent": "MyDietAssistant/1.0 (Home Assistant add-on; github.com/Schumey/MyDietAssistant)"}
+OFF_UA = {"User-Agent": "HAFS/2.0 (Home Assistant app; github.com/Schumey/HAFS)"}
 CACHE_DAYS = 60   # product data hardly changes; cached answers also spare Open Food Facts and keep queries local
 
 

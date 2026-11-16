@@ -4,7 +4,7 @@ Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a 
 
 ## 2.0.0
 
-MyDietAssistant heißt jetzt **HAFS** (HomeAssistant Fitness Suite) und bringt das Krafttraining mit, das bisher die Integration `hafs` war. Slug, Daten und Entitäten der Ernährung bleiben gleich. Umstieg: [Training](https://github.com/Schumey/MyDietAssistant/blob/main/docs/de/training.md#umstieg-von-der-hafs-integration).
+MyDietAssistant heißt jetzt **HAFS** (HomeAssistant Fitness Suite) und bringt das Krafttraining mit, das bisher die Integration `hafs` war. Slug, Daten und Entitäten der Ernährung bleiben gleich. Umstieg: [Training](https://github.com/Schumey/HAFS/blob/main/docs/de/training.md#umstieg-von-der-hafs-integration).
 
 ### Neu
 - **Bereich Training** (*Einstellungen → Bereiche*: Ernährung und Training, nur Ernährung oder nur Training): Trainingspläne und -tage, Studios mit Geräten und Gewichtsstufen, Workouts mit Sätzen, Verlauf je Übung mit geschätztem 1RM und Rekorden, Sätze je Muskelgruppe, Rückblick, Gewichtsvorschläge nach Ernährungsphase, Import aus GymRun, Strong und Hevy. Die Daten liegen in `/data/hafs.db`.
@@ -54,7 +54,7 @@ MyDietAssistant heißt jetzt **HAFS** (HomeAssistant Fitness Suite) und bringt d
 ## 1.37.2
 
 ### Behoben
-- **„Verlauf nachladen“ fand nichts** ([#8](https://github.com/Schumey/MyDietAssistant/issues/8)): Home Assistant lieferte ohne Endzeit nur den ersten Tag des Zeitraums, also den Tag vor 30 Tagen, den der Recorder meist schon gelöscht hat („Verlauf nachgeladen: 0 Tage“). Jetzt wird der ganze Zeitraum bis heute abgefragt. Tage, die älter sind als der Recorder-Verlauf (Standard 10 Tage), kommen aus den Langzeitstatistiken von Home Assistant, sofern der Sensor eine `state_class` hat (wie die Sensoren der Companion-App aus Health Connect).
+- **„Verlauf nachladen“ fand nichts** ([#8](https://github.com/Schumey/HAFS/issues/8)): Home Assistant lieferte ohne Endzeit nur den ersten Tag des Zeitraums, also den Tag vor 30 Tagen, den der Recorder meist schon gelöscht hat („Verlauf nachgeladen: 0 Tage“). Jetzt wird der ganze Zeitraum bis heute abgefragt. Tage, die älter sind als der Recorder-Verlauf (Standard 10 Tage), kommen aus den Langzeitstatistiken von Home Assistant, sofern der Sensor eine `state_class` hat (wie die Sensoren der Companion-App aus Health Connect).
 
 ## 1.37.1
 
@@ -64,7 +64,7 @@ MyDietAssistant heißt jetzt **HAFS** (HomeAssistant Fitness Suite) und bringt d
 ## 1.37.0
 
 ### Neu
-- **Sensor für den Grundumsatz** ([#3](https://github.com/Schumey/MyDietAssistant/issues/3)): In Einstellungen → Aktivität lässt sich eine Entität für den Grundumsatz wählen (z. B. von einer Körperanalyse-Waage über Health Connect). Der Wert wird je Tag gespeichert, jeder Tag rechnet mit dem damals gültigen Grundumsatz; „Verlauf nachladen“ holt ihn mit. Er ist Teil von Export/Import und „Daten löschen“.
+- **Sensor für den Grundumsatz** ([#3](https://github.com/Schumey/HAFS/issues/3)): In Einstellungen → Aktivität lässt sich eine Entität für den Grundumsatz wählen (z. B. von einer Körperanalyse-Waage über Health Connect). Der Wert wird je Tag gespeichert, jeder Tag rechnet mit dem damals gültigen Grundumsatz; „Verlauf nachladen“ holt ihn mit. Er ist Teil von Export/Import und „Daten löschen“.
 
 ### Geändert
 - **Grundumsatz immer voll abziehen:** Der Gesamtwert aus Health Connect startet um Mitternacht schon mit dem ganzen Grundumsatz. Darum wird er jetzt auch für den laufenden Tag vollständig abgezogen (bisher anteilig nach Uhrzeit, was morgens zu viel Aktivität ergab). Die Tagebuch-Karte zeigt „… kcal gesamt − … kcal Grundumsatz“.
@@ -77,12 +77,12 @@ MyDietAssistant heißt jetzt **HAFS** (HomeAssistant Fitness Suite) und bringt d
 ## 1.36.2
 
 ### Behoben
-- **Netto-Kalorien mit Gesamtverbrauch** ([#3](https://github.com/Schumey/MyDietAssistant/issues/3)): Liefert der Kalorien-Sensor die gesamten verbrannten Kalorien (inkl. Grundumsatz, z. B. aus Health Connect), wurde der Grundumsatz mit abgezogen, die Netto-Werte waren viel zu niedrig und der Aktivitätszuschlag zu hoch. Neues Feld **Grundumsatz abziehen** in Einstellungen → Aktivität: Dann zählt nur der Teil über dem Grundumsatz als Aktivität (für heute anteilig nach Uhrzeit), in Statistik, Tagesziel und Tagebuch-Karte.
+- **Netto-Kalorien mit Gesamtverbrauch** ([#3](https://github.com/Schumey/HAFS/issues/3)): Liefert der Kalorien-Sensor die gesamten verbrannten Kalorien (inkl. Grundumsatz, z. B. aus Health Connect), wurde der Grundumsatz mit abgezogen, die Netto-Werte waren viel zu niedrig und der Aktivitätszuschlag zu hoch. Neues Feld **Grundumsatz abziehen** in Einstellungen → Aktivität: Dann zählt nur der Teil über dem Grundumsatz als Aktivität (für heute anteilig nach Uhrzeit), in Statistik, Tagesziel und Tagebuch-Karte.
 
 ## 1.36.1
 
 ### Behoben
-- **Netto-Ansicht der Statistik** ([#3](https://github.com/Schumey/MyDietAssistant/issues/3)): Tage, an denen mehr verbrannt als gegessen wurde, fehlten (Balken auf 0 gekappt). Negative Netto-Werte werden jetzt als Balken unter der Nulllinie gezeigt.
+- **Netto-Ansicht der Statistik** ([#3](https://github.com/Schumey/HAFS/issues/3)): Tage, an denen mehr verbrannt als gegessen wurde, fehlten (Balken auf 0 gekappt). Negative Netto-Werte werden jetzt als Balken unter der Nulllinie gezeigt.
 
 ## 1.36.0
 
@@ -126,7 +126,7 @@ MyDietAssistant heißt jetzt **HAFS** (HomeAssistant Fitness Suite) und bringt d
 ## 1.32.0
 
 ### Neu
-- **Netto-Kalorien in der Statistik** ([#3](https://github.com/Schumey/MyDietAssistant/issues/3)): Mit der Zusatzfunktion „Aktivität“ schaltet ein Umschalter zwischen *Brutto-Kalorien* und *Netto-Kalorien* (Aufnahme minus verbrannte Kalorien, verglichen mit dem Tagesziel ohne Aktivitätszuschlag, wie in MyFitnessPal). Neue Kachel „Ø Verbrannt“; `/api/stats` liefert je Tag `burned` und `goal_base_kcal`.
+- **Netto-Kalorien in der Statistik** ([#3](https://github.com/Schumey/HAFS/issues/3)): Mit der Zusatzfunktion „Aktivität“ schaltet ein Umschalter zwischen *Brutto-Kalorien* und *Netto-Kalorien* (Aufnahme minus verbrannte Kalorien, verglichen mit dem Tagesziel ohne Aktivitätszuschlag, wie in MyFitnessPal). Neue Kachel „Ø Verbrannt“; `/api/stats` liefert je Tag `burned` und `goal_base_kcal`.
 
 ## 1.31.0
 

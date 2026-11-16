@@ -315,7 +315,9 @@ class HafsPanel extends HTMLElement {
   _reviewCard(r) {
     const t = this._t, f = this._f;
     const lines = [
-      ...r.stagnating.map((x) => t("review_stag", x.name, x.sessions, x.weeks, f.kg(x.best))),
+      ...r.stagnating.map((x) => x.unit === "reps" ? t("review_stag_reps", x.name, x.sessions, x.weeks, f.num(x.recent_volume), f.num(x.volume))
+        : x.unit ? t("review_stag_kg", x.name, x.sessions, x.weeks, f.kg(x.recent_best), f.kg(Math.round(x.recent_volume)), f.kg(x.best), f.kg(Math.round(x.volume)))
+        : t("review_stag", x.name, x.sessions, x.weeks, f.kg(x.best))),
       ...r.neglected.map((x) => t("review_muscle", this._muscle(x.muscle), f.num(x.recent), f.num(x.earlier))),
     ];
     // the first few lines; the rest folds open (a long stagnation list would push everything else down)
