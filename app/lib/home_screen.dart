@@ -61,7 +61,15 @@ class _HomeScreenState extends State<HomeScreen> {
               2 => StatsTab(app: app),
               _ => SettingsTab(app: app),
             },
-            if (_nutritionOpened) NutritionView(app: app) else const SizedBox.shrink(),
+            // Android draws edge to edge: keep the page above the system bar, the strip below in the colour of the
+            // page's own navigation bar (like the NavigationBar of training does)
+            if (_nutritionOpened)
+              ColoredBox(
+                color: Theme.of(context).colorScheme.surfaceContainer,
+                child: SafeArea(top: false, child: NutritionView(app: app)),
+              )
+            else
+              const SizedBox.shrink(),
           ]),
           bottomNavigationBar: nutrition ? null : NavigationBar(
             selectedIndex: _tab,

@@ -62,10 +62,11 @@ class AppState extends ChangeNotifier {
   Future<HaConnection> _connect(String address, String token) =>
       _connector != null ? _connector(address, token) : connectTraining(address, token, opener: ingress);
 
-  /// A session for the HA app (nutrition WebView, updates); [fresh] asks for a new one.
+  /// A session for the HA app (nutrition WebView, updates); [fresh] asks for a new one. Always HAFS 2, never an older
+  /// MyDietAssistant installed next to it, so nutrition shows the same app as training.
   Future<IngressAccess> ingressAccess({bool fresh = false}) {
     if (!hasCredentials) throw HaException(tr('err_token'));
-    return ingress.open(address!, _token!, fresh: fresh);
+    return openHafsApp(ingress, address!, _token!, fresh: fresh);
   }
 
   /// Action a widget button of "Nutrition today" asked for (`scan`, `add`); the nutrition page runs and clears it.

@@ -166,6 +166,19 @@ void main() {
     await c.close();
   });
 
+  test('the nutrition page opens HAFS 2 even before training connected, not the older app under the first slug', () async {
+    final (server, seen) = await appServer(valid: {'sess1', 'sess2'});
+    addTearDown(() => server.close(force: true));
+    final opener = IngressOpener(ws: (a, t) async => _TwoApps());
+    final address = 'http://127.0.0.1:${server.port}';
+    final access = await openHafsApp(opener, address, 't');
+    expect(access.slug, 'local_mydiet');
+    expect(opener.isHafs('local_mydiet'), isTrue);
+    // known now: a new session needs no second look
+    expect((await openHafsApp(opener, address, 't', fresh: true)).slug, 'local_mydiet');
+    expect(seen.length, 1);
+  });
+
   test('without the HA app, or with training off there, the former integration is used', () async {
     final legacy = FakeWs(legacy: true);
     final c1 = await connectTraining('http://ha', 't', opener: IngressOpener(ws: (a, t) async => FakeWs(slugs: {})), ws: (a, t) async => legacy);

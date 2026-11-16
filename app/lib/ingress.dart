@@ -59,10 +59,17 @@ class IngressOpener {
   final Map<String, IngressAccess> _cache = {};
   String? _slug; // the slug that worked last
   final Set<String> _skip = {}; // apps without training (an older MyDietAssistant 1.x under that slug)
+  final Map<String, bool> _hafs = {}; // slugs known to be HAFS 2, with "training on"
+
+  /// The app under [slug] answered as HAFS 2 (see [openHafsApp]); [training] is false while training is off there.
+  void verified(String slug, {required bool training}) => _hafs[slug] = training;
+  bool isHafs(String slug) => _hafs.containsKey(slug);
+  bool trainingOn(String slug) => _hafs[slug] ?? false;
 
   /// The app under [slug] has no training endpoint: look further next time.
   void skip(String slug) {
     _skip.add(slug);
+    _hafs.remove(slug);
     if (_slug == slug) _slug = null;
     _cache.removeWhere((_, a) => a.slug == slug);
   }
@@ -181,26 +188,42 @@ class IngressConnection implements HaConnection {
 /// Connects to training: the HA app over ingress, or (while moving over) the former integration over the WebSocket.
 Future<HaConnection> connectTraining(String address, String token, {required IngressOpener opener, WsConnector? ws, HttpClient? client}) async {
   final legacy = ws ?? ((a, t) => HaClient.connect(a, t));
+  final IngressAccess access;
+  try {
+    access = await openHafsApp(opener, address, token);
+  } on HaException catch (e) {
+    if (e is HaAuthException || (e.code != 'app_missing' && e.code != 'ha_old')) rethrow;
+    return _legacyOr(legacy, address, token, e);
+  }
+  if (!opener.trainingOn(access.slug)) {
+    // training still off in the HA app: the integration may still have it
+    return _legacyOr(legacy, address, token, HaException(tr('err_unknown'), code: 'not_enabled'));
+  }
+  return IngressConnection(opener, address, token, access, client: client);
+}
+
+/// A session for HAFS 2 among the installed apps, for training and the nutrition page alike. A slug answering
+/// `hafs/info` with 404 is MyDietAssistant 1.x (no training endpoint): it is skipped and the next one tried, so both areas
+/// always show the same HA app, whichever opens first. `not_enabled` (training off there) is still HAFS 2.
+Future<IngressAccess> openHafsApp(IngressOpener opener, String address, String token, {bool fresh = false}) async {
   while (true) {
-    final IngressAccess access;
-    try {
-      access = await opener.open(address, token);
-    } on HaException catch (e) {
-      if (e is HaAuthException || (e.code != 'app_missing' && e.code != 'ha_old')) rethrow;
-      return _legacyOr(legacy, address, token, e);
-    }
-    final connection = IngressConnection(opener, address, token, access, client: client);
+    final access = await opener.open(address, token, fresh: fresh);
+    if (opener.isHafs(access.slug)) return access;
+    final connection = IngressConnection(opener, address, token, access); // own client: close() ends it
     try {
       await connection.call('hafs/info');
-      return connection;
+      opener.verified(access.slug, training: true);
+      return connection.access;
     } on HaException catch (e) {
-      await connection.close();
       if (e.code == 'http_404') {
         opener.skip(access.slug); // MyDietAssistant 1.x under this slug: try the next one
         continue;
       }
       if (e.code != 'not_enabled') rethrow;
-      return _legacyOr(legacy, address, token, e); // training still off in the HA app: the integration may still have it
+      opener.verified(access.slug, training: false);
+      return connection.access;
+    } finally {
+      await connection.close();
     }
   }
 }
