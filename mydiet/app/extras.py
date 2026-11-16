@@ -629,6 +629,7 @@ def sensor_extras(owner: str) -> list:
 
 DUMP_HOOKS = []      # later modules (training) add owner -> {key: data} to the backup/export
 RESTORE_HOOKS = []   # ... and (owner, backup dict) to restore their part in import_json
+HOOK_PARTS = []      # top-level keys those hooks add (e.g. "training"): the parts besides "nutrition" in backups
 
 
 # prefs that never go into a backup: secrets (mealie token, url has its own field), the display name set by the admin,
@@ -737,12 +738,22 @@ class JsonImport(BaseModel):
 
 
 @app.post("/api/import/json")
-def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None)):
-    """Restore a backup: replaces ALL data of the current user."""
-    d = j.data
+def import_json(j: JsonImport, x_remote_user_id: str | None = Header(None), parts: str | None = None):
+    """Restore a backup: replaces ALL data of the current user. parts (comma list of nutrition, training, ...) limits
+    it to those parts; without it everything in the backup is restored."""
+    owner = user_from(x_remote_user_id)
+    return restore_data(owner, j.data, parts.split(",") if parts else None)
+
+
+def restore_data(owner: str, d: dict, parts: list[str] | None = None) -> dict:
     if d.get("app") != "MyDietAssistant":
         raise HTTPException(400, "Keine MyDietAssistant-Sicherung")
-    owner = user_from(x_remote_user_id)
+    if parts is not None:
+        d = {k: v for k, v in d.items() if k not in HOOK_PARTS or k in parts}
+        if "nutrition" not in parts:    # only the extra parts: the nutrition data stays as it is
+            for hook in RESTORE_HOOKS:
+                hook(owner, d)
+            return {"ok": True}
     with db.conn() as c:
         c.execute("DELETE FROM food_portions WHERE food_id IN (SELECT id FROM foods WHERE owner=?)", (owner,))
         for t in ("foods", "meals", "entries", "goals", "weights", "saved_meals"):

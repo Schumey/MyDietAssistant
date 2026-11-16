@@ -77,14 +77,16 @@ def list_backup_names(owner: str) -> list[str]:
     if not os.path.isdir(BACKUP_DIR):
         return []
     pre = backup_prefix(owner)
-    return sorted((n for n in os.listdir(BACKUP_DIR) if n.startswith(pre) and n.endswith(".json")), reverse=True)
+    return sorted((n for n in os.listdir(BACKUP_DIR) if n.startswith(pre) and n.endswith((".zip", ".json"))), reverse=True)
 
 
 def write_backup(owner: str) -> str:
+    """One ZIP per user (nutrition and training parts, see backup_zip); older backups are plain JSON."""
+    from extras21 import archive
     os.makedirs(BACKUP_DIR, exist_ok=True)
-    name = f"{backup_prefix(owner)}{datetime.now():%Y-%m-%d_%H%M}.json"
-    with open(os.path.join(BACKUP_DIR, name), "w", encoding="utf-8") as f:
-        json.dump(dump(owner), f, ensure_ascii=False)
+    name = f"{backup_prefix(owner)}{datetime.now():%Y-%m-%d_%H%M}.zip"
+    with open(os.path.join(BACKUP_DIR, name), "wb") as f:
+        f.write(archive([owner], "user"))
     return name
 
 
@@ -130,7 +132,17 @@ def backup_now(x_remote_user_id: str | None = Header(None)):
 def read_backup(name: str, x_remote_user_id: str | None = Header(None)):
     if name not in list_backup_names(user_from(x_remote_user_id)):
         raise HTTPException(404, "Sicherung nicht gefunden")
-    with open(os.path.join(BACKUP_DIR, name), encoding="utf-8") as f:
+    path = os.path.join(BACKUP_DIR, name)
+    if name.endswith(".zip"):   # merged back into the JSON export format, so the restore dialog is the same
+        import backup_zip
+        from extras import HOOK_PARTS
+        with open(path, "rb") as f:
+            try:
+                _, users = backup_zip.read(f.read(), HOOK_PARTS)
+            except backup_zip.BadArchive as e:
+                raise HTTPException(400, str(e))
+        return users.get(user_from(x_remote_user_id)) or next(iter(users.values()), {})
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 

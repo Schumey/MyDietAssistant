@@ -7,24 +7,25 @@ All functions here only affect your own user account, including export and impor
 ## Where is the data?
 
 - Database: `/data/mydiet.db` in the add-on storage, part of every normal Home Assistant backup.
-- Automatic JSON backups: `/backup/mydiet/` (visible in the Samba share “backup”).
+- Automatic backups (ZIP): `/backup/mydiet/` (visible in the Samba share “backup”).
 - Before a migration the add-on saves a copy `mydiet.db.v<old version>.bak` next to the database.
-- Progress photos are stored as files in the add-on and are not part of the JSON backup.
+- Progress photos are stored as files in the add-on and are not part of the backup (but of the Home Assistant backup).
 
 ## Create a backup
 
 **Manually as a file:**
 
 1. Open *Settings → Data*.
-2. Tap **Backup (JSON)**. The browser downloads the file.
+2. Tap **Backup (ZIP)**. The browser downloads an archive with your data: nutrition and, if turned on, training. A single JSON file is still available through **Backup (JSON)**.
+3. **For admins:** under *Settings → User administration*, **Back up all users (ZIP)** saves the data of all users in one archive.
 
 **Automatically:**
 
 1. Open the add-on configuration and turn on `auto_backup` (default). `backup_keep_days` sets how long files are kept (default 14 days).
-2. The add-on writes a daily JSON backup per user to `/backup/mydiet/`.
+2. The add-on writes a daily backup (ZIP) per user to `/backup/mydiet/`. It contains nutrition and training.
 3. Under *Settings → Automatic backup* you see the latest backups. **Back up now** creates one immediately.
 
-The JSON backup contains entries, foods, meals, weight, triggers (actions and meal rules), all settings (optional features, step plan, micronutrient goals, weekly report, reminder, look and more) and the Mealie address. It does not contain the trigger history, progress photos, the Mealie token or the display name.
+The backup contains entries, foods, meals, weight, triggers (actions and meal rules), all settings (optional features, step plan, micronutrient goals, weekly report, reminder, look and more) and the Mealie address. The training data (plans, workouts, exercises, gyms, settings) is included as well. It does not contain the trigger history, progress photos, the Mealie token or the display name.
 
 ## Delete data
 
@@ -38,12 +39,15 @@ Only your account is affected; other users and your settings stay untouched. Del
 
 ## Restore a backup
 
-1. Open *Settings → Automatic backup* and tap **Restore** on a backup. Or, under *Settings → Data*, tap **Restore backup** and choose a JSON file.
-2. The preview **Restore backup** compares **Now** and **Backup** (entries, days, foods, meals, weight values, period).
-3. Check the numbers. **Replace** replaces all current data of your account with the backup, **Cancel** changes nothing.
-4. After restoring on a fresh installation you have to enter the Mealie token again.
+1. Open *Settings → Automatic backup* and tap **Restore** on a backup. Or, under *Settings → Data*, tap **Restore backup** and choose a ZIP or JSON file. An archive with several users opens your own part.
+2. The preview **Restore backup** compares **Now** and **Backup** (entries, days, foods, meals, weight values, workouts, period).
+3. If the backup contains training, choose under **What should be restored?** **Nutrition**, **Training** or both. The part you untick stays as it is.
+4. Check the numbers. **Replace** replaces the chosen data of your account with the backup, **Cancel** changes nothing.
+5. After restoring on a fresh installation you have to enter the Mealie token again.
 
-Older backups (without triggers) can still be restored.
+Older backups (JSON, without triggers or without training) can still be restored.
+
+**Restore all users as an admin:** *Settings → User administration → Restore all users (ZIP)* and choose an archive made with **Back up all users (ZIP)**. The preview shows per user what is there now and what the backup contains (entries, foods, workouts). **Replace all** restores every user under their own id. An archive from another installation only fits if the user ids are the same.
 
 ## Import from other apps
 
@@ -89,4 +93,4 @@ Only the chosen period is included.
 
 The database carries a version number (`PRAGMA user_version`). On start all missing migrations run in order. For large amounts of data (many years of diary, imported food tables) there are indexes; the food list loads in pages and searches on the server.
 
-Tip: before restoring, download the current state with **Backup (JSON)** before you choose **Replace**. That way you can go back if needed.
+Tip: before restoring, download the current state with **Backup (ZIP)** before you choose **Replace**. That way you can go back if needed.

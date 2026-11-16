@@ -13,7 +13,7 @@ MyDietAssistant heißt jetzt **HAFS** (HomeAssistant Fitness Suite) und bringt d
 - **Entitäten und Events für Training** (`sensor.hafs_<name>_*`, `binary_sensor.hafs_<name>_workout_active`, `hafs_workout_started`, `hafs_workout_finished`, `hafs_record`), als Zustände oder mit `mqtt_discovery` als MQTT-Entitäten. Studio-Erkennung über die Zone der Person, Rückblick und Planvorschlag über die KI von Home Assistant.
 - **Schnittstelle `/api/ext/training/*`** für Automationen und Assist („Was trainiere ich heute?“), Anleitung mit `rest_command` und `intent_script`.
 - **Aus der HAFS-Integration übernehmen:** liest deren Datenbank (nur lesend) und übernimmt alle Benutzer; alternativ einen HAFS-Export einspielen.
-- **Sicherung mit Training:** Export, Import und die automatische Sicherung enthalten Training; Sicherungen aus 1.x lassen es unverändert.
+- **Sicherung als ZIP:** *Einstellungen → Daten → Sicherung (ZIP)* und die automatische Sicherung bündeln Ernährung und Training in einem Archiv (`manifest.json` plus eine Datei je Teil). Beim Einspielen wählst Du Ernährung, Training oder beides. Admins sichern und stellen alle Benutzer auf einmal wieder her. JSON-Sicherungen aus 1.x lassen sich weiter einspielen; Fortschrittsfotos bleiben getrennt.
 - **HAFS-App** fürs Handy (Flutter): Training offline, Ernährung im Vollbild, Barcode-Scanner des Systems, Health Connect, Widgets „Nächster Trainingstag“ und „Ernährung heute“. Anmeldung mit Token, auch ohne Admin-Rechte (Home Assistant 2026.11). Updates aus `/share/hafs/app`.
 - **Logo** mit den zwei Hälften Ernährung und Training, als App-Symbol, Favicon und in der App.
 

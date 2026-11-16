@@ -13,7 +13,7 @@ MyDietAssistant is now called **HAFS** (HomeAssistant Fitness Suite) and brings 
 - **Entities and events for training** (`sensor.hafs_<name>_*`, `binary_sensor.hafs_<name>_workout_active`, `hafs_workout_started`, `hafs_workout_finished`, `hafs_record`), as states or with `mqtt_discovery` as MQTT entities. Gym detection through the person's zone, review and plan suggestion through Home Assistant's AI.
 - **Interface `/api/ext/training/*`** for automations and Assist ("What do I train today?"), guide with `rest_command` and `intent_script`.
 - **Take over from the HAFS integration:** reads its database (read-only) and takes over every user; alternatively load a HAFS export.
-- **Backup with training:** export, import and the automatic backup include training; backups from 1.x leave it unchanged.
+- **Backup as ZIP:** *Settings → Data → Backup (ZIP)* and the automatic backup bundle nutrition and training in one archive (`manifest.json` plus one file per part). When restoring you choose nutrition, training or both. Admins back up and restore all users at once. JSON backups from 1.x can still be restored; progress photos stay separate.
 - **HAFS app** for the phone (Flutter): training offline, nutrition full screen, system barcode scanner, Health Connect, widgets "Next training day" and "Nutrition today". Sign-in with a token, also without admin rights (Home Assistant 2026.11). Updates from `/share/hafs/app`.
 - **Logo** with the two halves nutrition and training, as app icon, favicon and in the app.
 

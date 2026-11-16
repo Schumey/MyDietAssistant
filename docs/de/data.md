@@ -7,24 +7,25 @@ Alle Funktionen hier betreffen nur Dein Benutzerkonto, auch Export und Import.
 ## Wo liegen die Daten?
 
 - Datenbank: `/data/mydiet.db` im Add-on-Speicher, enthalten in jedem normalen Home-Assistant-Backup.
-- Automatische JSON-Sicherungen: `/backup/mydiet/` (im Samba-Share „backup“ sichtbar).
+- Automatische Sicherungen (ZIP): `/backup/mydiet/` (im Samba-Share „backup“ sichtbar).
 - Vor einer Migration legt das Add-on eine Kopie `mydiet.db.v<alte Version>.bak` neben der Datenbank ab.
-- Fortschrittsfotos liegen als Dateien im Add-on und sind nicht Teil der JSON-Sicherung.
+- Fortschrittsfotos liegen als Dateien im Add-on und sind nicht Teil der Sicherung (aber des Home-Assistant-Backups).
 
 ## Eine Sicherung anlegen
 
 **Manuell als Datei:**
 
 1. Öffne *Einstellungen → Daten*.
-2. Tippe auf **Sicherung (JSON)**. Der Browser lädt die Datei herunter.
+2. Tippe auf **Sicherung (ZIP)**. Der Browser lädt ein Archiv mit Deinen Daten herunter: Ernährung und, wenn eingeschaltet, Training. Eine einzelne JSON-Datei gibt es weiter über **Sicherung (JSON)**.
+3. **Für Admins:** Unter *Einstellungen → Benutzerverwaltung* sichert **Alle Benutzer sichern (ZIP)** die Daten aller Benutzer in einem Archiv.
 
 **Automatisch:**
 
 1. Öffne die Add-on-Konfiguration und schalte `auto_backup` ein (Standard). Mit `backup_keep_days` bestimmst Du, wie lange Dateien aufbewahrt werden (Standard 14 Tage).
-2. Das Add-on legt täglich eine JSON-Sicherung je Benutzer in `/backup/mydiet/` ab.
+2. Das Add-on legt täglich eine Sicherung (ZIP) je Benutzer in `/backup/mydiet/` ab. Sie enthält Ernährung und Training.
 3. Unter *Einstellungen → Automatische Sicherung* siehst Du die letzten Sicherungen. **Jetzt sichern** legt sofort eine an.
 
-Die JSON-Sicherung enthält Einträge, Lebensmittel, Mahlzeiten, Gewicht, Trigger (Aktionen und Mahlzeiten-Regeln), alle Einstellungen (Zusatzfunktionen, Stufenplan, Mikronährstoff-Ziele, Wochenbericht, Erinnerung, Optik und mehr) und die Mealie-Adresse. Nicht enthalten sind der Trigger-Verlauf, Fortschrittsfotos, der Mealie-Token und der Anzeigename.
+Die Sicherung enthält Einträge, Lebensmittel, Mahlzeiten, Gewicht, Trigger (Aktionen und Mahlzeiten-Regeln), alle Einstellungen (Zusatzfunktionen, Stufenplan, Mikronährstoff-Ziele, Wochenbericht, Erinnerung, Optik und mehr) und die Mealie-Adresse. Dazu kommen die Trainingsdaten (Pläne, Workouts, Übungen, Studios, Einstellungen). Nicht enthalten sind der Trigger-Verlauf, Fortschrittsfotos, der Mealie-Token und der Anzeigename.
 
 ## Daten löschen
 
@@ -38,12 +39,15 @@ Nur Dein Konto ist betroffen; andere Benutzer und Deine Einstellungen bleiben un
 
 ## Eine Sicherung wiederherstellen
 
-1. Öffne *Einstellungen → Automatische Sicherung* und tippe bei einer Sicherung auf **Wiederherstellen**. Oder tippe unter *Einstellungen → Daten* auf **Sicherung einspielen** und wähle eine JSON-Datei.
-2. Die Vorschau **Sicherung wiederherstellen** vergleicht **Jetzt** und **Sicherung** (Einträge, Tage, Lebensmittel, Mahlzeiten, Gewichtswerte, Zeitraum).
-3. Prüfe die Zahlen. Mit **Ersetzen** werden alle jetzigen Daten Deines Kontos durch die Sicherung ersetzt, mit **Abbrechen** passiert nichts.
-4. Nach dem Einspielen auf einer frischen Installation musst Du den Mealie-Token neu eintragen.
+1. Öffne *Einstellungen → Automatische Sicherung* und tippe bei einer Sicherung auf **Wiederherstellen**. Oder tippe unter *Einstellungen → Daten* auf **Sicherung einspielen** und wähle eine ZIP- oder JSON-Datei. Ein Archiv mit mehreren Benutzern öffnet Deinen eigenen Teil.
+2. Die Vorschau **Sicherung wiederherstellen** vergleicht **Jetzt** und **Sicherung** (Einträge, Tage, Lebensmittel, Mahlzeiten, Gewichtswerte, Workouts, Zeitraum).
+3. Enthält die Sicherung Training, wählst Du unter **Was soll wiederhergestellt werden?** **Ernährung**, **Training** oder beides. Der abgewählte Teil bleibt unverändert.
+4. Prüfe die Zahlen. Mit **Ersetzen** werden die gewählten Daten Deines Kontos durch die Sicherung ersetzt, mit **Abbrechen** passiert nichts.
+5. Nach dem Einspielen auf einer frischen Installation musst Du den Mealie-Token neu eintragen.
 
-Ältere Sicherungen (ohne Trigger) lassen sich weiter einspielen.
+Ältere Sicherungen (JSON, ohne Trigger oder ohne Training) lassen sich weiter einspielen.
+
+**Als Admin alle Benutzer wiederherstellen:** *Einstellungen → Benutzerverwaltung → Alle Benutzer wiederherstellen (ZIP)* und ein Archiv mit **Alle Benutzer sichern (ZIP)** wählen. Die Vorschau zeigt je Benutzer, was jetzt da ist und was die Sicherung enthält (Einträge, Lebensmittel, Workouts). **Alle ersetzen** stellt jeden Benutzer unter seiner eigenen Kennung wieder her. Ein Archiv aus einer anderen Installation passt nur, wenn die Benutzerkennungen gleich sind.
 
 ## Aus anderen Apps importieren
 
@@ -89,4 +93,4 @@ Enthalten ist nur der gewählte Zeitraum.
 
 Die Datenbank trägt eine Versionsnummer (`PRAGMA user_version`). Beim Start laufen alle fehlenden Migrationen der Reihe nach. Für große Datenmengen (viele Jahre Tagebuch, importierte Lebensmitteltabellen) gibt es Indizes; die Lebensmittelliste lädt seitenweise und sucht auf dem Server.
 
-Tipp: Lade vor dem Wiederherstellen mit **Sicherung (JSON)** den aktuellen Stand herunter, bevor Du **Ersetzen** wählst. So kannst Du notfalls zurück.
+Tipp: Lade vor dem Wiederherstellen mit **Sicherung (ZIP)** den aktuellen Stand herunter, bevor Du **Ersetzen** wählst. So kannst Du notfalls zurück.

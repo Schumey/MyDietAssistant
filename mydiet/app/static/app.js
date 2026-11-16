@@ -296,7 +296,7 @@ const EN = {
   "Trigger gelöscht": "Trigger deleted", "(gelöscht)": "(deleted)", "Einträge nicht mehr vorhanden": "Entries no longer exist", "Rückgängig": "Undo",
   "Erinnerung": "Reminder", "Benachrichtigung über Home Assistant, wenn bis zur gewählten Uhrzeit nichts eingetragen wurde.": "Notification via Home Assistant if nothing has been logged by the chosen time.",
   "Erinnerung aktiv": "Reminder active", "Benachrichtigungsdienst": "Notification service", "Automatische Sicherung": "Automatic backup",
-  "Täglich eine JSON-Sicherung in {}, Aufbewahrung {} Tage (Add-on-Option „backup_keep_days“).": "A daily JSON backup in {}, kept for {} days (add-on option “backup_keep_days”).",
+  "Täglich eine Sicherung (ZIP) in {}, Aufbewahrung {} Tage (Add-on-Option „backup_keep_days“).": "A daily backup (ZIP) in {}, kept for {} days (add-on option “backup_keep_days”).",
   "Aus (Add-on-Option „auto_backup“).": "Off (add-on option “auto_backup”).", "· {} KB": "· {} KB", "Wiederherstellen": "Restore", "Noch keine Sicherung.": "No backup yet.", "Jetzt sichern": "Back up now",
   "Schnittstelle für Automationen": "Interface for automations",
   "Aktiv. Deine Benutzer-ID: {}. Aufrufbeispiele (rest_command) stehen in der Dokumentation des Add-ons.": "Active. Your user ID: {}. Call examples (rest_command) are in the add-on documentation.",
@@ -366,6 +366,23 @@ const EN = {
   // server messages (shown in the UI)
   "Open Food Facts nicht erreichbar": "Open Food Facts not reachable", "Mahlzeit enthält noch Einträge": "Meal still contains entries", "Mahlzeit ist leer": "Meal is empty",
   "Mahlzeit braucht mindestens eine Komponente": "Meal needs at least one component", "Keine MyDietAssistant-Sicherung": "Not a MyDietAssistant backup",
+  "Sicherung (ZIP)": "Backup (ZIP)",
+  "Alle Benutzer sichern (ZIP)": "Back up all users (ZIP)",
+  "Alle Benutzer wiederherstellen (ZIP)": "Restore all users (ZIP)",
+  "Was soll wiederhergestellt werden?": "What should be restored?",
+  "Die Daten dieser Benutzer werden durch die Sicherung ersetzt:": "The data of these users will be replaced by the backup:",
+  "Alle ersetzen": "Replace all",
+  "Nichts ausgewählt": "Nothing selected",
+  "Nur für Admins": "Admins only",
+  "Die Sicherung enthält mehrere Benutzer, dein Konto ist nicht dabei": "The backup contains several users and your account is not among them",
+  "Benutzer nicht in der Sicherung": "User not in the backup",
+  "Keine ZIP-Datei": "Not a ZIP file",
+  "Archiv zu groß": "Archive too large",
+  "Keine HAFS-Sicherung": "Not a HAFS backup",
+  "Die Sicherung ist neuer als diese App": "The backup is newer than this app",
+  "Manifest fehlerhaft": "Manifest is faulty",
+  "{} fehlt": "{} is missing",
+  "{} nicht lesbar": "{} is unreadable",
   "Das sieht nicht nach einem MyFitnessPal-Export aus.": "This does not look like a MyFitnessPal export.", "Home Assistant nicht erreichbar": "Home Assistant not reachable",
   "Uhrzeit (HH:MM) erforderlich": "Time (HH:MM) required", "genau eines von Mahlzeit/Lebensmittel/Zielprofil angeben": "specify exactly one of meal / food / goal profile",
   "weitere Bedingung: Art und Entität erforderlich": "further condition: kind and entity required", "Name und Kalorien erforderlich": "Name and calories required",
@@ -1243,7 +1260,7 @@ Object.assign(LANGS, {
     "Erinnerung aktiv": "Rappel actif",
     "Benachrichtigungsdienst": "Service de notification",
     "Automatische Sicherung": "Sauvegarde automatique",
-    "Täglich eine JSON-Sicherung in {}, Aufbewahrung {} Tage (Add-on-Option „backup_keep_days“).": "Une sauvegarde JSON par jour dans {}, conservée {} jours (option du module “backup_keep_days”).",
+    "Täglich eine Sicherung (ZIP) in {}, Aufbewahrung {} Tage (Add-on-Option „backup_keep_days“).": "Une sauvegarde (ZIP) par jour dans {}, conservée {} jours (option du module “backup_keep_days”).",
     "Aus (Add-on-Option „auto_backup“).": "Désactivée (option du module “auto_backup”).",
     "· {} KB": "· {} Ko",
     "Wiederherstellen": "Restaurer",
@@ -1360,6 +1377,23 @@ Object.assign(LANGS, {
     "Mahlzeit ist leer": "Le repas est vide",
     "Mahlzeit braucht mindestens eine Komponente": "Le repas nécessite au moins un composant",
     "Keine MyDietAssistant-Sicherung": "Pas une sauvegarde MyDietAssistant",
+    "Sicherung (ZIP)": "Sauvegarde (ZIP)",
+    "Alle Benutzer sichern (ZIP)": "Sauvegarder tous les utilisateurs (ZIP)",
+    "Alle Benutzer wiederherstellen (ZIP)": "Restaurer tous les utilisateurs (ZIP)",
+    "Was soll wiederhergestellt werden?": "Que faut-il restaurer ?",
+    "Die Daten dieser Benutzer werden durch die Sicherung ersetzt:": "Les données de ces utilisateurs seront remplacées par la sauvegarde :",
+    "Alle ersetzen": "Tout remplacer",
+    "Nichts ausgewählt": "Rien n'est sélectionné",
+    "Nur für Admins": "Réservé aux administrateurs",
+    "Die Sicherung enthält mehrere Benutzer, dein Konto ist nicht dabei": "La sauvegarde contient plusieurs utilisateurs, votre compte n'en fait pas partie",
+    "Benutzer nicht in der Sicherung": "Utilisateur absent de la sauvegarde",
+    "Keine ZIP-Datei": "Ce n'est pas un fichier ZIP",
+    "Archiv zu groß": "Archive trop volumineuse",
+    "Keine HAFS-Sicherung": "Pas une sauvegarde HAFS",
+    "Die Sicherung ist neuer als diese App": "La sauvegarde est plus récente que cette application",
+    "Manifest fehlerhaft": "Manifeste défectueux",
+    "{} fehlt": "{} manque",
+    "{} nicht lesbar": "{} est illisible",
     "Das sieht nicht nach einem MyFitnessPal-Export aus.": "Cela ne ressemble pas à un export MyFitnessPal.",
     "Home Assistant nicht erreichbar": "Home Assistant injoignable",
     "Uhrzeit (HH:MM) erforderlich": "Heure (HH:MM) requise",
@@ -2275,7 +2309,7 @@ Object.assign(LANGS, {
     "Erinnerung aktiv": "Recordatorio activo",
     "Benachrichtigungsdienst": "Servicio de notificación",
     "Automatische Sicherung": "Copia de seguridad automática",
-    "Täglich eine JSON-Sicherung in {}, Aufbewahrung {} Tage (Add-on-Option „backup_keep_days“).": "Una copia JSON al día en {}, conservada {} días (opción del complemento “backup_keep_days”).",
+    "Täglich eine Sicherung (ZIP) in {}, Aufbewahrung {} Tage (Add-on-Option „backup_keep_days“).": "Una copia (ZIP) al día en {}, conservada {} días (opción del complemento “backup_keep_days”).",
     "Aus (Add-on-Option „auto_backup“).": "Desactivada (opción del complemento “auto_backup”).",
     "· {} KB": "· {} KB",
     "Wiederherstellen": "Restaurar",
@@ -2392,6 +2426,23 @@ Object.assign(LANGS, {
     "Mahlzeit ist leer": "La comida está vacía",
     "Mahlzeit braucht mindestens eine Komponente": "La comida necesita al menos un componente",
     "Keine MyDietAssistant-Sicherung": "No es una copia de seguridad de MyDietAssistant",
+    "Sicherung (ZIP)": "Copia de seguridad (ZIP)",
+    "Alle Benutzer sichern (ZIP)": "Copia de todos los usuarios (ZIP)",
+    "Alle Benutzer wiederherstellen (ZIP)": "Restaurar todos los usuarios (ZIP)",
+    "Was soll wiederhergestellt werden?": "¿Qué quieres restaurar?",
+    "Die Daten dieser Benutzer werden durch die Sicherung ersetzt:": "Los datos de estos usuarios se sustituirán por la copia de seguridad:",
+    "Alle ersetzen": "Sustituir todo",
+    "Nichts ausgewählt": "No hay nada seleccionado",
+    "Nur für Admins": "Solo para administradores",
+    "Die Sicherung enthält mehrere Benutzer, dein Konto ist nicht dabei": "La copia contiene varios usuarios y tu cuenta no está entre ellos",
+    "Benutzer nicht in der Sicherung": "Usuario no incluido en la copia",
+    "Keine ZIP-Datei": "No es un archivo ZIP",
+    "Archiv zu groß": "Archivo demasiado grande",
+    "Keine HAFS-Sicherung": "No es una copia de seguridad de HAFS",
+    "Die Sicherung ist neuer als diese App": "La copia es más reciente que esta aplicación",
+    "Manifest fehlerhaft": "Manifiesto defectuoso",
+    "{} fehlt": "Falta {}",
+    "{} nicht lesbar": "No se puede leer {}",
     "Das sieht nicht nach einem MyFitnessPal-Export aus.": "Esto no parece una exportación de MyFitnessPal.",
     "Home Assistant nicht erreichbar": "Home Assistant no disponible",
     "Uhrzeit (HH:MM) erforderlich": "Se requiere la hora (HH:MM)",
@@ -3313,7 +3364,7 @@ Object.assign(LANGS, {
     "Erinnerung aktiv": "Herinnering actief",
     "Benachrichtigungsdienst": "Meldingsdienst",
     "Automatische Sicherung": "Automatische back-up",
-    "Täglich eine JSON-Sicherung in {}, Aufbewahrung {} Tage (Add-on-Option „backup_keep_days“).": "Dagelijks een JSON-back-up in {}, bewaard gedurende {} dagen (add-on-optie “backup_keep_days”).",
+    "Täglich eine Sicherung (ZIP) in {}, Aufbewahrung {} Tage (Add-on-Option „backup_keep_days“).": "Dagelijks een back-up (ZIP) in {}, bewaard gedurende {} dagen (add-on-optie “backup_keep_days”).",
     "Aus (Add-on-Option „auto_backup“).": "Uit (add-on-optie “auto_backup”).",
     "· {} KB": "· {} KB",
     "Wiederherstellen": "Herstellen",
@@ -3430,6 +3481,23 @@ Object.assign(LANGS, {
     "Mahlzeit ist leer": "Maaltijd is leeg",
     "Mahlzeit braucht mindestens eine Komponente": "Maaltijd heeft minstens één onderdeel nodig",
     "Keine MyDietAssistant-Sicherung": "Geen MyDietAssistant-back-up",
+    "Sicherung (ZIP)": "Back-up (ZIP)",
+    "Alle Benutzer sichern (ZIP)": "Back-up van alle gebruikers (ZIP)",
+    "Alle Benutzer wiederherstellen (ZIP)": "Alle gebruikers herstellen (ZIP)",
+    "Was soll wiederhergestellt werden?": "Wat moet worden hersteld?",
+    "Die Daten dieser Benutzer werden durch die Sicherung ersetzt:": "De gegevens van deze gebruikers worden vervangen door de back-up:",
+    "Alle ersetzen": "Alles vervangen",
+    "Nichts ausgewählt": "Niets geselecteerd",
+    "Nur für Admins": "Alleen voor beheerders",
+    "Die Sicherung enthält mehrere Benutzer, dein Konto ist nicht dabei": "De back-up bevat meerdere gebruikers en jouw account zit er niet bij",
+    "Benutzer nicht in der Sicherung": "Gebruiker niet in de back-up",
+    "Keine ZIP-Datei": "Geen ZIP-bestand",
+    "Archiv zu groß": "Archief te groot",
+    "Keine HAFS-Sicherung": "Geen HAFS-back-up",
+    "Die Sicherung ist neuer als diese App": "De back-up is nieuwer dan deze app",
+    "Manifest fehlerhaft": "Manifest is onjuist",
+    "{} fehlt": "{} ontbreekt",
+    "{} nicht lesbar": "{} is onleesbaar",
     "Das sieht nicht nach einem MyFitnessPal-Export aus.": "Dit lijkt niet op een MyFitnessPal-export.",
     "Home Assistant nicht erreichbar": "Home Assistant niet bereikbaar",
     "Uhrzeit (HH:MM) erforderlich": "Tijdstip (HH:MM) vereist",
@@ -4357,7 +4425,7 @@ Object.assign(LANGS, {
     "Erinnerung aktiv": "Promemoria attivo",
     "Benachrichtigungsdienst": "Servizio di notifica",
     "Automatische Sicherung": "Backup automatico",
-    "Täglich eine JSON-Sicherung in {}, Aufbewahrung {} Tage (Add-on-Option „backup_keep_days“).": "Un backup JSON giornaliero in {}, conservato per {} giorni (opzione del componente “backup_keep_days”).",
+    "Täglich eine Sicherung (ZIP) in {}, Aufbewahrung {} Tage (Add-on-Option „backup_keep_days“).": "Un backup (ZIP) giornaliero in {}, conservato per {} giorni (opzione del componente “backup_keep_days”).",
     "Aus (Add-on-Option „auto_backup“).": "Disattivato (opzione del componente “auto_backup”).",
     "· {} KB": "· {} KB",
     "Wiederherstellen": "Ripristina",
@@ -4474,6 +4542,23 @@ Object.assign(LANGS, {
     "Mahlzeit ist leer": "Il pasto è vuoto",
     "Mahlzeit braucht mindestens eine Komponente": "Il pasto richiede almeno un componente",
     "Keine MyDietAssistant-Sicherung": "Non è un backup di MyDietAssistant",
+    "Sicherung (ZIP)": "Backup (ZIP)",
+    "Alle Benutzer sichern (ZIP)": "Backup di tutti gli utenti (ZIP)",
+    "Alle Benutzer wiederherstellen (ZIP)": "Ripristina tutti gli utenti (ZIP)",
+    "Was soll wiederhergestellt werden?": "Cosa vuoi ripristinare?",
+    "Die Daten dieser Benutzer werden durch die Sicherung ersetzt:": "I dati di questi utenti verranno sostituiti dal backup:",
+    "Alle ersetzen": "Sostituisci tutto",
+    "Nichts ausgewählt": "Nessuna selezione",
+    "Nur für Admins": "Solo per gli amministratori",
+    "Die Sicherung enthält mehrere Benutzer, dein Konto ist nicht dabei": "Il backup contiene più utenti e il tuo account non è tra questi",
+    "Benutzer nicht in der Sicherung": "Utente non presente nel backup",
+    "Keine ZIP-Datei": "Non è un file ZIP",
+    "Archiv zu groß": "Archivio troppo grande",
+    "Keine HAFS-Sicherung": "Non è un backup di HAFS",
+    "Die Sicherung ist neuer als diese App": "Il backup è più recente di questa app",
+    "Manifest fehlerhaft": "Manifest difettoso",
+    "{} fehlt": "{} manca",
+    "{} nicht lesbar": "{} non è leggibile",
     "Das sieht nicht nach einem MyFitnessPal-Export aus.": "Non sembra un’esportazione di MyFitnessPal.",
     "Home Assistant nicht erreichbar": "Home Assistant non raggiungibile",
     "Uhrzeit (HH:MM) erforderlich": "Ora (HH:MM) obbligatoria",
@@ -5401,7 +5486,7 @@ Object.assign(LANGS, {
     "Erinnerung aktiv": "Lembrete ativo",
     "Benachrichtigungsdienst": "Serviço de notificação",
     "Automatische Sicherung": "Backup automático",
-    "Täglich eine JSON-Sicherung in {}, Aufbewahrung {} Tage (Add-on-Option „backup_keep_days“).": "Um backup JSON diário em {}, mantido por {} dias (opção do complemento “backup_keep_days”).",
+    "Täglich eine Sicherung (ZIP) in {}, Aufbewahrung {} Tage (Add-on-Option „backup_keep_days“).": "Um backup (ZIP) diário em {}, mantido por {} dias (opção do complemento “backup_keep_days”).",
     "Aus (Add-on-Option „auto_backup“).": "Desligado (opção do complemento “auto_backup”).",
     "· {} KB": "· {} KB",
     "Wiederherstellen": "Restaurar",
@@ -5518,6 +5603,23 @@ Object.assign(LANGS, {
     "Mahlzeit ist leer": "A refeição está vazia",
     "Mahlzeit braucht mindestens eine Komponente": "A refeição precisa de pelo menos um componente",
     "Keine MyDietAssistant-Sicherung": "Não é um backup do MyDietAssistant",
+    "Sicherung (ZIP)": "Backup (ZIP)",
+    "Alle Benutzer sichern (ZIP)": "Backup de todos os utilizadores (ZIP)",
+    "Alle Benutzer wiederherstellen (ZIP)": "Restaurar todos os utilizadores (ZIP)",
+    "Was soll wiederhergestellt werden?": "O que deseja restaurar?",
+    "Die Daten dieser Benutzer werden durch die Sicherung ersetzt:": "Os dados destes utilizadores serão substituídos pelo backup:",
+    "Alle ersetzen": "Substituir tudo",
+    "Nichts ausgewählt": "Nada selecionado",
+    "Nur für Admins": "Apenas para administradores",
+    "Die Sicherung enthält mehrere Benutzer, dein Konto ist nicht dabei": "O backup contém vários utilizadores e a sua conta não está entre eles",
+    "Benutzer nicht in der Sicherung": "Utilizador não incluído no backup",
+    "Keine ZIP-Datei": "Não é um ficheiro ZIP",
+    "Archiv zu groß": "Arquivo demasiado grande",
+    "Keine HAFS-Sicherung": "Não é um backup do HAFS",
+    "Die Sicherung ist neuer als diese App": "O backup é mais recente do que esta aplicação",
+    "Manifest fehlerhaft": "Manifesto com erros",
+    "{} fehlt": "{} está em falta",
+    "{} nicht lesbar": "{} não é legível",
     "Das sieht nicht nach einem MyFitnessPal-Export aus.": "Isto não parece uma exportação do MyFitnessPal.",
     "Home Assistant nicht erreichbar": "Home Assistant inacessível",
     "Uhrzeit (HH:MM) erforderlich": "Hora (HH:MM) obrigatória",
@@ -6445,7 +6547,7 @@ Object.assign(LANGS, {
     "Erinnerung aktiv": "Przypomnienie aktywne",
     "Benachrichtigungsdienst": "Usługa powiadomień",
     "Automatische Sicherung": "Automatyczna kopia zapasowa",
-    "Täglich eine JSON-Sicherung in {}, Aufbewahrung {} Tage (Add-on-Option „backup_keep_days“).": "Codzienna kopia JSON w {}, przechowywana {} dni (opcja dodatku „backup_keep_days”).",
+    "Täglich eine Sicherung (ZIP) in {}, Aufbewahrung {} Tage (Add-on-Option „backup_keep_days“).": "Codzienna kopia (ZIP) w {}, przechowywana {} dni (opcja dodatku „backup_keep_days”).",
     "Aus (Add-on-Option „auto_backup“).": "Wyłączona (opcja dodatku „auto_backup”).",
     "· {} KB": "· {} KB",
     "Wiederherstellen": "Przywróć",
@@ -6562,6 +6664,23 @@ Object.assign(LANGS, {
     "Mahlzeit ist leer": "Posiłek jest pusty",
     "Mahlzeit braucht mindestens eine Komponente": "Posiłek wymaga co najmniej jednego składnika",
     "Keine MyDietAssistant-Sicherung": "To nie jest kopia zapasowa MyDietAssistant",
+    "Sicherung (ZIP)": "Kopia zapasowa (ZIP)",
+    "Alle Benutzer sichern (ZIP)": "Kopia zapasowa wszystkich użytkowników (ZIP)",
+    "Alle Benutzer wiederherstellen (ZIP)": "Przywróć wszystkich użytkowników (ZIP)",
+    "Was soll wiederhergestellt werden?": "Co przywrócić?",
+    "Die Daten dieser Benutzer werden durch die Sicherung ersetzt:": "Dane tych użytkowników zostaną zastąpione kopią zapasową:",
+    "Alle ersetzen": "Zastąp wszystko",
+    "Nichts ausgewählt": "Nic nie wybrano",
+    "Nur für Admins": "Tylko dla administratorów",
+    "Die Sicherung enthält mehrere Benutzer, dein Konto ist nicht dabei": "Kopia zawiera kilku użytkowników, a Twojego konta w niej nie ma",
+    "Benutzer nicht in der Sicherung": "Użytkownika nie ma w kopii",
+    "Keine ZIP-Datei": "To nie jest plik ZIP",
+    "Archiv zu groß": "Archiwum jest zbyt duże",
+    "Keine HAFS-Sicherung": "To nie jest kopia zapasowa HAFS",
+    "Die Sicherung ist neuer als diese App": "Kopia jest nowsza niż ta aplikacja",
+    "Manifest fehlerhaft": "Manifest jest uszkodzony",
+    "{} fehlt": "Brak {}",
+    "{} nicht lesbar": "Nie można odczytać {}",
     "Das sieht nicht nach einem MyFitnessPal-Export aus.": "To nie wygląda na eksport z MyFitnessPal.",
     "Home Assistant nicht erreichbar": "Home Assistant niedostępny",
     "Uhrzeit (HH:MM) erforderlich": "Wymagana godzina (GG:MM)",
@@ -10873,7 +10992,7 @@ async function renderSettings() {
   // automatic backups
   root.append(h("details", { class: "card" }, h("summary", {}, "Automatische Sicherung"),
     h("div", { class: "muted" }, bk.auto
-      ? `Täglich eine JSON-Sicherung in ${bk.dir}, Aufbewahrung ${bk.keep_days} Tage (Add-on-Option „backup_keep_days“).`
+      ? `Täglich eine Sicherung (ZIP) in ${bk.dir}, Aufbewahrung ${bk.keep_days} Tage (Add-on-Option „backup_keep_days“).`
       : "Aus (Add-on-Option „auto_backup“)."),
     h("div", { class: "list" }, bk.files.length ? bk.files.slice(0, 10).map(f => h("div", {},
       h("div", { class: "grow" }, f.ts, h("span", { class: "muted" }, ` · ${Math.max(1, Math.round(f.size / 1024))} KB`)),
@@ -10908,11 +11027,14 @@ async function renderSettings() {
   root.append(h("div", { class: "card" }, h("h2", {}, "Daten"),
     h("div", { class: "muted" }, "Export/Import betrifft nur dein Benutzerkonto."),
     h("div", { class: "actions", style: "justify-content:flex-start" },
+      h("button", { class: "flat", onclick: () => { location.href = "api/backup/zip"; } }, "Sicherung (ZIP)"),
       h("button", { class: "flat", onclick: () => { location.href = "api/export/json"; } }, "Sicherung (JSON)"),
       h("button", { class: "flat", onclick: () => { location.href = "api/export/csv"; } }, "Tagebuch als CSV"),
-      h("button", { class: "flat", onclick: () => pickFile(".json,application/json", async f => {
-        try { restoreDialog(JSON.parse(await f.text())); }
-        catch (e) { alert("Datei nicht lesbar: " + e.message); }
+      h("button", { class: "flat", onclick: () => pickFile(".zip,.json,application/zip,application/json", async f => {
+        try {
+          if (/\.zip$/i.test(f.name)) restoreDialog((await api("backup/open", { method: "POST", body: f })).data);   // ZIP: the user's part, shown like a JSON backup
+          else restoreDialog(JSON.parse(await f.text()));
+        } catch (e) { alert("Datei nicht lesbar: " + e.message); }
       }) }, "Sicherung einspielen"),
       h("button", { onclick: () => pickFile(".csv,.zip,text/csv,application/zip", mfpDialog) }, "MyFitnessPal-CSV importieren"),
       h("button", { onclick: importMenu }, "Weitere Importe …"),
@@ -11028,6 +11150,9 @@ async function adminCard(root) {
       h("div", { class: "actions", style: "justify-content:flex-start" },
         h("button", { class: "flat", onclick: () => dbCheck(false) }, "Prüfen"), h("button", { class: "flat", onclick: () => dbCheck(true) }, "Prüfen und verdichten")),
       dbMsg] : null,
+    h("div", { class: "actions", style: "justify-content:flex-start" },
+      h("button", { class: "flat", onclick: () => { location.href = "api/backup/zip?scope=all"; } }, "Alle Benutzer sichern (ZIP)"),
+      h("button", { class: "flat", onclick: () => pickFile(".zip,application/zip", restoreAllDialog) }, "Alle Benutzer wiederherstellen (ZIP)")),
     h("div", { class: "lk-wrap" }, h("table", { class: "lk" },
       h("thead", {}, h("tr", {}, ["Benutzer", "Einträge", "Tage", "Lebensmittel", "Zuletzt", ""].map(x => h("th", {}, x)))),
       h("tbody", {}, users.map(u => h("tr", {},
@@ -11043,6 +11168,31 @@ async function adminCard(root) {
           } }, "Löschen")))))))));
 }
 
+// Admin: restore every user of an all-users ZIP (dry run first: who is in it and what they have now).
+async function restoreAllDialog(file) {
+  let p;
+  try { p = await api("backup/restore-all", { method: "POST", body: file }); }
+  catch (e) { alert("Datei nicht lesbar: " + e.message); return; }
+  const msg = h("div", { class: "err" });
+  setDlg(h("h2", {}, "Alle Benutzer wiederherstellen (ZIP)"),
+    h("div", { class: "muted" }, "Die Daten dieser Benutzer werden durch die Sicherung ersetzt:"),
+    h("table", { class: "summary cmp" },
+      h("thead", {}, h("tr", {}, ["Benutzer", "Einträge", "Lebensmittel", "Workouts"].map(x => h("th", {}, x)))),
+      h("tbody", {}, p.users.map(u => h("tr", {},
+        h("td", {}, u.name || u.owner),
+        h("td", {}, `${u.current.nutrition.entries} → ${u.parts.nutrition.entries}`),
+        h("td", {}, `${u.current.nutrition.foods} → ${u.parts.nutrition.foods}`),
+        h("td", {}, u.parts.training ? `${(u.current.training || {}).workouts ?? 0} → ${u.parts.training.workouts}` : "–"))))),
+    msg,
+    h("div", { class: "actions" },
+      h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
+      h("button", { onclick: async () => {
+        try { await api("backup/restore-all?dry=false", { method: "POST", body: file }); dlg.close(); alert("Wiederhergestellt."); show("diary"); }
+        catch (e) { msg.textContent = e.message; }
+      } }, "Alle ersetzen")));
+  dlg.showModal();
+}
+
 // Restore a backup: show what would be replaced first.
 async function restoreDialog(data) {
   let p;
@@ -11051,8 +11201,13 @@ async function restoreDialog(data) {
   const range = s => s.first ? `${parse(s.first).toLocaleDateString(I18N.locale)} – ${parse(s.last).toLocaleDateString(I18N.locale)}` : "–";
   const row = (label, k) => h("tr", {}, h("th", {}, label), h("td", {}, String(p.current[k])), h("td", {}, String(p.backup[k])));
   const msg = h("div", { class: "err" });
+  // a backup with a training part: restore both or only one of them (a backup without it leaves training alone anyway)
+  const hasTraining = !!data.training;
+  const partFood = h("input", { type: "checkbox", checked: true }), partTrain = h("input", { type: "checkbox", checked: true });
   setDlg(h("h2", {}, "Sicherung wiederherstellen"),
     h("div", { class: "muted" }, "Alle jetzigen Daten deines Kontos werden durch die Sicherung ersetzt."),
+    hasTraining ? h("div", {}, h("label", {}, "Was soll wiederhergestellt werden?"),
+      h("label", { class: "pick" }, partFood, "Ernährung"), h("label", { class: "pick" }, partTrain, "Training")) : null,
     h("table", { class: "summary cmp" }, h("thead", {}, h("tr", {}, h("th"), h("th", {}, "Jetzt"), h("th", {}, "Sicherung"))),
       h("tbody", {}, row("Einträge", "entries"), row("Tage", "days"), row("Lebensmittel", "foods"), row("Mahlzeiten", "saved_meals"), row("Gewichtswerte", "weights"),
         // training (feature "training"): a backup without it leaves the training data as it is
@@ -11064,7 +11219,9 @@ async function restoreDialog(data) {
     h("div", { class: "actions" },
       h("button", { class: "flat", onclick: () => dlg.close() }, "Abbrechen"),
       h("button", { onclick: async () => {
-        try { await send("POST", "import/json", { data }); dlg.close(); alert("Wiederhergestellt."); show("diary"); }
+        const parts = !hasTraining ? "" : [partFood.checked && "nutrition", partTrain.checked && "training"].filter(Boolean).join(",");
+        if (hasTraining && !parts) { msg.textContent = "Nichts ausgewählt"; return; }
+        try { await send("POST", "import/json" + (parts ? `?parts=${parts}` : ""), { data }); dlg.close(); alert("Wiederhergestellt."); show("diary"); }
         catch (e) { msg.textContent = e.message; }
       } }, "Ersetzen")));
   dlg.showModal();

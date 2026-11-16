@@ -379,6 +379,7 @@ import extras as _extras  # noqa: E402
 
 _extras.DUMP_HOOKS.append(_dump)
 _extras.RESTORE_HOOKS.append(_restore)
+_extras.HOOK_PARTS.append("training")
 
 
 @app.post("/api/training/call")
