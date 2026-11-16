@@ -827,3 +827,53 @@ html[data-skin="win"] .range-slider .rs-ticks button { color: var(--w-text); fon
 html[data-skin="win"] .range-slider .rs-ticks button.on { text-decoration: underline; }
 html[data-skin="win"] .stock-tag { color: var(--w-text); }
 html[data-skin="win"] .stock-tag.low { color: var(--w-bad); }
+
+/* ---- HAFS app (Flutter WebView, html[data-shell="app"]): looks like the app's native training part ----
+   The app bar with the area switch is the app's own; the tabs become a navigation bar at the bottom (Material 3:
+   icon in a pill, label below); cards, buttons and colours follow the app (colours from window.hafsAppTheme). */
+html[data-shell="app"] {
+  --hafs-nav-bg: var(--secondary-background-color);
+  --hafs-nav-indicator: color-mix(in srgb, var(--primary-color) 22%, transparent);
+  --hafs-nav-on-indicator: var(--primary-text-color);
+  --ha-card-border-width: 0;
+  --ha-card-box-shadow: 0 1px 2px rgba(0, 0, 0, .18);
+  --ha-button-border-radius: 20px;
+}
+html[data-shell="app"] main { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+html[data-shell="app"] .appbar {
+  position: fixed; top: auto; bottom: 0; left: 0; right: 0; z-index: 5;
+  min-height: 0; padding: 0 0 env(safe-area-inset-bottom); gap: 0; flex-wrap: nowrap;
+  background: var(--hafs-nav-bg); color: var(--secondary-text-color);
+}
+html[data-shell="app"] .appbar h1, html[data-shell="app"] #who, html[data-shell="app"] #area { display: none !important; }
+html[data-shell="app"] .appbar nav { flex: 1; gap: 0; justify-content: space-around; scrollbar-width: none; }
+html[data-shell="app"] .appbar nav::-webkit-scrollbar { display: none; }
+html[data-shell="app"] .appbar nav button {
+  position: relative; flex: 1 0 60px; max-width: 120px; padding: 44px 2px 14px; border: 0; opacity: 1;
+  font-size: 12px; font-weight: 500; letter-spacing: .3px; text-align: center; color: inherit;
+  overflow: hidden; text-overflow: ellipsis;
+}
+html[data-shell="app"] .appbar nav button[hidden] { display: none; }
+html[data-shell="app"] .appbar nav button::before {   /* the pill behind the icon */
+  content: ""; position: absolute; top: 12px; left: 50%; width: 56px; height: 32px; margin-left: -28px; border-radius: 16px;
+}
+html[data-shell="app"] .appbar nav button::after {    /* the icon */
+  content: ""; position: absolute; top: 16px; left: 50%; width: 24px; height: 24px; margin-left: -12px;
+  background: currentColor; -webkit-mask: var(--tab-icon) center / 24px no-repeat; mask: var(--tab-icon) center / 24px no-repeat;
+}
+html[data-shell="app"] .appbar nav button.active { color: var(--primary-text-color); font-weight: 700; }
+html[data-shell="app"] .appbar nav button.active::before { background: var(--hafs-nav-indicator); }
+html[data-shell="app"] .appbar nav button.active::after { background: var(--hafs-nav-on-indicator); }
+html[data-shell="app"] [data-tab="diary"] { --tab-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z'/%3E%3C/svg%3E"); }
+html[data-shell="app"] [data-tab="foods"] { --tab-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.6-1.35 2.4c-.16.3-.25.6-.25 1 0 1.1.9 2 2 2h12v-2H7.4c-.14 0-.25-.1-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.4-.4 1.75-1l3.58-6.5A1 1 0 0 0 20 4H5.2l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z'/%3E%3C/svg%3E"); }
+html[data-shell="app"] [data-tab="meals"] { --tab-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M11 9H9V2H7v7H5V2H3v7c0 2.1 1.7 3.8 3.75 4V22h2.5v-9c2.1-.2 3.75-1.9 3.75-4V2h-2v7zm5-3v8h2.5v8H21V2c-2.8 0-5 2.2-5 4z'/%3E%3C/svg%3E"); }
+html[data-shell="app"] [data-tab="recipes"] { --tab-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z'/%3E%3C/svg%3E"); }
+html[data-shell="app"] [data-tab="weight"] { --tab-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm7 3a5.5 5.5 0 0 0-5.5 5.5h11A5.5 5.5 0 0 0 12 6zm-.6 1.6h1.2l.4 3.4h-2z'/%3E%3C/svg%3E"); }
+html[data-shell="app"] [data-tab="stats"] { --tab-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3.5 18.5l6-6 4 4L22 6.9l-1.4-1.4-7.1 8-4-4L2 17z'/%3E%3C/svg%3E"); }
+html[data-shell="app"] [data-tab="settings"] { --tab-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.5.5 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.47.47 0 0 0-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.5.5 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z'/%3E%3C/svg%3E"); }
+html[data-shell="app"] :is(main, dialog) button:not(.flat):not(.icon):not(.danger) { min-height: 40px; padding: 8px 24px; }
+html[data-shell="app"] dialog { border-radius: 28px; }
+/* six or seven tabs do not fit with labels on a phone: like Material's "only show selected", the label is on the tab shown */
+html[data-shell="app"] .appbar nav button { height: 80px; }
+html[data-shell="app"] .appbar nav button:not(.active) { font-size: 0; }
+html[data-shell="app"] .appbar nav button.active { flex: 0 0 auto; max-width: none; min-width: 64px; padding-left: 8px; padding-right: 8px; overflow: visible; }

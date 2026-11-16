@@ -7126,6 +7126,24 @@ if (!window.MDAApp && window.HAFSBridge && typeof window.HAFSBridge.postMessage 
   };
   window.print = () => post("print", document.title || "");
 }
+// Inside the HAFS app the page is only "Ernährung" and looks like the native training part: the app bar with the area switch
+// is the app's own, the tabs sit at the bottom like the app's navigation bar (style.css, html[data-shell="app"]) and the
+// colours are the app's Material colours. The app sends them with window.hafsAppTheme(vars, dark) after each load and on
+// a change of light/dark; the last ones are kept so the next start does not flash in the default colours.
+const APP_SHELL = !!(window.HAFSBridge && typeof window.HAFSBridge.postMessage === "function");
+if (APP_SHELL) {
+  document.documentElement.dataset.shell = "app";
+  const applyAppTheme = (vars, dark) => {
+    const root = document.documentElement;
+    for (const [k, v] of Object.entries(vars || {})) if (/^--[\w-]+$/.test(k) && typeof v === "string") root.style.setProperty(k, v);
+    root.style.colorScheme = dark ? "dark" : "light";
+  };
+  window.hafsAppTheme = (vars, dark) => {
+    applyAppTheme(vars, dark);
+    try { localStorage.setItem("hafs.appTheme", JSON.stringify({ vars, dark: !!dark })); } catch { /* storage unavailable */ }
+  };
+  try { const t = JSON.parse(localStorage.getItem("hafs.appTheme") || "null"); if (t) applyAppTheme(t.vars, t.dark); } catch { /* none yet */ }
+}
 
 // ---------------------------------------------------------------- app
 // All URLs are relative so the app works behind HA ingress.
@@ -7309,8 +7327,9 @@ const SKIN_RE = /ha[\s_-]*9[58]|windows|win[\s_-]*9[58]/i;
 const XP_RE = /ha[\s_-]*xp|homeassistant[\s_-]*xp|(windows|win)[\s_-]*xp/i;
 function applySkin() {
   const name = document.documentElement.dataset.themeName || "";
-  const xp = state.skin === "xp" || (state.skin === "auto" && XP_RE.test(name));
-  const win = xp || state.skin === "win" || (state.skin !== "default" && SKIN_RE.test(name));
+  // the HAFS app has one look for both areas (its own Material colours), so no Windows look there
+  const xp = !APP_SHELL && (state.skin === "xp" || (state.skin === "auto" && XP_RE.test(name)));
+  const win = !APP_SHELL && (xp || state.skin === "win" || (state.skin !== "default" && SKIN_RE.test(name)));
   document.documentElement.dataset.skin = win ? "win" : "default";
   if (xp) document.documentElement.dataset.variant = "xp"; else delete document.documentElement.dataset.variant;
   const panel = document.querySelector("hafs-panel");   // training (shadow DOM): the look goes in as an attribute
@@ -7337,7 +7356,7 @@ $("#tabs").addEventListener("click", e => {
   if (t) show(t.dataset.tab, e.detail !== 0);   // detail 0: chosen with the keyboard, the focus stays on the tab bar
 });
 function show(tab, focus = true) {
-  if (isTrainTab(tab) && !state.features.training) tab = "diary";
+  if (isTrainTab(tab) && (!state.features.training || APP_SHELL)) tab = APP_SHELL ? state.foodTab : "diary";
   else if (!isTrainTab(tab) && !nutritionOn()) tab = state.trainTab;
   const training = isTrainTab(tab);
   state.tab = tab;
@@ -7457,7 +7476,7 @@ function setAreas(value) {
 
 // A workout in progress opens training (once, at start, unless the user already moved on).
 async function openRunningWorkout(startTab) {
-  if (!state.features.training || state.area === "training") return;
+  if (!state.features.training || APP_SHELL || state.area === "training") return;
   try {
     const d = await trainingCall({ type: "hafs/web/query", q: "overview" });
     if (d.status && d.status.active && state.tab === startTab && !dlg.open) show("t-today");
@@ -9674,7 +9693,8 @@ async function renderRecipes() {
 
 // Show the Rezepte tab only when the feature is on.
 function applyTabs() {
-  const trainingOn = !!state.features.training, both = trainingOn && nutritionOn();
+  // in the HAFS app training is native: the page stays in nutrition and has no switch
+  const trainingOn = !!state.features.training && !APP_SHELL, both = trainingOn && nutritionOn();
   if (!trainingOn && state.area === "training") { state.area = "nutrition"; storeSet("mda.area", "nutrition"); }
   const area = state.area;
   for (const b of document.querySelectorAll("#tabs button[data-tab]")) {
@@ -10838,7 +10858,7 @@ async function renderSettings() {
     h("label", {}, "Tagebuch"), mode,
     h("div", { class: "muted", style: "margin-top:8px" },
       "Bestehende Einträge bleiben erhalten; ohne Uhrzeit erscheinen sie in der Zeitansicht am Ende."),
-    h("label", { style: "margin-top:12px" }, "Optik"), skin,
+    APP_SHELL ? null : h("label", { style: "margin-top:12px" }, "Optik"), APP_SHELL ? null : skin,
     h("label", { class: "pick", style: "margin-top:12px" }, scanOpen, "Auf diesem Gerät beim Öffnen direkt den Barcode-Scanner starten"),
     h("div", { class: "muted" }, "Für ein Homescreen-Widget der Companion-App: Lege dort eine Verknüpfung auf dieses Panel an, dann öffnet sich die Kamera sofort.")));
 
@@ -11302,7 +11322,7 @@ api("me").then(m => { $("#who").textContent = m.name; state.admin = !!m.admin; }
   } catch { /* keep auto */ }
   applySkin();
   // the area used last (Ernährung | Training) opens again; a tab clicked while the settings were loading wins
-  if (state.features.training && state.tab === "diary" && (storeGet("mda.area") === "training" || !nutritionOn())) state.tab = state.trainTab;
+  if (state.features.training && !APP_SHELL && state.tab === "diary" && (storeGet("mda.area") === "training" || !nutritionOn())) state.tab = state.trainTab;
   applyTabs();
   // a tab clicked while the settings were loading stays open and is drawn again with the features now known
   const startTab = state.tab;

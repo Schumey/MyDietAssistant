@@ -15,6 +15,7 @@ MyDietAssistant is now called **HAFS** (HomeAssistant Fitness Suite) and brings 
 - **Take over from the HAFS integration:** reads its database (read-only) and takes over every user; alternatively load a HAFS export.
 - **Backup as ZIP:** *Settings → Data → Backup (ZIP)* and the automatic backup bundle nutrition and training in one archive (`manifest.json` plus one file per part). When restoring you choose nutrition, training or both. Admins back up and restore all users at once. JSON backups from 1.x can still be restored; progress photos stay separate.
 - **HAFS app** for the phone (Flutter): training offline, nutrition full screen, system barcode scanner, Health Connect, widgets "Next training day" and "Nutrition today". Sign-in with a token, also without admin rights (Home Assistant 2026.11). Updates from `/share/hafs/app`.
+- **Same look in the HAFS app:** nutrition takes the app's colours and has its tabs at the bottom like training (label on the tab shown); the app bar and the switch come from the app, the Windows look does not apply there.
 - **Logo** with the two halves nutrition and training, as app icon, favicon and in the app.
 
 ### Changed

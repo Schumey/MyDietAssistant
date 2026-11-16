@@ -15,6 +15,7 @@ MyDietAssistant heißt jetzt **HAFS** (HomeAssistant Fitness Suite) und bringt d
 - **Aus der HAFS-Integration übernehmen:** liest deren Datenbank (nur lesend) und übernimmt alle Benutzer; alternativ einen HAFS-Export einspielen.
 - **Sicherung als ZIP:** *Einstellungen → Daten → Sicherung (ZIP)* und die automatische Sicherung bündeln Ernährung und Training in einem Archiv (`manifest.json` plus eine Datei je Teil). Beim Einspielen wählst Du Ernährung, Training oder beides. Admins sichern und stellen alle Benutzer auf einmal wieder her. JSON-Sicherungen aus 1.x lassen sich weiter einspielen; Fortschrittsfotos bleiben getrennt.
 - **HAFS-App** fürs Handy (Flutter): Training offline, Ernährung im Vollbild, Barcode-Scanner des Systems, Health Connect, Widgets „Nächster Trainingstag“ und „Ernährung heute“. Anmeldung mit Token, auch ohne Admin-Rechte (Home Assistant 2026.11). Updates aus `/share/hafs/app`.
+- **Gleiches Aussehen in der HAFS-App:** Ernährung übernimmt die Farben der App und hat die Reiter unten wie Training (Beschriftung beim gewählten Reiter); Kopfleiste und Umschalter kommen von der App, der Windows-Look gilt dort nicht.
 - **Logo** mit den zwei Hälften Ernährung und Training, als App-Symbol, Favicon und in der App.
 
 ### Geändert

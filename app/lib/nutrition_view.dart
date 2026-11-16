@@ -14,6 +14,7 @@ import 'health_read.dart';
 import 'ingress.dart';
 import 'l10n.dart';
 import 'nutrition_bridge.dart';
+import 'nutrition_theme.dart';
 import 'update_dialog.dart';
 
 /// The nutrition area: the HA app's web interface (diary, foods, …) full screen in a WebView, signed in through the
@@ -34,6 +35,7 @@ class _NutritionViewState extends State<NutritionView> {
   bool _ready = false;
   Timer? _renew;
   IngressAccess? _access;
+  String _themeJs = '';  // the app's colours for the page, sent after each load and when light/dark changes
 
   static const _renewEvery = Duration(minutes: 10);
 
@@ -97,6 +99,7 @@ class _NutritionViewState extends State<NutritionView> {
         await web.setNavigationDelegate(NavigationDelegate(
           onPageFinished: (_) {
             _ready = true;
+            if (_themeJs.isNotEmpty) web.runJavaScript(_themeJs).catchError((_) {});
             _runPending();
           },
           onWebResourceError: (e) {
@@ -183,8 +186,17 @@ class _NutritionViewState extends State<NutritionView> {
     }
   }
 
+  /// Same look as training: the page takes the app's colour scheme (see nutrition_theme.dart).
+  void _sendTheme(ColorScheme scheme) {
+    final js = jsTheme(scheme);
+    if (js == _themeJs) return;
+    _themeJs = js;
+    if (_ready) _web?.runJavaScript(js).catchError((_) {});
+  }
+
   @override
   Widget build(BuildContext context) {
+    _sendTheme(Theme.of(context).colorScheme);
     if (!Platform.isAndroid) {
       return Center(
         child: Padding(

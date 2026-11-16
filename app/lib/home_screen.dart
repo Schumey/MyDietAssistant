@@ -65,6 +65,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ]),
           bottomNavigationBar: nutrition ? null : NavigationBar(
             selectedIndex: _tab,
+            // like the nutrition page's bar (its six or seven tabs only fit without labels): label on the tab shown
+            labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
             onDestinationSelected: (i) => setState(() => _tab = i),
             destinations: [
               NavigationDestination(icon: const Icon(Icons.fitness_center), label: tr('tab_training')),

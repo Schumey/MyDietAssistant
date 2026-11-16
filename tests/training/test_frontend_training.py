@@ -50,14 +50,22 @@ def test_flutter_app_bridge_builds_mdaapp_from_messages(tmp_path):
     script.write_text(
         "const sent = []; globalThis.window = { HAFSBridge: { postMessage: m => sent.push(JSON.parse(m)) } };\n"
         "Object.defineProperty(globalThis, 'navigator', { value: { userAgent: 'Mozilla/5.0 (Linux; Android 15) HAFSApp/0.6.0' } });\n"
-        "globalThis.document = { title: 'MyDietAssistant' };\n" + block +
+        "const props = {}, store = {};\n"
+        "globalThis.document = { title: 'MyDietAssistant', documentElement: { dataset: {}, style: { setProperty: (k, v) => { props[k] = v; } } } };\n"
+        "globalThis.localStorage = { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = v; } };\n" + block +
         "\nwindow.MDAApp.summary('{}'); window.MDAApp.healthRead(7, 1); window.MDAApp.scanBarcode(); window.print();\n"
-        "process.stdout.write(JSON.stringify({ v: window.MDAApp.version(), p: window.MDAApp.pendingAction(), sent }));",
+        "window.hafsAppTheme({ '--primary-color': '#123456', 'bad;': 'x' }, true);\n"
+        "process.stdout.write(JSON.stringify({ v: window.MDAApp.version(), p: window.MDAApp.pendingAction(), sent, shell: APP_SHELL,\n"
+        "  data: document.documentElement.dataset, props, scheme: document.documentElement.style.colorScheme, store }));",
         encoding="utf-8")
     out = json.loads(subprocess.run(["node", str(script)], check=True, capture_output=True, encoding="utf-8").stdout)
     assert out["v"] == "0.6.0" and out["p"] == ""
     assert out["sent"] == [{"m": "summary", "a": ["{}"]}, {"m": "healthRead", "a": [7, True]}, {"m": "scanBarcode", "a": []},
                            {"m": "print", "a": ["MyDietAssistant"]}]
+    # the app's colours: only custom properties are taken, light/dark follows, and they are kept for the next start
+    assert out["shell"] is True and out["data"] == {"shell": "app"}
+    assert out["props"] == {"--primary-color": "#123456"} and out["scheme"] == "dark"
+    assert json.loads(out["store"]["hafs.appTheme"]) == {"vars": {"--primary-color": "#123456", "bad;": "x"}, "dark": True}
 
 
 def test_win_skin_covers_the_area_switch():
