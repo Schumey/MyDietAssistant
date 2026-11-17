@@ -6,7 +6,7 @@ steps. Output: the next target (weight, reps, optionally a set count) with a
 reason code that clients render in their own language (`describe` renders
 German or English).
 
-Rules (see CLAUDE.md, section 3):
+Rules:
   up    the working sets reach the top of the rep range -> one step more,
         reps back to the bottom of the range
   hold  reps inside the range -> same weight, aim for one more rep

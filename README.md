@@ -123,7 +123,7 @@ Danach `http://localhost:8099/` öffnen. Ohne Home Assistant gibt es keine Senso
 | `docs/` | Anleitungen (de/en) und Screenshots |
 | `tests/` | pytest-Suite, `tests/e2e` mit Playwright |
 
-Die Android-App liegt in einem eigenen Repository: [Schumey/MyDietAssistant-Android](https://github.com/Schumey/MyDietAssistant-Android). Hinweise für die Weiterentwicklung stehen in [CLAUDE.md](CLAUDE.md). Fertige Container-Images für die HA-App beschreibt [Installation → Fertige Images](docs/de/installation.md#fertige-images-für-entwickler).
+Die Android-App liegt in einem eigenen Repository: [Schumey/MyDietAssistant-Android](https://github.com/Schumey/MyDietAssistant-Android). Fertige Container-Images für die HA-App beschreibt [Installation → Fertige Images](docs/de/installation.md#fertige-images-für-entwickler).
 
 ## Lizenz
 

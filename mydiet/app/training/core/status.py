@@ -1,6 +1,6 @@
 """Workout status for sensors and events (pure, no Home Assistant).
 
-Contract: MDA.md, section 2. `training_state` is none | active | done, where
+`training_state` is none | active | done, where
 `done` lasts until local midnight.
 """
 from __future__ import annotations
@@ -9,7 +9,7 @@ import sqlite3
 from datetime import datetime, timedelta, timezone
 
 ACTIVE_MAX_H = 12          # an unfinished workout older than this no longer counts as active
-KCAL_PER_MIN = 4.5         # rough estimate for strength training, display only (MDA.md)
+KCAL_PER_MIN = 4.5         # rough estimate for strength training, display only
 
 
 def _parse(text: str | None) -> datetime | None:

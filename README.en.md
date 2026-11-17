@@ -123,7 +123,7 @@ Then open `http://localhost:8099/`. Without Home Assistant there are no sensors,
 | `docs/` | guides (de/en) and screenshots |
 | `tests/` | pytest suite, `tests/e2e` with Playwright |
 
-The Android app lives in its own repository: [Schumey/MyDietAssistant-Android](https://github.com/Schumey/MyDietAssistant-Android). Notes for development are in [CLAUDE.md](CLAUDE.md) (German). Prebuilt container images for the HA app are described under [Installation → Prebuilt images](docs/en/installation.md#prebuilt-images-for-developers).
+The Android app lives in its own repository: [Schumey/MyDietAssistant-Android](https://github.com/Schumey/MyDietAssistant-Android). Prebuilt container images for the HA app are described under [Installation → Prebuilt images](docs/en/installation.md#prebuilt-images-for-developers).
 
 ## License
 

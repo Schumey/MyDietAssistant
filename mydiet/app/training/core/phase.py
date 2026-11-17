@@ -1,6 +1,6 @@
 """Nutrition phase (bulk / maintain / cut) from MyDietAssistant's sensors.
 
-Order (MDA.md): manual choice in HAFS -> MDA `goal_mode` -> MDA `energy_balance`
+Order: manual choice in HAFS -> MDA `goal_mode` -> MDA `energy_balance`
 -> the last phase that was known -> '' (treated like maintain by the progression).
 """
 from __future__ import annotations
