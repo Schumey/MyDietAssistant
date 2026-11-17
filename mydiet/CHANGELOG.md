@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 2.0.1
+
+### Geändert
+- Symbol in der Seitenleiste: Apfel (`mdi:food-apple`) statt Haus mit Herz.
+- README mit aktuellen Bildern; die HAFS-App steht unter Releases (`app-v…`), das frühere Repo der Kotlin-App ist privat.
+
 ## 2.0.0
 
 MyDietAssistant heißt jetzt **HAFS** (HomeAssistant Fitness Suite) und bringt das Krafttraining mit, das bisher die Integration `hafs` war. Slug, Daten und Entitäten der Ernährung bleiben gleich. Umstieg: [Training](https://github.com/Schumey/HAFS/blob/main/docs/de/training.md#umstieg-von-der-hafs-integration).
