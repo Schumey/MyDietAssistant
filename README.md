@@ -11,7 +11,7 @@
 
 HAFS hieß bis Version 1.x **MyDietAssistant**; Training war eine eigene Integration. Beides ist jetzt eine App mit dem Umschalter **Ernährung | Training**.
 
-[![Öffne Deine Home-Assistant-Instanz und füge dieses App-Repository hinzu.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FSchumey%2FMyDietAssistant)
+[![Öffne Deine Home-Assistant-Instanz und füge dieses App-Repository hinzu.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FSchumey%2FHAFS)
 
 <p align="center"><img src="docs/screenshots/de/diary.png" alt="Tagebuch mit Mahlzeiten, Einträgen und Tagesziel" width="640"></p>
 
@@ -80,7 +80,7 @@ Updates erscheinen unter **Einstellungen → Updates**. Ausführlich: [Installat
 
 ## Android-App
 
-<p align="center"><img src="docs/screenshots/de/diary-mobile.png" alt="Tagebuch auf dem Handy" width="260"></p>
+<p align="center"><img src="docs/screenshots/de/diary-mobile.png" alt="Ernährung in der HAFS-App: Tagebuch mit Reitern unten" width="260"></p>
 
 Die Weboberfläche läuft auch in der Companion-App. Die HAFS-App bietet zusätzlich:
 
@@ -120,10 +120,11 @@ Danach `http://localhost:8099/` öffnen. Ohne Home Assistant gibt es keine Senso
 | Ordner | Inhalt |
 |---|---|
 | `mydiet/` | die App für Home Assistant: `app/main.py` (Kern-API), `app/extras*.py` (je ein Funktionsbereich), `app/db.py` (Schema und Migrationen), `app/static/` (Oberfläche ohne Build-Schritt) |
+| `app/` | die HAFS-App fürs Handy (Flutter): Training nativ und offline, Ernährung als Weboberfläche im App-Look |
 | `docs/` | Anleitungen (de/en) und Screenshots |
 | `tests/` | pytest-Suite, `tests/e2e` mit Playwright |
 
-Die Android-App liegt in einem eigenen Repository: [Schumey/MyDietAssistant-Android](https://github.com/Schumey/MyDietAssistant-Android). Fertige Container-Images für die HA-App beschreibt [Installation → Fertige Images](docs/de/installation.md#fertige-images-für-entwickler).
+Die HAFS-App fürs Handy (Flutter) liegt unter `app/`, ihre APK steht unter [Releases](https://github.com/Schumey/HAFS/releases) (Versionen `app-v…`). Fertige Container-Images für die HA-App beschreibt [Installation → Fertige Images](docs/de/installation.md#fertige-images-für-entwickler).
 
 ## Lizenz
 

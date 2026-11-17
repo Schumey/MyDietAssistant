@@ -8,6 +8,13 @@ from playwright.sync_api import sync_playwright
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "docs", "screenshots")
+# The HAFS app's light colours as app/lib/nutrition_theme.dart sends them (Material 3 scheme from #03A9F4, fidelity)
+APP_LIGHT = {"--primary-color": "#006493", "--text-primary-color": "#FFFFFF", "--accent-color": "#8A5100",
+             "--primary-background-color": "#F6F9FF", "--secondary-background-color": "#DEE3E9",
+             "--card-background-color": "#F0F4FA", "--primary-text-color": "#171C21", "--secondary-text-color": "#3E4851",
+             "--disabled-text-color": "#6E7882", "--divider-color": "#BEC8D2", "--error-color": "#BA1A1A",
+             "--input-fill-color": "#DEE3E9", "--hafs-nav-bg": "#EAEEF5", "--hafs-nav-indicator": "#B4DCFD",
+             "--hafs-nav-on-indicator": "#3A617E"}
 
 T = {
     "de": dict(meals=["Frühstück", "Mittagessen", "Abendessen", "Snacks"],
@@ -160,10 +167,13 @@ def main():
                     pg.screenshot(path=os.path.join(out, f"{name}.png"), full_page=True)
                 pg.click('#area button[data-area="nutrition"]')
                 ctx.close()
+                # the phone picture shows nutrition as the HAFS app shows it: app shell (bridge present), app colours
                 m = browser.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=3, color_scheme="light", locale=lang, is_mobile=True, has_touch=True)
+                m.add_init_script("window.HAFSBridge = { postMessage: () => {} };")
                 mp = m.new_page()
                 mp.goto(base + "/")
                 mp.wait_for_selector("#diary .daynav")
+                mp.evaluate("v => window.hafsAppTheme(v, false)", APP_LIGHT)
                 time.sleep(0.8)
                 mp.screenshot(path=os.path.join(out, "diary-mobile.png"))
                 m.close()

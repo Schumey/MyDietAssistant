@@ -14,10 +14,9 @@ Aufwand: **S** = Stunden, **M** = ein bis zwei Abende, **L** = größeres Vorhab
 
 ## Plattformen
 
-Seit 2.0 ist die App fürs Handy die HAFS-App (Flutter, `app/`); die frühere Kotlin-App [MyDietAssistant-Android](https://github.com/Schumey/MyDietAssistant-Android) wird abgelöst.
+Seit 2.0 ist die App fürs Handy die HAFS-App (Flutter, `app/`); die frühere Kotlin-App ist abgelöst (sie zeigt über die Weboberfläche den Hinweis auf die neue App, ihr Repo ist privat).
 
 - **HAFS-App: offene Prüfungen** (S): am echten HA und Handy prüfen: Ingress-Sitzung mit Token (auch ohne Admin-Rechte), Cookie und Sitzungserneuerung in der WebView, Barcode-Scan mit dem System-Scanner, Health Connect mit echten Daten, Datei-Upload, beide Widgets, Update aus `/share/hafs/app`, Verhalten ohne Play-Dienste.
-- **Kotlin-App: Hinweis „Neue App verfügbar“** (S): letzte Version im Repo `MyDietAssistant-Android`, die auf die HAFS-App verweist.
 - **Widget „Ernährung heute“ im Hintergrund aktualisieren** (M): es aktualisiert sich nur, wenn die App das Tagebuch zeigt; ein Abruf im Hintergrund (WorkManager) mit eigener Ingress-Sitzung. Ebenso Health Connect im Hintergrund übernehmen.
 - **App-Releases über GitHub** (S): Workflow, der bei `app-v*`-Tags die APK baut und signiert (Schlüssel als Secret), sobald das Repo öffentlich ist.
 - **Ernährung nativ in der App** (L): Tagesübersicht, Eintragen, Gewicht ohne WebView, offline mit `client_id` gegen Doppelbuchungen.

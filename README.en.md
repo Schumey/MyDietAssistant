@@ -11,7 +11,7 @@
 
 Up to version 1.x HAFS was called **MyDietAssistant**; training was an integration of its own. Both are now one app with the switch **Nutrition | Training**.
 
-[![Open your Home Assistant instance and add this app repository.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FSchumey%2FMyDietAssistant)
+[![Open your Home Assistant instance and add this app repository.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FSchumey%2FHAFS)
 
 <p align="center"><img src="docs/screenshots/en/diary.png" alt="Diary with meals, entries and daily goal" width="640"></p>
 
@@ -80,7 +80,7 @@ Updates show up under **Settings → Updates**. In detail: [Installation](docs/e
 
 ## Android app
 
-<p align="center"><img src="docs/screenshots/en/diary-mobile.png" alt="Diary on a phone" width="260"></p>
+<p align="center"><img src="docs/screenshots/en/diary-mobile.png" alt="Nutrition in the HAFS app: diary with tabs at the bottom" width="260"></p>
 
 The web interface also runs in the Companion app. The HAFS app adds:
 
@@ -120,10 +120,11 @@ Then open `http://localhost:8099/`. Without Home Assistant there are no sensors,
 | Folder | Content |
 |---|---|
 | `mydiet/` | the Home Assistant app: `app/main.py` (core API), `app/extras*.py` (one feature area each), `app/db.py` (schema and migrations), `app/static/` (interface without a build step) |
+| `app/` | the HAFS phone app (Flutter): training native and offline, nutrition as the web interface in the app's look |
 | `docs/` | guides (de/en) and screenshots |
 | `tests/` | pytest suite, `tests/e2e` with Playwright |
 
-The Android app lives in its own repository: [Schumey/MyDietAssistant-Android](https://github.com/Schumey/MyDietAssistant-Android). Prebuilt container images for the HA app are described under [Installation → Prebuilt images](docs/en/installation.md#prebuilt-images-for-developers).
+The HAFS phone app (Flutter) lives in `app/`, its APK is on [Releases](https://github.com/Schumey/HAFS/releases) (versions `app-v…`). Prebuilt container images for the HA app are described under [Installation → Prebuilt images](docs/en/installation.md#prebuilt-images-for-developers).
 
 ## License
 
