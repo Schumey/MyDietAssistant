@@ -839,23 +839,24 @@ html[data-shell="app"] {
   --ha-card-box-shadow: 0 1px 2px rgba(0, 0, 0, .18);
   --ha-button-border-radius: 20px;
 }
-html[data-shell="app"] main { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+/* the app keeps the WebView above Android's system bar itself (SafeArea), so no safe-area insets here: they came twice */
+html[data-shell="app"] main { padding-bottom: 96px; }
 html[data-shell="app"] .appbar {
   position: fixed; top: auto; bottom: 0; left: 0; right: 0; z-index: 5;
-  min-height: 0; padding: 0 0 env(safe-area-inset-bottom); gap: 0; flex-wrap: nowrap;
+  min-height: 0; padding: 0; gap: 0; flex-wrap: nowrap;
   background: var(--hafs-nav-bg); color: var(--secondary-text-color);
 }
 html[data-shell="app"] .appbar h1, html[data-shell="app"] #who, html[data-shell="app"] #area { display: none !important; }
 html[data-shell="app"] .appbar nav { flex: 1; gap: 0; justify-content: space-around; scrollbar-width: none; }
 html[data-shell="app"] .appbar nav::-webkit-scrollbar { display: none; }
 html[data-shell="app"] .appbar nav button {
-  position: relative; flex: 1 0 60px; max-width: 120px; padding: 44px 2px 14px; border: 0; opacity: 1;
+  position: relative; flex: 1 1 0; min-width: 44px; max-width: 120px; padding: 44px 2px 14px; border: 0; opacity: 1;
   font-size: 12px; font-weight: 500; letter-spacing: .3px; text-align: center; color: inherit;
   overflow: hidden; text-overflow: ellipsis;
 }
 html[data-shell="app"] .appbar nav button[hidden] { display: none; }
 html[data-shell="app"] .appbar nav button::before {   /* the pill behind the icon */
-  content: ""; position: absolute; top: 12px; left: 50%; width: 56px; height: 32px; margin-left: -28px; border-radius: 16px;
+  content: ""; position: absolute; top: 12px; left: 50%; width: 64px; height: 32px; margin-left: -32px; border-radius: 16px;
 }
 html[data-shell="app"] .appbar nav button::after {    /* the icon */
   content: ""; position: absolute; top: 16px; left: 50%; width: 24px; height: 24px; margin-left: -12px;
@@ -876,4 +877,4 @@ html[data-shell="app"] dialog { border-radius: 28px; }
 /* six or seven tabs do not fit with labels on a phone: like Material's "only show selected", the label is on the tab shown */
 html[data-shell="app"] .appbar nav button { height: 80px; }
 html[data-shell="app"] .appbar nav button:not(.active) { font-size: 0; }
-html[data-shell="app"] .appbar nav button.active { flex: 0 0 auto; max-width: none; min-width: 64px; padding-left: 8px; padding-right: 8px; overflow: visible; }
+html[data-shell="app"] .appbar nav button.active { flex: 1 0 auto; max-width: none; min-width: 72px; padding-left: 4px; padding-right: 4px; overflow: visible; }

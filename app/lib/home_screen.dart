@@ -211,7 +211,8 @@ class TrainingTab extends StatelessWidget {
             child: FilledButton.icon(
               onPressed: () => _start(context),
               icon: const Icon(Icons.add),
-              label: Text(tr('start_workout'), style: theme.textTheme.titleLarge),
+              // titleLarge brings the text colour of the page (light in dark mode): keep the button's own
+              label: Text(tr('start_workout'), style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onPrimary)),
             ),
           ),
         if (active == null && repo.suggestedRoutineId() != null) ...[
