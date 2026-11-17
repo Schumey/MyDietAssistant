@@ -13,3 +13,12 @@ GymRun_*.zip
 
 # Local tooling
 .claude/
+
+# Internal work notes: kept locally, not published
+CLAUDE.md
+HAFS.md
+MDA.md
+konzept-v2.md
+roadmap-training.md
+Roadmap.md
+panel-feedback.md
