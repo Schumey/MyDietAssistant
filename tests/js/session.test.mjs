@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { localStamp, stepWeight, setLine, startDraft, warmupWeight, warmupDue, restSeconds, clock } from "../../mydiet/app/static/training/hafs-session.js";
+import { localStamp, stepWeight, setLine, startDraft, warmupWeight, warmupDue, restSeconds, clock, supersetNext } from "../../mydiet/app/static/training/hafs-session.js";
 
 test("local stamp has no offset", () => {
   assert.equal(localStamp(new Date(2026, 10, 19, 7, 5, 9)), "2026-11-19T07:05:09");
@@ -57,4 +57,18 @@ test("rest: own value (0 = none), else the default", () => {
   assert.equal(restSeconds({}, undefined), 90);
   assert.equal(clock(75), "1:15");
   assert.equal(clock(5), "0:05");
+});
+
+test("superset: partner without rest, rest after the round, finished exercises drop out", () => {
+  const ex = [{ exercise_id: "a", superset: "A", sets: 2 }, { exercise_id: "b", superset: "A", sets: 2 }, { exercise_id: "c", sets: 3 }];
+  const done = { a: 0, b: 0, c: 0 }, d = (id) => done[id];
+  assert.deepEqual(supersetNext(ex, d, "c"), { go: null, rest: true });          // not in a superset
+  done.a = 1;
+  assert.deepEqual(supersetNext(ex, d, "a"), { go: "b", rest: false });
+  done.b = 1;
+  assert.deepEqual(supersetNext(ex, d, "b"), { go: "a", rest: true });          // round over: rest, then again with a
+  done.a = 2;
+  assert.deepEqual(supersetNext(ex, d, "a"), { go: "b", rest: false });
+  done.b = 2;
+  assert.deepEqual(supersetNext(ex, d, "b"), { go: null, rest: true });         // everything done
 });

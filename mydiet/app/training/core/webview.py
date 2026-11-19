@@ -284,6 +284,7 @@ def _exercise_info(conn, owner: str, exercise_id: str, skip_workout: str | None 
             "sets": rx["target_sets"] if rx is not None else None, "reps_min": rx["reps_min"] if rx is not None else None,
             "reps_max": rx["reps_max"] if rx is not None else None, "rest_s": rx["rest_s"] if rx is not None else None,
             "warmup": st.warmup_of(rx) if rx is not None else None,
+            "superset": (rx["superset_group"] or None) if rx is not None else None,
             "target_weight": t["weight"] if t else None, "target_reps": t["reps"] if t else None, "last": last_sets}
 
 

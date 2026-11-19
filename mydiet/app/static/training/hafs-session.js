@@ -15,6 +15,7 @@ export const SESSION_CSS = `
 .sess-rest { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 12px; background: var(--accent); color: var(--accent-ink); margin-bottom: 12px; }
 .sess-rest b { font-size: 22px; font-variant-numeric: tabular-nums; flex: 1; } .sess-rest .btn { background: rgba(255,255,255,.2); color: inherit; padding: 5px 12px; }
 .sess-warm { color: var(--accent); font-weight: 500; font-size: 13.5px; margin: 0 0 6px; } .sess-sets .warm .n { color: var(--accent); }
+.sess-ex.next { outline: 2px solid var(--accent); } .sess-ss { display: inline-block; min-width: 1.6em; text-align: center; border-radius: 6px; background: var(--accent); color: var(--accent-ink); font-size: 12px; font-weight: 600; padding: 1px 6px; margin-right: 6px; vertical-align: middle; }
 .sess-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
 .sess-pick { display: block; width: 100%; text-align: left; border: 0; border-top: 1px solid var(--line); background: none; color: inherit; font: inherit; padding: 12px 4px; cursor: pointer; }
 .sess-pick:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); } .sess-pick small { display: block; color: var(--muted); }
@@ -57,6 +58,19 @@ export const warmupDue = (info, sets, skipped = false) => {
   const w = info.warmup;
   if (skipped || !w || !(w.sets > 0) || !(w.reps > 0) || !(w.pct > 0) || !(info.target_weight > 0)) return false;
   return sets.filter((s) => s.kind === "warmup").length < w.sets;
+};
+
+// After a work set of [id]: in a superset the next unfinished partner follows without rest (`go`); after the last partner of the
+// round the rest starts and the round begins again with the first unfinished one. `workDone(exerciseId)` = logged work sets.
+export const supersetNext = (exercises, workDone, id) => {
+  const me = exercises.find((x) => x.exercise_id === id);
+  if (!me || !me.superset) return { go: null, rest: true };
+  const finished = (x) => x.sets != null && workDone(x.exercise_id) >= x.sets;
+  const group = exercises.filter((x) => x.superset === me.superset);
+  const at = group.findIndex((x) => x.exercise_id === id);
+  for (let i = at + 1; i < group.length; i++) if (!finished(group[i])) return { go: group[i].exercise_id, rest: false };
+  const again = group.find((x) => !finished(x) && x.exercise_id !== id);
+  return { go: again ? again.exercise_id : null, rest: true };
 };
 
 // Rest after a set in seconds: the exercise's own (0 = none), else the global default.
@@ -161,7 +175,7 @@ export function installSession(Panel, { edit, esc }) {
   P._sessEnter = function (data) {
     const a = data.active, plan = data.plan || { exercises: [] };
     this._sess = { screen: "run", data, workout: { id: a.id, started_at: a.started_at, routine_id: a.routine_id, routine_name: a.routine },
-      exercises: plan.exercises.map((x) => ({ ...x })), sets: a.sets.map((s) => ({ ...s })), drafts: {}, adding: false, filter: "", busy: false, skipWarm: new Set(), rest: null };
+      exercises: plan.exercises.map((x) => ({ ...x })), sets: a.sets.map((s) => ({ ...s })), drafts: {}, adding: false, filter: "", busy: false, skipWarm: new Set(), rest: null, focus: null };
     this._tab = "today";
     this._sessDraw();
   };
@@ -211,8 +225,12 @@ export function installSession(Panel, { edit, esc }) {
       kind: rec.kind, done_at: rec.done_at });
     delete S.drafts[i];
     this._sessDraft(i);   // the next set starts with the one just logged
-    this._sessRestStart(restSeconds(info, S.data.rest_default));
+    // a superset sends you on to the partner without a rest; a warm-up set never does
+    const next = rec.kind === "warmup" ? { go: null, rest: true } : supersetNext(S.exercises, (id) => this._sessDoneOf(id).length, info.exercise_id);
+    S.focus = next.go;
+    if (next.rest) this._sessRestStart(restSeconds(info, S.data.rest_default)); else this._sessRestStop();
     this._sessDraw();
+    if (next.go) this.shadowRoot.querySelector(`[data-ex="${CSS.escape(next.go)}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" });
   };
 
   P._sessDeleteSet = async function (id) {
@@ -327,7 +345,8 @@ export function installSession(Panel, { edit, esc }) {
         <input data-sf="weight" data-i="${i}" inputmode="decimal" value="${esc(d.weight)}">
         <button class="ib" data-act="s-step" data-i="${i}" data-d="1" aria-label="${esc(t("sess_more"))}">+</button></span></label>`;
       const inputs = timed ? field("secs", t(x.kind === "cardio" ? "sess_mins" : "sess_secs")) : weight + field("reps", t("sess_reps"));
-      return `<section class="card sess-ex"><h3>${esc(x.name)}</h3>
+      return `<section class="card sess-ex${S.focus === x.exercise_id ? " next" : ""}" data-ex="${esc(x.exercise_id)}"><h3>${x.superset ? `<span class="sess-ss" title="${esc(t("superset", x.superset))}">${esc(x.superset)}</span>` : ""}${esc(x.name)}</h3>
+        ${S.focus === x.exercise_id ? `<p class="sess-warm">${esc(t("sess_ss_next"))}</p>` : ""}
         <p class="sess-meta">${[target ? t("sess_target", target) : "", last ? t("sess_last", last) : ""].filter(Boolean).map(esc).join(" · ")}</p>
         ${all.length ? `<ul class="sess-sets">${all.map((s) => `<li class="${s.kind === "warmup" ? "warm" : ""}"><span class="n">${esc(s.kind === "warmup" ? t("sess_warmup") : t("sess_set_n", ++work))}</span><span class="v">${esc(setLine(s, x.kind, fmt))}</span>
           <button class="ib warn" data-act="s-del-set" data-v="${esc(s.id)}" aria-label="${esc(t("sess_remove_set"))}">×</button></li>`).join("")}</ul>` : ""}
