@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'l10n.dart';
 import 'updater.dart';
+import 'wakelock.dart';
 
 /// "Check for updates": looks for a newer package (or takes the already found [offer]), downloads and installs it.
 Future<void> showUpdateDialog(BuildContext context, Updater updater, {AppOffer? offer}) => showDialog<void>(
@@ -55,15 +56,18 @@ class _UpdateDialogState extends State<_UpdateDialog> {
       _step = _Step.downloading;
       _progress = null;
     });
+    keepScreenOn(true); // a locked screen throttles the download; the updater resumes if it breaks anyway
     try {
       final file = await widget.updater.download(_offer!, (p) {
         if (mounted) setState(() => _progress = p);
       });
+      keepScreenOn(false);
       if (!mounted) return;
       setState(() => _step = _Step.installing);
       await widget.updater.install(file);
       if (mounted) Navigator.pop(context);
     } catch (e) {
+      keepScreenOn(false);
       _fail(e);
     }
   }

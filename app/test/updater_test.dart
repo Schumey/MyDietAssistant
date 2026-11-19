@@ -35,10 +35,14 @@ void main() {
     var offerJson = <String, Object?>{};
     var served = bytes;
     final seenAuth = <String?>[];
+    final ranges = <String?>[];
+    int? breakAfter;
 
     setUp(() async {
       tmp = await Directory.systemTemp.createTemp('hafs_upd');
       seenAuth.clear();
+      ranges.clear();
+      breakAfter = null;
       served = bytes;
       offerJson = {'version': '0.2.0', 'name': 'hafs-0.2.0.apk', 'size': bytes.length, 'sha256': sha256.convert(bytes).toString()};
       server = await HttpServer.bind('127.0.0.1', 0);
@@ -49,7 +53,21 @@ void main() {
         } else if (request.uri.path == '/api/hafs/app') {
           request.response.write(jsonEncode(offerJson));
         } else if (request.uri.path == '/api/hafs/app/hafs-0.2.0.apk') {
-          request.response.add(served);
+          final range = request.headers.value('range');
+          ranges.add(range);
+          final from = range == null ? 0 : int.parse(RegExp(r'bytes=(\d+)-').firstMatch(range)!.group(1)!);
+          if (from > 0) request.response.statusCode = 206;
+          final rest = served.sublist(from);
+          if (breakAfter != null && from == 0) {
+            // the connection dies in the middle of the file (phone locked)
+            final socket = await request.response.detachSocket(writeHeaders: false);
+            socket.add(utf8.encode('HTTP/1.1 200 OK\r\ncontent-length: ${rest.length}\r\n\r\n'));
+            socket.add(rest.sublist(0, breakAfter));
+            await socket.flush();
+            socket.destroy();
+            return;
+          }
+          request.response.add(rest);
         } else {
           request.response.statusCode = 404;
         }
@@ -86,6 +104,32 @@ void main() {
       final file = await updater().download(offer, progress.add, into: tmp);
       expect(await file.readAsBytes(), bytes);
       expect(progress.last, 1.0);
+    });
+
+    test('a broken connection is resumed with a Range request', () async {
+      breakAfter = 7;
+      final offer = AppOffer.parse(offerJson)!;
+      final file = await updater().download(offer, (_) {}, into: tmp, retryDelay: Duration.zero);
+      expect(await file.readAsBytes(), bytes);
+      expect(ranges, [null, 'bytes=7-']);
+      expect(File('${file.path}.part').existsSync(), isFalse);
+    });
+
+    test('a partial file of an earlier run is continued', () async {
+      final offer = AppOffer.parse(offerJson)!;
+      final dir = Directory('${tmp.path}/hafs-update')..createSync();
+      File('${dir.path}/hafs-0.2.0.apk.part').writeAsBytesSync(bytes.sublist(0, 5));
+      final file = await updater().download(offer, (_) {}, into: tmp);
+      expect(await file.readAsBytes(), bytes);
+      expect(ranges, ['bytes=5-']);
+    });
+
+    test('gives up after the allowed attempts but keeps the partial file', () async {
+      breakAfter = 7;
+      final offer = AppOffer.parse(offerJson)!;
+      // every attempt after the first one asks for a range and the double answers it, so force failures with 1 attempt
+      await expectLater(updater().download(offer, (_) {}, into: tmp, maxAttempts: 1), throwsA(isA<IOException>()));
+      expect(File('${tmp.path}/hafs-update/hafs-0.2.0.apk.part').lengthSync(), 7);
     });
 
     test('a corrupted download is rejected and removed', () async {

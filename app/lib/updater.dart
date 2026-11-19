@@ -87,13 +87,14 @@ class Updater {
     return base.replace(path: '${base.path}$path');
   }
 
-  Future<HttpClientResponse> _get(HttpClient client, Uri url, {String? cookie}) async {
+  Future<HttpClientResponse> _get(HttpClient client, Uri url, {String? cookie, int from = 0}) async {
     final request = await client.getUrl(url).timeout(const Duration(seconds: 15));
     if (cookie != null) {
       request.headers.set(HttpHeaders.cookieHeader, cookie);
     } else {
       request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
     }
+    if (from > 0) request.headers.set(HttpHeaders.rangeHeader, 'bytes=$from-');
     return request.close().timeout(const Duration(seconds: 30));
   }
 
@@ -148,39 +149,81 @@ class Updater {
   }
 
   /// Downloads the package into the cache folder and checks size and SHA-256; [onProgress] gets 0..1.
-  Future<File> download(AppOffer offer, void Function(double? progress) onProgress, {Directory? into}) async {
+  ///
+  /// The download survives a locked phone or a dropped connection: the data goes to `<name>.part`, and after a broken
+  /// connection (Android throttles the app while the screen is off) the request is repeated with a `Range` header
+  /// from where it stopped, up to [maxAttempts] times. A server that ignores `Range` just sends everything again.
+  /// A partial file of a failed run stays, so the next try resumes there.
+  Future<File> download(AppOffer offer, void Function(double? progress) onProgress,
+      {Directory? into, int maxAttempts = 40, Duration retryDelay = const Duration(seconds: 3)}) async {
     final dir = Directory('${(into ?? await getTemporaryDirectory()).path}${Platform.pathSeparator}hafs-update');
-    if (await dir.exists()) await dir.delete(recursive: true);
     await dir.create(recursive: true);
     final file = File('${dir.path}${Platform.pathSeparator}${offer.name}');
+    final part = File('${file.path}.part');
+    await for (final entry in dir.list()) {
+      if (entry.path != part.path) await entry.delete(recursive: true); // older versions, finished files
+    }
+    for (var attempt = 1;; attempt++) {
+      try {
+        await _fetch(part, offer, onProgress);
+        break;
+      } catch (e) {
+        final retry = e is TimeoutException || (e is IOException && e is! _Fatal);
+        if (!retry || attempt >= maxAttempts) rethrow;
+        await Future<void>.delayed(retryDelay);
+      }
+    }
+    final digest = (await sha256.bind(part.openRead()).first).toString();
+    if (digest != offer.sha256) {
+      await part.delete();
+      throw _Fatal('Checksum does not match');
+    }
+    return part.rename(file.path);
+  }
+
+  /// One request; continues [part] when it already holds the beginning of the file.
+  Future<void> _fetch(File part, AppOffer offer, void Function(double? progress) onProgress) async {
+    var have = await part.exists() ? await part.length() : 0;
+    if (offer.size > 0 && have > offer.size) {
+      await part.delete();
+      have = 0;
+    }
+    if (offer.size > 0 && have == offer.size) {
+      onProgress(1);
+      return;
+    }
     final client = HttpClient();
     try {
       final response = offer.fileUrl != null
-          ? await _get(client, offer.fileUrl!, cookie: offer.cookie)
-          : await _get(client, _url('/api/hafs/app/${offer.name}'));
-      if (response.statusCode != 200) throw HttpException('HTTP ${response.statusCode}');
-      final total = response.contentLength > 0 ? response.contentLength : offer.size;
-      final sink = file.openWrite();
-      final out = AccumulatorSink<Digest>();
-      final hasher = sha256.startChunkedConversion(out);
-      var received = 0;
+          ? await _get(client, offer.fileUrl!, cookie: offer.cookie, from: have)
+          : await _get(client, _url('/api/hafs/app/${offer.name}'), from: have);
+      if (response.statusCode == 416) {
+        await response.drain<void>();
+        await part.delete(); // the partial file does not fit; start over on the next attempt
+        throw const HttpException('Resume refused');
+      }
+      if (response.statusCode != 200 && response.statusCode != 206) {
+        await response.drain<void>();
+        throw _Fatal('HTTP ${response.statusCode}');
+      }
+      if (response.statusCode == 200) have = 0; // everything again
+      final total = offer.size > 0 ? offer.size : (response.contentLength > 0 ? have + response.contentLength : 0);
+      final sink = part.openWrite(mode: have > 0 ? FileMode.append : FileMode.write);
+      var received = have;
       try {
         await for (final chunk in response.timeout(const Duration(seconds: 30))) {
           sink.add(chunk);
-          hasher.add(chunk);
           received += chunk.length;
           onProgress(total > 0 ? received / total : null);
         }
       } finally {
         await sink.close();
-        hasher.close();
+      }
+      if (offer.size > 0 && received > offer.size) {
+        await part.delete();
+        throw _Fatal('Download too large ($received of ${offer.size} bytes)');
       }
       if (offer.size > 0 && received != offer.size) throw HttpException('Download incomplete ($received of ${offer.size} bytes)');
-      if (out.events.single.toString() != offer.sha256) {
-        await file.delete();
-        throw const HttpException('Checksum does not match');
-      }
-      return file;
     } finally {
       client.close(force: true);
     }
@@ -202,4 +245,18 @@ class AccumulatorSink<T> implements Sink<T> {
 
   @override
   void close() {}
+}
+
+/// A failure that repeating the request cannot fix (rejected, wrong content).
+class _Fatal implements HttpException {
+  _Fatal(this.message);
+
+  @override
+  final String message;
+
+  @override
+  Uri? get uri => null;
+
+  @override
+  String toString() => 'HttpException: $message';
 }
