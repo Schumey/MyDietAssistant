@@ -5,7 +5,7 @@ import 'plates.dart';
 /// Gewichtsstufen eines Geräts (wie `expand_steps` in `core/progression.py`).
 ///
 /// Gespeichert als JSON: Liste von Zahlen oder `{"min":5,"max":100,"step":5}`.
-List<double>? expandSteps(String? json) {
+List<double>? expandSteps(String? json, {bool withExtra = true}) {
   if (json == null || json.trim().isEmpty) return null;
   Object? spec;
   try {
@@ -28,7 +28,7 @@ List<double>? expandSteps(String? json) {
       grid = [for (var i = 0; i <= n; i++) _round(lo + i * step)];
     }
     // Stack-loaded machine with an add-on weight: every pin position with and without it.
-    final extras = extraWeights(spec['extra']);
+    final extras = withExtra ? extraWeights(spec['extra']) : <double>[];
     if (extras.isNotEmpty && grid.isNotEmpty) {
       grid = {...grid, for (final v in grid) for (final e in extras) _round(v + e)}.toList()..sort();
     }
@@ -94,10 +94,11 @@ double _round(double v) => (v * 10000).round() / 10000;
 const stationTypes = {'rack', 'bench'};
 bool isStationType(String type) => stationTypes.contains(type);
 
-/// Gewicht eines Aufwärmsatzes: [pct] Prozent des Arbeitsgewichts auf der nächsten Stufe
-/// (ohne Stufen: auf ein Vielfaches der Schrittweite [step]).
-double warmupWeight(double working, double pct, List<double>? steps, double step) {
-  final raw = working * pct / 100;
+/// Gewicht eines Aufwärmsatzes: [pct] Prozent des Arbeitsgewichts (oder das feste Gewicht [fixed], wenn > 0)
+/// auf der nächstliegenden Stufe (ohne Stufen: auf ein Vielfaches der Schrittweite [step]).
+/// [steps] sind die Stufen des Stapels ohne Zusatzgewichte.
+double warmupWeight(double working, double pct, List<double>? steps, double step, {double fixed = 0}) {
+  final raw = fixed > 0 ? fixed : working * pct / 100;
   if (steps != null && steps.isNotEmpty) return snapToSteps(raw, steps);
   if (step <= 0) return _round(raw);
   return _round((raw / step).round() * step);

@@ -4,7 +4,8 @@
   "\n    ALTER TABLE exercise ADD COLUMN catalog_key TEXT NOT NULL DEFAULT '';\n    CREATE INDEX exercise_catalog ON exercise(owner, catalog_key) WHERE catalog_key != '';\n    ",
   "\n    ALTER TABLE target ADD COLUMN sets INTEGER;\n    ALTER TABLE target ADD COLUMN reason_code TEXT NOT NULL DEFAULT '';\n    ALTER TABLE target ADD COLUMN reason_params TEXT NOT NULL DEFAULT '';\n    ",
   "\n    ALTER TABLE routine_exercise ADD COLUMN warmup_sets INTEGER;\n    ALTER TABLE routine_exercise ADD COLUMN warmup_reps INTEGER;\n    ALTER TABLE routine_exercise ADD COLUMN warmup_pct REAL;\n    ",
-  "\n    ALTER TABLE workout_set ADD COLUMN attachment TEXT NOT NULL DEFAULT '';\n    "
+  "\n    ALTER TABLE workout_set ADD COLUMN attachment TEXT NOT NULL DEFAULT '';\n    ",
+  "\n    ALTER TABLE routine_exercise ADD COLUMN warmup_weight REAL;\n    "
  ],
  "sync_tables": [
   "exercise",

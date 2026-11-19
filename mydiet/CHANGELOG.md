@@ -2,6 +2,21 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 2.0.3
+
+### Neu
+- **Festes Aufwärmgewicht:** Bei den Aufwärmsätzen einer Übung lässt sich statt der Prozent ein festes Gewicht in kg eintragen (Plan bearbeiten, Feld „oder festes Gewicht“). Es wird auf die nächstliegende Stufe des Geräts gerundet und braucht kein Arbeitsgewicht. Web und HAFS-App (Version 0.6.7).
+- **Aufwärmsätze mitzählen (optional):** *Einstellungen → Aufwärmsätze in Statistiken mitzählen* (in der App: Einstellungen). Dann zählen sie bei Volumen, Satzzahl und Muskelbelastung mit; Rekorde und die Progression ignorieren sie immer. Standard: aus.
+- **Workout nachträglich ändern:** In der Detailansicht eines Workouts lässt sich das **Datum ändern** (Sätze behalten ihre Uhrzeit) und das Workout **löschen**, so lassen sich auch vergangene Workouts nachtragen. In der HAFS-App gibt es dafür den Kalender-Knopf neben dem Löschen.
+
+### Geändert
+- Die Pläne zeigen bei Aufwärmsätzen in Prozent das errechnete Gewicht in Klammern.
+- Aufwärmgewicht: Die Stufen kommen nur vom Gewichtsblock, Zusatzgewichte werden nicht benutzt (beim Aufwärmen kommt es nicht auf wenige Prozent an).
+- Workout in der Weboberfläche: **Aufwärmen überspringen** ist ein eigener Knopf neben „Aufwärmsatz speichern“, die Wiederholungen haben **+/−**.
+
+### Behoben
+- Workout in der Weboberfläche: Die Beschriftung „Aufwärmsatz“ in der Satzliste wurde abgeschnitten.
+
 ## 2.0.2
 
 ### Neu

@@ -31,6 +31,16 @@ Dieselbe Auswahl steht auch unter *Training → Einstellungen → Bereiche*. Mit
 | **Pläne** | Trainingspläne und Trainingstage anlegen und bearbeiten, Studios mit ihren Geräten und Gewichtsstufen |
 | **Einstellungen** | Bereiche, was **Heute** zeigt, Pause zwischen Sätzen, Ernährungsphase, Regeln für die Steigerung, Import, Export, Übernehmen |
 
+## Aufwärmsätze
+
+1. Öffne **Pläne**, dann den Trainingstag, und trage bei der Übung **Sätze**, **Wdh.** und entweder **% vom Arbeitsgewicht** oder ein **festes Gewicht (kg)** ein. Ist ein festes Gewicht gesetzt, gilt nur das.
+2. Beim Workout kommen die Aufwärmsätze zuerst. Das Gewicht wird auf die nächstliegende Stufe des Geräts gerundet, ohne Zusatzgewichte. Mit **Aufwärmen überspringen** fällt der Rest weg. Die Pläne zeigen das errechnete Gewicht in Klammern.
+3. Aufwärmsätze zählen nicht bei Rekorden und Progression. Unter **Einstellungen → Aufwärmsätze in Statistiken mitzählen** zählen sie zusätzlich bei Volumen, Satzzahl und Muskelbelastung mit.
+
+## Workout nachträglich ändern
+
+Öffne unter **Training** ein Workout. Unten kannst du das **Datum ändern** (die Sätze behalten ihre Uhrzeit, so lassen sich vergangene Workouts nachtragen) oder das Workout **löschen**. In der HAFS-App stehen dafür die Knöpfe oben im Workout.
+
 ## Ernährungsphase
 
 Die vorgeschlagenen Gewichte hängen davon ab, ob Du gerade abnimmst, hältst oder zunimmst. Unter *Training → Einstellungen → Ernährungsphase* steht standardmäßig **Automatisch**: Dann gilt Dein Ziel aus *Ernährung → Einstellungen* (abnehmen = Diät, halten, zunehmen = Aufbau). Wähle eine Phase von Hand, wenn sie davon abweichen soll.

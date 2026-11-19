@@ -25,6 +25,11 @@ def get_pref(conn: sqlite3.Connection, owner: str, key: str, default: str = "") 
     return row[0] if row else default
 
 
+def count_warmups(conn: sqlite3.Connection, owner: str) -> bool:
+    """Do warm-up sets count in the volume, set count and muscle statistics? (never for records and progression)"""
+    return get_pref(conn, owner, "count_warmups") == "1"
+
+
 def set_pref(conn: sqlite3.Connection, owner: str, key: str, value: str) -> None:
     with conn:
         conn.execute("INSERT INTO pref(owner,key,value) VALUES (?,?,?)"
@@ -36,7 +41,7 @@ def set_pref(conn: sqlite3.Connection, owner: str, key: str, value: str) -> None
 SETTING_KEYS = ("hit_fraction", "miss_fraction", "cut_drop_set_first", "break_days")
 # Preferences that do not touch the progression (no recompute when they change).
 TODAY_BLOCKS = ("next", "facts", "muscles", "recent")     # blocks of the panel's "Today" page
-OTHER_KEYS = ("today_hidden", "rest_default", "mda_name")
+OTHER_KEYS = ("today_hidden", "rest_default", "mda_name", "count_warmups")
 
 
 def valid_pref(key: str, value: str) -> bool:
@@ -47,7 +52,7 @@ def valid_pref(key: str, value: str) -> bool:
             return 0.1 <= float(value) <= 1.0
         except ValueError:
             return False
-    if key == "cut_drop_set_first":
+    if key in ("cut_drop_set_first", "count_warmups"):  # count_warmups: warm-up sets count in volume, set and muscle statistics
         return value in ("0", "1")
     if key == "mda_name":  # the user name MyDietAssistant puts into its entity ids ('' = derive from the HA name)
         return len(value) <= 40 and all(c.isascii() and (c.islower() or c.isdigit() or c == "_") for c in value)

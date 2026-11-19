@@ -272,7 +272,7 @@ export function installEditor(Panel, { edit, esc }) {
     const num = (f, v, label) => `<label>${esc(label)} <input class="num" inputmode="decimal" data-f="${f}" data-i="${i}" value="${esc(v)}"></label>`;
     return `<div class="efields">${num("weight", r.weight, t("weight_label"))}
         <label>${esc(t("rest_label"))} <select class="num wide" data-f="rest" data-i="${i}" aria-label="${esc(t("rest_label"))}">${restOpt}</select></label></div>
-      <div class="efields"><span>${esc(t("warmup_label"))}</span>${num("warmSets", r.warmSets, t("warm_sets"))}${num("warmReps", r.warmReps, t("warm_reps"))}${num("warmPct", r.warmPct, t("warm_pct"))}</div>`;
+      <div class="efields"><span>${esc(t("warmup_label"))}</span>${num("warmSets", r.warmSets, t("warm_sets"))}${num("warmReps", r.warmReps, t("warm_reps"))}${num("warmPct", r.warmPct, t("warm_pct"))}${num("warmWeight", r.warmWeight, t("warm_weight"))}</div>`;
   };
 
   P._pickRows = function () {

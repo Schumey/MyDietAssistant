@@ -161,6 +161,19 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
         title: Text(L10n.dayLabel(widget.summary.startedAt)),
         actions: [
           IconButton(
+            tooltip: tr('change_date'),
+            icon: const Icon(Icons.edit_calendar_outlined),
+            onPressed: () async {
+              final start = widget.summary.startedAt;
+              final day = await showDatePicker(context: context, initialDate: start, firstDate: DateTime(2000), lastDate: DateTime.now());
+              if (day != null && (day.year != start.year || day.month != start.month || day.day != start.day)) {
+                repo.moveWorkout(widget.summary.id, day);
+                widget.app.changed();
+                if (context.mounted) Navigator.of(context).pop();
+              }
+            },
+          ),
+          IconButton(
             tooltip: tr('delete_workout'),
             icon: const Icon(Icons.delete_outline),
             onPressed: () async {

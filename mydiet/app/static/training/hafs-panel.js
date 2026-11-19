@@ -194,6 +194,8 @@ class HafsPanel extends HTMLElement {
         if (this._tab !== "training") { this._tab = "training"; this.dispatchEvent(new CustomEvent("hafs-tab", { detail: "training" })); }
         this._trainMode = "workouts"; this._detail = v; this._show(); break;
       case "close-detail": this._detail = null; this._show(); break;
+      case "workout-delete": this._workoutDelete(v).catch((err) => this._sessFail(err)); break;
+      case "workout-date": this._workoutMove(v).catch((err) => this._sessFail(err)); break;
       case "more-history": this._moreHistory(); break;
       case "train-mode": this._trainMode = v; this._detail = null; this._show(); break;
       case "window": this._window = Number(v); this._show(); break;
@@ -352,7 +354,7 @@ class HafsPanel extends HTMLElement {
     const t = this._t, f = this._f;
     const reps = x.reps_min && x.reps_max ? (x.reps_min === x.reps_max ? x.reps_min : t("reps_range", x.reps_min, x.reps_max)) : x.reps_max || x.reps_min || "";
     const sets = x.sets && reps ? t("sets_short", x.sets, reps) : x.sets ? `${x.sets}×` : reps;
-    const extra = [x.warmup ? t("warmup_row", x.warmup.sets, x.warmup.reps, f.kg(x.warmup.pct)) : "", x.rest_s != null ? (x.rest_s === 0 ? `${t("rest_label")}: ${t("rest_off")}` : t("rest_row", x.rest_s)) : ""].filter(Boolean).join(" · ");
+    const extra = [x.warmup ? (x.warmup.weight ? t("warmup_row_kg", x.warmup.sets, x.warmup.reps, f.kg(x.warmup.weight)) : t("warmup_row", x.warmup.sets, x.warmup.reps, f.kg(x.warmup.pct)) + (x.warmup.kg != null ? ` (${f.kg(x.warmup.kg)} kg)` : "")) : "", x.rest_s != null ? (x.rest_s === 0 ? `${t("rest_label")}: ${t("rest_off")}` : t("rest_row", x.rest_s)) : ""].filter(Boolean).join(" · ");
     return `<li class="prow">${x.superset ? `<span class="ss" title="${esc(t("superset", x.superset))}">${esc(x.superset)}</span>` : ""}
       <span class="pname">${esc(x.exercise)}${extra ? `<small class="pextra">${esc(extra)}</small>` : ""}</span><span class="pnum">${esc(sets)}</span>
       <span class="pnum w">${x.target_weight != null ? esc(f.kg(x.target_weight)) + " kg" : ""}</span></li>`;
@@ -443,7 +445,10 @@ class HafsPanel extends HTMLElement {
       <table class="sets"><tbody>${g.sets.map((s, i) => this._setRow(s, i)).join("")}</tbody></table></section>`).join("");
     return `<p><button class="btn ghost" data-act="close-detail">← ${esc(t("back"))}</button></p>
       <h2 class="big">${esc(w.routine || t("free_workout"))}</h2><p class="muted">${esc(f.date(w.started_at))}, ${esc(f.time(w.started_at))}</p>
-      <div class="chips">${chips}</div>${w.note ? `<p class="note">${esc(w.note)}</p>` : ""}<div class="grid cards">${groups}</div>`;
+      <div class="chips">${chips}</div>${w.note ? `<p class="note">${esc(w.note)}</p>` : ""}<div class="grid cards">${groups}</div>
+      <section class="card"><div class="efields"><label>${esc(t("workout_date"))} <input type="date" id="wdate" value="${esc((w.started_at || "").slice(0, 10))}"></label>
+        <button class="btn" data-act="workout-date" data-v="${esc(w.id)}">${esc(t("workout_date_save"))}</button>
+        <button class="btn danger" data-act="workout-delete" data-v="${esc(w.id)}">${esc(t("workout_delete"))}</button></div></section>`;
   }
 
   _setRow(s, i) {
@@ -614,7 +619,7 @@ class HafsPanel extends HTMLElement {
   async _view_settings() {
     const t = this._t;
     const get = async (key) => { try { return (await this._call({ type: "hafs/pref/get", key })).value || ""; } catch { return ""; } };
-    const [phase, hit, drop, hiddenText, restText, areas] = await Promise.all([get("phase"), get("hit_fraction"), get("cut_drop_set_first"), get("today_hidden"), get("rest_default"),
+    const [phase, hit, drop, hiddenText, restText, countWarm, areas] = await Promise.all([get("phase"), get("hit_fraction"), get("cut_drop_set_first"), get("today_hidden"), get("rest_default"), get("count_warmups"),
       this._call({ type: "hafs/areas" }).then((r) => r.areas).catch(() => "")]);
     const hidden = new Set(hiddenText.split(",").filter(Boolean));
     const rest = restText === "" ? "90" : restText;
@@ -630,6 +635,8 @@ class HafsPanel extends HTMLElement {
       ${card("today", t("today_title"), `<p class="hint top">${esc(t("today_hint"))}</p>${blocks}`)}
       ${card("rest", t("rest_title"), `<p class="hint top">${esc(t("rest_hint"))}</p>
         <select data-pref="rest_default" aria-label="${esc(t("rest_title"))}">${restList.map((n) => opt(String(n), n === 0 ? t("rest_off") : t("rest_default_opt", n), rest)).join("")}</select>`)}
+      ${card("warm", t("count_warmups"), `<p class="hint top">${esc(t("count_warmups_hint"))}</p>
+        <label class="check"><input type="checkbox" data-pref="count_warmups"${countWarm === "1" ? " checked" : ""}> ${esc(t("count_warmups"))}</label>`)}
       ${card("phase", t("settings_phase"), `<p class="hint top">${esc(t("settings_phase_hint"))}</p>
         <select data-pref="phase" aria-label="${esc(t("settings_phase"))}">${opt("", t("phase_auto_opt"), phase)}${["bulk", "maintain", "cut"].map((p) => opt(p, t("phase_" + p), phase)).join("")}</select>`)}
       ${card("hit", t("hit_fraction"), `<select data-pref="hit_fraction" aria-label="${esc(t("hit_fraction"))}">${opt("1", t("hit_all"), hitCur)}${opt("0.75", t("hit_75"), hitCur)}${opt("0.5", t("hit_50"), hitCur)}</select>

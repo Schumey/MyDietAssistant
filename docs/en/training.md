@@ -31,6 +31,16 @@ The same choice is under *Training → Settings → Areas*. With **Nutrition onl
 | **Plans** | Create and edit training plans and training days, gyms with their equipment and weight steps |
 | **Settings** | What **Today** shows, rest between sets, nutrition phase, rules for progression, import, export, take over |
 
+## Warm-up sets
+
+1. Open **Plans**, then the training day, and enter **Sets**, **Reps** and either **% of working weight** or a **fixed weight (kg)** for the exercise. With a fixed weight only that counts.
+2. During the workout the warm-up sets come first. The weight is rounded to the nearest step of the equipment, without add-on weights. **Skip warm-up** drops the rest. The plans show the calculated weight in brackets.
+3. Warm-up sets do not count for records and progression. With **Settings → Count warm-up sets in statistics** they also count in volume, set count and muscle load.
+
+## Change a workout afterwards
+
+Open a workout under **Training**. At the bottom you can **Change date** (the sets keep their times, so past workouts can be added later) or **Delete workout**. In the HAFS app the buttons are at the top of the workout.
+
 ## Nutrition phase
 
 The suggested weights depend on whether you are losing, maintaining or gaining. *Training → Settings → Nutrition phase* is **Automatic** by default: your goal from *Nutrition → Settings* applies (lose = cut, maintain, gain = bulk). Choose a phase by hand when it should differ.

@@ -152,6 +152,13 @@ class _SettingsTabState extends State<SettingsTab> {
           value: app.settings['cut_drop_set_first'] == '1',
           onChanged: (v) => _setting('cut_drop_set_first', v ? '1' : '0'),
         ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(tr('count_warmups')),
+          subtitle: Text(tr('count_warmups_help')),
+          value: app.settings['count_warmups'] == '1',
+          onChanged: (v) => _setting('count_warmups', v ? '1' : '0'),
+        ),
         const SizedBox(height: 24),
         Text(tr('plates_title'), style: theme.textTheme.titleSmall),
         ListTile(

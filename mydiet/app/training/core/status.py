@@ -5,8 +5,11 @@
 """
 from __future__ import annotations
 
+import math
 import sqlite3
 from datetime import datetime, timedelta, timezone
+
+from . import progression, targets
 
 ACTIVE_MAX_H = 12          # an unfinished workout older than this no longer counts as active
 KCAL_PER_MIN = 4.5         # rough estimate for strength training, display only
@@ -29,7 +32,7 @@ def workout_stats(conn: sqlite3.Connection, owner: str, workout_id: str) -> dict
     sets = conn.execute(
         "SELECT weight, reps, kind, done_at FROM workout_set WHERE workout_id=? AND owner=? AND deleted=0",
         (workout_id, owner)).fetchall()
-    work = [s for s in sets if s["kind"] != "warmup"]
+    work = sets if targets.count_warmups(conn, owner) else [s for s in sets if s["kind"] != "warmup"]
     volume = sum((s["weight"] or 0) * (s["reps"] or 0) for s in work)
     start = _parse(w["started_at"])
     end = _parse(w["ended_at"])
@@ -195,10 +198,35 @@ def next_routine(conn: sqlite3.Connection, owner: str, now: datetime | None = No
 
 
 def warmup_of(x) -> dict | None:
-    """Warm-up sets of a planned exercise ({sets, reps, pct}) or None when there are none."""
+    """Warm-up sets of a planned exercise ({sets, reps, pct, weight}) or None when there are none. A fixed `weight` (kg)
+    wins over `pct` (percent of the working weight)."""
     if not x["warmup_sets"]:
         return None
-    return {"sets": x["warmup_sets"], "reps": x["warmup_reps"], "pct": x["warmup_pct"]}
+    return {"sets": x["warmup_sets"], "reps": x["warmup_reps"], "pct": x["warmup_pct"], "weight": x["warmup_weight"]}
+
+
+def warmup_kg(conn: sqlite3.Connection, owner: str, exercise_id: str, equipment_id: str | None, wu: dict | None,
+              target_weight: float | None) -> dict | None:
+    """`wu` (see `warmup_of`) plus `kg`: the weight of a warm-up set as the logger will propose it (a fixed weight, else the
+    percentage of the target weight; on a step of the equipment's stack without add-on weights). None without a warm-up;
+    `kg` is None when it cannot be told (percentage without a target weight)."""
+    if not wu:
+        return None
+    raw = wu["weight"] if wu.get("weight") else (target_weight * wu["pct"] / 100 if target_weight and wu.get("pct") else None)
+    if raw is None:
+        return {**wu, "kg": None}
+    eq = equipment_id
+    if not eq:
+        link = conn.execute("SELECT q.id FROM exercise_equipment l JOIN equipment q ON q.id=l.equipment_id AND q.deleted=0 "
+                            "WHERE l.owner=? AND l.exercise_id=? AND l.deleted=0 AND q.out_of_order=0 ORDER BY q.name LIMIT 1",
+                            (owner, exercise_id)).fetchone()
+        eq = link["id"] if link else None
+    steps = None
+    if eq:
+        q = conn.execute("SELECT steps FROM equipment WHERE id=? AND owner=?", (eq, owner)).fetchone()
+        steps = progression.expand_steps(q["steps"], with_extra=False) if q else None
+    kg = progression.snap(raw, steps) if steps else max(0.0, math.floor(raw / 2.5 + 0.5) * 2.5)   # half up, like the logger
+    return {**wu, "kg": kg}
 
 
 def plan(conn: sqlite3.Connection, owner: str, now: datetime | None = None) -> dict:
@@ -212,14 +240,15 @@ def plan(conn: sqlite3.Connection, owner: str, now: datetime | None = None) -> d
             exercises = []
             for x in conn.execute(
                     "SELECT x.exercise_id, e.name, x.target_sets, x.reps_min, x.reps_max, x.superset_group, x.rest_s, "
-                    "x.warmup_sets, x.warmup_reps, x.warmup_pct, "
+                    "x.warmup_sets, x.warmup_reps, x.warmup_pct, x.warmup_weight, x.equipment_id, "
                     "(SELECT weight FROM target t WHERE t.owner=x.owner AND t.exercise_id=x.exercise_id AND t.deleted=0 "
                     " ORDER BY t.updated_at DESC LIMIT 1) AS weight "
                     "FROM routine_exercise x JOIN exercise e ON e.id=x.exercise_id "
                     "WHERE x.routine_id=? AND x.deleted=0 AND e.deleted=0 ORDER BY x.position", (r["id"],)):
                 exercises.append({"exercise": x["name"], "sets": x["target_sets"], "reps_min": x["reps_min"], "reps_max": x["reps_max"],
                                   "superset": x["superset_group"] or None, "target_weight": x["weight"],
-                                  "rest_s": x["rest_s"], "warmup": warmup_of(x)})
+                                  "rest_s": x["rest_s"],
+                                  "warmup": warmup_kg(conn, owner, x["exercise_id"], x["equipment_id"], warmup_of(x), x["weight"])})
             routines.append({"id": r["id"], "routine": r["name"], "exercises": exercises})
         days = parse_rhythm(prog["rhythm"], len(routines))
         programs.append({"id": prog["id"], "program": prog["name"], "weekdays": days or None, "routines": routines})

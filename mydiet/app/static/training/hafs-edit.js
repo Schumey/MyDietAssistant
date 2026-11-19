@@ -166,7 +166,7 @@ export const routineDraft = (data, id, programId = null) => {
         sets: x.target_sets ?? "", repsMin: x.reps_min ?? "", repsMax: x.reps_max ?? "",
         rest: x.rest_s ?? null, range: x.reps_min != null && x.reps_max != null && x.reps_min !== x.reps_max, withPrev: i > 0 && !!x.superset_group && all[i - 1].superset_group === x.superset_group,
         weight: weight == null ? "" : String(weight), weightOrig: weight ?? null,
-        warmSets: x.warmup_sets ?? "", warmReps: x.warmup_reps ?? "", warmPct: x.warmup_pct ?? "",
+        warmSets: x.warmup_sets ?? "", warmReps: x.warmup_reps ?? "", warmPct: x.warmup_pct ?? "", warmWeight: x.warmup_weight ?? "",
       };
     });
   return { raw, name: raw?.name ?? "", programId: raw ? raw.program_id || "" : programId || "", rows };
@@ -175,7 +175,7 @@ export const routineDraft = (data, id, programId = null) => {
 export const newRow = (exercise) => {
   const reps = exercise.kind === "strength" || exercise.kind === "bodyweight";
   return { exerciseId: exercise.id, name: exercise.name, kind: exercise.kind, sets: reps ? 3 : 1, repsMin: "", repsMax: reps ? 10 : "", range: false, rest: null, withPrev: false,
-    weight: "", weightOrig: null, warmSets: "", warmReps: "", warmPct: "" };
+    weight: "", weightOrig: null, warmSets: "", warmReps: "", warmPct: "", warmWeight: "" };
 };
 
 // Whether an exercise has weights (the weight and warm-up fields only make sense then).
@@ -197,15 +197,19 @@ export const routineRecords = (draft, data, now = stamp(), makeId = newId) => {
     }
   }
   const warm = rows.map((r) => {
-    if (!hasWeight(r)) return { sets: null, reps: null, pct: null };
+    if (!hasWeight(r)) return { sets: null, reps: null, pct: null, weight: null };
     const [sets, reps] = [toInt(r.warmSets), toInt(r.warmReps)];
     const pct = r.warmPct === "" || r.warmPct == null ? null : num(r.warmPct);
-    return { sets, reps, pct };
+    const weight = r.warmWeight === "" || r.warmWeight == null ? null : num(r.warmWeight);
+    return { sets, reps, pct, weight };
   });
+  // a fixed weight replaces the percentage (then the percentage may stay empty)
   for (const [i, w] of warm.entries()) {
-    const none = (w.sets == null || w.sets === 0) && w.reps == null && w.pct == null;
-    if (none) { warm[i] = { sets: null, reps: null, pct: null }; continue; }
-    if (Number.isNaN(w.sets) || Number.isNaN(w.reps) || !(w.sets >= 1 && w.sets <= 6) || !(w.reps >= 1 && w.reps <= 50) || !Number.isFinite(w.pct) || w.pct < 10 || w.pct > 95) {
+    const none = (w.sets == null || w.sets === 0) && w.reps == null && w.pct == null && w.weight == null;
+    if (none) { warm[i] = { sets: null, reps: null, pct: null, weight: null }; continue; }
+    const fixed = w.weight != null;
+    const how = fixed ? Number.isFinite(w.weight) && w.weight > 0 && w.weight <= 1000 : Number.isFinite(w.pct) && w.pct >= 10 && w.pct <= 95;
+    if (Number.isNaN(w.sets) || Number.isNaN(w.reps) || !(w.sets >= 1 && w.sets <= 6) || !(w.reps >= 1 && w.reps <= 50) || !how || (w.pct != null && !Number.isFinite(w.pct))) {
       return { error: "err_warmup", detail: rows[i].name };
     }
   }
@@ -230,7 +234,7 @@ export const routineRecords = (draft, data, now = stamp(), makeId = newId) => {
   const fresh = rows.map((r, i) => ({
     id: makeId(), updated_at: now, deleted: 0, routine_id: id, exercise_id: r.exerciseId, position: i,
     target_sets: toInt(r.sets), reps_min: toInt(r.repsMin), reps_max: toInt(r.repsMax), rest_s: r.rest ?? null, superset_group: groups[i],
-    warmup_sets: warm[i].sets, warmup_reps: warm[i].reps, warmup_pct: warm[i].pct,
+    warmup_sets: warm[i].sets, warmup_reps: warm[i].reps, warmup_pct: warm[i].pct, warmup_weight: warm[i].weight,
   }));
   return { records: { routine, routine_exercise: [...old, ...fresh] }, weights };
 };

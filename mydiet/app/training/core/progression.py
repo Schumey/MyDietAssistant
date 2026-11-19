@@ -132,12 +132,13 @@ def extra_weights(extra: Any) -> list[float]:
     return sorted(out)
 
 
-def expand_steps(spec: Any) -> list[float] | None:
+def expand_steps(spec: Any, with_extra: bool = True) -> list[float] | None:
     """Equipment steps -> sorted list of weights, or None when unknown.
 
     Accepts a list of numbers, {"min", "max", "step"} or the JSON text of either, and two machine forms:
     stack-loaded with an optional add-on weight(s) ({"min", "max", "step", "extra"} or {"values": [...], "extra"}, extra = one number or a list: every pin
-    position, with and without each add-on) and plate-loaded ({"base", "plates", "sides", "max"})."""
+    position, with and without each add-on) and plate-loaded ({"base", "plates", "sides", "max"}).
+    `with_extra=False` leaves the add-on weights out (the pin positions of the stack only, used for warm-up weights)."""
     if spec in (None, "", []):
         return None
     if isinstance(spec, str):
@@ -156,7 +157,7 @@ def expand_steps(spec: Any) -> list[float] | None:
                 return None
             n = int(round((hi - lo) / step))
             grid = [round(lo + i * step, 4) for i in range(n + 1)]
-        extras = extra_weights(spec.get("extra"))
+        extras = extra_weights(spec.get("extra")) if with_extra else []
         if extras and grid:
             grid = sorted(set(grid) | {round(v + e, 4) for v in grid for e in extras})
         return grid or None

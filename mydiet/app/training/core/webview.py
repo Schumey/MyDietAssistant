@@ -31,7 +31,7 @@ def _parse_day(text: str | None) -> date | None:
 def muscle_weeks(conn: sqlite3.Connection, owner: str, today: date, weeks: int = 12) -> dict:
     """Working sets per muscle group and finished workouts per calendar week, oldest week first.
 
-    Primary muscles count fully, secondary ones half; warm-up sets, cardio and timed exercises do not count."""
+    Primary muscles count fully, secondary ones half; warm-up sets (unless the preference `count_warmups` is on), cardio and timed exercises do not count."""
     start = _week_start(today) - timedelta(weeks=weeks - 1)
     starts = [start + timedelta(weeks=i) for i in range(weeks)]
     index = {d.isoformat(): i for i, d in enumerate(starts)}
@@ -39,8 +39,8 @@ def muscle_weeks(conn: sqlite3.Connection, owner: str, today: date, weeks: int =
     for r in conn.execute(
             "SELECT s.done_at, e.muscles_primary mp, e.muscles_secondary ms FROM workout_set s "
             "JOIN exercise e ON e.id=s.exercise_id JOIN workout w ON w.id=s.workout_id "
-            "WHERE s.owner=? AND s.deleted=0 AND w.deleted=0 AND s.kind!='warmup' "
-            "AND e.kind IN ('strength','bodyweight') AND s.done_at >= ?", (owner, start.isoformat())):
+            "WHERE s.owner=? AND s.deleted=0 AND w.deleted=0 AND (s.kind!='warmup' OR ?) "
+            "AND e.kind IN ('strength','bodyweight') AND s.done_at >= ?", (owner, int(targets.count_warmups(conn, owner)), start.isoformat())):
         d = _parse_day(r["done_at"])
         i = index.get(_week_start(d).isoformat()) if d else None
         if i is None:
@@ -139,7 +139,7 @@ def workout(conn, owner, now, tz, params) -> dict:
             "WHERE s.workout_id=? AND s.owner=? AND s.deleted=0 ORDER BY s.done_at, s.set_no", (wid, owner)):
         g = groups.setdefault(r["exercise_id"], {"exercise_id": r["exercise_id"], "name": r["ex_name"], "kind": r["ex_kind"],
                                                   "equipment": r["eq_name"], "sets": []})
-        g["sets"].append({"no": r["set_no"], "weight": r["weight"], "reps": r["reps"], "duration_s": r["duration_s"],
+        g["sets"].append({"id": r["id"], "no": r["set_no"], "weight": r["weight"], "reps": r["reps"], "duration_s": r["duration_s"],
                           "distance_m": r["distance_m"], "kind": r["kind"], "rir": r["rir"], "note": r["note"],
                           "target_weight": r["target_weight"], "target_reps": r["target_reps"], "done_at": r["done_at"],
                           "attachment": r["attachment"]})
@@ -214,9 +214,10 @@ def plan(conn, owner, now, tz, params) -> dict:
             "WHERE r.owner=? AND r.deleted=0 AND p.id IS NULL ORDER BY r.name COLLATE NOCASE", (owner,)):
         loose.append({"id": r["id"], "routine": r["name"], "exercises": [
             {"exercise": x["name"], "sets": x["target_sets"], "reps_min": x["reps_min"], "reps_max": x["reps_max"],
-             "superset": x["superset_group"] or None, "target_weight": None, "rest_s": x["rest_s"], "warmup": st.warmup_of(x)}
+             "superset": x["superset_group"] or None, "target_weight": None, "rest_s": x["rest_s"],
+             "warmup": st.warmup_kg(conn, owner, x["exercise_id"], x["equipment_id"], st.warmup_of(x), None)}
             for x in conn.execute(
-                "SELECT e.name, x.target_sets, x.reps_min, x.reps_max, x.superset_group, x.rest_s, x.warmup_sets, x.warmup_reps, x.warmup_pct "
+                "SELECT x.exercise_id, x.equipment_id, e.name, x.target_sets, x.reps_min, x.reps_max, x.superset_group, x.rest_s, x.warmup_sets, x.warmup_reps, x.warmup_pct, x.warmup_weight "
                 "FROM routine_exercise x "
                 "JOIN exercise e ON e.id=x.exercise_id WHERE x.routine_id=? AND x.deleted=0 AND e.deleted=0 ORDER BY x.position",
                 (r["id"],))]})
@@ -268,10 +269,12 @@ def _exercise_info(conn, owner: str, exercise_id: str, skip_workout: str | None 
                             "WHERE l.owner=? AND l.exercise_id=? AND l.deleted=0 AND q.out_of_order=0 ORDER BY q.name LIMIT 1",
                             (owner, exercise_id)).fetchone()
         eq_id = link["id"] if link else None
-    steps = None
+    steps = warm_steps = None
     if eq_id:
         q = conn.execute("SELECT steps FROM equipment WHERE id=? AND owner=?", (eq_id, owner)).fetchone()
         steps = progression.expand_steps(q["steps"]) if q else None
+        # warm-up weights go by the stack only (the add-on weights are too fine for a warm-up)
+        warm_steps = progression.expand_steps(q["steps"], with_extra=False) if q else None
     t = conn.execute("SELECT weight, reps FROM target WHERE owner=? AND exercise_id=? AND deleted=0 "
                      "ORDER BY updated_at DESC LIMIT 1", (owner, exercise_id)).fetchone()
     last = conn.execute(
@@ -280,7 +283,7 @@ def _exercise_info(conn, owner: str, exercise_id: str, skip_workout: str | None 
     last_sets = [dict(weight=r["weight"], reps=r["reps"], duration_s=r["duration_s"]) for r in conn.execute(
         "SELECT weight, reps, duration_s FROM workout_set WHERE workout_id=? AND exercise_id=? AND deleted=0 AND kind!='warmup' "
         "ORDER BY done_at, set_no", (last["id"], exercise_id))] if last else []
-    return {"exercise_id": ex["id"], "name": ex["name"], "kind": ex["kind"], "equipment_id": eq_id, "steps": steps,
+    return {"exercise_id": ex["id"], "name": ex["name"], "kind": ex["kind"], "equipment_id": eq_id, "steps": steps, "warm_steps": warm_steps,
             "sets": rx["target_sets"] if rx is not None else None, "reps_min": rx["reps_min"] if rx is not None else None,
             "reps_max": rx["reps_max"] if rx is not None else None, "rest_s": rx["rest_s"] if rx is not None else None,
             "warmup": st.warmup_of(rx) if rx is not None else None,

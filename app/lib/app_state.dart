@@ -117,7 +117,7 @@ class AppState extends ChangeNotifier {
   String phase = '';
 
   /// Progression settings kept on the server (`hafs/pref/*`), cached here: key -> value ('' = default).
-  static const settingKeys = ['hit_fraction', 'cut_drop_set_first', 'rest_default'];
+  static const settingKeys = ['hit_fraction', 'cut_drop_set_first', 'rest_default', 'count_warmups'];
   final Map<String, String> settings = {};
 
   /// Pause zwischen den Sätzen für alle Übungen (Einstellung im Panel), `null` = nicht gesetzt (90 s).

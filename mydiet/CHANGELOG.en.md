@@ -2,6 +2,21 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 2.0.3
+
+### New
+- **Fixed warm-up weight:** for the warm-up sets of an exercise you can enter a fixed weight in kg instead of the percentage (edit the plan, field “or fixed weight”). It is rounded to the nearest step of the equipment and needs no working weight. Web and the HAFS app (version 0.6.7).
+- **Count warm-up sets (optional):** *Settings → Count warm-up sets in statistics* (in the app: Settings). They then count in volume, set count and muscle load; records and the progression always ignore them. Default: off.
+- **Change workouts afterwards:** the detail view of a workout lets you **change the date** (sets keep their times) and **delete** the workout, so past workouts can be added later. In the HAFS app there is a calendar button next to delete.
+
+### Changed
+- The plans show the calculated weight in brackets for warm-up sets given in percent.
+- Warm-up weight: the steps come from the weight stack only, add-on weights are not used (a few percent do not matter for a warm-up).
+- Workout in the web interface: **Skip warm-up** is a button of its own next to “Save warm-up set”, and the reps have **+/−**.
+
+### Fixed
+- Workout in the web interface: the label “Warm-up set” in the set list was cut off.
+
 ## 2.0.2
 
 ### New

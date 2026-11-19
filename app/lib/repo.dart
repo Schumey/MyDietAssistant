@@ -66,7 +66,7 @@ class WorkoutSummary {
 
 /// Vorbelegung für die Satzeingabe einer Übung.
 class EntryDefaults {
-  EntryDefaults({required this.weight, required this.reps, required this.step, this.target, this.lastTime = const [], this.steps});
+  EntryDefaults({required this.weight, required this.reps, required this.step, this.target, this.lastTime = const [], this.steps, this.warmSteps});
 
   final double weight;
   final int reps;
@@ -76,6 +76,9 @@ class EntryDefaults {
 
   /// Gewichtsstufen des Geräts; ohne sie gilt [step].
   final List<double>? steps;
+
+  /// Stufen für Aufwärmsätze: der Stapel ohne Zusatzgewichte (sonst wie [steps]).
+  final List<double>? warmSteps;
 }
 
 /// Die Trainingslogik der App auf der lokalen Datenbank. Jede Änderung wird zum Senden vorgemerkt.
@@ -288,7 +291,9 @@ class Repo {
   EntryDefaults defaults(String exerciseId, {String? workoutId, String? equipmentId}) {
     final last = lastTime(exerciseId, excludeWorkoutId: workoutId, equipmentId: equipmentId);
     final t = target(exerciseId, equipmentId: equipmentId ?? '');
-    final steps = equipmentId == null ? null : expandSteps(local.row('SELECT steps FROM equipment WHERE id = ?', [equipmentId])?['steps'] as String?);
+    final stepsJson = equipmentId == null ? null : local.row('SELECT steps FROM equipment WHERE id = ?', [equipmentId])?['steps'] as String?;
+    final steps = expandSteps(stepsJson);
+    final warmSteps = expandSteps(stepsJson, withExtra: false);
     final work = last.where((s) => s.kind == 'work' && (s.reps ?? 0) > 0).toList();
     final ref = work.isEmpty ? null : work.last;
     final weight = t?.weight ?? ref?.weight ?? (steps?.first ?? 0);
@@ -299,18 +304,22 @@ class Repo {
       target: t,
       lastTime: last,
       steps: steps,
+      warmSteps: warmSteps,
     );
   }
 
   // --- Verlauf --------------------------------------------------------------------
 
+  /// Zählen Aufwärmsätze im Volumen mit? (Einstellung `count_warmups`; Rekorde und Progression ignorieren sie immer.)
+  bool get countWarmups => local.state('pref_count_warmups') == '1';
+
   List<WorkoutSummary> history({int limit = 100}) {
     final rows = local.rows(
         "SELECT w.id, w.started_at, w.ended_at, w.routine_name, COUNT(s.id) n, "
-        "COALESCE(SUM(CASE WHEN s.kind IN ('work','drop','failure') THEN COALESCE(s.weight, 0) * COALESCE(s.reps, 0) END), 0) vol "
+        "COALESCE(SUM(CASE WHEN s.kind IN ('work','drop','failure') OR (s.kind = 'warmup' AND ?) THEN COALESCE(s.weight, 0) * COALESCE(s.reps, 0) END), 0) vol "
         'FROM workout w LEFT JOIN workout_set s ON s.workout_id = w.id AND s.deleted = 0 '
         'WHERE w.deleted = 0 GROUP BY w.id ORDER BY w.started_at DESC LIMIT ?',
-        [limit]);
+        [countWarmups ? 1 : 0, limit]);
     return [
       for (final r in rows)
         if ((r['n'] as int) > 0 || r['ended_at'] == null)

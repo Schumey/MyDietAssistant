@@ -69,7 +69,7 @@ List<String> supersetGroups(List<bool> withPrev) {
 
 class _Row {
   _Row(this.exerciseId, this.name, this.sets, this.repsMin, this.repsMax, this.restSeconds,
-      [this.withPrev = false, this.warmupSets = 0, this.warmupReps = 5, this.warmupPct = 50]);
+      [this.withPrev = false, this.warmupSets = 0, this.warmupReps = 5, this.warmupPct = 50, this.warmupWeight = 0]);
 
   final String exerciseId;
   final String name;
@@ -80,6 +80,9 @@ class _Row {
   int warmupSets;
   int warmupReps;
   double warmupPct;
+
+  /// Festes Aufwärmgewicht in kg; 0 = Prozent des Arbeitsgewichts.
+  double warmupWeight;
 
   /// Done as a superset together with the row above.
   bool withPrev;
@@ -110,7 +113,7 @@ class _RoutineEditorState extends State<RoutineEditor> {
       for (final (i, x) in r.exercises.indexed) {
         final linked = i > 0 && x.group.isNotEmpty && x.group == r.exercises[i - 1].group;
         _rows.add(_Row(x.exerciseId, x.name, x.sets, x.repsMin, x.repsMax, x.restSeconds, linked, x.warmupSets,
-            x.warmupReps > 0 ? x.warmupReps : 5, x.warmupPct > 0 ? x.warmupPct : 50));
+            x.warmupReps > 0 ? x.warmupReps : 5, x.warmupPct > 0 ? x.warmupPct : 50, x.warmupWeight));
       }
     }
   }
@@ -145,7 +148,8 @@ class _RoutineEditorState extends State<RoutineEditor> {
               group: groups[i],
               warmupSets: r.warmupSets,
               warmupReps: r.warmupReps,
-              warmupPct: r.warmupPct),
+              warmupPct: r.warmupPct,
+              warmupWeight: r.warmupWeight),
       ],
     );
     widget.app.changed();
@@ -224,6 +228,11 @@ class _RoutineEditorState extends State<RoutineEditor> {
                         ] else
                           const Spacer(flex: 2),
                       ]),
+                      if (r.warmupSets > 0)
+                        Row(children: [
+                          _miniWeight(tr('routine_warmup_weight'), r.warmupWeight, (v) => setState(() => r.warmupWeight = v)),
+                          const Spacer(flex: 2),
+                        ]),
                       Align(
                         alignment: Alignment.centerLeft,
                         child: ActionChip(
@@ -253,6 +262,27 @@ class _RoutineEditorState extends State<RoutineEditor> {
   int? _nextRest(int? current) {
     final i = _restChoices.indexOf(current);
     return _restChoices[(i + 1) % _restChoices.length];
+  }
+
+  /// Gewicht in kg mit Schritten von 2,5; ein Tipp auf die Zahl erlaubt die Eingabe (auch Dezimalwerte).
+  Widget _miniWeight(String label, double value, void Function(double) onChanged) {
+    return Expanded(
+      child: Column(children: [
+        Text(label, style: Theme.of(context).textTheme.labelSmall),
+        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          IconButton(visualDensity: VisualDensity.compact, icon: const Icon(Icons.remove), onPressed: value > 0 ? () => onChanged((value - 2.5).clamp(0, 1000).toDouble()) : null),
+          InkWell(
+            onTap: () async {
+              final text = await askText(context, label, initial: value > 0 ? L10n.kg(value) : '');
+              final v = double.tryParse((text ?? '').trim().replaceAll(',', '.'));
+              if (v != null) onChanged(v.clamp(0, 1000).toDouble());
+            },
+            child: Text(value > 0 ? L10n.kg(value) : '–', style: Theme.of(context).textTheme.titleMedium),
+          ),
+          IconButton(visualDensity: VisualDensity.compact, icon: const Icon(Icons.add), onPressed: () => onChanged((value + 2.5).clamp(0, 1000).toDouble())),
+        ]),
+      ]),
+    );
   }
 
   Widget _mini(String label, int value, int min, int max, void Function(int) onChanged, {int step = 1}) {

@@ -6,7 +6,7 @@ export const SESSION_CSS = `
 .sess-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; } .sess-head .grow { flex: 1; min-width: 0; }
 .sess-ex { margin-bottom: 12px; } .sess-ex h3 { margin: 0 0 2px; } .sess-meta { color: var(--muted); font-size: 13.5px; margin: 0 0 8px; }
 .sess-sets { list-style: none; margin: 0 0 10px; padding: 0; } .sess-sets li { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-top: 1px solid var(--line); }
-.sess-sets li:first-child { border-top: 0; } .sess-sets .n { color: var(--muted); width: 4.5em; } .sess-sets .v { flex: 1; font-weight: 500; }
+.sess-sets li:first-child { border-top: 0; } .sess-sets .n { color: var(--muted); min-width: 6.5em; white-space: nowrap; } .sess-sets .v { flex: 1; font-weight: 500; }
 .sess-in { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
 .sess-field { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--muted); }
 .sess-num { display: flex; align-items: center; gap: 4px; }
@@ -38,6 +38,9 @@ export const stepWeight = (weight, steps, dir, fallback = 2.5) => {
   return Math.max(0, Math.round((w + dir * fallback) * 10000) / 10000);
 };
 
+// The same wall-clock stamp on another day (`day` = "YYYY-MM-DD"): moving a finished workout keeps its times.
+export const moveToDay = (stamp, day) => (stamp ? `${day}${String(stamp).slice(10)}` : stamp);
+
 // "62,5 kg × 8" style summary of one set (`fmt` writes numbers).
 export const setLine = (s, kind, fmt) => {
   if (kind === "time") return `${s.duration_s ?? 0} s`;
@@ -46,17 +49,23 @@ export const setLine = (s, kind, fmt) => {
   return s.weight ? `${fmt(s.weight)} kg × ${reps}` : reps ? `${reps} ×` : "";
 };
 
-// Weight of a warm-up set: `pct` percent of the working weight, on a weight the equipment offers (else a multiple of 2.5 kg).
-export const warmupWeight = (base, pct, steps) => {
-  const w = (base * pct) / 100;
+// Weight of a warm-up set: `pct` percent of the working weight (or a fixed weight in kg), on a weight the equipment offers
+// (else a multiple of 2.5 kg). `steps` = the stack's pin positions without add-on weights, see `warm_steps` of the exercise.
+export const warmupWeight = (base, pct, steps, fixed = null) => {
+  const w = fixed > 0 ? fixed : (base * pct) / 100;
   if (Array.isArray(steps) && steps.length) return steps.reduce((best, s) => (Math.abs(s - w) < Math.abs(best - w) - 1e-9 ? s : best), steps[0]);
   return Math.max(0, Math.round(w / 2.5) * 2.5);
 };
 
-// Is a warm-up set due? Planned warm-up sets not yet logged (or skipped) of an exercise, with a working weight to take the percentage of.
+// The weight of the next warm-up set of an exercise (fixed weight or percentage of the working weight).
+export const warmupFor = (info) => warmupWeight(info.target_weight, info.warmup.pct, info.warm_steps || info.steps, info.warmup.weight);
+
+// Is a warm-up set due? Planned warm-up sets not yet logged (or skipped) of an exercise: with a fixed weight at once, with a
+// percentage only when there is a working weight to take it of.
 export const warmupDue = (info, sets, skipped = false) => {
   const w = info.warmup;
-  if (skipped || !w || !(w.sets > 0) || !(w.reps > 0) || !(w.pct > 0) || !(info.target_weight > 0)) return false;
+  if (skipped || !w || !(w.sets > 0) || !(w.reps > 0)) return false;
+  if (!(w.weight > 0) && (!(w.pct > 0) || !(info.target_weight > 0))) return false;
   return sets.filter((s) => s.kind === "warmup").length < w.sets;
 };
 
@@ -125,6 +134,7 @@ export function installSession(Panel, { edit, esc }) {
         case "s-add": if (S) { S.adding = !S.adding; S.filter = ""; this._sessDraw(); } return;
         case "s-pick-ex": return await this._sessAddExercise(v);
         case "s-step": if (S) return this._sessStep(i, Number(el.dataset.d));
+        case "s-rstep": if (S) return this._sessRepsStep(i, Number(el.dataset.d));
         case "s-save-set": return await this._sessSaveSet(i);
         case "s-skip-warm": if (S) { S.skipWarm.add(S.exercises[i].exercise_id); delete S.drafts[i]; this._sessDraw(); } return;
         case "s-rest-more": if (S?.rest) { S.rest.end += 30000; this._sessRestTick(); } return;
@@ -192,7 +202,7 @@ export function installSession(Panel, { edit, esc }) {
       if (warmupDue(info, this._sessAllOf(info.exercise_id), S.skipWarm.has(info.exercise_id))) {
         // the next set is a warm-up: a percentage of the working weight
         const w = info.warmup;
-        S.drafts[i] = { warm: true, weight: fmt(warmupWeight(info.target_weight, w.pct, info.steps)), reps: String(w.reps), secs: "" };
+        S.drafts[i] = { warm: true, weight: fmt(warmupFor(info)), reps: String(w.reps), secs: "" };
         return S.drafts[i];
       }
       const d = startDraft(info, this._sessDoneOf(info.exercise_id));
@@ -205,6 +215,12 @@ export function installSession(Panel, { edit, esc }) {
   P._sessStep = function (i, dir) {
     const info = this._sessInfoAt(i), d = this._sessDraft(i);
     d.weight = this._stepFmt()(stepWeight(num(d.weight), info.steps, dir));
+    this._sessDraw();
+  };
+
+  P._sessRepsStep = function (i, dir) {
+    const d = this._sessDraft(i), n = num(d.reps);
+    d.reps = String(Math.max(0, Math.round((n ?? 0) + dir)));
     this._sessDraw();
   };
 
@@ -262,6 +278,35 @@ export function installSession(Panel, { edit, esc }) {
     this._sessRestStop();
     this._sess = null;
     this._toast(this._t("sess_finished"));
+    this._show();
+  };
+
+  // Finished workout (detail page): delete it, or move it to another day (its sets keep their times, so statistics follow).
+  P._workoutDelete = async function (id) {
+    if (!globalThis.confirm(this._t("workout_delete_ask"))) return;
+    const w = await this._query("workout", { id }), now = edit.stamp();
+    await this._sessPush({
+      workout_set: w.exercises.flatMap((g) => g.sets.map((s) => ({ id: s.id, workout_id: id, exercise_id: g.exercise_id, done_at: s.done_at, deleted: 1, updated_at: now }))),
+      workout: [{ id, updated_at: now, deleted: 1, started_at: w.started_at }],
+    });
+    this._history = { list: [], more: false };
+    this._detail = null;
+    this._toast(this._t("workout_deleted"));
+    this._show();
+  };
+
+  P._workoutMove = async function (id) {
+    const day = this.shadowRoot.getElementById("wdate")?.value;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(day || "")) { this._toast(this._t("workout_date_bad")); return; }
+    if (day > localStamp().slice(0, 10)) { this._toast(this._t("workout_date_future")); return; }
+    const w = await this._query("workout", { id }), now = edit.stamp();
+    if (day === (w.started_at || "").slice(0, 10)) return;
+    await this._sessPush({
+      workout_set: w.exercises.flatMap((g) => g.sets.map((s) => ({ id: s.id, workout_id: id, exercise_id: g.exercise_id, done_at: moveToDay(s.done_at, day), updated_at: now }))),
+      workout: [{ id, updated_at: now, deleted: 0, started_at: moveToDay(w.started_at, day), ended_at: w.ended_at ? moveToDay(w.ended_at, day) : null }],
+    });
+    this._history = { list: [], more: false };
+    this._toast(this._t("workout_moved"));
     this._show();
   };
 
@@ -344,14 +389,19 @@ export function installSession(Panel, { edit, esc }) {
         <button class="ib" data-act="s-step" data-i="${i}" data-d="-1" aria-label="${esc(t("sess_less"))}">−</button>
         <input data-sf="weight" data-i="${i}" inputmode="decimal" value="${esc(d.weight)}">
         <button class="ib" data-act="s-step" data-i="${i}" data-d="1" aria-label="${esc(t("sess_more"))}">+</button></span></label>`;
-      const inputs = timed ? field("secs", t(x.kind === "cardio" ? "sess_mins" : "sess_secs")) : weight + field("reps", t("sess_reps"));
+      const repsField = `<label class="sess-field">${esc(t("sess_reps"))}<span class="sess-num">
+        <button class="ib" data-act="s-rstep" data-i="${i}" data-d="-1" aria-label="${esc(t("sess_reps_less"))}">−</button>
+        <input data-sf="reps" data-i="${i}" inputmode="decimal" value="${esc(d.reps)}">
+        <button class="ib" data-act="s-rstep" data-i="${i}" data-d="1" aria-label="${esc(t("sess_reps_more"))}">+</button></span></label>`;
+      const inputs = timed ? field("secs", t(x.kind === "cardio" ? "sess_mins" : "sess_secs")) : weight + repsField;
       return `<section class="card sess-ex${S.focus === x.exercise_id ? " next" : ""}" data-ex="${esc(x.exercise_id)}"><h3>${x.superset ? `<span class="sess-ss" title="${esc(t("superset", x.superset))}">${esc(x.superset)}</span>` : ""}${esc(x.name)}</h3>
         ${S.focus === x.exercise_id ? `<p class="sess-warm">${esc(t("sess_ss_next"))}</p>` : ""}
         <p class="sess-meta">${[target ? t("sess_target", target) : "", last ? t("sess_last", last) : ""].filter(Boolean).map(esc).join(" · ")}</p>
         ${all.length ? `<ul class="sess-sets">${all.map((s) => `<li class="${s.kind === "warmup" ? "warm" : ""}"><span class="n">${esc(s.kind === "warmup" ? t("sess_warmup") : t("sess_set_n", ++work))}</span><span class="v">${esc(setLine(s, x.kind, fmt))}</span>
           <button class="ib warn" data-act="s-del-set" data-v="${esc(s.id)}" aria-label="${esc(t("sess_remove_set"))}">×</button></li>`).join("")}</ul>` : ""}
-        ${d.warm ? `<p class="sess-warm">${esc(t("sess_warm_next", f.int(x.warmup.pct)))} <button class="btn small linkish" data-act="s-skip-warm" data-i="${i}">${esc(t("sess_skip_warm"))}</button></p>` : ""}
-        <div class="sess-in">${inputs}<button class="btn" data-act="s-save-set" data-i="${i}"${S.busy ? " disabled" : ""}>${esc(t(d.warm ? "sess_save_warm" : "sess_save_set"))}</button></div></section>`;
+        ${d.warm ? `<p class="sess-warm">${esc(x.warmup.weight > 0 ? t("sess_warm_next_kg", fmt(x.warmup.weight)) : t("sess_warm_next", f.int(x.warmup.pct)))}</p>` : ""}
+        <div class="sess-in">${inputs}<button class="btn" data-act="s-save-set" data-i="${i}"${S.busy ? " disabled" : ""}>${esc(t(d.warm ? "sess_save_warm" : "sess_save_set"))}</button>
+          ${d.warm ? `<button class="btn ghost" data-act="s-skip-warm" data-i="${i}">${esc(t("sess_skip_warm"))}</button>` : ""}</div></section>`;
     }).join("");
     const adder = S.adding ? `<div class="picker"><input class="search" data-sf="filter" placeholder="${esc(t("exercise_search"))}" value="${esc(S.filter)}" autocomplete="off">
       <div class="rows" id="sess-exlist">${this._sessExerciseRows()}</div></div>` : "";

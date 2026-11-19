@@ -1,5 +1,5 @@
 name: HAFS
-version: "2.0.2"
+version: "2.0.3"
 slug: mydiet
 url: https://github.com/Schumey/HAFS
 description: HomeAssistant Fitness Suite – Ernährungstagebuch und Krafttraining, lokal, mit HA-Sensoren

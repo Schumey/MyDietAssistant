@@ -46,6 +46,7 @@ class RoutineExercise {
     this.warmupSets = 0,
     this.warmupReps = 0,
     this.warmupPct = 0,
+    this.warmupWeight = 0,
   });
 
   final String exerciseId;
@@ -63,6 +64,9 @@ class RoutineExercise {
   final int warmupSets;
   final int warmupReps;
   final double warmupPct;
+
+  /// Festes Gewicht der Aufwärmsätze in kg (0 = nach [warmupPct]).
+  final double warmupWeight;
 }
 
 class RoutineInfo {
@@ -76,7 +80,7 @@ class RoutineInfo {
 /// Eine geplante Übung im laufenden Workout: Soll aus der Routine, Ist aus den erfassten Sätzen.
 class PlannedExercise {
   PlannedExercise(this.exercise, this.targetSets, this.doneSets, this.repsMin, this.repsMax,
-      [this.group = '', this.warmupSets = 0, this.warmupReps = 0, this.warmupPct = 0, this.warmupDone = 0, this.restSeconds]);
+      [this.group = '', this.warmupSets = 0, this.warmupReps = 0, this.warmupPct = 0, this.warmupDone = 0, this.restSeconds, this.warmupWeight = 0]);
 
   final ExerciseInfo exercise;
   final int targetSets;
@@ -92,10 +96,13 @@ class PlannedExercise {
   final int warmupDone;
   final int? restSeconds;
 
+  /// Festes Gewicht der Aufwärmsätze in kg (0 = nach [warmupPct]).
+  final double warmupWeight;
+
   bool get finished => doneSets >= targetSets;
 
   /// Der nächste Satz ist laut Plan ein Aufwärmsatz.
-  bool get warmupDue => warmupSets > warmupDone && warmupReps > 0 && warmupPct > 0;
+  bool get warmupDue => warmupSets > warmupDone && warmupReps > 0 && (warmupWeight > 0 || warmupPct > 0);
 }
 
 const _linkNamespace = '6f3d7c2e-8d41-4a8e-9a5b-2c1e5f0b9d33';
@@ -295,7 +302,7 @@ extension GymRepo on Repo {
 
   List<RoutineExercise> routineExercises(String routineId) => [
         for (final r in local.rows(
-            'SELECT x.exercise_id, x.target_sets, x.reps_min, x.reps_max, x.rest_s, x.superset_group, x.warmup_sets, x.warmup_reps, x.warmup_pct, e.name '
+            'SELECT x.exercise_id, x.target_sets, x.reps_min, x.reps_max, x.rest_s, x.superset_group, x.warmup_sets, x.warmup_reps, x.warmup_pct, x.warmup_weight, e.name '
             'FROM routine_exercise x JOIN exercise e ON e.id = x.exercise_id '
             'WHERE x.routine_id = ? AND x.deleted = 0 AND e.deleted = 0 ORDER BY x.position',
             [routineId]))
@@ -310,6 +317,7 @@ extension GymRepo on Repo {
             warmupSets: (r['warmup_sets'] as int?) ?? 0,
             warmupReps: (r['warmup_reps'] as int?) ?? 0,
             warmupPct: (r['warmup_pct'] as num?)?.toDouble() ?? 0,
+            warmupWeight: (r['warmup_weight'] as num?)?.toDouble() ?? 0,
           ),
       ];
 
@@ -348,7 +356,8 @@ extension GymRepo on Repo {
           'superset_group': x.group,
           'warmup_sets': x.warmupSets > 0 ? x.warmupSets : null,
           'warmup_reps': x.warmupSets > 0 ? x.warmupReps : null,
-          'warmup_pct': x.warmupSets > 0 ? x.warmupPct : null,
+          'warmup_pct': x.warmupSets > 0 && x.warmupWeight <= 0 ? x.warmupPct : null,
+          'warmup_weight': x.warmupSets > 0 && x.warmupWeight > 0 ? x.warmupWeight : null,
         }, dirty: true);
       }
     });
@@ -393,6 +402,7 @@ extension GymRepo on Repo {
           x.warmupPct,
           warmups[x.exerciseId] ?? 0,
           x.restSeconds,
+          x.warmupWeight,
         ),
     ];
   }

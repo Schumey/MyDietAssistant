@@ -154,7 +154,7 @@ def test_plan_edit_has_next_weights_and_warmup_columns_and_plan_shows_rest_and_w
     x = d["routine_exercises"][0]
     assert (x["warmup_sets"], x["warmup_reps"], x["warmup_pct"]) == (2, 5, 50)
     row = run(conn, "plan")["programs"][0]["routines"][0]["exercises"][0]
-    assert row["rest_s"] == 180 and row["warmup"] == {"sets": 2, "reps": 5, "pct": 50}
+    assert row["rest_s"] == 180 and row["warmup"] == {"sets": 2, "reps": 5, "pct": 50, "weight": None, "kg": 32.5}
     assert d["exercises"][0]["equipment_type"] == ""
 
 
@@ -208,7 +208,7 @@ def test_session_offers_routines_plan_and_running_workout(conn):
     plan = run(conn, "session", routine_id="r1")["plan"]
     bench = plan["exercises"][0]
     assert (plan["routine"], bench["sets"], bench["reps_min"], bench["steps"]) == ("Push", 3, 6, [20, 22.5])
-    assert bench["warmup"] == {"sets": 2, "reps": 5, "pct": 50} and bench["rest_s"] == 120 and bench["superset"] == "A" and run(conn, "session")["rest_default"] == 90
+    assert bench["warmup"] == {"sets": 2, "reps": 5, "pct": 50, "weight": None} and bench["rest_s"] == 120 and bench["superset"] == "A" and run(conn, "session")["rest_default"] == 90
     assert bench["last"] == [{"weight": 60, "reps": 8, "duration_s": None}, {"weight": 60, "reps": 7, "duration_s": None}]
     # a running workout (started two hours ago) is found again, with the exercise that was added to it
     sync.push(conn, OWNER, {"workout": [{"id": "now", "started_at": "2026-11-11T10:00:00", "routine_id": "r1", "routine_name": "Push", "updated_at": T}],
@@ -221,3 +221,29 @@ def test_session_offers_routines_plan_and_running_workout(conn):
     # a workout left open for days no longer counts
     sync.push(conn, OWNER, {"workout": [{"id": "now", "started_at": "2026-11-01T10:00:00", "updated_at": "2026-11-12T00:00:00+00:00"}]})
     assert run(conn, "session")["active"] is None
+
+
+def test_session_plan_has_warm_steps_without_addons_and_a_fixed_warmup_weight(conn):
+    stack = '{"min": 10, "max": 40, "step": 10, "extra": 2.5}'
+    sync.push(conn, OWNER, {"equipment": [{"id": "q2", "gym_id": "g1", "name": "Presse", "type": "machine", "steps": stack, "updated_at": T}],
+                            "routine": [{"id": "r1", "name": "Push", "position": 0, "updated_at": T}],
+                            "routine_exercise": [{"id": "x1", "routine_id": "r1", "exercise_id": "row", "position": 0, "equipment_id": "q2",
+                                                  "warmup_sets": 1, "warmup_reps": 8, "warmup_weight": 20, "updated_at": T}],
+                            "exercise_equipment": [{"id": "l1", "exercise_id": "row", "equipment_id": "q2", "updated_at": T}]})
+    row = run(conn, "session", routine_id="r1")["plan"]["exercises"][0]
+    assert row["warm_steps"] == [10, 20, 30, 40] and 12.5 in row["steps"]
+    assert row["warmup"] == {"sets": 1, "reps": 8, "pct": None, "weight": 20}
+    loose = run(conn, "plan")["loose"][0]["exercises"][0]["warmup"]          # the plan page shows the weight too
+    assert loose["kg"] == 20
+
+
+def test_count_warmups_preference_counts_them_in_volume_sets_and_muscles_but_not_in_records(conn):
+    add(conn, "w1", "2026-11-09", [(40, 10, "warmup"), (60, 8, "work")])
+    assert run(conn, "workout", id="w1")["sets"] == 1 and run(conn, "muscles", weeks=4)["muscles"]["chest"][-1] == 1
+    from core import targets
+    assert targets.valid_pref("count_warmups", "1") and not targets.valid_pref("count_warmups", "yes")
+    targets.set_pref(conn, OWNER, "count_warmups", "1")
+    w = run(conn, "workout", id="w1")
+    assert w["sets"] == 2 and w["volume_kg"] == 40 * 10 + 60 * 8
+    assert run(conn, "muscles", weeks=4)["muscles"]["chest"][-1] == 2
+    assert run(conn, "exercise", id="bench")["records"]["weight"] == 60          # records never count warm-ups

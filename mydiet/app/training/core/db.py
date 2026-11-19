@@ -140,6 +140,10 @@ MIGRATIONS: list[str] = [
     """
     ALTER TABLE workout_set ADD COLUMN attachment TEXT NOT NULL DEFAULT '';
     """,
+    # 6: fixed weight of the warm-up sets (kg; used instead of the percentage when set)
+    """
+    ALTER TABLE routine_exercise ADD COLUMN warmup_weight REAL;
+    """,
 ]
 
 SCHEMA_VERSION = len(MIGRATIONS)

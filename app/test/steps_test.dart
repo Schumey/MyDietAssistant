@@ -68,6 +68,13 @@ void main() {
   });
 
   group('warm-up weight and stations', () {
+    test('warmupWeight: a fixed weight goes to the nearest stack step, add-on weights stay out', () {
+      expect(warmupWeight(0, 0, [10, 20, 30, 40], 5, fixed: 25), 20); // tie -> the lighter one
+      expect(warmupWeight(100, 50, null, 2.5, fixed: 21), 20);
+      const stack = '{"min":10,"max":40,"step":10,"extra":2.5}';
+      expect(expandSteps(stack, withExtra: false), [10, 20, 30, 40]);
+      expect(expandSteps(stack), contains(12.5));
+    });
     test('warmupWeight: percent of the working weight on the nearest step', () {
       expect(warmupWeight(100, 50, [for (var w = 20.0; w <= 140; w += 2.5) w], 2.5), 50);
       expect(warmupWeight(77.5, 50, [20, 30, 40, 50], 5), 40); // 38.75 -> nearest step

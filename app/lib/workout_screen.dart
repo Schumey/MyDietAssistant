@@ -426,7 +426,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             if (plan != null && plan.group.isNotEmpty) Text(tr('superset_label', [plan.group]), style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.primary)),
             if (plan != null && sets.isEmpty) Text(tr('planned_range', [plan.repsMin, plan.repsMax]), style: theme.textTheme.bodySmall),
             if (plan != null && plan.warmupSets > 0)
-              Text(tr('planned_warmup', [plan.warmupDone, plan.warmupSets, plan.warmupReps, L10n.kg(plan.warmupPct)]), style: theme.textTheme.bodySmall),
+              Text(plan.warmupWeight > 0 ? tr('planned_warmup_kg', [plan.warmupDone, plan.warmupSets, plan.warmupReps, L10n.kg(plan.warmupWeight)]) : tr('planned_warmup', [plan.warmupDone, plan.warmupSets, plan.warmupReps, L10n.kg(plan.warmupPct)]), style: theme.textTheme.bodySmall),
             if (sets.isNotEmpty) const SizedBox(height: 6),
             for (final s in sets)
               Row(children: [

@@ -232,6 +232,18 @@ test("routine rows: incomplete or silly warm-up, weight and rest are refused", (
   bad({ rest: 9999 }, "err_rest");
 });
 
+test("routine rows: a fixed warm-up weight replaces the percentage", () => {
+  const d = data();
+  const draft = e.routineDraft(d, "r1");
+  Object.assign(draft.rows[0], { warmSets: "2", warmReps: "8", warmPct: "", warmWeight: "20" });
+  const x = e.routineRecords(draft, d, NOW, id).records.routine_exercise.find((q) => !q.deleted && q.exercise_id === "bench");
+  assert.deepEqual([x.warmup_sets, x.warmup_reps, x.warmup_pct, x.warmup_weight], [2, 8, null, 20]);
+  Object.assign(draft.rows[0], { warmWeight: "0" });                               // neither a weight nor a percentage
+  assert.equal(e.routineRecords(draft, d, NOW, id).error, "err_warmup");
+  Object.assign(draft.rows[0], { warmWeight: "abc" });
+  assert.equal(e.routineRecords(draft, d, NOW, id).error, "err_warmup");
+});
+
 test("routine rows: time exercises get neither warm-up nor weight", () => {
   const d = data();
   const draft = e.routineDraft(d, "r1");

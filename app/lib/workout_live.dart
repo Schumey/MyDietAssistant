@@ -206,9 +206,9 @@ EntryPreset entryPreset(Repo repo, String workoutId, ExerciseInfo e, String? equ
   var warmup = false;
   // Planned warm-up sets still due: the next set is one, with a percentage of the working weight.
   final plan = repo.planned(workoutId).where((p) => p.exercise.id == e.id).firstOrNull;
-  if (plan != null && plan.warmupDue && d.weight > 0) {
+  if (plan != null && plan.warmupDue && (plan.warmupWeight > 0 || d.weight > 0)) {
     warmup = true;
-    weight = warmupWeight(d.weight, plan.warmupPct, d.steps, d.step);
+    weight = warmupWeight(d.weight, plan.warmupPct, d.warmSteps ?? d.steps, d.step, fixed: plan.warmupWeight);
     reps = plan.warmupReps;
   }
   return EntryPreset(d, weight, reps, warmup);

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { localStamp, stepWeight, setLine, startDraft, warmupWeight, warmupDue, restSeconds, clock, supersetNext } from "../../mydiet/app/static/training/hafs-session.js";
+import { localStamp, stepWeight, setLine, startDraft, warmupWeight, warmupFor, warmupDue, moveToDay, restSeconds, clock, supersetNext } from "../../mydiet/app/static/training/hafs-session.js";
 
 test("local stamp has no offset", () => {
   assert.equal(localStamp(new Date(2026, 10, 19, 7, 5, 9)), "2026-11-19T07:05:09");
@@ -71,4 +71,21 @@ test("superset: partner without rest, rest after the round, finished exercises d
   assert.deepEqual(supersetNext(ex, d, "a"), { go: "b", rest: false });
   done.b = 2;
   assert.deepEqual(supersetNext(ex, d, "b"), { go: null, rest: true });         // everything done
+});
+
+test("warm-up: a fixed weight goes to the nearest stack position and needs no working weight", () => {
+  assert.equal(warmupWeight(100, 50, [10, 20, 30, 40], 25), 20);              // tie -> the lighter one
+  assert.equal(warmupWeight(null, null, null, 20), 20);
+  const info = { warmup: { sets: 1, reps: 8, pct: null, weight: 22 }, target_weight: null, steps: [20, 22, 23.1], warm_steps: [20, 25, 30] };
+  assert.equal(warmupFor(info), 20);                                           // the stack only (no add-on weights)
+  assert.equal(warmupDue(info, []), true);
+  assert.equal(warmupDue(info, [{ kind: "warmup" }]), false);
+  const pct = { warmup: { sets: 1, reps: 8, pct: 50, weight: null }, target_weight: 100, steps: [49, 51], warm_steps: [45, 55] };
+  assert.equal(warmupFor(pct), 45);                                            // percent: warm_steps first
+  assert.equal(warmupFor({ ...pct, warm_steps: null }), 49);
+});
+
+test("a workout moves to another day and keeps its times", () => {
+  assert.equal(moveToDay("2026-11-09T10:15:00", "2026-11-02"), "2026-11-02T10:15:00");
+  assert.equal(moveToDay(null, "2026-11-02"), null);
 });

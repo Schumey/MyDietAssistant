@@ -49,6 +49,20 @@ extension EditRepo on Repo {
     });
   }
 
+  /// Verschiebt ein Workout auf einen anderen Tag: Beginn, Ende und Sätze behalten ihre Uhrzeit.
+  void moveWorkout(String id, DateTime day) {
+    final w = local.row('SELECT * FROM workout WHERE id = ?', [id]);
+    if (w == null) return;
+    final d = '${day.year.toString().padLeft(4, '0')}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
+    String? moved(Object? stamp) => stamp is String && stamp.length >= 10 ? '$d${stamp.substring(10)}' : stamp as String?;
+    local.transaction(() {
+      for (final s in local.rows('SELECT * FROM workout_set WHERE workout_id = ? AND deleted = 0', [id])) {
+        local.upsert('workout_set', {...s, 'done_at': moved(s['done_at']), 'updated_at': nowStamp()}, dirty: true);
+      }
+      local.upsert('workout', {...w, 'started_at': moved(w['started_at']), 'ended_at': moved(w['ended_at']), 'updated_at': nowStamp()}, dirty: true);
+    });
+  }
+
   /// Notiz zum Workout.
   void setWorkoutNote(String id, String note) {
     final w = local.row('SELECT * FROM workout WHERE id = ?', [id]);
