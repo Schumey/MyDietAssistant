@@ -197,7 +197,8 @@ def test_session_offers_routines_plan_and_running_workout(conn):
     sync.push(conn, OWNER, {"program": [{"id": "p1", "name": "PPL", "updated_at": T}],
                             "routine": [{"id": "r1", "program_id": "p1", "name": "Push", "position": 0, "updated_at": T}],
                             "routine_exercise": [{"id": "x1", "routine_id": "r1", "exercise_id": "bench", "position": 0,
-                                                  "target_sets": 3, "reps_min": 6, "reps_max": 10, "updated_at": T}],
+                                                  "target_sets": 3, "reps_min": 6, "reps_max": 10, "rest_s": 120,
+                                                  "warmup_sets": 2, "warmup_reps": 5, "warmup_pct": 50, "updated_at": T}],
                             "exercise_equipment": [{"id": "l1", "exercise_id": "bench", "equipment_id": "q1", "updated_at": T}]})
     add(conn, "old", "2026-11-09", [(60, 8, "work"), (60, 7, "work")])
     r = run(conn, "session")
@@ -207,6 +208,7 @@ def test_session_offers_routines_plan_and_running_workout(conn):
     plan = run(conn, "session", routine_id="r1")["plan"]
     bench = plan["exercises"][0]
     assert (plan["routine"], bench["sets"], bench["reps_min"], bench["steps"]) == ("Push", 3, 6, [20, 22.5])
+    assert bench["warmup"] == {"sets": 2, "reps": 5, "pct": 50} and bench["rest_s"] == 120 and run(conn, "session")["rest_default"] == 90
     assert bench["last"] == [{"weight": 60, "reps": 8, "duration_s": None}, {"weight": 60, "reps": 7, "duration_s": None}]
     # a running workout (started two hours ago) is found again, with the exercise that was added to it
     sync.push(conn, OWNER, {"workout": [{"id": "now", "started_at": "2026-11-11T10:00:00", "routine_id": "r1", "routine_name": "Push", "updated_at": T}],

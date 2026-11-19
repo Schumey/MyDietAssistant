@@ -283,6 +283,7 @@ def _exercise_info(conn, owner: str, exercise_id: str, skip_workout: str | None 
     return {"exercise_id": ex["id"], "name": ex["name"], "kind": ex["kind"], "equipment_id": eq_id, "steps": steps,
             "sets": rx["target_sets"] if rx is not None else None, "reps_min": rx["reps_min"] if rx is not None else None,
             "reps_max": rx["reps_max"] if rx is not None else None, "rest_s": rx["rest_s"] if rx is not None else None,
+            "warmup": st.warmup_of(rx) if rx is not None else None,
             "target_weight": t["weight"] if t else None, "target_reps": t["reps"] if t else None, "last": last_sets}
 
 
@@ -336,7 +337,8 @@ def session(conn, owner, now, tz, params) -> dict:
     picked = _exercise_info(conn, owner, params["exercise_id"], (active or {}).get("id")) if params.get("exercise_id") else None
     exercises = [{"id": r["id"], "name": r["name"], "kind": r["kind"]} for r in conn.execute(
         "SELECT id, name, kind FROM exercise WHERE owner=? AND deleted=0 ORDER BY name COLLATE NOCASE", (owner,))]
-    return {"active": active, "plan": plan, "routines": routines, "next_routine_id": nxt["routine_id"] if nxt else None,
+    rest = targets.get_pref(conn, owner, "rest_default")
+    return {"active": active, "plan": plan, "rest_default": int(rest) if rest.isdigit() else 90, "routines": routines, "next_routine_id": nxt["routine_id"] if nxt else None,
             "exercises": exercises, "picked": picked}
 
 
