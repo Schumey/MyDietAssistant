@@ -1,5 +1,5 @@
 import json
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 import pytest
@@ -124,12 +124,13 @@ def test_deleted_sets_do_not_count(conn):
 def test_store_push_recomputes_touched_exercises(tmp_path):
     store = Store(str(tmp_path / "h.db"))
     store.init()
-    now = "2026-11-05T10:00:00+00:00"
+    day = (date.today() - timedelta(days=2)).isoformat()   # store.push uses the real today: keep the workout recent
+    now = f"{day}T10:00:00+00:00"
     recs = {
         "exercise": [{"id": "e1", "updated_at": now, "name": "Bank", "kind": "strength"}],
-        "workout": [{"id": "w1", "updated_at": now, "started_at": "2026-11-05T10:00:00"}],
+        "workout": [{"id": "w1", "updated_at": now, "started_at": f"{day}T10:00:00"}],
         "workout_set": [{"id": f"s{i}", "updated_at": now, "workout_id": "w1", "exercise_id": "e1", "weight": 50,
-                         "reps": 8, "done_at": "2026-11-05T10:0%d:00" % i, "set_no": i} for i in (1, 2)],
+                         "reps": 8, "done_at": f"{day}T10:0{i}:00", "set_no": i} for i in (1, 2)],
     }
     res = store.push("u1", recs)
     assert res["rejected"] == [] and res["targets"]["written"] == 1
