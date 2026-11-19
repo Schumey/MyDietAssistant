@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-HAFS hat zwei Bereiche: **Ernährung** (das Tagebuch, wie Du es kennst) und **Training** (Krafttraining: Pläne, Übungen, Verlauf und Gewichtsvorschläge). Beide laufen in derselben App in Home Assistant und teilen sich Benutzer, Sprache und Darstellung. Workouts zeichnest Du mit der [HAFS-App](android.md) auf dem Handy auf; die Weboberfläche zeigt sie, und hier pflegst Du Pläne, Studios und Geräte.
+HAFS hat zwei Bereiche: **Ernährung** (das Tagebuch, wie Du es kennst) und **Training** (Krafttraining: Pläne, Übungen, Verlauf und Gewichtsvorschläge). Beide laufen in derselben App in Home Assistant und teilen sich Benutzer, Sprache und Darstellung. Workouts zeichnest Du mit der [HAFS-App](android.md) auf dem Handy auf oder direkt hier im Browser und in der Home-Assistant-Companion-App (Reiter **Heute → Workout starten**); außerdem pflegst Du hier Pläne, Studios und Geräte.
 
 **Voraussetzung:** unter *Einstellungen → Bereiche* ist **Ernährung und Training** oder **Nur Training** gewählt.
 
@@ -25,7 +25,7 @@ Dieselbe Auswahl steht auch unter *Training → Einstellungen → Bereiche*. Mit
 
 | Reiter | Inhalt |
 |---|---|
-| **Heute** | Nächster Trainingstag mit den vorgeschlagenen Gewichten, Kennzahlen der Woche, Sätze je Muskelgruppe, Rückblick, letzte Workouts |
+| **Heute** | **Workout starten** (Trainingstag oder freies Workout, Sätze mit Gewicht und Wiederholungen eintragen, beenden), nächster Trainingstag mit den vorgeschlagenen Gewichten, Kennzahlen der Woche, Sätze je Muskelgruppe, Rückblick, letzte Workouts |
 | **Training** | Alle Workouts nach Monat, mit Sätzen und Gewichten; daneben Sätze je Muskelgruppe über mehrere Wochen |
 | **Übungen** | Alle Übungen mit Suche und Filtern; je Übung Verlauf (geschätztes 1RM, Gewicht, Volumen), Rekorde, Vorschlag, Geräte |
 | **Pläne** | Trainingspläne und Trainingstage anlegen und bearbeiten, Studios mit ihren Geräten und Gewichtsstufen |

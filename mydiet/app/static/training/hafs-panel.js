@@ -7,6 +7,7 @@ const version = new URL(import.meta.url).search;
 const { makeT, language, makeFormat, esc, lineChart, barChart } = await import(`./hafs-common.js${version}`);
 const edit = await import(`./hafs-edit.js${version}`);
 const { installEditor, EDITOR_CSS } = await import(`./hafs-editor.js${version}`);
+const { installSession, SESSION_CSS } = await import(`./hafs-session.js${version}`);
 
 const TABS = ["today", "training", "exercises", "plans", "settings"];
 const OLD_TABS = { history: "training", stats: "training" };
@@ -185,6 +186,7 @@ class HafsPanel extends HTMLElement {
     const el = e.target.closest("[data-act]");
     if (!el) return;
     if (el.dataset.act.startsWith("e-")) { this._editClick(el); return; }
+    if (el.dataset.act.startsWith("s-")) { this._sessClick(el); return; }
     const v = el.dataset.v;
     switch (el.dataset.act) {
       case "reload": this._cache = {}; this._history = { list: [], more: false }; this._show(); break;
@@ -210,6 +212,7 @@ class HafsPanel extends HTMLElement {
   }
 
   _onInput(e) {
+    if (e.target.dataset.sf) { this._sessInput(e.target); return; }
     if (e.target.dataset.f && this._edit) { this._editInput(e.target); return; }
     if (e.target.id === "filter") {
       this._filter = e.target.value;
@@ -267,6 +270,7 @@ class HafsPanel extends HTMLElement {
   // ---- Heute ----------------------------------------------------------------------------
 
   async _view_today() {
+    if (this._sess) return this._sessHtml();
     const t = this._t, f = this._f;
     const [d, hiddenPref] = await Promise.all([this._query("overview"), this._call({ type: "hafs/pref/get", key: "today_hidden" }).catch(() => ({ value: "" }))]);
     this._cache.today = d;
@@ -277,7 +281,7 @@ class HafsPanel extends HTMLElement {
     const s = d.status;
     let hero;
     if (s.active) {
-      hero = `<section class="card hero board"><p class="kicker">${esc(t("running_since", f.time(d.active_since) || ""))}</p><h2 class="big">${esc(s.next ? s.next.routine : t("free_workout"))}</h2></section>`;
+      hero = `<section class="card hero board"><p class="kicker">${esc(t("running_since", f.time(d.active_since) || ""))}</p><h2 class="big">${esc(s.next ? s.next.routine : t("free_workout"))}</h2>${this._sessionButtons(true)}</section>`;
     } else if (s.next) {
       const rows = (d.next_exercises || []).map((x) => this._planRow(x)).join("")
         || (s.next.exercises || []).map((n) => `<li class="prow"><span class="pname">${esc(n)}</span></li>`).join("");
@@ -286,9 +290,9 @@ class HafsPanel extends HTMLElement {
         <p class="kicker">${esc(t("next_up"))}</p>
         <h2 class="big">${esc(s.next.routine)}</h2>
         <p class="muted">${esc(t("next_program", s.next.program))}</p>
-        <ul class="plist">${rows}</ul></section>`;
+        <ul class="plist">${rows}</ul>${this._sessionButtons(false, s.next.routine_id)}</section>`;
     } else {
-      hero = `<section class="card hero"><h2>${esc(t("rest_day"))}</h2><p class="muted">${esc(t("no_plan"))}</p></section>`;
+      hero = `<section class="card hero"><h2>${esc(t("rest_day"))}</h2><p class="muted">${esc(t("no_plan"))}</p>${this._sessionButtons(false, null)}</section>`;
     }
     const phaseLabel = d.phase ? t("phase_" + d.phase) : t("phase_none");
     const phaseSource = d.phase_manual ? t("phase_manual_label") : d.phase ? t("phase_auto") : "";
@@ -576,7 +580,8 @@ class HafsPanel extends HTMLElement {
     const grid = Array.isArray(s.plates) && s.limited ? t("stock_summary", f.kg(s.base || 0), s.plates.length * 2)
       : Array.isArray(s.plates) ? t("plate_summary", f.kg(s.base || 0))
       : Array.isArray(s.values) ? s.values.map((n) => f.kg(n)).join(", ") : s.step ? `${f.kg(s.min)}–${f.kg(s.max)} / ${f.kg(s.step)}` : "";
-    return s.extra ? `${grid} ${t("extra_summary", f.kg(s.extra))}` : grid;
+    const extras = (Array.isArray(s.extra) ? s.extra : [s.extra]).filter((e) => typeof e === "number" && e > 0);
+    return extras.length ? `${grid} ${t("extra_summary", extras.map((e) => f.kg(e)).join(", "))}` : grid;
   }
 
   async _view_plans() {
@@ -756,7 +761,7 @@ class HafsPanel extends HTMLElement {
   }
 }
 
-const CSS = EDITOR_CSS + `
+const CSS = EDITOR_CSS + SESSION_CSS + `
 :host {
   --ink: var(--primary-text-color, #212121); --muted: var(--secondary-text-color, #727272);
   --bg: var(--primary-background-color, #fafafa); --card: var(--ha-card-background, var(--card-background-color, #fff));
@@ -910,4 +915,5 @@ details.fold[open] > summary { margin-bottom: 12px; }
 `;
 
 installEditor(HafsPanel, { edit, esc });
+installSession(HafsPanel, { edit, esc });
 customElements.define("hafs-panel", HafsPanel);

@@ -180,7 +180,7 @@ void main() {
     await tester.enterText(find.widgetWithText(TextField, 'Name des Geräts'), 'Latzug');
     await pickType('Maschine, Gewichtsblock (Stack)');
     await tester.enterText(find.widgetWithText(TextField, 'Gewichtsstufen'), '7-91/7');
-    await tester.enterText(find.widgetWithText(TextField, 'Zusatzgewicht (optional)'), '2,5');
+    await tester.enterText(find.widgetWithText(TextField, 'Zusatzgewichte (optional)'), '2,5');
     await tester.tap(find.text('Speichern'));
     await settle(tester);
     q = app.repo!.equipment(g).firstWhere((e) => e.name == 'Latzug');

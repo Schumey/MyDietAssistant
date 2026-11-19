@@ -2,7 +2,7 @@
 
 [← Overview](README.md)
 
-HAFS has two areas: **Nutrition** (the diary as you know it) and **Training** (strength training: plans, exercises, history and weight suggestions). Both run in the same app in Home Assistant and share users, language and look. You record workouts with the [HAFS app](android.md) on your phone; the web interface shows them, and here you keep plans, gyms and equipment.
+HAFS has two areas: **Nutrition** (the diary as you know it) and **Training** (strength training: plans, exercises, history and weight suggestions). Both run in the same app in Home Assistant and share users, language and look. You record workouts with the [HAFS app](android.md) on your phone, or right here in the browser and in the Home Assistant companion app (**Today → Start workout**); here you also keep plans, gyms and equipment.
 
 **Requirement:** *Settings → Areas* is set to **Nutrition and training** or **Training only**.
 
@@ -25,7 +25,7 @@ The same choice is under *Training → Settings → Areas*. With **Nutrition onl
 
 | Tab | Content |
 |---|---|
-| **Today** | Next training day with the suggested weights, figures of the week, sets per muscle group, review, recent workouts |
+| **Today** | **Start workout** (a training day or a free workout, log sets with weight and reps, finish), next training day with the suggested weights, figures of the week, sets per muscle group, review, recent workouts |
 | **Training** | All workouts by month with sets and weights; next to it sets per muscle group over several weeks |
 | **Exercises** | All exercises with search and filters; per exercise its history (estimated 1RM, weight, volume), records, suggestion, equipment |
 | **Plans** | Create and edit training plans and training days, gyms with their equipment and weight steps |

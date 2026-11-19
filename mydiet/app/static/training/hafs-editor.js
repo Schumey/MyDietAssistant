@@ -316,7 +316,7 @@ export function installEditor(Panel, { edit, esc }) {
         + `<label class="check wide"><input type="checkbox" data-f="both" ${at}${q.both ? " checked" : ""}> ${esc(t("plate_both"))}</label>`;
     }
     if (q.type === "machine_stack") {
-      return field("steps", t("stack_steps"), t("stack_steps_hint"), true) + field("extra", t("stack_extra"), "2,5", true, "decimal")
+      return field("steps", t("stack_steps"), t("stack_steps_hint"), true) + field("extra", t("stack_extra"), "1,1 2,3 3,4", true)
         + `<small class="wide muted">${esc(t("stack_extra_hint"))}</small>`;
     }
     if (q.type === "barbell") {

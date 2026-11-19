@@ -191,3 +191,31 @@ def test_overview_week_days_monday_to_sunday(conn):
     assert [d["date"] for d in days] == [f"2026-11-{n:02d}" for n in range(9, 16)]
     assert [d["workouts"] for d in days] == [2, 0, 0, 0, 0, 0, 0]
     assert [d["today"] for d in days] == [False, False, True, False, False, False, False]
+
+
+def test_session_offers_routines_plan_and_running_workout(conn):
+    sync.push(conn, OWNER, {"program": [{"id": "p1", "name": "PPL", "updated_at": T}],
+                            "routine": [{"id": "r1", "program_id": "p1", "name": "Push", "position": 0, "updated_at": T}],
+                            "routine_exercise": [{"id": "x1", "routine_id": "r1", "exercise_id": "bench", "position": 0,
+                                                  "target_sets": 3, "reps_min": 6, "reps_max": 10, "updated_at": T}],
+                            "exercise_equipment": [{"id": "l1", "exercise_id": "bench", "equipment_id": "q1", "updated_at": T}]})
+    add(conn, "old", "2026-11-09", [(60, 8, "work"), (60, 7, "work")])
+    r = run(conn, "session")
+    assert r["active"] is None and r["plan"] is None
+    assert r["routines"] == [{"id": "r1", "name": "Push", "program": "PPL"}] and r["next_routine_id"] == "r1"
+    assert {e["id"] for e in r["exercises"]} == {"bench", "row", "plank"}
+    plan = run(conn, "session", routine_id="r1")["plan"]
+    bench = plan["exercises"][0]
+    assert (plan["routine"], bench["sets"], bench["reps_min"], bench["steps"]) == ("Push", 3, 6, [20, 22.5])
+    assert bench["last"] == [{"weight": 60, "reps": 8, "duration_s": None}, {"weight": 60, "reps": 7, "duration_s": None}]
+    # a running workout (started two hours ago) is found again, with the exercise that was added to it
+    sync.push(conn, OWNER, {"workout": [{"id": "now", "started_at": "2026-11-11T10:00:00", "routine_id": "r1", "routine_name": "Push", "updated_at": T}],
+                            "workout_set": [{"id": "s1", "workout_id": "now", "exercise_id": "row", "set_no": 1, "weight": 50, "reps": 10,
+                                             "done_at": "2026-11-11T10:05:00", "updated_at": T}]})
+    r = run(conn, "session")
+    assert r["active"]["id"] == "now" and [s["exercise_id"] for s in r["active"]["sets"]] == ["row"]
+    assert [x["exercise_id"] for x in r["plan"]["exercises"]] == ["bench", "row"]
+    assert run(conn, "session", exercise_id="plank")["picked"]["kind"] == "time"
+    # a workout left open for days no longer counts
+    sync.push(conn, OWNER, {"workout": [{"id": "now", "started_at": "2026-11-01T10:00:00", "updated_at": "2026-11-12T00:00:00+00:00"}]})
+    assert run(conn, "session")["active"] is None

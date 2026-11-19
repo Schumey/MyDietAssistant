@@ -10,6 +10,7 @@ import sqlite3
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Callable
 
+from . import progression
 from . import status as st
 from . import targets
 
@@ -255,7 +256,92 @@ def plan_edit(conn, owner, now, tz, params) -> dict:
     }
 
 
+def _exercise_info(conn, owner: str, exercise_id: str, skip_workout: str | None = None, rx=None) -> dict | None:
+    """One exercise as the workout logger needs it: kind, the plan's sets and reps, the suggested weight, the weights of the
+    equipment (so +/- steps along what the machine offers) and the sets of the last workout with it."""
+    ex = conn.execute("SELECT id, name, kind FROM exercise WHERE id=? AND owner=? AND deleted=0", (exercise_id, owner)).fetchone()
+    if ex is None:
+        return None
+    eq_id = rx["equipment_id"] if rx is not None else None
+    if not eq_id:
+        link = conn.execute("SELECT q.id FROM exercise_equipment l JOIN equipment q ON q.id=l.equipment_id AND q.deleted=0 "
+                            "WHERE l.owner=? AND l.exercise_id=? AND l.deleted=0 AND q.out_of_order=0 ORDER BY q.name LIMIT 1",
+                            (owner, exercise_id)).fetchone()
+        eq_id = link["id"] if link else None
+    steps = None
+    if eq_id:
+        q = conn.execute("SELECT steps FROM equipment WHERE id=? AND owner=?", (eq_id, owner)).fetchone()
+        steps = progression.expand_steps(q["steps"]) if q else None
+    t = conn.execute("SELECT weight, reps FROM target WHERE owner=? AND exercise_id=? AND deleted=0 "
+                     "ORDER BY updated_at DESC LIMIT 1", (owner, exercise_id)).fetchone()
+    last = conn.execute(
+        "SELECT w.id FROM workout w JOIN workout_set s ON s.workout_id=w.id AND s.exercise_id=? AND s.deleted=0 AND s.kind!='warmup' "
+        "WHERE w.owner=? AND w.deleted=0 AND w.id!=? ORDER BY w.started_at DESC LIMIT 1", (exercise_id, owner, skip_workout or "")).fetchone()
+    last_sets = [dict(weight=r["weight"], reps=r["reps"], duration_s=r["duration_s"]) for r in conn.execute(
+        "SELECT weight, reps, duration_s FROM workout_set WHERE workout_id=? AND exercise_id=? AND deleted=0 AND kind!='warmup' "
+        "ORDER BY done_at, set_no", (last["id"], exercise_id))] if last else []
+    return {"exercise_id": ex["id"], "name": ex["name"], "kind": ex["kind"], "equipment_id": eq_id, "steps": steps,
+            "sets": rx["target_sets"] if rx is not None else None, "reps_min": rx["reps_min"] if rx is not None else None,
+            "reps_max": rx["reps_max"] if rx is not None else None, "rest_s": rx["rest_s"] if rx is not None else None,
+            "target_weight": t["weight"] if t else None, "target_reps": t["reps"] if t else None, "last": last_sets}
+
+
+def _routine_plan(conn, owner: str, routine_id: str, skip_workout: str | None = None) -> dict | None:
+    r = conn.execute("SELECT id, name FROM routine WHERE id=? AND owner=? AND deleted=0", (routine_id, owner)).fetchone()
+    if r is None:
+        return None
+    rows = conn.execute("SELECT x.* FROM routine_exercise x JOIN exercise e ON e.id=x.exercise_id AND e.deleted=0 "
+                        "WHERE x.routine_id=? AND x.owner=? AND x.deleted=0 ORDER BY x.position", (routine_id, owner)).fetchall()
+    exercises = [i for i in (_exercise_info(conn, owner, x["exercise_id"], skip_workout, x) for x in rows) if i]
+    return {"routine_id": r["id"], "routine": r["name"], "exercises": exercises}
+
+
+def _naive_local(text: str | None, tz) -> datetime | None:
+    """started_at as local wall-clock time (the app writes local stamps without an offset; the panel does the same)."""
+    try:
+        d = datetime.fromisoformat((text or "").replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return d.astimezone(tz).replace(tzinfo=None) if d.tzinfo else d
+
+
+def session(conn, owner, now, tz, params) -> dict:
+    """Everything the workout logger needs: the routines to start from, the running workout with its sets (if any) and
+    the plan of the routine (the running one's, or `routine_id`). `exercise_id` adds one more exercise (free workout)."""
+    local = (now.astimezone(tz) if tz else now).replace(tzinfo=None)
+    active = None
+    row = conn.execute("SELECT * FROM workout WHERE owner=? AND deleted=0 AND ended_at IS NULL AND source='' "
+                       "ORDER BY started_at DESC LIMIT 1", (owner,)).fetchone()
+    started = _naive_local(row["started_at"], tz) if row else None
+    if row and started and timedelta(0) <= local - started < timedelta(hours=24):
+        sets = [{"id": s["id"], "exercise_id": s["exercise_id"], "set_no": s["set_no"], "weight": s["weight"], "reps": s["reps"],
+                 "duration_s": s["duration_s"], "kind": s["kind"], "done_at": s["done_at"]} for s in conn.execute(
+                     "SELECT * FROM workout_set WHERE workout_id=? AND owner=? AND deleted=0 ORDER BY done_at, set_no", (row["id"], owner))]
+        active = {"id": row["id"], "routine_id": row["routine_id"], "routine": row["routine_name"], "started_at": row["started_at"],
+                  "sets": sets}
+    nxt = st.next_routine(conn, owner, now.astimezone(tz) if tz else now)
+    routines = [{"id": r["id"], "name": r["name"], "program": r["program"] or ""} for r in conn.execute(
+        "SELECT r.id, r.name, p.name AS program FROM routine r LEFT JOIN program p ON p.id=r.program_id AND p.deleted=0 "
+        "WHERE r.owner=? AND r.deleted=0 ORDER BY p.name COLLATE NOCASE, r.position, r.name COLLATE NOCASE", (owner,))]
+    routine_id = (active or {}).get("routine_id") or params.get("routine_id")
+    plan = _routine_plan(conn, owner, routine_id, (active or {}).get("id")) if routine_id else None
+    known = {x["exercise_id"] for x in (plan or {}).get("exercises", [])}
+    if active:   # exercises added during the workout stay when the page is opened again
+        plan = plan or {"routine_id": None, "routine": active["routine"], "exercises": []}
+        for s in active["sets"]:
+            if s["exercise_id"] not in known:
+                known.add(s["exercise_id"])
+                if info := _exercise_info(conn, owner, s["exercise_id"], active["id"]):
+                    plan["exercises"].append(info)
+    picked = _exercise_info(conn, owner, params["exercise_id"], (active or {}).get("id")) if params.get("exercise_id") else None
+    exercises = [{"id": r["id"], "name": r["name"], "kind": r["kind"]} for r in conn.execute(
+        "SELECT id, name, kind FROM exercise WHERE owner=? AND deleted=0 ORDER BY name COLLATE NOCASE", (owner,))]
+    return {"active": active, "plan": plan, "routines": routines, "next_routine_id": nxt["routine_id"] if nxt else None,
+            "exercises": exercises, "picked": picked}
+
+
 QUERIES: dict[str, Callable[..., dict]] = {
+    "session": session,
     "plan_edit": plan_edit,
     "overview": overview, "muscles": muscles, "workouts": workouts, "workout": workout,
     "exercises": exercises, "exercise": exercise, "plan": plan,

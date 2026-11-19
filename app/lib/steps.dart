@@ -28,9 +28,9 @@ List<double>? expandSteps(String? json) {
       grid = [for (var i = 0; i <= n; i++) _round(lo + i * step)];
     }
     // Stack-loaded machine with an add-on weight: every pin position with and without it.
-    final extra = (spec['extra'] as num?)?.toDouble();
-    if (extra != null && extra > 0 && grid.isNotEmpty) {
-      grid = {...grid, for (final v in grid) _round(v + extra)}.toList()..sort();
+    final extras = extraWeights(spec['extra']);
+    if (extras.isNotEmpty && grid.isNotEmpty) {
+      grid = {...grid, for (final v in grid) for (final e in extras) _round(v + e)}.toList()..sort();
     }
     return grid.isEmpty ? null : grid;
   }
@@ -164,8 +164,14 @@ String? stepsSummary(String? json, String Function(num) fmt, {required String ra
   return listText.replaceAll('{0}', steps.map(fmt).join(', '));
 }
 
+/// The add-on weights of a stack machine: one number or a list (0 and invalid entries are ignored).
+List<double> extraWeights(Object? extra) {
+  final items = extra is List ? extra : [extra];
+  return ({for (final e in items) if (e is num && e > 0) _round(e.toDouble())}.toList()..sort());
+}
+
 /// The input of the equipment form, one piece per field. Stack machines use [input] (range or list) and [extra]
-/// (an add-on weight); plate-loaded machines use [base], [plates], [sides] and [max]; everything else only [input].
+/// (add-on weights, separated by spaces); plate-loaded machines use [base], [plates], [sides] and [max]; everything else only [input].
 class StepsForm {
   StepsForm({this.input = '', this.extra = '', this.base = '', this.plates = '', this.sides = 2, this.max = ''});
 
@@ -217,7 +223,7 @@ StepsForm decodeStepsForm(String? json) {
       max: spec['max'] is num ? _num(spec['max'] as num) : '',
     );
   }
-  final extra = spec['extra'] is num ? _num(spec['extra'] as num) : '';
+  final extra = extraWeights(spec['extra']).map(_num).join(' ');
   if (spec['values'] is List) return StepsForm(input: [for (final v in spec['values'] as List) if (v is num) _num(v)].join(' '), extra: extra);
   if (spec['min'] is num && spec['max'] is num && spec['step'] is num) {
     return StepsForm(input: '${_num(spec['min'] as num)}-${_num(spec['max'] as num)}/${_num(spec['step'] as num)}', extra: extra);
@@ -248,8 +254,11 @@ String? encodeStepsForm(String type, StepsForm f) {
   final parsed = parseStepsInput(f.input);
   if (parsed == null || parsed.isEmpty) return parsed;
   if (!usesExtraField(type) || f.extra.trim().isEmpty) return parsed;
-  final extra = _number(f.extra);
-  if (extra == null || extra <= 0) return null;
+  final nums = [for (final x in f.extra.trim().split(RegExp(r'[\s;]+'))) if (x.isNotEmpty) _number(x)];
+  if (nums.contains(null) || nums.any((x) => x! < 0)) return null;
+  final extras = ({for (final x in nums) if (x! > 0) x}.toList()..sort());
+  if (extras.isEmpty) return parsed;
+  final extra = extras.length == 1 ? extras.first : extras;
   final spec = jsonDecode(parsed);
   return jsonEncode(spec is List ? {'values': spec, 'extra': extra} : {...(spec as Map), 'extra': extra});
 }

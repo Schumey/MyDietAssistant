@@ -122,12 +122,22 @@ def _expand_plates(spec: dict) -> list[float] | None:
     return [round(base + i * unit, 4) for i in range(n + 1)]
 
 
+def extra_weights(extra: Any) -> list[float]:
+    """The add-on weights of a stack machine: one number or a list (0 and invalid entries are ignored)."""
+    items = extra if isinstance(extra, (list, tuple)) else [extra]
+    out = set()
+    for e in items:
+        if isinstance(e, (int, float)) and not isinstance(e, bool) and e > 0:
+            out.add(round(float(e), 4))
+    return sorted(out)
+
+
 def expand_steps(spec: Any) -> list[float] | None:
     """Equipment steps -> sorted list of weights, or None when unknown.
 
     Accepts a list of numbers, {"min", "max", "step"} or the JSON text of either, and two machine forms:
-    stack-loaded with an optional add-on weight ({"min", "max", "step", "extra"} or {"values": [...], "extra"}: every pin
-    position, with and without the add-on) and plate-loaded ({"base", "plates", "sides", "max"})."""
+    stack-loaded with an optional add-on weight(s) ({"min", "max", "step", "extra"} or {"values": [...], "extra"}, extra = one number or a list: every pin
+    position, with and without each add-on) and plate-loaded ({"base", "plates", "sides", "max"})."""
     if spec in (None, "", []):
         return None
     if isinstance(spec, str):
@@ -146,9 +156,9 @@ def expand_steps(spec: Any) -> list[float] | None:
                 return None
             n = int(round((hi - lo) / step))
             grid = [round(lo + i * step, 4) for i in range(n + 1)]
-        extra = spec.get("extra")
-        if extra and extra > 0 and grid:
-            grid = sorted(set(grid) | {round(v + extra, 4) for v in grid})
+        extras = extra_weights(spec.get("extra"))
+        if extras and grid:
+            grid = sorted(set(grid) | {round(v + e, 4) for v in grid for e in extras})
         return grid or None
     if isinstance(spec, (list, tuple)):
         values = sorted({round(float(v), 4) for v in spec})

@@ -281,6 +281,11 @@ def test_expand_steps_stack_with_addon_weight():
     assert p.expand_steps({"min": 7, "max": 14, "step": 7, "extra": 0}) == [7, 14]
 
 
+def test_expand_steps_stack_with_several_addon_weights():
+    assert p.expand_steps({"values": [10, 20], "extra": [0, 1.1, 2.3, 3.4]}) == [10, 11.1, 12.3, 13.4, 20, 21.1, 22.3, 23.4]
+    assert p.expand_steps({"min": 7, "max": 14, "step": 7, "extra": [1, "x", -2]}) == [7, 8, 14, 15]
+
+
 def test_expand_steps_plate_loaded():
     # sled 100 kg, plates on both sides, smallest plate 2.5 -> steps of 5 kg
     assert p.expand_steps({"base": 100, "plates": [25, 10, 2.5], "max": 120}) == [100, 105, 110, 115, 120]

@@ -127,6 +127,11 @@ test("stack machine: steps plus add-on weight round-trip", () => {
   assert.equal(e.buildSteps({ ...q, extra: "" }).steps, '{"min":7,"max":98,"step":7}');
   assert.equal(e.buildSteps({ ...q, extra: "x" }).error, "err_extra");
   assert.equal(e.buildSteps({ ...q, steps: "" }).error, "err_extra");     // add-on without steps makes no sense
+  const multi = e.buildSteps({ ...q, extra: "0 1,1 2,3 3,4" });
+  assert.deepEqual(JSON.parse(multi.steps), { min: 7, max: 98, step: 7, extra: [1.1, 2.3, 3.4] });
+  assert.equal(e.decodeSteps(multi.steps).extra, "1.1 2.3 3.4");
+  assert.equal(e.buildSteps({ ...q, extra: "0" }).steps, '{"min":7,"max":98,"step":7}');
+  assert.equal(e.buildSteps({ ...q, extra: "1,1 -2" }).error, "err_extra");
 });
 
 test("plate-loaded machine: base weight, plates, both sides", () => {

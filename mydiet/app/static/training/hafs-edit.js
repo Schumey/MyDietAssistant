@@ -89,7 +89,8 @@ export const decodeSteps = (json, fmt = (n) => String(n)) => {
       out.max = spec.max ? fmt(spec.max) : "";
       out.both = spec.sides !== 1;
     }
-    if (spec.extra) out.extra = fmt(spec.extra);
+    const extras = (Array.isArray(spec.extra) ? spec.extra : [spec.extra]).filter((e) => typeof e === "number" && e > 0);
+    if (extras.length) out.extra = extras.map(fmt).join(" ");
   }
   return out;
 };
@@ -115,9 +116,12 @@ export const buildSteps = (q) => {
   const steps = parseSteps(q.steps);
   if (steps === null) return { error: "err_steps" };
   if (q.type === "machine_stack") {
-    const extra = num(q.extra);
-    if (extra != null && (!Number.isFinite(extra) || extra <= 0)) return { error: "err_extra" };
-    if (extra) {
+    // Add-on weights: one or several (space or semicolon separated); 0 means "none" and is ignored.
+    const list = String(q.extra ?? "").trim().replaceAll(",", ".").split(/[\s;]+/).filter(Boolean).map(Number);
+    if (list.some((e) => !Number.isFinite(e) || e < 0)) return { error: "err_extra" };
+    const extras = [...new Set(list.filter((e) => e > 0))].sort((a, b) => a - b);
+    if (extras.length) {
+      const extra = extras.length === 1 ? extras[0] : extras;
       if (!steps) return { error: "err_extra" };
       const spec = JSON.parse(steps);
       return { steps: JSON.stringify(Array.isArray(spec) ? { values: spec, extra } : { ...spec, extra }) };

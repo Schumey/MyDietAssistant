@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 2.0.2
+
+### Neu
+- **Workout in der Weboberfläche starten:** Unter *Training → Heute* gibt es **Workout starten** (nächster Trainingstag, anderer Trainingstag oder freies Workout). Sätze mit Gewicht (± entlang der Gewichtsstufen des Geräts) und Wiederholungen eintragen, Übungen ergänzen, Workout beenden oder verwerfen. Das läuft im Browser und in der Home-Assistant-Companion-App; ein laufendes Workout (auch aus der HAFS-App) lässt sich mit **Workout fortsetzen** weiterführen. Events und Sensoren funktionieren wie bei der App.
+- **Mehrere Zusatzgewichte an einer Maschine:** Beim Gewichtsblock lassen sich mehrere zuschaltbare Gewichte eintragen, z. B. `1,1 2,3 3,4` (Leerzeichen getrennt, `0` wird ignoriert). Jede Stufe gibt es dann auch plus jedes Zusatzgewicht. Gespeicherte einzelne Zusatzgewichte bleiben gültig. Gilt in der Weboberfläche und in der HAFS-App.
+
 ## 2.0.1
 
 ### Geändert

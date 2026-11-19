@@ -447,7 +447,7 @@ class _EquipmentScreenState extends State<EquipmentScreen> {
               const SizedBox(height: 16),
               TextField(
                 controller: _extra,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: TextInputType.text,
                 decoration: InputDecoration(
                   labelText: tr('equipment_extra'),
                   helperText: tr('equipment_extra_help'),

@@ -2,6 +2,12 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 2.0.2
+
+### New
+- **Start a workout in the web interface:** *Training → Today* has **Start workout** (next training day, another training day or a free workout). Log sets with weight (± along the machine's weight steps) and reps, add exercises, finish or discard the workout. It works in the browser and in the Home Assistant companion app; a running workout (also one from the HAFS app) can be taken up with **Continue workout**. Events and sensors work as with the app.
+- **Several add-on weights on one machine:** a stack machine can have several switchable weights, e.g. `1.1 2.3 3.4` (space separated, `0` is ignored). Every step then also exists plus each add-on. Single add-on weights saved earlier stay valid. Applies to the web interface and the HAFS app.
+
 ## 2.0.1
 
 ### Changed
