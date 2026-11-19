@@ -13,6 +13,8 @@ void main() {
     // stack with add-on weight, plate-loaded machine
     expect(expandSteps('{"min":7,"max":21,"step":7,"extra":2.5}'), [7, 9.5, 14, 16.5, 21, 23.5]);
     expect(expandSteps('{"values":[10,20],"extra":2.5}'), [10, 12.5, 20, 22.5]);
+    // several add-on weights: every step plus each of them (0 and invalid entries are ignored)
+    expect(expandSteps('{"values":[10,20],"extra":[0,1.1,2.3,3.4]}'), [10, 11.1, 12.3, 13.4, 20, 21.1, 22.3, 23.4]);
     expect(expandSteps('{"base":100,"plates":[25,10,2.5],"max":120}'), [100, 105, 110, 115, 120]);
     expect(expandSteps('{"base":20,"plates":[1.25,5],"sides":1,"max":22.5}'), [20, 21.25, 22.5]);
     expect(expandSteps('{"base":100,"plates":[],"max":200}'), isNull);
@@ -95,6 +97,9 @@ void main() {
       expect(jsonDecode(encodeStepsForm('machine_stack', StepsForm(input: '10 20 30', extra: '1.25'))!), {'values': [10.0, 20.0, 30.0], 'extra': 1.25});
       expect(jsonDecode(encodeStepsForm('machine_stack', StepsForm(input: '10 20 30'))!), [10.0, 20.0, 30.0]);
       expect(decodeStepsForm('{"values":[10,20],"extra":2.5}').extra, '2,5');
+      expect(decodeStepsForm('{"values":[10,20],"extra":[1.1,2.3,3.4]}').extra, '1,1 2,3 3,4');
+      expect(jsonDecode(encodeStepsForm('machine_stack', StepsForm(input: '10 20', extra: '0 1,1 2,3 3,4'))!), {'values': [10.0, 20.0], 'extra': [1.1, 2.3, 3.4]});
+      expect(encodeStepsForm('machine_stack', StepsForm(input: '10 20', extra: '1,1 -2')), isNull);
       expect(encodeStepsForm('machine_stack', StepsForm(input: '10 20', extra: 'x')), isNull);
       expect(encodeStepsForm('machine_stack', StepsForm(input: 'bad')), isNull);
       expect(encodeStepsForm('machine_stack', StepsForm()), '');

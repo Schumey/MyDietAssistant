@@ -225,8 +225,8 @@ export function installSession(Panel, { edit, esc }) {
       kind: rec.kind, done_at: rec.done_at });
     delete S.drafts[i];
     this._sessDraft(i);   // the next set starts with the one just logged
-    // a superset sends you on to the partner without a rest; a warm-up set never does
-    const next = rec.kind === "warmup" ? { go: null, rest: true } : supersetNext(S.exercises, (id) => this._sessDoneOf(id).length, info.exercise_id);
+    // a superset sends you on to the partner without a rest; after a warm-up set there is no rest at all (like in the app)
+    const next = rec.kind === "warmup" ? { go: null, rest: false } : supersetNext(S.exercises, (id) => this._sessDoneOf(id).length, info.exercise_id);
     S.focus = next.go;
     if (next.rest) this._sessRestStart(restSeconds(info, S.data.rest_default)); else this._sessRestStop();
     this._sessDraw();
