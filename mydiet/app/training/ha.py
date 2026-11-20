@@ -35,6 +35,7 @@ ENTITIES = {
     "phase": ("sensor", "phase", "", "enum", "mdi:scale-bathroom", ""),
     "workout_active": ("binary_sensor", "workout active", "", "", "mdi:dumbbell", ""),
 }
+_dyn: dict[str, tuple] = {}   # per-exercise entities (option `exercise_sensors`), filled by values()
 OPTIONS_OF = {"training_state": ["none", "active", "done"], "phase": ["bulk", "maintain", "cut"]}
 REFRESH_S = 30 * 60          # states are sent again after this long even when unchanged (a restarted HA forgets REST states)
 
@@ -77,7 +78,7 @@ def values(owner: str) -> dict[str, tuple[str, dict]]:
     nxt = st.get("next") or {}
     last = st.get("last") or {}
     last_at = st.get("last_workout_at")
-    return {
+    out = {
         "training_state": (st.get("state", "none"), st.get("attrs", {})),
         "workouts_today": (str(st.get("workouts_today", 0)), {}),
         "workouts_week": (str(st.get("workouts_week", 0)), {}),
@@ -88,10 +89,22 @@ def values(owner: str) -> dict[str, tuple[str, dict]]:
         "phase": (phase["phase"] or "unknown", {"source": phase["source"]}),
         "workout_active": ("on" if st.get("active") else "off", {}),
     }
+    if main.OPTIONS.get("exercise_sensors"):
+        for fig in api.store.exercise_figures(owner):
+            key = "ex_" + (re.sub(r"[^a-z0-9]+", "_", fig["name"].lower()).strip("_") or fig["id"][:8])
+            extra = {"exercise": fig["name"], "sets": fig["sets"], "last_trained": fig["at"]}
+            for suffix, label, unit, icon, state in (("weight", "weight", "kg", "mdi:weight-kilogram", fig["weight"]), ("volume", "volume", "kg", "mdi:weight-lifter", fig["volume"])):
+                _dyn[f"{key}_{suffix}"] = ("sensor", f"{fig['name']} {label}", unit, "", icon, "measurement")
+                out[f"{key}_{suffix}"] = (str(state), extra)
+    return out
+
+
+def _meta(key: str) -> tuple:
+    return ENTITIES.get(key) or _dyn[key]
 
 
 def _attrs(display: str, key: str) -> dict:
-    _, label, unit, dclass, icon, sclass = ENTITIES[key]
+    _, label, unit, dclass, icon, sclass = _meta(key)
     out = {"friendly_name": f"HAFS {display} {label}", "icon": icon}
     if unit:
         out["unit_of_measurement"] = unit
@@ -105,7 +118,7 @@ def _attrs(display: str, key: str) -> dict:
 
 
 def _mqtt(slug: str, display: str, key: str, state: str, extra: dict) -> None:
-    domain, label, unit, dclass, icon, sclass = ENTITIES[key]
+    domain, label, unit, dclass, icon, sclass = _meta(key)
     object_id = f"hafs_{slug}_{key}"
     topic = f"hafs/{slug}/{key}"
     if object_id not in _discovered:
@@ -145,7 +158,7 @@ def publish(owner: str, force: bool = False) -> bool:
     slug = slug_of(owner)
     use_mqtt = bool(main.OPTIONS.get("mqtt_discovery"))
     for key, (state, extra) in vals.items():
-        domain = ENTITIES[key][0]
+        domain = _meta(key)[0]
         try:
             if use_mqtt:
                 try:

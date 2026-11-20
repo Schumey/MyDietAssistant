@@ -83,6 +83,28 @@ def status(conn: sqlite3.Connection, owner: str, now: datetime | None = None, tz
     return out
 
 
+def exercise_figures(conn: sqlite3.Connection, owner: str, days: int = 90, limit: int = 40, now: datetime | None = None) -> list[dict]:
+    """Per exercise trained in the last [days] days, its figures of the latest workout with it: heaviest working weight and
+    volume (for sensors, e.g. Grafana). Most recently trained first, at most [limit]."""
+    since = ((now or datetime.now()) - timedelta(days=days)).strftime("%Y-%m-%dT%H:%M:%S")
+    warm = targets.count_warmups(conn, owner)
+    out = []
+    for ex in conn.execute(
+            "SELECT e.id, e.name, MAX(s.done_at) last FROM workout_set s JOIN exercise e ON e.id=s.exercise_id AND e.deleted=0 "
+            "JOIN workout w ON w.id=s.workout_id AND w.deleted=0 WHERE s.owner=? AND s.deleted=0 AND s.kind!='warmup' AND s.done_at>=? "
+            "GROUP BY e.id ORDER BY last DESC LIMIT ?", (owner, since, limit)).fetchall():
+        w = conn.execute("SELECT s.workout_id FROM workout_set s JOIN workout w ON w.id=s.workout_id AND w.deleted=0 "
+                         "WHERE s.owner=? AND s.exercise_id=? AND s.deleted=0 AND s.kind!='warmup' ORDER BY s.done_at DESC LIMIT 1",
+                         (owner, ex["id"])).fetchone()
+        sets = conn.execute("SELECT weight, reps, kind FROM workout_set WHERE workout_id=? AND exercise_id=? AND deleted=0",
+                            (w["workout_id"], ex["id"])).fetchall()
+        work = [s for s in sets if s["kind"] != "warmup"]
+        counted = sets if warm else work
+        out.append({"id": ex["id"], "name": ex["name"], "weight": max((s["weight"] or 0 for s in work), default=0),
+                    "volume": round(sum((s["weight"] or 0) * (s["reps"] or 0) for s in counted), 1), "sets": len(work), "at": ex["last"]})
+    return out
+
+
 def workout_ids(conn: sqlite3.Connection, owner: str, ids: list[str]) -> dict[str, str | None]:
     """workout id -> ended_at (None = running) for those that exist, used to detect transitions."""
     if not ids:

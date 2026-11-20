@@ -20,6 +20,9 @@ configuration:
   api_key:
     name: API-sleutel
     description: Sleutel voor de externe interface (header X-MDA-Key). Leeg = interface uit.
+  exercise_sensors:
+    name: Sensors per exercise
+    description: Two sensors per trained exercise (last 90 days, at most 40) with the working weight and the volume of the last workout, e.g. for Grafana. With mqtt_discovery they survive a HA restart.
   mqtt_discovery:
     name: MQTT-discovery
     description: Maakt sensoren via MQTT-discovery (unieke ID's, blijven bestaan na een herstart van HA). Vereist de MQTT-integratie; zonder die worden gewone statussen verstuurd.

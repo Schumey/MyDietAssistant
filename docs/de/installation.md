@@ -31,6 +31,7 @@ Die Optionen findest Du unter **Einstellungen → Apps → HAFS → Konfiguratio
 | `default_kcal_goal` | Kalorienziel, solange Du noch keins eingestellt hast | 2000 |
 | `publish_sensors` | Sensoren in Home Assistant setzen, siehe [Sensoren](sensors.md) | an |
 | `mqtt_discovery` | Sensoren über MQTT Discovery anlegen (eindeutige IDs) | aus |
+| `exercise_sensors` | Zwei Sensoren pro trainierter Übung: Arbeitsgewicht und Volumen des letzten Workouts (für Grafana u. a.), siehe [Training in Home Assistant](training-ha.md) | aus |
 | `auto_backup` | täglich eine JSON-Sicherung je Benutzer nach `/backup/mydiet/` | an |
 | `backup_keep_days` | wie viele Tage Sicherungen aufbewahrt werden (1 bis 365) | 14 |
 | `api_key` | Schlüssel für die [Schnittstelle](api.md); leer = Schnittstelle aus | leer |

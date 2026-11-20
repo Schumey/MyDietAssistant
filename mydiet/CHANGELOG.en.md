@@ -2,6 +2,16 @@
 
 All notable changes to the add-on. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The German [CHANGELOG.md](CHANGELOG.md) is the complete history; this English version covers 1.0.0 and later.
 
+## 2.0.4
+
+### New
+- **Equipment settings:** a piece of equipment can carry free text (e.g. “seat 4, back 3”, field *Settings* in the equipment form, exercise form and plan). In a running workout it is shown small behind the exercise name.
+- **Sensors per exercise (optional):** the app option `exercise_sensors` creates two sensors per trained exercise: working weight and volume of the last workout, e.g. for Grafana (as MQTT entities with `mqtt_discovery`).
+
+### Changed
+- Workout in the web interface: header and rest time stay on top (below the HAFS bar) instead of scrolling away.
+- Finished exercises (all planned sets done, warm-up done) fold into one line automatically; a tap opens them again.
+
 ## 2.0.3
 
 ### New

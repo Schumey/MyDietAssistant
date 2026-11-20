@@ -363,3 +363,11 @@ def test_zone_to_gym(store):
         assert zones.gym_for_zone(c, OWNER, "zone.home") is None
         assert zones.gym_for_zone(c, "other", "zone.cleverfit") is None
         assert zones.gym_for_zone(c, OWNER, None) is None
+
+
+def test_exercise_figures(conn):
+    add(conn, "w1", "2026-11-01T10:00:00", "2026-11-01T11:00:00", sets=((50, 10),))
+    add(conn, "w2", "2026-11-08T10:00:00", "2026-11-08T11:00:00", sets=((60, 8), (65, 5)))
+    figs = status.exercise_figures(conn, OWNER, now=datetime(2026, 11, 10))
+    assert figs == [{"id": "e1", "name": "Bank", "weight": 65, "volume": 805.0, "sets": 2, "at": "2026-11-08T10:00:00"}]
+    assert status.exercise_figures(conn, OWNER, days=1, now=datetime(2026, 11, 10)) == []

@@ -2,6 +2,16 @@
 
 Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
+## 2.0.4
+
+### Neu
+- **Geräteeinstellungen:** Beim Gerät lässt sich ein Freitext eintragen (z. B. „Sitz 4, Lehne 3“, Feld *Einstellungen* in Geräteformular, Übungsformular und Plan). Im laufenden Workout steht er klein hinter dem Übungsnamen.
+- **Sensoren pro Übung (optional):** Die App-Option `exercise_sensors` legt pro trainierter Übung zwei Sensoren an: Arbeitsgewicht und Volumen des letzten Workouts, z. B. für Grafana (mit `mqtt_discovery` als MQTT-Entitäten).
+
+### Geändert
+- Workout in der Weboberfläche: Kopfzeile und Pausenzeit bleiben oben stehen (unterhalb der Kopfleiste von HAFS), statt mitzuscrollen.
+- Fertige Übungen (alle geplanten Sätze gemacht, Aufwärmen erledigt) klappen automatisch zu einer Zeile ein; ein Tipp öffnet sie wieder.
+
 ## 2.0.3
 
 ### Neu

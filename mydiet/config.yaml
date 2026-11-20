@@ -1,5 +1,5 @@
 name: HAFS
-version: "2.0.3"
+version: "2.0.4"
 slug: mydiet
 url: https://github.com/Schumey/HAFS
 description: HomeAssistant Fitness Suite – Ernährungstagebuch und Krafttraining, lokal, mit HA-Sensoren
@@ -19,6 +19,7 @@ options:
   usda_api_key: ""
   admin_users: []
   mqtt_discovery: false
+  exercise_sensors: false
 schema:
   default_kcal_goal: int(500,10000)
   publish_sensors: bool
@@ -29,6 +30,7 @@ schema:
   admin_users:
     - str
   mqtt_discovery: bool
+  exercise_sensors: bool
 map:
   - type: data
     read_only: false

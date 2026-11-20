@@ -20,6 +20,8 @@ Je Benutzer, `<name>` ist der Anzeigename in Kleinbuchstaben, alles außer `a-z`
 | `sensor.hafs_<name>_next_routine` | nächster Trainingstag; Attribute `program`, `exercises` |
 | `sensor.hafs_<name>_phase` | `bulk`, `maintain` oder `cut`; Attribut `source` (`manual`, `goal_mode`, `last_known`) |
 
+Mit der App-Option `exercise_sensors` kommen pro Übung der letzten 90 Tage (höchstens 40, die zuletzt trainierten zuerst) zwei Sensoren dazu: `sensor.hafs_<name>_ex_<übung>_weight` (höchstes Arbeitsgewicht des letzten Workouts mit der Übung, kg) und `..._volume` (Volumen dieses Workouts, kg; Aufwärmsätze nur, wenn sie in den Statistiken mitzählen). Den Verlauf hält die Langzeitstatistik von Home Assistant, z. B. für Grafana.
+
 Ohne weitere Einstellung sind das einfache Zustände: Sie haben keine eindeutige ID und fehlen nach einem Neustart von Home Assistant, bis HAFS sie wieder sendet (spätestens nach 30 Minuten). Mit der App-Option `mqtt_discovery` werden es richtige MQTT-Entitäten mit eindeutiger ID und einem Gerät **HAFS <Name>**; dafür muss die MQTT-Integration eingerichtet sein (siehe [Sensoren](sensors.md#mqtt-discovery)).
 
 Kamen die Entitäten bisher von der HAFS-Integration, entferne die Integration, bevor Training sie anlegt (siehe [Umstieg](training.md#umstieg-von-der-hafs-integration)).

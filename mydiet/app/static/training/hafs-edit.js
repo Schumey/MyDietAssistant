@@ -277,11 +277,11 @@ export const programDelete = (id, data, now = stamp()) => ({
 export const gymDraft = (data, id, fmt) => {
   const raw = id ? data.gyms.find((g) => g.id === id) : null;
   const equipment = raw ? data.equipment.filter((q) => q.gym_id === raw.id).map((q) => ({
-    raw: q, name: q.name, type: q.type, ...decodeSteps(q.steps, fmt), outOfOrder: !!q.out_of_order })) : [];
+    raw: q, name: q.name, type: q.type, settings: q.settings ?? "", ...decodeSteps(q.steps, fmt), outOfOrder: !!q.out_of_order })) : [];
   return { raw, name: raw?.name ?? "", zone: raw?.zone ?? "", equipment, removed: [] };
 };
 
-export const newEquipment = () => ({ raw: null, name: "", type: "machine_stack", ...emptyMachine(), outOfOrder: false });
+export const newEquipment = () => ({ raw: null, name: "", type: "machine_stack", settings: "", ...emptyMachine(), outOfOrder: false });
 
 export const gymRecords = (draft, data, now = stamp(), makeId = newId) => {
   const name = draft.name.trim();
@@ -292,7 +292,7 @@ export const gymRecords = (draft, data, now = stamp(), makeId = newId) => {
     if (!q.name.trim()) return { error: "err_name" };
     const built = buildSteps(q);
     if (built.error) return { error: built.error, detail: q.name };
-    const rec = { ...q.raw, id: q.raw?.id || makeId(), gym_id: id, name: q.name.trim(), type: q.type, steps: built.steps, out_of_order: q.outOfOrder ? 1 : 0, updated_at: now, deleted: 0 };
+    const rec = { ...q.raw, id: q.raw?.id || makeId(), gym_id: id, name: q.name.trim(), type: q.type, settings: (q.settings ?? "").trim(), steps: built.steps, out_of_order: q.outOfOrder ? 1 : 0, updated_at: now, deleted: 0 };
     if (built.base != null) rec.base_weight = built.base;
     equipment.push(rec);
   }
@@ -328,7 +328,7 @@ export const exerciseDraft = (data, id, fmt) => {
   const linked = new Set(raw ? data.links.filter((l) => l.exercise_id === raw.id).map((l) => l.equipment_id) : []);
   const gyms = new Map(data.gyms.map((g) => [g.id, g.name]));
   const equipment = data.equipment.map((q) => ({
-    raw: q, gymId: q.gym_id, gymName: gyms.get(q.gym_id) || "", name: q.name, type: q.type, ...decodeSteps(q.steps, fmt),
+    raw: q, gymId: q.gym_id, gymName: gyms.get(q.gym_id) || "", name: q.name, type: q.type, settings: q.settings ?? "", ...decodeSteps(q.steps, fmt),
     outOfOrder: !!q.out_of_order, linked: linked.has(q.id),
   })).sort((a, b) => a.gymName.localeCompare(b.gymName) || a.name.localeCompare(b.name));
   const weight = raw ? data.target_weights?.[raw.id] : null;
@@ -349,7 +349,7 @@ export const toggleMuscle = (meta, list, key) => {
   meta[other] = meta[other].filter((k) => !meta[list].includes(k));
 };
 
-export const newGear = (gymId, gymName) => ({ raw: null, gymId, gymName, name: "", type: "barbell", ...emptyMachine(), outOfOrder: false, linked: true });
+export const newGear = (gymId, gymName) => ({ raw: null, gymId, gymName, name: "", type: "barbell", settings: "", ...emptyMachine(), outOfOrder: false, linked: true });
 
 // Returns {error, detail} or {records, weights}: the exercise itself (new or changed), new/changed equipment and the links of this
 // exercise (added, or tombstoned when unchecked). `weights` = [{exercise_id, weight}] for the next-weight field when it changed.
@@ -387,9 +387,9 @@ export const exerciseRecords = (draft, data, now = stamp(), makeId = newId) => {
       const built = buildSteps(q);
       if (built.error) return { error: built.error, detail: q.name };
       const steps = isStation(q.type) ? "" : built.steps;
-      const same = q.raw && q.raw.name === q.name.trim() && q.raw.type === q.type && q.raw.steps === steps && (built.base == null || (q.raw.base_weight ?? 0) === built.base);
+      const same = q.raw && q.raw.name === q.name.trim() && q.raw.type === q.type && q.raw.steps === steps && (q.raw.settings ?? "") === (q.settings ?? "").trim() && (built.base == null || (q.raw.base_weight ?? 0) === built.base);
       if (!same) {
-        const rec = { ...q.raw, id, gym_id: q.gymId, name: q.name.trim(), type: q.type, steps, out_of_order: q.outOfOrder ? 1 : 0, updated_at: now, deleted: 0 };
+        const rec = { ...q.raw, id, gym_id: q.gymId, name: q.name.trim(), type: q.type, settings: (q.settings ?? "").trim(), steps, out_of_order: q.outOfOrder ? 1 : 0, updated_at: now, deleted: 0 };
         if (built.base != null && !isStation(q.type)) rec.base_weight = built.base;
         equipment.push(rec);
       }

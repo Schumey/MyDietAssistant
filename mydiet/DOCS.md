@@ -22,6 +22,7 @@ Details: [Erste Schritte](https://github.com/Schumey/HAFS/blob/main/docs/de/firs
 |---|---|
 | `default_kcal_goal` | Kalorienziel, bis Du eins einstellst / calorie goal until you set one |
 | `publish_sensors` | Sensoren in Home Assistant setzen / publish sensors |
+| `exercise_sensors` | Sensoren pro Übung (Gewicht, Volumen) / sensors per exercise (weight, volume) |
 | `mqtt_discovery` | Sensoren über MQTT Discovery anlegen / create sensors via MQTT discovery |
 | `auto_backup` | täglich JSON-Sicherung nach `/backup/mydiet/` / daily JSON backup |
 | `backup_keep_days` | Aufbewahrung in Tagen (Standard 14) / retention in days |

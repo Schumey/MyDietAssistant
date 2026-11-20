@@ -12,10 +12,14 @@ export const SESSION_CSS = `
 .sess-num { display: flex; align-items: center; gap: 4px; }
 .sess-num input { width: 5em; font: inherit; font-size: 17px; text-align: center; padding: 8px 6px; border-radius: 6px 6px 0 0; border: 0; border-bottom: 2px solid var(--line); background: var(--field); color: var(--ink); }
 .sess-num .ib { width: 38px; height: 38px; font-size: 20px; line-height: 1; }
-.sess-rest { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 12px; background: var(--accent); color: var(--accent-ink); margin-bottom: 12px; }
+.sess-top { position: sticky; top: var(--sess-top, 0px); z-index: 3; background: var(--bg); padding: 6px 0 8px; display: flex; flex-direction: column; gap: 8px; }
+.sess-rest { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 12px; background: var(--accent); color: var(--accent-ink); }
 .sess-rest b { font-size: 22px; font-variant-numeric: tabular-nums; flex: 1; } .sess-rest .btn { background: rgba(255,255,255,.2); color: inherit; padding: 5px 12px; }
 .sess-warm { color: var(--accent); font-weight: 500; font-size: 13.5px; margin: 0 0 6px; } .sess-sets .warm .n { color: var(--accent); }
 .sess-ex.next { outline: 2px solid var(--accent); } .sess-ss { display: inline-block; min-width: 1.6em; text-align: center; border-radius: 6px; background: var(--accent); color: var(--accent-ink); font-size: 12px; font-weight: 600; padding: 1px 6px; margin-right: 6px; vertical-align: middle; }
+.sess-gear { color: var(--muted); font-size: 13.5px; font-weight: 400; margin-left: 6px; }
+.sess-ex.done { padding: 0; margin-bottom: 8px; } .sess-done { display: flex; width: 100%; align-items: center; gap: 8px; border: 0; background: none; color: inherit; font: inherit; padding: 12px 16px; cursor: pointer; text-align: left; }
+.sess-done b { color: var(--ok); } .sess-done small { color: var(--muted); margin-left: auto; text-align: right; }
 .sess-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
 .sess-pick { display: block; width: 100%; text-align: left; border: 0; border-top: 1px solid var(--line); background: none; color: inherit; font: inherit; padding: 12px 4px; cursor: pointer; }
 .sess-pick:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); } .sess-pick small { display: block; color: var(--muted); }
@@ -131,6 +135,7 @@ export function installSession(Panel, { edit, esc }) {
         case "s-free": return await this._sessBegin(null);
         case "s-begin": return await this._sessBegin(v);
         case "s-leave": this._sessRestStop(); this._sess = null; return this._show();
+        case "s-expand": if (S) { S.open.add(S.exercises[i].exercise_id); this._sessDraw(); } return;
         case "s-add": if (S) { S.adding = !S.adding; S.filter = ""; this._sessDraw(); } return;
         case "s-pick-ex": return await this._sessAddExercise(v);
         case "s-step": if (S) return this._sessStep(i, Number(el.dataset.d));
@@ -185,7 +190,7 @@ export function installSession(Panel, { edit, esc }) {
   P._sessEnter = function (data) {
     const a = data.active, plan = data.plan || { exercises: [] };
     this._sess = { screen: "run", data, workout: { id: a.id, started_at: a.started_at, routine_id: a.routine_id, routine_name: a.routine },
-      exercises: plan.exercises.map((x) => ({ ...x })), sets: a.sets.map((s) => ({ ...s })), drafts: {}, adding: false, filter: "", busy: false, skipWarm: new Set(), rest: null, focus: null };
+      exercises: plan.exercises.map((x) => ({ ...x })), sets: a.sets.map((s) => ({ ...s })), drafts: {}, adding: false, filter: "", busy: false, skipWarm: new Set(), open: new Set(), rest: null, focus: null };
     this._tab = "today";
     this._sessDraw();
   };
@@ -393,8 +398,12 @@ export function installSession(Panel, { edit, esc }) {
         <button class="ib" data-act="s-rstep" data-i="${i}" data-d="-1" aria-label="${esc(t("sess_reps_less"))}">−</button>
         <input data-sf="reps" data-i="${i}" inputmode="decimal" value="${esc(d.reps)}">
         <button class="ib" data-act="s-rstep" data-i="${i}" data-d="1" aria-label="${esc(t("sess_reps_more"))}">+</button></span></label>`;
+      if (x.sets > 0 && this._sessDoneOf(x.exercise_id).length >= x.sets && !d.warm && !S.open.has(x.exercise_id) && S.focus !== x.exercise_id) {
+        const sum = all.filter((s) => s.kind !== "warmup").map((s) => setLine(s, x.kind, fmt)).filter(Boolean).join(", ");
+        return `<section class="card sess-ex done" data-ex="${esc(x.exercise_id)}"><button class="sess-done" data-act="s-expand" data-i="${i}" aria-expanded="false"><b>✓</b><span>${x.superset ? `<span class="sess-ss">${esc(x.superset)}</span>` : ""}${esc(x.name)}</span><small>${esc(sum)}</small></button></section>`;
+      }
       const inputs = timed ? field("secs", t(x.kind === "cardio" ? "sess_mins" : "sess_secs")) : weight + repsField;
-      return `<section class="card sess-ex${S.focus === x.exercise_id ? " next" : ""}" data-ex="${esc(x.exercise_id)}"><h3>${x.superset ? `<span class="sess-ss" title="${esc(t("superset", x.superset))}">${esc(x.superset)}</span>` : ""}${esc(x.name)}</h3>
+      return `<section class="card sess-ex${S.focus === x.exercise_id ? " next" : ""}" data-ex="${esc(x.exercise_id)}"><h3>${x.superset ? `<span class="sess-ss" title="${esc(t("superset", x.superset))}">${esc(x.superset)}</span>` : ""}${esc(x.name)}${x.settings ? `<span class="sess-gear">${esc(x.settings)}</span>` : ""}</h3>
         ${S.focus === x.exercise_id ? `<p class="sess-warm">${esc(t("sess_ss_next"))}</p>` : ""}
         <p class="sess-meta">${[target ? t("sess_target", target) : "", last ? t("sess_last", last) : ""].filter(Boolean).map(esc).join(" · ")}</p>
         ${all.length ? `<ul class="sess-sets">${all.map((s) => `<li class="${s.kind === "warmup" ? "warm" : ""}"><span class="n">${esc(s.kind === "warmup" ? t("sess_warmup") : t("sess_set_n", ++work))}</span><span class="v">${esc(setLine(s, x.kind, fmt))}</span>
@@ -405,10 +414,10 @@ export function installSession(Panel, { edit, esc }) {
     }).join("");
     const adder = S.adding ? `<div class="picker"><input class="search" data-sf="filter" placeholder="${esc(t("exercise_search"))}" value="${esc(S.filter)}" autocomplete="off">
       <div class="rows" id="sess-exlist">${this._sessExerciseRows()}</div></div>` : "";
-    return `<div class="sess-head"><button class="btn ghost" data-act="s-leave">← ${esc(t("sess_back"))}</button>
+    return `<div class="sess-top"><div class="sess-head"><button class="btn ghost" data-act="s-leave">← ${esc(t("sess_back"))}</button>
       <div class="grow"><p class="kicker">${esc(t("sess_running", f.time(S.workout.started_at) || ""))}</p><h2 class="big">${esc(S.workout.routine_name || t("free_workout"))}</h2></div></div>
       ${S.rest ? `<div class="sess-rest" role="timer"><span>${esc(t("sess_rest"))}</span><b id="sess-rest-t">${clock(Math.max(0, Math.ceil((S.rest.end - Date.now()) / 1000)))}</b>
-        <button class="btn" data-act="s-rest-more">${esc(t("sess_rest_more"))}</button><button class="btn" data-act="s-rest-stop">${esc(t("sess_rest_skip"))}</button></div>` : ""}
+        <button class="btn" data-act="s-rest-more">${esc(t("sess_rest_more"))}</button><button class="btn" data-act="s-rest-stop">${esc(t("sess_rest_skip"))}</button></div>` : ""}</div>
       ${cards || `<p class="muted">${esc(t("sess_empty"))}</p>`}
       <div class="actions"><button class="btn ghost" data-act="s-add">${esc(t("sess_add_ex"))}</button></div>${adder}
       <div class="sess-bar"><button class="btn" data-act="s-finish">${esc(t("sess_finish"))}</button><button class="btn danger" data-act="s-discard">${esc(t("sess_discard"))}</button></div>`;

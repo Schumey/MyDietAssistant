@@ -270,8 +270,10 @@ def _exercise_info(conn, owner: str, exercise_id: str, skip_workout: str | None 
                             (owner, exercise_id)).fetchone()
         eq_id = link["id"] if link else None
     steps = warm_steps = None
+    settings = ""
     if eq_id:
-        q = conn.execute("SELECT steps FROM equipment WHERE id=? AND owner=?", (eq_id, owner)).fetchone()
+        q = conn.execute("SELECT steps, settings FROM equipment WHERE id=? AND owner=?", (eq_id, owner)).fetchone()
+        settings = (q["settings"] or "").strip() if q else ""
         steps = progression.expand_steps(q["steps"]) if q else None
         # warm-up weights go by the stack only (the add-on weights are too fine for a warm-up)
         warm_steps = progression.expand_steps(q["steps"], with_extra=False) if q else None
@@ -283,7 +285,7 @@ def _exercise_info(conn, owner: str, exercise_id: str, skip_workout: str | None 
     last_sets = [dict(weight=r["weight"], reps=r["reps"], duration_s=r["duration_s"]) for r in conn.execute(
         "SELECT weight, reps, duration_s FROM workout_set WHERE workout_id=? AND exercise_id=? AND deleted=0 AND kind!='warmup' "
         "ORDER BY done_at, set_no", (last["id"], exercise_id))] if last else []
-    return {"exercise_id": ex["id"], "name": ex["name"], "kind": ex["kind"], "equipment_id": eq_id, "steps": steps, "warm_steps": warm_steps,
+    return {"exercise_id": ex["id"], "name": ex["name"], "kind": ex["kind"], "equipment_id": eq_id, "settings": settings, "steps": steps, "warm_steps": warm_steps,
             "sets": rx["target_sets"] if rx is not None else None, "reps_min": rx["reps_min"] if rx is not None else None,
             "reps_max": rx["reps_max"] if rx is not None else None, "rest_s": rx["rest_s"] if rx is not None else None,
             "warmup": st.warmup_of(rx) if rx is not None else None,

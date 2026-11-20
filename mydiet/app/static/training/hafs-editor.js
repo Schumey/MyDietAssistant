@@ -309,21 +309,22 @@ export function installEditor(Panel, { edit, esc }) {
     const at = g === undefined ? `data-i="${i}"` : `data-i="${i}" data-g="${g}"`;
     const field = (f, label, hint, wide = false, mode = "text") => `<label class="fld${wide ? " wide" : ""}"><span>${esc(label)}</span>
       <input type="text" inputmode="${mode}" data-f="${f}" ${at} value="${esc(q[f])}" placeholder="${esc(hint)}" autocomplete="off"></label>`;
-    if (edit.isStation(q.type)) return "";
+    const settings = field("settings", t("equipment_settings"), t("equipment_settings_hint"), true);
+    if (edit.isStation(q.type)) return settings;
     if (q.type === "machine_plate") {
-      return field("base", t("plate_base"), "0", false, "decimal") + field("max", t("plate_max"), "", false, "decimal")
+      return settings + field("base", t("plate_base"), "0", false, "decimal") + field("max", t("plate_max"), "", false, "decimal")
         + field("plates", t("plates"), t("plates_hint"), true)
         + `<label class="check wide"><input type="checkbox" data-f="both" ${at}${q.both ? " checked" : ""}> ${esc(t("plate_both"))}</label>`;
     }
     if (q.type === "machine_stack") {
-      return field("steps", t("stack_steps"), t("stack_steps_hint"), true) + field("extra", t("stack_extra"), "1,1 2,3 3,4", true)
+      return settings + field("steps", t("stack_steps"), t("stack_steps_hint"), true) + field("extra", t("stack_extra"), "1,1 2,3 3,4", true)
         + `<small class="wide muted">${esc(t("stack_extra_hint"))}</small>`;
     }
     if (q.type === "barbell") {
-      return field("base", t("bar_weight"), "20", false, "decimal") + field("plates", t("stock_plates"), t("stock_hint"), true)
+      return settings + field("base", t("bar_weight"), "20", false, "decimal") + field("plates", t("stock_plates"), t("stock_hint"), true)
         + field("steps", t("equipment_steps"), t("equipment_steps_hint"), true);
     }
-    return field("steps", t("equipment_steps"), t("equipment_steps_hint"), true);
+    return settings + field("steps", t("equipment_steps"), t("equipment_steps_hint"), true);
   };
 
   // Master data of the exercise, its next weight and its muscles.

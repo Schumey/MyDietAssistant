@@ -20,6 +20,8 @@ Per user, `<name>` is the display name in lower case, everything but `a-z` and `
 | `sensor.hafs_<name>_next_routine` | next training day; attributes `program`, `exercises` |
 | `sensor.hafs_<name>_phase` | `bulk`, `maintain` or `cut`; attribute `source` (`manual`, `goal_mode`, `last_known`) |
 
+With the app option `exercise_sensors`, two more sensors per exercise trained in the last 90 days (at most 40, most recent first) appear: `sensor.hafs_<name>_ex_<exercise>_weight` (heaviest working weight of the last workout with it, kg) and `..._volume` (volume of that workout, kg; warm-ups only if they are counted in the statistics). Home Assistant's long-term statistics keep the history, e.g. for Grafana.
+
 Without further settings these are plain states: they have no unique ID and are missing after a restart of Home Assistant until HAFS sends them again (after 30 minutes at the latest). With the app option `mqtt_discovery` they become real MQTT entities with a unique ID and a device **HAFS <name>**; the MQTT integration must be set up for that (see [Sensors](sensors.md#mqtt-discovery)).
 
 If the entities came from the HAFS integration so far, remove the integration before training creates them (see [Moving over](training.md#moving-over-from-the-hafs-integration)).

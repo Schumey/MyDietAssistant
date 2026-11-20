@@ -7437,6 +7437,10 @@ async function renderTraining(tab) {
     trainPanel.narrow = innerWidth < 760;
     trainLocale = I18N.locale;
     root.replaceChildren(trainPanel);
+    // the sticky workout header stays below the app bar (which is sticky on top, except in the app where the bar is at the bottom)
+    const bar = $(".appbar"), setTop = () => trainPanel?.style.setProperty("--sess-top", document.documentElement.dataset.shell === "app" || !bar ? "0px" : `${bar.offsetHeight}px`);
+    setTop();
+    if (bar && window.ResizeObserver) new ResizeObserver(setTop).observe(bar);
     const hass = { language: I18N.locale, states: {}, connection: { sendMessagePromise: trainingCall } };
     trainPanel.hass = hass;
     // the gym editor offers Home Assistant's zones from hass.states (filled in when they arrive)

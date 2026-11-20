@@ -72,6 +72,10 @@ class Store:
         with self._conn() as conn:
             return status.status(conn, owner, now, tz)
 
+    def exercise_figures(self, owner: str) -> list[dict]:
+        with self._conn() as conn:
+            return status.exercise_figures(conn, owner)
+
     def recent_workouts(self, owner: str, days: int = 30, limit: int = 50) -> list[dict]:
         with self._conn() as conn:
             return status.recent_workouts(conn, owner, days, limit)

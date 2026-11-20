@@ -20,6 +20,9 @@ configuration:
   api_key:
     name: API-Schlüssel
     description: Schlüssel für die externe Schnittstelle (Header X-MDA-Key). Leer = Schnittstelle aus.
+  exercise_sensors:
+    name: Sensoren pro Übung
+    description: Pro trainierter Übung (letzte 90 Tage, höchstens 40) zwei Sensoren mit dem Arbeitsgewicht und dem Volumen des letzten Workouts, z. B. für Grafana. Mit mqtt_discovery bleiben sie nach einem HA-Neustart erhalten.
   mqtt_discovery:
     name: MQTT Discovery
     description: Sensoren per MQTT Discovery anlegen (eindeutige IDs, bleiben nach einem HA-Neustart erhalten). Braucht die MQTT-Integration; ohne sie werden normale Zustände gesendet.
