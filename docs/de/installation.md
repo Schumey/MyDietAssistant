@@ -60,13 +60,12 @@ Mehr dazu unter [Daten, Import und Sicherung](data.md).
 
 ## Fertige Images (für Entwickler)
 
-Standardmäßig baut Home Assistant die App bei der Installation selbst. Der Workflow `.github/workflows/build.yml` kann stattdessen fertige Images (amd64, aarch64) in die GitHub Container Registry legen:
+HAFS wird aus fertigen Images (amd64, aarch64) der GitHub Container Registry installiert (`image:` in `mydiet/config.yaml`), Home Assistant baut es also nicht selbst. Der Workflow `.github/workflows/build.yml` baut sie, wenn ein Versions-Tag gepusht wird. Bei jedem Release:
 
-1. `mydiet/config.yaml`: Version erhöhen und committen.
-2. `git tag v<Version>` und `git push --tags` (die Version muss der in `config.yaml` entsprechen). Alternativ von Hand unter GitHub → Actions → „Build images“.
-3. Nach dem Lauf die Pakete `mydiet-amd64` und `mydiet-aarch64` unter GitHub → Packages auf **öffentlich** stellen.
-4. In `mydiet/config.yaml` die Zeile `image: ghcr.io/schumey/mydiet-{arch}` ergänzen.
+1. `mydiet/config.yaml`: Version erhöhen und committen (noch nicht pushen).
+2. `git tag v<Version>` (muss der Version in `config.yaml` entsprechen) und Commit und Tag zusammen pushen: `git push origin main v<Version>`.
+3. Den Lauf unter GitHub → Actions → „Build images“ abwarten: Home Assistant bietet das Update erst an, wenn die Images dieser Version existieren (höchstens wenige Minuten).
 
-Die Zeile erst setzen, wenn die Images der jeweiligen Version existieren, sonst scheitert die Installation.
+Die Pakete `mydiet-amd64` und `mydiet-aarch64` sind öffentlich. Ohne die `image:`-Zeile würde Home Assistant die App bei der Installation selbst bauen.
 
 Weiter mit den [Ersten Schritten](first-steps.md).

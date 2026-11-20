@@ -1,6 +1,7 @@
 name: HAFS
 version: "2.0.4"
 slug: mydiet
+image: ghcr.io/schumey/mydiet-{arch}
 url: https://github.com/Schumey/HAFS
 description: HomeAssistant Fitness Suite – Ernährungstagebuch und Krafttraining, lokal, mit HA-Sensoren
 arch: [amd64, aarch64]
