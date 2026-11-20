@@ -9,6 +9,7 @@ All notable changes to the add-on. The format follows [Keep a Changelog](https:/
 - **Sensors per exercise (optional):** the app option `exercise_sensors` creates two sensors per trained exercise: working weight and volume of the last workout, e.g. for Grafana (as MQTT entities with `mqtt_discovery`).
 
 ### Changed
+- **HAFS app 0.6.8:** in a running workout, finished exercises fold into one line (tap to open again), and the equipment settings are shown small behind the exercise name.
 - Workout in the web interface: header and rest time stay on top (below the HAFS bar) instead of scrolling away.
 - Finished exercises (all planned sets done, warm-up done) fold into one line automatically; a tap opens them again.
 

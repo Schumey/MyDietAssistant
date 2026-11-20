@@ -9,6 +9,7 @@ Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a 
 - **Sensoren pro Übung (optional):** Die App-Option `exercise_sensors` legt pro trainierter Übung zwei Sensoren an: Arbeitsgewicht und Volumen des letzten Workouts, z. B. für Grafana (mit `mqtt_discovery` als MQTT-Entitäten).
 
 ### Geändert
+- **HAFS-App 0.6.8:** Im laufenden Workout klappen fertige Übungen zu einer Zeile ein (Tipp öffnet sie wieder), und die Geräteeinstellungen stehen klein hinter dem Übungsnamen.
 - Workout in der Weboberfläche: Kopfzeile und Pausenzeit bleiben oben stehen (unterhalb der Kopfleiste von HAFS), statt mitzuscrollen.
 - Fertige Übungen (alle geplanten Sätze gemacht, Aufwärmen erledigt) klappen automatisch zu einer Zeile ein; ein Tipp öffnet sie wieder.
 

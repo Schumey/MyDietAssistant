@@ -43,6 +43,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   String _note = ''; // note for the next set (e.g. "links", tempo)
   String _attachment = ''; // rope / bar of a cable exercise, kept from set to set
   int _restSeconds = RestTimer.defaultSeconds;
+  final Set<String> _expanded = {}; // finished exercises the user opened again
   String? _gymId;
   Timer? _poll;
   int _seenRev = 0; // revision of the live entry this screen wrote or adopted last
@@ -386,7 +387,30 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     widget.app.health?.exportPending();
   }
 
+  /// Free-text settings (seat height etc.) of the equipment the exercise is done on.
+  String _gearSettings(ExerciseInfo e) {
+    final q = e.id == _exercise?.id && _equipmentId != null
+        ? repo.equipmentById(_equipmentId!)
+        : (_gymId == null ? null : repo.equipmentFor(e.id, _gymId!).firstOrNull);
+    return q?.settings.trim() ?? '';
+  }
+
   Widget _exerciseCard(ThemeData theme, ExerciseInfo e, List<SetRow> sets, {PlannedExercise? plan}) {
+    // everything planned is done (warm-up too): one line, a tap opens it again
+    if (plan != null && plan.targetSets > 0 && plan.finished && !plan.warmupDue && !_expanded.contains(e.id) && e.id != _exercise?.id) {
+      final work = sets.where((s) => s.kind != 'warmup').map(setLine).where((t) => t.isNotEmpty).join(', ');
+      return Card(
+        margin: const EdgeInsets.only(top: 8),
+        child: ListTile(
+          dense: true,
+          leading: Icon(Icons.check_circle, color: theme.colorScheme.primary),
+          title: Text(e.name),
+          subtitle: work.isEmpty ? null : Text(work, maxLines: 1, overflow: TextOverflow.ellipsis),
+          onTap: () => setState(() => _expanded.add(e.id)),
+        ),
+      );
+    }
+    final gear = _gearSettings(e);
     return Card(
       margin: const EdgeInsets.only(top: 8),
       color: e.id == _exercise?.id ? theme.colorScheme.secondaryContainer : null,
@@ -396,7 +420,12 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           padding: const EdgeInsets.all(12),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
-              Expanded(child: Text(e.name, style: theme.textTheme.titleMedium)),
+              Expanded(
+                child: Text.rich(TextSpan(children: [
+                  TextSpan(text: e.name, style: theme.textTheme.titleMedium),
+                  if (gear.isNotEmpty) TextSpan(text: '  $gear', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                ])),
+              ),
               if (plan != null)
                 PopupMenuButton<String>(
                   tooltip: tr('plan_options'),
