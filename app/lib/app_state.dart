@@ -130,7 +130,7 @@ class AppState extends ChangeNotifier {
 
   /// Self-update from this Home Assistant (Android only), null when not signed in or unsupported.
   Updater? get updater => hasCredentials && Updater.supported
-      ? Updater(address: address!, token: _token!, ingress: () async {
+      ? Updater(address: address!, token: _token!, githubReleases: Updater.githubReleasesUrl, ingress: () async {
           final a = await ingressAccess();
           return (url: a.url, cookie: a.cookie);
         })

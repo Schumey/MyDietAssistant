@@ -59,7 +59,7 @@ Das Ernährungs-Widget übernimmt die Zahlen, wenn die App das heutige Tagebuch 
 
 ## Updates
 
-Die App sucht beim Start höchstens einmal am Tag nach einer neuen Version, in Ernährung auch von Hand unter *Einstellungen → Android-App → Nach App-Updates suchen*. Die Pakete liegen in Home Assistant im Ordner `/share/hafs/app` (Dateien `hafs-<Version>.apk`); lege eine neue Version dort ab, und alle Handys bieten sie an.
+Die App sucht beim Start höchstens einmal am Tag nach einer neuen Version, in Ernährung auch von Hand unter *Einstellungen → Android-App → Nach App-Updates suchen*. Die Pakete liegen in Home Assistant im Ordner `/share/hafs/app` (Dateien `hafs-<Version>.apk`); lege eine neue Version dort ab, und alle Handys bieten sie an. Zusätzlich schaut die App auf die [Releases](https://github.com/Schumey/HAFS/releases) bei GitHub (`app-v<Version>`): So kommen Updates auch, wenn Home Assistant unterwegs nicht erreichbar ist. Die neuere Version gewinnt, bei gleicher Version Home Assistant. Zu GitHub gehen nur die Anfrage nach der Release-Liste und der Download, ohne Zugangsdaten; die Prüfsumme wird immer kontrolliert.
 
 1. Tippe auf **Herunterladen und installieren**. Beim ersten Mal öffnet Android **Unbekannte Apps installieren** für HAFS; erlaube es und tippe noch einmal.
 2. Bestätige die Installation. Daten und Anmeldung bleiben erhalten.

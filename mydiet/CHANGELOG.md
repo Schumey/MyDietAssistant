@@ -5,6 +5,7 @@ Alle nennenswerten Änderungen am Add-on. Das Format orientiert sich an [Keep a 
 ## 2.0.4
 
 ### Neu
+- **HAFS-App 0.6.9:** Die App sucht Updates jetzt auch bei den GitHub-Releases (`app-v<Version>`), nicht nur in Home Assistant, also auch unterwegs. Die neuere Version gewinnt; die Prüfsumme wird immer kontrolliert, und es gehen keine Zugangsdaten zu GitHub.
 - **Geräteeinstellungen:** Beim Gerät lässt sich ein Freitext eintragen (z. B. „Sitz 4, Lehne 3“, Feld *Einstellungen* in Geräteformular, Übungsformular und Plan). Im laufenden Workout steht er klein hinter dem Übungsnamen.
 - **Sensoren pro Übung (optional):** Die App-Option `exercise_sensors` legt pro trainierter Übung zwei Sensoren an: Arbeitsgewicht und Volumen des letzten Workouts, z. B. für Grafana (mit `mqtt_discovery` als MQTT-Entitäten).
 

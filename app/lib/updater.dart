@@ -3,7 +3,8 @@
 /// The HA app serves the newest `hafs-<version>.apk` from `/share/hafs/app` (`GET <ingress>api/training/app` for the
 /// offer, `…/api/training/app/<name>` for the file, with the ingress session). While moving over, the former
 /// integration still answers at `GET /api/hafs/app` (from `/config/hafs/app`, with the long-lived token).
-/// No GitHub access is needed, so the repository can stay private.
+/// Besides that the app looks at the public GitHub releases (`app-v<version>` with `hafs-<version>.apk`), so updates also
+/// arrive when Home Assistant cannot be reached (away from home). The newer of both wins; on a tie Home Assistant does.
 library;
 
 import 'dart:async';
@@ -17,7 +18,15 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppOffer {
-  const AppOffer({required this.version, required this.name, required this.size, required this.sha256, this.fileUrl, this.cookie});
+  const AppOffer({
+    required this.version,
+    required this.name,
+    required this.size,
+    required this.sha256,
+    this.fileUrl,
+    this.cookie,
+    this.external = false,
+  });
 
   final String version;
   final String name;
@@ -28,7 +37,43 @@ class AppOffer {
   final Uri? fileUrl;
   final String? cookie;
 
+  /// The file is on GitHub: no Home Assistant credentials go with the request.
+  final bool external;
+
   AppOffer at(Uri url, String cookie) => AppOffer(version: version, name: name, size: size, sha256: sha256, fileUrl: url, cookie: cookie);
+
+  /// The newest `app-v…` release of GitHub's `releases` list (an apk asset with a `sha256:` digest); null if there is none.
+  static AppOffer? fromGitHub(Object? json) {
+    if (json is! List) return null;
+    AppOffer? best;
+    for (final release in json) {
+      if (release is! Map || release['draft'] == true || release['prerelease'] == true) continue;
+      final tag = release['tag_name'];
+      if (tag is! String || !tag.startsWith('app-v')) continue;
+      final version = tag.substring(5);
+      final assets = release['assets'];
+      if (!RegExp(r'^\d+(\.\d+)*$').hasMatch(version) || assets is! List) continue;
+      for (final asset in assets) {
+        if (asset is! Map) continue;
+        final name = asset['name'], size = asset['size'], digest = asset['digest'], url = asset['browser_download_url'];
+        if (name is! String || size is! num || digest is! String || url is! String) continue;
+        if (name != 'hafs-$version.apk' || !digest.startsWith('sha256:')) continue;
+        final uri = Uri.tryParse(url);
+        if (uri == null || uri.scheme != 'https') continue;
+        if (best == null || compareVersions(version, best.version) > 0) {
+          best = AppOffer(
+            version: version,
+            name: name,
+            size: size.toInt(),
+            sha256: digest.substring(7).toLowerCase(),
+            fileUrl: uri,
+            external: true,
+          );
+        }
+      }
+    }
+    return best;
+  }
 
   /// Reads the answer of `GET /api/hafs/app`; null if it is not usable.
   static AppOffer? parse(Object? json) {
@@ -66,7 +111,7 @@ Uri httpBase(String address) {
 typedef IngressLink = Future<({Uri Function(String rel) url, String cookie})> Function();
 
 class Updater {
-  Updater({required this.address, required this.token, this.currentVersionOverride, this.ingress});
+  Updater({required this.address, required this.token, this.currentVersionOverride, this.ingress, this.githubReleases});
 
   final String address;
   final String token;
@@ -74,6 +119,11 @@ class Updater {
 
   /// The HA app over ingress; null or failing: the former integration.
   final IngressLink? ingress;
+
+  /// GitHub's release list of the project (null: do not look there).
+  final Uri? githubReleases;
+
+  static final githubReleasesUrl = Uri.parse('https://api.github.com/repos/Schumey/HAFS/releases?per_page=10');
 
   static const _checkedKey = 'update_checked_at';
 
@@ -87,9 +137,11 @@ class Updater {
     return base.replace(path: '${base.path}$path');
   }
 
-  Future<HttpClientResponse> _get(HttpClient client, Uri url, {String? cookie, int from = 0}) async {
+  Future<HttpClientResponse> _get(HttpClient client, Uri url, {String? cookie, int from = 0, bool anonymous = false}) async {
     final request = await client.getUrl(url).timeout(const Duration(seconds: 15));
-    if (cookie != null) {
+    if (anonymous) {
+      // GitHub: never send the Home Assistant token there
+    } else if (cookie != null) {
       request.headers.set(HttpHeaders.cookieHeader, cookie);
     } else {
       request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
@@ -116,21 +168,59 @@ class Updater {
     }
   }
 
-  /// Asks Home Assistant for the newest package; null when the installed version is the newest (or nothing is offered).
+  /// The newest app release on GitHub; null when there is none or GitHub cannot be reached.
+  Future<AppOffer?> _checkGitHub(HttpClient client) async {
+    final url = githubReleases;
+    if (url == null) return null;
+    try {
+      final response = await _get(client, url, anonymous: true);
+      if (response.statusCode != 200) {
+        await response.drain<void>();
+        return null;
+      }
+      return AppOffer.fromGitHub(jsonDecode(await utf8.decoder.bind(response).join()));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Asks Home Assistant and GitHub for the newest package; null when the installed version is the newest (or nothing is
+  /// offered). The newer offer wins, Home Assistant on a tie. Without GitHub's answer an error of Home Assistant is thrown.
   Future<AppOffer?> check() async {
     final client = HttpClient();
     try {
+      final current = await currentVersion();
+      final github = await _checkGitHub(client);
+      AppOffer? home;
+      Object? failure;
+      try {
+        home = await _checkHome(client);
+      } catch (e) {
+        failure = e;
+      }
+      if (failure != null && github == null) throw failure;
+      final best = home != null && (github == null || compareVersions(github.version, home.version) <= 0) ? home : github;
+      return best != null && compareVersions(best.version, current) > 0 ? best : null;
+    } finally {
+      client.close(force: true);
+    }
+  }
+
+  /// The newest package of Home Assistant (the app over ingress, else the former integration); null when none.
+  Future<AppOffer?> _checkHome(HttpClient client) async {
+    {
       final viaApp = await _checkIngress(client);
-      if (viaApp != null) return compareVersions(viaApp.version, await currentVersion()) > 0 ? viaApp : null;
+      if (viaApp != null) return viaApp;
       final response = await _get(client, _url('/api/hafs/app'));
-      if (response.statusCode == 404) return null; // older server or no package uploaded
+      if (response.statusCode == 404) {
+        await response.drain<void>();
+        return null;
+      } // older server or no package uploaded
       if (response.statusCode == 401) throw const HttpException('Not signed in (token rejected)');
       if (response.statusCode != 200) throw HttpException('HTTP ${response.statusCode}');
       final offer = AppOffer.parse(jsonDecode(await utf8.decoder.bind(response).join()));
       if (offer == null) throw const FormatException('Unexpected answer from Home Assistant');
-      return compareVersions(offer.version, await currentVersion()) > 0 ? offer : null;
-    } finally {
-      client.close(force: true);
+      return offer;
     }
   }
 
@@ -154,8 +244,13 @@ class Updater {
   /// connection (Android throttles the app while the screen is off) the request is repeated with a `Range` header
   /// from where it stopped, up to [maxAttempts] times. A server that ignores `Range` just sends everything again.
   /// A partial file of a failed run stays, so the next try resumes there.
-  Future<File> download(AppOffer offer, void Function(double? progress) onProgress,
-      {Directory? into, int maxAttempts = 40, Duration retryDelay = const Duration(seconds: 3)}) async {
+  Future<File> download(
+    AppOffer offer,
+    void Function(double? progress) onProgress, {
+    Directory? into,
+    int maxAttempts = 40,
+    Duration retryDelay = const Duration(seconds: 3),
+  }) async {
     final dir = Directory('${(into ?? await getTemporaryDirectory()).path}${Platform.pathSeparator}hafs-update');
     await dir.create(recursive: true);
     final file = File('${dir.path}${Platform.pathSeparator}${offer.name}');
@@ -163,7 +258,7 @@ class Updater {
     await for (final entry in dir.list()) {
       if (entry.path != part.path) await entry.delete(recursive: true); // older versions, finished files
     }
-    for (var attempt = 1;; attempt++) {
+    for (var attempt = 1; ; attempt++) {
       try {
         await _fetch(part, offer, onProgress);
         break;
@@ -195,7 +290,7 @@ class Updater {
     final client = HttpClient();
     try {
       final response = offer.fileUrl != null
-          ? await _get(client, offer.fileUrl!, cookie: offer.cookie, from: have)
+          ? await _get(client, offer.fileUrl!, cookie: offer.cookie, from: have, anonymous: offer.external)
           : await _get(client, _url('/api/hafs/app/${offer.name}'), from: have);
       if (response.statusCode == 416) {
         await response.drain<void>();

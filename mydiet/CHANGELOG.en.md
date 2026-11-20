@@ -5,6 +5,7 @@ All notable changes to the add-on. The format follows [Keep a Changelog](https:/
 ## 2.0.4
 
 ### New
+- **HAFS app 0.6.9:** the app now also looks for updates in the GitHub releases (`app-v<version>`), not only in Home Assistant, so also away from home. The newer version wins; the checksum is always verified and no credentials go to GitHub.
 - **Equipment settings:** a piece of equipment can carry free text (e.g. “seat 4, back 3”, field *Settings* in the equipment form, exercise form and plan). In a running workout it is shown small behind the exercise name.
 - **Sensors per exercise (optional):** the app option `exercise_sensors` creates two sensors per trained exercise: working weight and volume of the last workout, e.g. for Grafana (as MQTT entities with `mqtt_discovery`).
 

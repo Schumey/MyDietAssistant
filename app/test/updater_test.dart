@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hafs/updater.dart';
 
 void main() {
+  githubTests();
   test('versions compare numerically', () {
     expect(compareVersions('0.10.0', '0.9.0'), 1);
     expect(compareVersions('1.0', '1.0.0'), 0);
@@ -139,6 +140,74 @@ void main() {
       served = utf8.encode('pretend this is an APK'); // same length, wrong checksum
       await expectLater(updater().download(offer, (_) {}, into: tmp), throwsA(isA<HttpException>()));
       expect(File('${tmp.path}/hafs-update/hafs-0.2.0.apk').existsSync(), isFalse);
+    });
+  });
+}
+
+void githubTests() {
+  Map<String, Object?> release(String tag, {String? digest = 'sha256:ABCD', String? asset, bool draft = false}) => {
+    'tag_name': tag,
+    'draft': draft,
+    'assets': [
+      {
+        'name': asset ?? 'hafs-${tag.replaceFirst('app-v', '')}.apk',
+        'size': 100,
+        'digest': digest,
+        'browser_download_url': 'https://github.com/x/y/releases/download/$tag/hafs-${tag.replaceFirst('app-v', '')}.apk',
+      },
+    ],
+  };
+
+  group('GitHub releases', () {
+    test('the newest app release wins, add-on tags and drafts are ignored', () {
+      final offer = AppOffer.fromGitHub([
+        release('v2.0.4'),
+        release('app-v0.6.8'),
+        release('app-v0.6.10'),
+        release('app-v0.7.0', draft: true),
+        release('app-v0.6.9'),
+      ])!;
+      expect(offer.version, '0.6.10');
+      expect(offer.sha256, 'abcd');
+      expect(offer.external, isTrue);
+      expect(offer.fileUrl!.host, 'github.com');
+    });
+
+    test('a release without digest or with another file name is not offered', () {
+      expect(AppOffer.fromGitHub([release('app-v0.6.8', digest: null)]), isNull);
+      expect(AppOffer.fromGitHub([release('app-v0.6.8', asset: 'other.apk')]), isNull);
+      expect(AppOffer.fromGitHub('nope'), isNull);
+    });
+
+    test('check offers the GitHub release when Home Assistant cannot be reached, without sending the token', () async {
+      final seen = <String?>[];
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      server.listen((request) async {
+        seen.add(request.headers.value(HttpHeaders.authorizationHeader));
+        request.response.write(jsonEncode([release('app-v0.6.8')]));
+        await request.response.close();
+      });
+      final dead = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+      final deadPort = dead.port;
+      await dead.close();
+      final updater = Updater(
+        address: 'http://127.0.0.1:$deadPort',
+        token: 'secret',
+        currentVersionOverride: '0.6.7',
+        githubReleases: Uri.parse('http://127.0.0.1:${server.port}/'),
+      );
+      expect((await updater.check())!.version, '0.6.8');
+      expect(seen.single, isNull);
+      expect(
+        await Updater(
+          address: 'http://127.0.0.1:$deadPort',
+          token: 't',
+          currentVersionOverride: '0.6.8',
+          githubReleases: Uri.parse('http://127.0.0.1:${server.port}/'),
+        ).check(),
+        isNull,
+      );
+      await server.close(force: true);
     });
   });
 }

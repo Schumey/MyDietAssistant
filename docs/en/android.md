@@ -59,7 +59,7 @@ The nutrition widget takes the numbers when the app shows today's diary. After m
 
 ## Updates
 
-The app looks for a new version at most once a day when it starts, in nutrition also by hand under *Settings → Android app → Look for app updates*. The packages live in Home Assistant in the folder `/share/hafs/app` (files `hafs-<version>.apk`); put a new version there and all phones offer it.
+The app looks for a new version at most once a day when it starts, in nutrition also by hand under *Settings → Android app → Look for app updates*. The packages live in Home Assistant in the folder `/share/hafs/app` (files `hafs-<version>.apk`); put a new version there and all phones offer it. The app also looks at the [releases](https://github.com/Schumey/HAFS/releases) on GitHub (`app-v<version>`), so updates arrive even when Home Assistant cannot be reached away from home. The newer version wins, Home Assistant on a tie. Only the request for the release list and the download go to GitHub, without credentials; the checksum is always verified.
 
 1. Tap **Download and install**. The first time Android opens **Install unknown apps** for HAFS; allow it and tap again.
 2. Confirm the installation. Data and sign-in stay.
